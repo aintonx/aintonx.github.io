@@ -32,17 +32,17 @@
    он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
 
 <title>EchoWorld · Зеркальный идол</title>
-<meta name="description" content="Скромностью он не страдал и был уверен, что любой стоящий вечер начинается ровно в тот миг, когда появляется он. Бесило, что он каждый раз оказывался прав — без него и правда всё …">
+<meta name="description" content="Скромностью он не страдал и был уверен, что любой стоящий вечер начинается ровно в тот миг, когда появляется он. Бесило, что он каждый раз оказывался прав — без него и правда всё…">
 <meta name="keywords" content="EchoWorld, Marketspace, Зеркальный идол, RELIC-01-0008, реликвия, артефакт">
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0008/">
 
 <!-- Open Graph -->
-<meta property="og:type" content="website">
+<meta property="og:type" content="product">
 <meta property="og:site_name" content="EchoWorld">
 <meta property="og:title" content="EchoWorld · Зеркальный идол">
-<meta property="og:description" content="Скромностью он не страдал и был уверен, что любой стоящий вечер начинается ровно в тот миг, когда появляется он. Бесило, что он каждый раз оказывался прав — без него и правда всё …">
+<meta property="og:description" content="Скромностью он не страдал и был уверен, что любой стоящий вечер начинается ровно в тот миг, когда появляется он. Бесило, что он каждый раз оказывался прав — без него и правда всё…">
 <meta property="og:url" content="https://www.echoworld.space/share/relic/RELIC-01-0008/">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:image" content="https://www.echoworld.space/img/disco-ball.webp">
@@ -53,7 +53,7 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="EchoWorld · Зеркальный идол">
-<meta name="twitter:description" content="Скромностью он не страдал и был уверен, что любой стоящий вечер начинается ровно в тот миг, когда появляется он. Бесило, что он каждый раз оказывался прав — без него и правда всё …">
+<meta name="twitter:description" content="Скромностью он не страдал и был уверен, что любой стоящий вечер начинается ровно в тот миг, когда появляется он. Бесило, что он каждый раз оказывался прав — без него и правда всё…">
 <meta name="twitter:image" content="https://www.echoworld.space/img/disco-ball.webp">
 
 <!-- Favicon: inline SVG = быстро, без отдельного файла -->
@@ -26941,6 +26941,109 @@ function acceptCookies(){
 }
 </style>
 
+<!-- PATCH 5.2 · AUTOFILL SETTLE REFINEMENT / NO POPUP-KILLING OVERFLOW -->
+<style id="ew-patch5-autofill-settle-refine">
+/* Причина резкого выхода после финального автозаполнения email была не в
+   открытии модалок, а в стабилизаторе autofill: он на 600-700мс ставил
+   scroll-контейнеру overflow-y:hidden. Для браузерного окна подсказок это
+   выглядит как смена геометрии якоря поля → popup закрывается резким кадром.
+   Здесь финальный кадр autofill держится без layout-мутаций: box-shadow
+   переключается сразу, остальные свойства мягко дотекают. */
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).ew-field-autofill-settling {
+  will-change: border-color, background, color;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).ew-field-autofill-settling:-webkit-autofill,
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).ew-field-autofill-settling:-webkit-autofill:hover,
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).ew-field-autofill-settling:-webkit-autofill:focus,
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).ew-field-autofill-settling:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--white) !important;
+  -webkit-box-shadow: 0 0 0 1000px #061819 inset !important;
+          box-shadow: 0 0 0 1000px #061819 inset !important;
+  border-color: rgba(0,200,200,0.32) !important;
+  caret-color: var(--cyan) !important;
+  transition: border-color .18s ease, color .18s ease !important;
+}
+:root[data-theme="light"] :where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).ew-field-autofill-settling:-webkit-autofill,
+:root[data-theme="light"] :where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).ew-field-autofill-settling:-webkit-autofill:hover,
+:root[data-theme="light"] :where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).ew-field-autofill-settling:-webkit-autofill:focus,
+:root[data-theme="light"] :where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).ew-field-autofill-settling:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--ink) !important;
+  -webkit-box-shadow: 0 0 0 1000px #ddeff0 inset !important;
+          box-shadow: 0 0 0 1000px #ddeff0 inset !important;
+  border-color: rgba(11,118,126,0.34) !important;
+  caret-color: var(--cyan) !important;
+}
+.ew-autofill-scroll-anchor {
+  /* Диагностический класс на панели: намеренно без визуальных свойств.
+     Главное правило патча — НЕ менять overflow у scroll-контейнера. */
+}
+</style>
+
 <!-- PATCH · MOBILE VISUAL VIEWPORT SYNC FOR APERTURA PANELS -->
 <script id="ew-apertura-visual-viewport-sync">
 (function(){
@@ -27067,7 +27170,7 @@ function acceptCookies(){
 
 
 
-<!-- PATCH 5.1 · FIELD EXIT STABILITY / OLD MODAL MOTION PRESERVED -->
+<!-- PATCH 5.1+5.2 · FIELD EXIT + AUTOFILL SETTLE / OLD MODAL MOTION PRESERVED -->
 <script id="ew-patch5-field-exit-soft-js">
 (function(){
   const IDS = [
@@ -27080,51 +27183,136 @@ function acceptCookies(){
     '#echoSlotsList textarea',
     'textarea[data-chk-echo-editor-text]'
   ];
-  function isField(el){
-    return !!(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'));
-  }
+  let autofillSettleUntil = 0;
+  let lastPointerT = -1e9;
+  let lastKeyT = -1e9;
+
+  function now(){ return (window.performance && performance.now) ? performance.now() : Date.now(); }
+  function isField(el){ return !!(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')); }
   function valueOf(el){ return ((el && el.value) || '').trim(); }
+  function panelFor(el){ return el && el.closest && el.closest('#chkModalPanel, #echoOrderModal, #returnModalPanel, .chk-modal, .legal-modal'); }
+  function isAutofillSettling(){ return now() < autofillSettleUntil; }
+
+  document.addEventListener('pointerdown', function(){ lastPointerT = now(); }, {capture:true, passive:true});
+  document.addEventListener('touchstart', function(){ lastPointerT = now(); }, {capture:true, passive:true});
+  document.addEventListener('keydown', function(){ lastKeyT = now(); }, {capture:true, passive:true});
+
   function syncFilled(el){
     if(!isField(el)) return;
     if(valueOf(el) && document.activeElement !== el) el.classList.add('filled');
     else if(!valueOf(el)) el.classList.remove('filled');
   }
-  function markSoftExit(el){
+  function markSoftExit(el, ms){
     if(!isField(el)) return;
     el.classList.add('ew-field-soft-exiting');
     if(el._ewSoftExitTimer) clearTimeout(el._ewSoftExitTimer);
     el._ewSoftExitTimer = setTimeout(function(){
       try{ el.classList.remove('ew-field-soft-exiting'); }catch(e){}
       el._ewSoftExitTimer = null;
-    }, 340);
+    }, ms || 340);
+  }
+  function markAutofillSettling(el, ms){
+    const duration = ms || 760;
+    autofillSettleUntil = Math.max(autofillSettleUntil, now() + duration);
+    if(isField(el)){
+      el.classList.add('ew-field-autofill-settling');
+      if(el._ewAutofillSettleTimer) clearTimeout(el._ewAutofillSettleTimer);
+      el._ewAutofillSettleTimer = setTimeout(function(){
+        try{ el.classList.remove('ew-field-autofill-settling'); }catch(e){}
+        el._ewAutofillSettleTimer = null;
+        syncFilled(el);
+      }, duration + 40);
+    }
+    const panel = panelFor(el);
+    if(panel){
+      panel.classList.add('ew-autofill-scroll-anchor');
+      if(panel._ewAutofillPanelTimer) clearTimeout(panel._ewAutofillPanelTimer);
+      panel._ewAutofillPanelTimer = setTimeout(function(){
+        try{ panel.classList.remove('ew-autofill-scroll-anchor'); }catch(e){}
+        panel._ewAutofillPanelTimer = null;
+      }, duration + 80);
+    }
+  }
+  function maybeAutofillFromEvent(ev, el){
+    if(!ev) return false;
+    const it = ev.inputType || '';
+    if(it === 'insertReplacementText' || it === 'insertFromPaste'){
+      markAutofillSettling(el, 820);
+      return true;
+    }
+    /* Browser/OS autofill often arrives as a non-keyboard input/change burst.
+       Do not treat normal typing as autofill: a recent keydown wins. */
+    if((now() - lastKeyT) > 180 && (ev.type === 'change' || ev.type === 'input')){
+      markAutofillSettling(el, 680);
+      return true;
+    }
+    return false;
+  }
+  function scheduleSettledSync(el, delay){
+    if(el._ewFilledSyncTimer) clearTimeout(el._ewFilledSyncTimer);
+    el._ewFilledSyncTimer = setTimeout(function(){
+      syncFilled(el);
+      el._ewFilledSyncTimer = null;
+    }, delay || 0);
   }
   function bind(el){
     if(!isField(el) || el.dataset.ewSoftFieldExit === '1') return;
     el.dataset.ewSoftFieldExit = '1';
     el.classList.add('ew-soft-field-exit-target');
-    el.addEventListener('blur', function(){
-      markSoftExit(el);
-      requestAnimationFrame(function(){ syncFilled(el); });
-      setTimeout(function(){ syncFilled(el); }, 90);
-      setTimeout(function(){ syncFilled(el); }, 420);
+
+    el.addEventListener('beforeinput', function(ev){
+      maybeAutofillFromEvent(ev, el);
     }, true);
-    el.addEventListener('change', function(){
-      markSoftExit(el);
-      requestAnimationFrame(function(){ syncFilled(el); });
-    }, true);
-    el.addEventListener('input', function(){
+
+    el.addEventListener('input', function(ev){
+      const auto = maybeAutofillFromEvent(ev, el);
       if(!valueOf(el)) el.classList.remove('filled');
+      if(auto || isAutofillSettling()){
+        scheduleSettledSync(el, 520);
+      }
     }, true);
+
+    el.addEventListener('change', function(ev){
+      const auto = maybeAutofillFromEvent(ev, el) || isAutofillSettling();
+      if(auto){
+        /* Не меняем filled/box-shadow в тот же кадр, когда системное окно
+           автозаполнения ещё схлопывается. Это и убирает резкий финальный
+           выброс на email. */
+        scheduleSettledSync(el, 560);
+        return;
+      }
+      markSoftExit(el, 320);
+      requestAnimationFrame(function(){ syncFilled(el); });
+    }, true);
+
+    el.addEventListener('blur', function(){
+      if(isAutofillSettling()){
+        const wait = Math.max(180, Math.min(640, autofillSettleUntil - now() + 80));
+        setTimeout(function(){
+          markSoftExit(el, 260);
+          syncFilled(el);
+        }, wait);
+        return;
+      }
+      markSoftExit(el, 340);
+      requestAnimationFrame(function(){ syncFilled(el); });
+      setTimeout(function(){ syncFilled(el); }, 120);
+    }, true);
+
     el.addEventListener('focus', function(){
+      if(isAutofillSettling()) return;
       el.classList.remove('filled');
       el.classList.remove('ew-field-soft-exiting');
     }, true);
+
     setTimeout(function(){ syncFilled(el); }, 0);
   }
   function collect(){
     const out = [];
-    IDS.forEach(function(id){ const el = document.getElementById(id); if(el) out.push(el); });
-    EXTRA_SELECTORS.forEach(function(sel){ document.querySelectorAll(sel).forEach(function(el){ out.push(el); }); });
+    const seen = new Set();
+    function push(el){ if(el && !seen.has(el)){ seen.add(el); out.push(el); } }
+    IDS.forEach(function(id){ push(document.getElementById(id)); });
+    EXTRA_SELECTORS.forEach(function(sel){ document.querySelectorAll(sel).forEach(push); });
     return out;
   }
   function setup(){
@@ -27135,6 +27323,89 @@ function acceptCookies(){
       window.__ewFieldExitSoftObserver = mo;
     }catch(e){}
   }
+
+  /* Replaces the older overflow-y:hidden autofill freeze with a non-layout
+     scroll anchor. The old version could close/kill the browser autofill popup
+     exactly after the last email suggestion because changing overflow mutates
+     the popup anchor geometry. */
+  window._setupAutofillFreeze = function(panel, ids){
+    if(!panel || panel.dataset.afFreezeInit === '1') return;
+    if(!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches)) return;
+    panel.dataset.afFreezeInit = '1';
+    panel.dataset.afFreezeMode = 'scroll-anchor-no-overflow';
+    let holdUntil = 0;
+    let anchorTop = 0;
+    let anchorLeft = 0;
+    let raf = 0;
+    let lastFocusOutT = -1e9;
+    const biTimes = [];
+
+    function hold(ms){
+      const t = now();
+      if(!holdUntil || t > holdUntil){
+        anchorTop = panel.scrollTop;
+        anchorLeft = panel.scrollLeft || 0;
+      }
+      holdUntil = Math.max(holdUntil, t + (ms || 700));
+      panel.classList.add('ew-autofill-scroll-anchor');
+      if(!raf) raf = requestAnimationFrame(tick);
+    }
+    function tick(){
+      raf = 0;
+      if(!panel.isConnected) return;
+      const t = now();
+      if(t <= holdUntil){
+        const dy = panel.scrollTop - anchorTop;
+        const dx = (panel.scrollLeft || 0) - anchorLeft;
+        /* Only cancel browser/programmatic jumps. User drag/touch/wheel stays
+           free; we do not lock overflow and do not kill the suggestion UI. */
+        if((t - lastPointerT) > 140 && Math.abs(dy) > 32) panel.scrollTop = anchorTop;
+        if((t - lastPointerT) > 140 && Math.abs(dx) > 12) panel.scrollLeft = anchorLeft;
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      panel.classList.remove('ew-autofill-scroll-anchor');
+      holdUntil = 0;
+    }
+    (ids || []).forEach(function(id){
+      const el = document.getElementById(id);
+      if(!el || el.dataset.afFreezeBound === '1') return;
+      el.dataset.afFreezeBound = '1';
+      el.dataset.afFreezeMode = 'scroll-anchor-no-overflow';
+      el.addEventListener('beforeinput', function(ev){
+        const it = ev.inputType || '';
+        if(it === 'insertReplacementText' || it === 'insertFromPaste'){
+          markAutofillSettling(el, 820);
+          hold(760);
+          return;
+        }
+        if(it === 'insertText'){
+          const t = now();
+          biTimes.push(t);
+          while(biTimes.length && t - biTimes[0] > 80) biTimes.shift();
+          if(biTimes.length >= 3 && (t - lastKeyT) > 180){
+            markAutofillSettling(el, 760);
+            hold(720);
+          }
+        }
+      }, true);
+      el.addEventListener('focusout', function(){ lastFocusOutT = now(); }, true);
+      el.addEventListener('focusin', function(){
+        const t = now();
+        if((t - lastFocusOutT) < 30 && (t - lastPointerT) > 120){
+          markAutofillSettling(el, 680);
+          hold(640);
+        }
+      }, true);
+      el.addEventListener('change', function(){
+        if((now() - lastKeyT) > 180){
+          markAutofillSettling(el, 680);
+          hold(620);
+        }
+      }, true);
+    });
+  };
+
   window.inspectPatch5FieldExitSoft = function(){
     const fields = collect().map(function(el){
       return {
@@ -27144,16 +27415,31 @@ function acceptCookies(){
         bound: el.dataset.ewSoftFieldExit === '1',
         filled: el.classList.contains('filled'),
         focused: document.activeElement === el,
-        hasValue: !!valueOf(el)
+        hasValue: !!valueOf(el),
+        autofillSettling: el.classList.contains('ew-field-autofill-settling')
+      };
+    });
+    const panels = ['chkModalPanel','echoOrderModal','returnModalPanel'].map(function(id){
+      const p = document.getElementById(id);
+      return {
+        id: id,
+        found: !!p,
+        afFreezeInit: !!(p && p.dataset.afFreezeInit === '1'),
+        afFreezeMode: p ? (p.dataset.afFreezeMode || null) : null,
+        overflowY: p ? (p.style.overflowY || '') : null,
+        scrollAnchor: !!(p && p.classList.contains('ew-autofill-scroll-anchor'))
       };
     });
     return {
       ok: fields.length > 0 && fields.every(function(x){ return x.bound; }),
-      patch: 'P5_FIELD_EXIT_SOFT_CONDENSATION_LOGIC',
+      patch: 'P5_FIELD_EXIT_SOFT_AUTOFILL_SETTLE_NO_OVERFLOW',
       visualMotion: 'modal-opening-preserved',
-      fields
+      autofillWindowActive: isAutofillSettling(),
+      fields: fields,
+      panels: panels
     };
   };
+
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup, { once:true });
   else setup();
 })();
