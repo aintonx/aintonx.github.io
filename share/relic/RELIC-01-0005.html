@@ -3,19 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-
-<!-- P4.2 · full-site share shell: соцсети читают meta, живой пользователь видит обычную загрузку сайта -->
-<base href="https://www.echoworld.space/">
-<script>(function(){
-  var code="RELIC-01-0005";
-  var deep="/?relic=RELIC-01-0005";
-  try{
-    window.__EW_STATIC_SHARE_ENTRY__={code:code,deepLink:deep,mode:"full-site-shell"};
-    if(location.pathname.indexOf("/share/relic/")===0){
-      history.replaceState(Object.assign({}, history.state || {}, {ewShareEntry:code}), "", deep);
-    }
-  }catch(e){}
-})();</script>
 <meta name="theme-color" content="#04040a">
 <meta name="color-scheme" content="dark">
 <!-- ═══════════════════════════════════════════════════════════════
@@ -31,18 +18,30 @@
    (#catalog и т.п.) не должен ломать возврат, поэтому при ожидающем возврате
    он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
 
+<base href="https://www.echoworld.space/">
+<script id="ew-share-native-open">
+(function(){
+  try {
+    var code = "RELIC-01-0005";
+    var target = '/?relic=' + encodeURIComponent(code);
+    if (location.pathname.indexOf('/share/relic/') === 0) {
+      history.replaceState(Object.assign({}, history.state || {}, { ewShareRelic: code }), '', target);
+    }
+  } catch (_) {}
+})();
+</script>
 <title>EchoWorld · Карманное существо</title>
-<meta name="description" content="Внимания ему было нужно постоянно и сразу — чтобы заметили, накормили, не уходили далеко. Просил он это в открытую, без капли стеснения, и обижался искренне, если о нём забывали хоть…">
-<meta name="keywords" content="EchoWorld, Marketspace, Карманное существо, RELIC-01-0005, реликвия, артефакт">
+<meta name="description" content="Внимания ему было нужно постоянно и сразу — чтобы заметили, накормили, не уходили далеко. Просил он это в открытую, без капли стеснения, и обижался искренне, если о нём забывали х…">
+<meta name="keywords" content="EchoWorld, Marketspace, арт-маркетплейс, авторские артефакты, реликвии, цифровая подпись, NFT, Marketspace вселенная">
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0005/">
 
 <!-- Open Graph -->
-<meta property="og:type" content="product">
+<meta property="og:type" content="article">
 <meta property="og:site_name" content="EchoWorld">
 <meta property="og:title" content="EchoWorld · Карманное существо">
-<meta property="og:description" content="Внимания ему было нужно постоянно и сразу — чтобы заметили, накормили, не уходили далеко. Просил он это в открытую, без капли стеснения, и обижался искренне, если о нём забывали хоть…">
+<meta property="og:description" content="Внимания ему было нужно постоянно и сразу — чтобы заметили, накормили, не уходили далеко. Просил он это в открытую, без капли стеснения, и обижался искренне, если о нём забывали х…">
 <meta property="og:url" content="https://www.echoworld.space/share/relic/RELIC-01-0005/">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:image" content="https://www.echoworld.space/img/tamagochi.webp">
@@ -53,7 +52,7 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="EchoWorld · Карманное существо">
-<meta name="twitter:description" content="Внимания ему было нужно постоянно и сразу — чтобы заметили, накормили, не уходили далеко. Просил он это в открытую, без капли стеснения, и обижался искренне, если о нём забывали хоть…">
+<meta name="twitter:description" content="Внимания ему было нужно постоянно и сразу — чтобы заметили, накормили, не уходили далеко. Просил он это в открытую, без капли стеснения, и обижался искренне, если о нём забывали х…">
 <meta name="twitter:image" content="https://www.echoworld.space/img/tamagochi.webp">
 
 <!-- Favicon: inline SVG = быстро, без отдельного файла -->
@@ -4469,6 +4468,224 @@ select:-webkit-autofill {
 }
 :root[data-theme="light"] #preorderItem:-webkit-autofill,
 :root[data-theme="light"] #preorderContact:-webkit-autofill {
+  -webkit-text-fill-color: var(--ink) !important;
+  -webkit-box-shadow: 0 0 0 1000px #ddeff0 inset !important;
+          box-shadow: 0 0 0 1000px #ddeff0 inset !important;
+  border-color: rgba(11,118,126,0.34) !important;
+  caret-color: var(--cyan) !important;
+}
+
+
+/* P5.2 · FIELD EXIT · перенос рабочей логики «Заказать конденсацию»
+   на покупку / Эхо / возврат.
+   ВАЖНО: стабилизатор автозаполнения НЕ трогаем. Он остаётся старым:
+   overflow-y:hidden + удержание scrollTop на момент системного autofill.
+   Здесь только та же визуальная логика выхода из поля, что у
+   #preorderItem / #preorderContact: cyan-filled вместо общего amber. */
+#chkName.filled:not(:focus),
+#chkPhone.filled:not(:focus),
+#chkEmail.filled:not(:focus),
+#chkAddr.filled:not(:focus),
+#echoTextInput.filled:not(:focus),
+#echoOrderName.filled:not(:focus),
+#echoOrderEmail.filled:not(:focus),
+#echoOrderPhone.filled:not(:focus),
+#echoOrderTelegram.filled:not(:focus),
+#echoOrderMarker.filled:not(:focus),
+#echoSlotInput0.filled:not(:focus),
+#echoSlotInput1.filled:not(:focus),
+#echoSlotInput2.filled:not(:focus),
+#echoSlotInput3.filled:not(:focus),
+#echoSlotInput4.filled:not(:focus),
+#returnName.filled:not(:focus),
+#returnEmail.filled:not(:focus),
+#returnTelegram.filled:not(:focus),
+#returnArtifactId.filled:not(:focus),
+#returnOrderId.filled:not(:focus),
+#returnReason.filled:not(:focus) {
+  background: rgba(0, 200, 200, 0.08) !important;
+  border-color: rgba(0, 200, 200, 0.32) !important;
+  color: var(--white) !important;
+  caret-color: var(--cyan) !important;
+  transition: background .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease !important;
+}
+
+#chkName:-webkit-autofill,
+#chkName:-webkit-autofill:hover,
+#chkName:-webkit-autofill:focus,
+#chkName:-webkit-autofill:active,
+#chkPhone:-webkit-autofill,
+#chkPhone:-webkit-autofill:hover,
+#chkPhone:-webkit-autofill:focus,
+#chkPhone:-webkit-autofill:active,
+#chkEmail:-webkit-autofill,
+#chkEmail:-webkit-autofill:hover,
+#chkEmail:-webkit-autofill:focus,
+#chkEmail:-webkit-autofill:active,
+#chkAddr:-webkit-autofill,
+#chkAddr:-webkit-autofill:hover,
+#chkAddr:-webkit-autofill:focus,
+#chkAddr:-webkit-autofill:active,
+#echoTextInput:-webkit-autofill,
+#echoTextInput:-webkit-autofill:hover,
+#echoTextInput:-webkit-autofill:focus,
+#echoTextInput:-webkit-autofill:active,
+#echoOrderName:-webkit-autofill,
+#echoOrderName:-webkit-autofill:hover,
+#echoOrderName:-webkit-autofill:focus,
+#echoOrderName:-webkit-autofill:active,
+#echoOrderEmail:-webkit-autofill,
+#echoOrderEmail:-webkit-autofill:hover,
+#echoOrderEmail:-webkit-autofill:focus,
+#echoOrderEmail:-webkit-autofill:active,
+#echoOrderPhone:-webkit-autofill,
+#echoOrderPhone:-webkit-autofill:hover,
+#echoOrderPhone:-webkit-autofill:focus,
+#echoOrderPhone:-webkit-autofill:active,
+#echoOrderTelegram:-webkit-autofill,
+#echoOrderTelegram:-webkit-autofill:hover,
+#echoOrderTelegram:-webkit-autofill:focus,
+#echoOrderTelegram:-webkit-autofill:active,
+#echoOrderMarker:-webkit-autofill,
+#echoOrderMarker:-webkit-autofill:hover,
+#echoOrderMarker:-webkit-autofill:focus,
+#echoOrderMarker:-webkit-autofill:active,
+#echoSlotInput0:-webkit-autofill,
+#echoSlotInput0:-webkit-autofill:hover,
+#echoSlotInput0:-webkit-autofill:focus,
+#echoSlotInput0:-webkit-autofill:active,
+#echoSlotInput1:-webkit-autofill,
+#echoSlotInput1:-webkit-autofill:hover,
+#echoSlotInput1:-webkit-autofill:focus,
+#echoSlotInput1:-webkit-autofill:active,
+#echoSlotInput2:-webkit-autofill,
+#echoSlotInput2:-webkit-autofill:hover,
+#echoSlotInput2:-webkit-autofill:focus,
+#echoSlotInput2:-webkit-autofill:active,
+#echoSlotInput3:-webkit-autofill,
+#echoSlotInput3:-webkit-autofill:hover,
+#echoSlotInput3:-webkit-autofill:focus,
+#echoSlotInput3:-webkit-autofill:active,
+#echoSlotInput4:-webkit-autofill,
+#echoSlotInput4:-webkit-autofill:hover,
+#echoSlotInput4:-webkit-autofill:focus,
+#echoSlotInput4:-webkit-autofill:active,
+#returnName:-webkit-autofill,
+#returnName:-webkit-autofill:hover,
+#returnName:-webkit-autofill:focus,
+#returnName:-webkit-autofill:active,
+#returnEmail:-webkit-autofill,
+#returnEmail:-webkit-autofill:hover,
+#returnEmail:-webkit-autofill:focus,
+#returnEmail:-webkit-autofill:active,
+#returnTelegram:-webkit-autofill,
+#returnTelegram:-webkit-autofill:hover,
+#returnTelegram:-webkit-autofill:focus,
+#returnTelegram:-webkit-autofill:active,
+#returnArtifactId:-webkit-autofill,
+#returnArtifactId:-webkit-autofill:hover,
+#returnArtifactId:-webkit-autofill:focus,
+#returnArtifactId:-webkit-autofill:active,
+#returnOrderId:-webkit-autofill,
+#returnOrderId:-webkit-autofill:hover,
+#returnOrderId:-webkit-autofill:focus,
+#returnOrderId:-webkit-autofill:active,
+#returnReason:-webkit-autofill,
+#returnReason:-webkit-autofill:hover,
+#returnReason:-webkit-autofill:focus,
+#returnReason:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--white) !important;
+  -webkit-box-shadow: 0 0 0 1000px #061819 inset !important;
+          box-shadow: 0 0 0 1000px #061819 inset !important;
+  border-color: rgba(0,200,200,0.32) !important;
+  caret-color: var(--cyan) !important;
+  transition: background-color 600000s 0s, color 600000s 0s !important;
+}
+
+:root[data-theme="light"] #chkName:-webkit-autofill,
+:root[data-theme="light"] #chkName:-webkit-autofill:hover,
+:root[data-theme="light"] #chkName:-webkit-autofill:focus,
+:root[data-theme="light"] #chkName:-webkit-autofill:active,
+:root[data-theme="light"] #chkPhone:-webkit-autofill,
+:root[data-theme="light"] #chkPhone:-webkit-autofill:hover,
+:root[data-theme="light"] #chkPhone:-webkit-autofill:focus,
+:root[data-theme="light"] #chkPhone:-webkit-autofill:active,
+:root[data-theme="light"] #chkEmail:-webkit-autofill,
+:root[data-theme="light"] #chkEmail:-webkit-autofill:hover,
+:root[data-theme="light"] #chkEmail:-webkit-autofill:focus,
+:root[data-theme="light"] #chkEmail:-webkit-autofill:active,
+:root[data-theme="light"] #chkAddr:-webkit-autofill,
+:root[data-theme="light"] #chkAddr:-webkit-autofill:hover,
+:root[data-theme="light"] #chkAddr:-webkit-autofill:focus,
+:root[data-theme="light"] #chkAddr:-webkit-autofill:active,
+:root[data-theme="light"] #echoTextInput:-webkit-autofill,
+:root[data-theme="light"] #echoTextInput:-webkit-autofill:hover,
+:root[data-theme="light"] #echoTextInput:-webkit-autofill:focus,
+:root[data-theme="light"] #echoTextInput:-webkit-autofill:active,
+:root[data-theme="light"] #echoOrderName:-webkit-autofill,
+:root[data-theme="light"] #echoOrderName:-webkit-autofill:hover,
+:root[data-theme="light"] #echoOrderName:-webkit-autofill:focus,
+:root[data-theme="light"] #echoOrderName:-webkit-autofill:active,
+:root[data-theme="light"] #echoOrderEmail:-webkit-autofill,
+:root[data-theme="light"] #echoOrderEmail:-webkit-autofill:hover,
+:root[data-theme="light"] #echoOrderEmail:-webkit-autofill:focus,
+:root[data-theme="light"] #echoOrderEmail:-webkit-autofill:active,
+:root[data-theme="light"] #echoOrderPhone:-webkit-autofill,
+:root[data-theme="light"] #echoOrderPhone:-webkit-autofill:hover,
+:root[data-theme="light"] #echoOrderPhone:-webkit-autofill:focus,
+:root[data-theme="light"] #echoOrderPhone:-webkit-autofill:active,
+:root[data-theme="light"] #echoOrderTelegram:-webkit-autofill,
+:root[data-theme="light"] #echoOrderTelegram:-webkit-autofill:hover,
+:root[data-theme="light"] #echoOrderTelegram:-webkit-autofill:focus,
+:root[data-theme="light"] #echoOrderTelegram:-webkit-autofill:active,
+:root[data-theme="light"] #echoOrderMarker:-webkit-autofill,
+:root[data-theme="light"] #echoOrderMarker:-webkit-autofill:hover,
+:root[data-theme="light"] #echoOrderMarker:-webkit-autofill:focus,
+:root[data-theme="light"] #echoOrderMarker:-webkit-autofill:active,
+:root[data-theme="light"] #echoSlotInput0:-webkit-autofill,
+:root[data-theme="light"] #echoSlotInput0:-webkit-autofill:hover,
+:root[data-theme="light"] #echoSlotInput0:-webkit-autofill:focus,
+:root[data-theme="light"] #echoSlotInput0:-webkit-autofill:active,
+:root[data-theme="light"] #echoSlotInput1:-webkit-autofill,
+:root[data-theme="light"] #echoSlotInput1:-webkit-autofill:hover,
+:root[data-theme="light"] #echoSlotInput1:-webkit-autofill:focus,
+:root[data-theme="light"] #echoSlotInput1:-webkit-autofill:active,
+:root[data-theme="light"] #echoSlotInput2:-webkit-autofill,
+:root[data-theme="light"] #echoSlotInput2:-webkit-autofill:hover,
+:root[data-theme="light"] #echoSlotInput2:-webkit-autofill:focus,
+:root[data-theme="light"] #echoSlotInput2:-webkit-autofill:active,
+:root[data-theme="light"] #echoSlotInput3:-webkit-autofill,
+:root[data-theme="light"] #echoSlotInput3:-webkit-autofill:hover,
+:root[data-theme="light"] #echoSlotInput3:-webkit-autofill:focus,
+:root[data-theme="light"] #echoSlotInput3:-webkit-autofill:active,
+:root[data-theme="light"] #echoSlotInput4:-webkit-autofill,
+:root[data-theme="light"] #echoSlotInput4:-webkit-autofill:hover,
+:root[data-theme="light"] #echoSlotInput4:-webkit-autofill:focus,
+:root[data-theme="light"] #echoSlotInput4:-webkit-autofill:active,
+:root[data-theme="light"] #returnName:-webkit-autofill,
+:root[data-theme="light"] #returnName:-webkit-autofill:hover,
+:root[data-theme="light"] #returnName:-webkit-autofill:focus,
+:root[data-theme="light"] #returnName:-webkit-autofill:active,
+:root[data-theme="light"] #returnEmail:-webkit-autofill,
+:root[data-theme="light"] #returnEmail:-webkit-autofill:hover,
+:root[data-theme="light"] #returnEmail:-webkit-autofill:focus,
+:root[data-theme="light"] #returnEmail:-webkit-autofill:active,
+:root[data-theme="light"] #returnTelegram:-webkit-autofill,
+:root[data-theme="light"] #returnTelegram:-webkit-autofill:hover,
+:root[data-theme="light"] #returnTelegram:-webkit-autofill:focus,
+:root[data-theme="light"] #returnTelegram:-webkit-autofill:active,
+:root[data-theme="light"] #returnArtifactId:-webkit-autofill,
+:root[data-theme="light"] #returnArtifactId:-webkit-autofill:hover,
+:root[data-theme="light"] #returnArtifactId:-webkit-autofill:focus,
+:root[data-theme="light"] #returnArtifactId:-webkit-autofill:active,
+:root[data-theme="light"] #returnOrderId:-webkit-autofill,
+:root[data-theme="light"] #returnOrderId:-webkit-autofill:hover,
+:root[data-theme="light"] #returnOrderId:-webkit-autofill:focus,
+:root[data-theme="light"] #returnOrderId:-webkit-autofill:active,
+:root[data-theme="light"] #returnReason:-webkit-autofill,
+:root[data-theme="light"] #returnReason:-webkit-autofill:hover,
+:root[data-theme="light"] #returnReason:-webkit-autofill:focus,
+:root[data-theme="light"] #returnReason:-webkit-autofill:active {
   -webkit-text-fill-color: var(--ink) !important;
   -webkit-box-shadow: 0 0 0 1000px #ddeff0 inset !important;
           box-shadow: 0 0 0 1000px #ddeff0 inset !important;
@@ -18440,7 +18657,8 @@ function _bindFilledHighlight(el){
     const ids = ['chkName', 'chkPhone', 'chkEmail', 'chkAddr',
                  'preorderItem', 'preorderContact',
                  'echoTextInput',
-                 'echoOrderName', 'echoOrderEmail', 'echoOrderPhone', 'echoOrderTelegram', 'echoOrderMarker'];
+                 'echoOrderName', 'echoOrderEmail', 'echoOrderPhone', 'echoOrderTelegram', 'echoOrderMarker',
+                 'returnName', 'returnEmail', 'returnTelegram', 'returnArtifactId', 'returnOrderId', 'returnReason'];
     ids.forEach(id => _bindFilledHighlight(document.getElementById(id)));
   }
   if(document.readyState === 'loading'){
@@ -18449,6 +18667,51 @@ function _bindFilledHighlight(el){
     bindAll();
   }
 })();
+
+/* P5.2 diagnostics: проверка, что формы используют старый стабилизатор
+   autofill и визуальную cyan-логику «Заказать конденсацию». */
+window.inspectPatch5FieldExitSoft = function(){
+  const ids = [
+    'chkName','chkPhone','chkEmail','chkAddr',
+    'echoTextInput','echoOrderName','echoOrderEmail','echoOrderPhone','echoOrderTelegram','echoOrderMarker',
+    'returnName','returnEmail','returnTelegram','returnArtifactId','returnOrderId','returnReason'
+  ];
+  const fields = ids.map(id => {
+    const el = document.getElementById(id);
+    return {
+      id,
+      found: !!el,
+      filledBound: !!(el && el.dataset && el.dataset.filledBound === '1'),
+      afFreezeBound: !!(el && el.dataset && el.dataset.afFreezeBound === '1')
+    };
+  });
+  const panels = [
+    ['checkout','chkModalPanel'],
+    ['echoOrder','echoOrderModal'],
+    ['return','returnModalPanel']
+  ].map(pair => {
+    const el = document.getElementById(pair[1]);
+    return {
+      name: pair[0],
+      id: pair[1],
+      found: !!el,
+      afFreezeInit: !!(el && el.dataset && el.dataset.afFreezeInit === '1'),
+      overflowY: el ? el.style.overflowY : null
+    };
+  });
+  const missing = fields.filter(f => !f.found).map(f => f.id);
+  return {
+    ok: missing.length === 0,
+    patch: 'P5_FIELD_EXIT_PREORDER_LOGIC_APPLIED',
+    visualLogic: 'same-as-preorder-condensation',
+    autofillStabilizer: 'preserved-overflow-y-hidden-scrolltop-freeze',
+    modalOpening: 'preserved',
+    missing,
+    fields,
+    panels
+  };
+};
+
 function closeCheckout(){
   const ov = document.getElementById('chkOverlay');
   if(!ov || !ov.classList.contains('open')) return;
@@ -26772,282 +27035,6 @@ function acceptCookies(){
 }
 </style>
 
-
-
-<!-- PATCH 5.1 · SOFT FIELD EXIT / CONDENSATION-LIKE INPUT SETTLE -->
-<style id="ew-patch5-field-exit-soft">
-/* Поля покупки / Эхо / возврата теперь выходят из focus-состояния тем же
-   спокойным языком, что и поля «Заказать конденсацию»: без резкого янтарного
-   скачка после ручного ввода или автозаполнения. Механика модалок и формы не
-   меняется — только финальный settled-state самих input/textarea. */
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-) {
-  transition:
-    border-color .25s ease,
-    box-shadow .25s ease,
-    background-color .25s ease,
-    background .25s ease,
-    color .25s ease,
-    -webkit-box-shadow .25s ease !important;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* Filled-state как у конденсации: тихий cyan-сигнал, без янтарного рывка.
-   !important нужен, потому что старые секции checkout/echo/return имеют свои
-   более ранние filled/autofill-переопределения. */
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).filled:not(:focus) {
-  background: rgba(0, 200, 200, 0.08) !important;
-  border-color: rgba(0, 200, 200, 0.32) !important;
-  color: var(--white) !important;
-  caret-color: var(--cyan) !important;
-  box-shadow: none !important;
-  transition:
-    border-color .25s ease,
-    box-shadow .25s ease,
-    background-color .25s ease,
-    background .25s ease,
-    color .25s ease,
-    -webkit-box-shadow .25s ease !important;
-}
-
-/* Микро-стабилизация именно кадра blur: класс ставится JS на короткое время.
-   Он не меняет дизайн, но заставляет WebKit держать поле на композитном слое
-   во время ухода клавиатуры/автозаполнения. */
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).ew-field-soft-exiting {
-  will-change: border-color, box-shadow, background, color;
-  transform: translateZ(0);
-}
-
-/* Autofill для этих форм тоже переводим в тот же cyan-settle, как у preorder.
-   Это не трогает данные и не отключает autocomplete; только маскирует нативный
-   жёлтый/тёмный кадр браузера и убирает долгий transition из общего правила. */
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
-  #echoTextInput, #echoMarker,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-):-webkit-autofill,
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
-  #echoTextInput, #echoMarker,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-):-webkit-autofill:hover,
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
-  #echoTextInput, #echoMarker,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-):-webkit-autofill:focus,
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
-  #echoTextInput, #echoMarker,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-):-webkit-autofill:active {
-  -webkit-text-fill-color: var(--white) !important;
-  -webkit-box-shadow: 0 0 0 1000px #061819 inset !important;
-          box-shadow: 0 0 0 1000px #061819 inset !important;
-  border-color: rgba(0,200,200,0.32) !important;
-  caret-color: var(--cyan) !important;
-  transition:
-    border-color .25s ease,
-    box-shadow .25s ease,
-    background-color .25s ease,
-    color .25s ease,
-    -webkit-box-shadow .25s ease !important;
-}
-
-:root[data-theme="light"] :where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).filled:not(:focus) {
-  background: rgba(11,118,126,0.09) !important;
-  border-color: rgba(11,118,126,0.34) !important;
-  color: var(--ink) !important;
-  caret-color: var(--cyan) !important;
-  box-shadow: none !important;
-}
-:root[data-theme="light"] :where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
-  #echoTextInput, #echoMarker,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-):-webkit-autofill,
-:root[data-theme="light"] :where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
-  #echoTextInput, #echoMarker,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-):-webkit-autofill:hover,
-:root[data-theme="light"] :where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
-  #echoTextInput, #echoMarker,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-):-webkit-autofill:focus,
-:root[data-theme="light"] :where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
-  #echoTextInput, #echoMarker,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-):-webkit-autofill:active {
-  -webkit-text-fill-color: var(--ink) !important;
-  -webkit-box-shadow: 0 0 0 1000px #ddeff0 inset !important;
-          box-shadow: 0 0 0 1000px #ddeff0 inset !important;
-  border-color: rgba(11,118,126,0.34) !important;
-  caret-color: var(--cyan) !important;
-}
-</style>
-
-<!-- PATCH 5.2 · AUTOFILL SETTLE REFINEMENT / OVERFLOW FREEZE BRIDGE -->
-<style id="ew-patch5-autofill-settle-refine">
-/* Возвращаем нужный iOS-стабилизатор автозаполнения: во время системной
-   подстановки scroll-контейнер кратко получает overflow-y:hidden, чтобы
-   контент не прыгал после заполнения группы полей. Чтобы выход из поля не
-   выглядел резким, визуальный filled/autofill-state удерживается в
-   ew-field-autofill-settling, а возврат overflow разводится по кадрам через
-   soft-release. Механика открытия модалок не меняется. */
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).ew-field-autofill-settling {
-  will-change: border-color, background, color;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).ew-field-autofill-settling:-webkit-autofill,
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).ew-field-autofill-settling:-webkit-autofill:hover,
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).ew-field-autofill-settling:-webkit-autofill:focus,
-:where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).ew-field-autofill-settling:-webkit-autofill:active {
-  -webkit-text-fill-color: var(--white) !important;
-  -webkit-box-shadow: 0 0 0 1000px #061819 inset !important;
-          box-shadow: 0 0 0 1000px #061819 inset !important;
-  border-color: rgba(0,200,200,0.32) !important;
-  caret-color: var(--cyan) !important;
-  transition: border-color .22s ease, color .22s ease !important;
-}
-:root[data-theme="light"] :where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).ew-field-autofill-settling:-webkit-autofill,
-:root[data-theme="light"] :where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).ew-field-autofill-settling:-webkit-autofill:hover,
-:root[data-theme="light"] :where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).ew-field-autofill-settling:-webkit-autofill:focus,
-:root[data-theme="light"] :where(
-  #chkName, #chkPhone, #chkEmail, #chkAddr,
-  #echoTextInput, #echoMarker,
-  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
-  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
-  #echoSlotsList textarea,
-  textarea[data-chk-echo-editor-text]
-).ew-field-autofill-settling:-webkit-autofill:active {
-  -webkit-text-fill-color: var(--ink) !important;
-  -webkit-box-shadow: 0 0 0 1000px #ddeff0 inset !important;
-          box-shadow: 0 0 0 1000px #ddeff0 inset !important;
-  border-color: rgba(11,118,126,0.34) !important;
-  caret-color: var(--cyan) !important;
-}
-.ew-autofill-scroll-anchor,
-.ew-autofill-overflow-freeze,
-.ew-autofill-overflow-release {
-  scrollbar-gutter: stable;
-}
-.ew-autofill-overflow-release {
-  scroll-behavior: auto !important;
-}
-</style>
-
 <!-- PATCH · MOBILE VISUAL VIEWPORT SYNC FOR APERTURA PANELS -->
 <script id="ew-apertura-visual-viewport-sync">
 (function(){
@@ -27164,346 +27151,6 @@ function acceptCookies(){
         scrollLockCount: (typeof _scrollLockCount !== 'undefined') ? _scrollLockCount : null
       },
       layers
-    };
-  };
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup, { once:true });
-  else setup();
-})();
-</script>
-
-
-
-<!-- PATCH 5.1+5.2 · FIELD EXIT + AUTOFILL SETTLE / OLD MODAL MOTION PRESERVED -->
-<script id="ew-patch5-field-exit-soft-js">
-(function(){
-  const IDS = [
-    'chkName','chkPhone','chkEmail','chkAddr',
-    'echoTextInput','echoMarker',
-    'echoOrderName','echoOrderEmail','echoOrderPhone','echoOrderTelegram','echoOrderMarker',
-    'returnName','returnEmail','returnTelegram','returnArtifactId','returnOrderId','returnReason'
-  ];
-  const EXTRA_SELECTORS = [
-    '#echoSlotsList textarea',
-    'textarea[data-chk-echo-editor-text]'
-  ];
-  let autofillSettleUntil = 0;
-  let lastPointerT = -1e9;
-  let lastKeyT = -1e9;
-
-  function now(){ return (window.performance && performance.now) ? performance.now() : Date.now(); }
-  function isField(el){ return !!(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')); }
-  function valueOf(el){ return ((el && el.value) || '').trim(); }
-  function panelFor(el){ return el && el.closest && el.closest('#chkModalPanel, #echoOrderModal, #returnModalPanel, .chk-modal, .legal-modal'); }
-  function isAutofillSettling(){ return now() < autofillSettleUntil; }
-
-  document.addEventListener('pointerdown', function(){ lastPointerT = now(); }, {capture:true, passive:true});
-  document.addEventListener('touchstart', function(){ lastPointerT = now(); }, {capture:true, passive:true});
-  document.addEventListener('keydown', function(){ lastKeyT = now(); }, {capture:true, passive:true});
-
-  function syncFilled(el){
-    if(!isField(el)) return;
-    if(valueOf(el) && document.activeElement !== el) el.classList.add('filled');
-    else if(!valueOf(el)) el.classList.remove('filled');
-  }
-  function markSoftExit(el, ms){
-    if(!isField(el)) return;
-    el.classList.add('ew-field-soft-exiting');
-    if(el._ewSoftExitTimer) clearTimeout(el._ewSoftExitTimer);
-    el._ewSoftExitTimer = setTimeout(function(){
-      try{ el.classList.remove('ew-field-soft-exiting'); }catch(e){}
-      el._ewSoftExitTimer = null;
-    }, ms || 340);
-  }
-  function markAutofillSettling(el, ms){
-    const duration = ms || 760;
-    autofillSettleUntil = Math.max(autofillSettleUntil, now() + duration);
-    if(isField(el)){
-      el.classList.add('ew-field-autofill-settling');
-      if(el._ewAutofillSettleTimer) clearTimeout(el._ewAutofillSettleTimer);
-      el._ewAutofillSettleTimer = setTimeout(function(){
-        try{ el.classList.remove('ew-field-autofill-settling'); }catch(e){}
-        el._ewAutofillSettleTimer = null;
-        syncFilled(el);
-      }, duration + 40);
-    }
-    const panel = panelFor(el);
-    if(panel){
-      panel.classList.add('ew-autofill-scroll-anchor');
-      if(panel._ewAutofillPanelTimer) clearTimeout(panel._ewAutofillPanelTimer);
-      panel._ewAutofillPanelTimer = setTimeout(function(){
-        try{ panel.classList.remove('ew-autofill-scroll-anchor'); }catch(e){}
-        panel._ewAutofillPanelTimer = null;
-      }, duration + 80);
-    }
-  }
-  function maybeAutofillFromEvent(ev, el){
-    if(!ev) return false;
-    const it = ev.inputType || '';
-    if(it === 'insertReplacementText' || it === 'insertFromPaste'){
-      markAutofillSettling(el, 820);
-      return true;
-    }
-    /* Browser/OS autofill often arrives as a non-keyboard input/change burst.
-       Do not treat normal typing as autofill: a recent keydown wins. */
-    if((now() - lastKeyT) > 180 && (ev.type === 'change' || ev.type === 'input')){
-      markAutofillSettling(el, 680);
-      return true;
-    }
-    return false;
-  }
-  function scheduleSettledSync(el, delay){
-    if(el._ewFilledSyncTimer) clearTimeout(el._ewFilledSyncTimer);
-    el._ewFilledSyncTimer = setTimeout(function(){
-      syncFilled(el);
-      el._ewFilledSyncTimer = null;
-    }, delay || 0);
-  }
-  function bind(el){
-    if(!isField(el) || el.dataset.ewSoftFieldExit === '1') return;
-    el.dataset.ewSoftFieldExit = '1';
-    el.classList.add('ew-soft-field-exit-target');
-
-    el.addEventListener('beforeinput', function(ev){
-      maybeAutofillFromEvent(ev, el);
-    }, true);
-
-    el.addEventListener('input', function(ev){
-      const auto = maybeAutofillFromEvent(ev, el);
-      if(!valueOf(el)) el.classList.remove('filled');
-      if(auto || isAutofillSettling()){
-        scheduleSettledSync(el, 520);
-      }
-    }, true);
-
-    el.addEventListener('change', function(ev){
-      const auto = maybeAutofillFromEvent(ev, el) || isAutofillSettling();
-      if(auto){
-        /* Не меняем filled/box-shadow в тот же кадр, когда системное окно
-           автозаполнения ещё схлопывается. Это и убирает резкий финальный
-           выброс на email. */
-        scheduleSettledSync(el, 560);
-        return;
-      }
-      markSoftExit(el, 320);
-      requestAnimationFrame(function(){ syncFilled(el); });
-    }, true);
-
-    el.addEventListener('blur', function(){
-      if(isAutofillSettling()){
-        const wait = Math.max(180, Math.min(640, autofillSettleUntil - now() + 80));
-        setTimeout(function(){
-          markSoftExit(el, 260);
-          syncFilled(el);
-        }, wait);
-        return;
-      }
-      markSoftExit(el, 340);
-      requestAnimationFrame(function(){ syncFilled(el); });
-      setTimeout(function(){ syncFilled(el); }, 120);
-    }, true);
-
-    el.addEventListener('focus', function(){
-      if(isAutofillSettling()) return;
-      el.classList.remove('filled');
-      el.classList.remove('ew-field-soft-exiting');
-    }, true);
-
-    setTimeout(function(){ syncFilled(el); }, 0);
-  }
-  function collect(){
-    const out = [];
-    const seen = new Set();
-    function push(el){ if(el && !seen.has(el)){ seen.add(el); out.push(el); } }
-    IDS.forEach(function(id){ push(document.getElementById(id)); });
-    EXTRA_SELECTORS.forEach(function(sel){ document.querySelectorAll(sel).forEach(push); });
-    return out;
-  }
-  function setup(){
-    collect().forEach(bind);
-    try{
-      const mo = new MutationObserver(function(){ collect().forEach(bind); });
-      mo.observe(document.body, { childList:true, subtree:true });
-      window.__ewFieldExitSoftObserver = mo;
-    }catch(e){}
-  }
-
-  /* HYBRID AUTOFILL FREEZE:
-     возвращаем старый нужный стабилизатор overflow-y:hidden, потому что он
-     действительно запрещает iOS/браузеру прыгать к последнему заполненному
-     полю после контактного autofill. Резкость убираем не отключением freeze,
-     а мягким мостом выхода: держим поле в ew-field-autofill-settling,
-     восстанавливаем overflow только на следующем кадре и ещё ~260мс держим
-     scrollTop-якорь без визуальной смены модалки. */
-  window._setupAutofillFreeze = function(panel, ids){
-    if(!panel || panel.dataset.afFreezeInit === '1') return;
-    if(!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches)) return;
-    panel.dataset.afFreezeInit = '1';
-    panel.dataset.afFreezeMode = 'overflow-y-hidden-soft-release';
-
-    let frozenUntil = 0;
-    let keepTop = 0;
-    let keepLeft = 0;
-    let prevOverflowY = '';
-    let prevOverscrollBehavior = '';
-    let prevScrollBehavior = '';
-    let raf = 0;
-    let releasing = false;
-    let lastFocusOutT = -1e9;
-    const biTimes = [];
-
-    function setPanelFreezeState(on){
-      try{
-        panel.classList.toggle('ew-autofill-scroll-anchor', !!on);
-        panel.classList.toggle('ew-autofill-overflow-freeze', !!on);
-      }catch(e){}
-    }
-    function restorePanelStyles(){
-      panel.style.overflowY = prevOverflowY || '';
-      panel.style.overscrollBehavior = prevOverscrollBehavior || '';
-      panel.style.scrollBehavior = prevScrollBehavior || '';
-    }
-    function clampToAnchor(){
-      if(Math.abs(panel.scrollTop - keepTop) > 0) panel.scrollTop = keepTop;
-      if(Math.abs((panel.scrollLeft || 0) - keepLeft) > 0) panel.scrollLeft = keepLeft;
-    }
-    function softRelease(){
-      if(releasing) return;
-      releasing = true;
-      clampToAnchor();
-      panel.classList.add('ew-autofill-overflow-release');
-      /* Разводим восстановление overflow и field-settle по кадрам: системное
-         окно autofill закрывается, но поле и scrollTop не получают резкий
-         layout/visual-snap в том же кадре. */
-      requestAnimationFrame(function(){
-        clampToAnchor();
-        restorePanelStyles();
-        setPanelFreezeState(false);
-        const releaseUntil = now() + 260;
-        (function holdAfterRelease(){
-          if(!panel.isConnected){ releasing = false; frozenUntil = 0; return; }
-          if(now() < releaseUntil){
-            if((now() - lastPointerT) > 140) clampToAnchor();
-            requestAnimationFrame(holdAfterRelease);
-            return;
-          }
-          panel.classList.remove('ew-autofill-overflow-release');
-          releasing = false;
-          frozenUntil = 0;
-        })();
-      });
-    }
-    function tick(){
-      raf = 0;
-      if(!panel.isConnected) return;
-      if(now() < frozenUntil){
-        clampToAnchor();
-        raf = requestAnimationFrame(tick);
-        return;
-      }
-      softRelease();
-    }
-    function freeze(ms, el){
-      const duration = ms || 700;
-      const t = now();
-      if(!frozenUntil || t >= frozenUntil){
-        keepTop = panel.scrollTop;
-        keepLeft = panel.scrollLeft || 0;
-        prevOverflowY = panel.style.overflowY || '';
-        prevOverscrollBehavior = panel.style.overscrollBehavior || '';
-        prevScrollBehavior = panel.style.scrollBehavior || '';
-        releasing = false;
-        panel.classList.remove('ew-autofill-overflow-release');
-        panel.style.scrollBehavior = 'auto';
-        panel.style.overscrollBehavior = 'contain';
-        panel.style.overflowY = 'hidden';
-        setPanelFreezeState(true);
-      }
-      frozenUntil = Math.max(frozenUntil, t + duration);
-      markAutofillSettling(el || document.activeElement, duration + 420);
-      clampToAnchor();
-      if(!raf) raf = requestAnimationFrame(tick);
-    }
-
-    (ids || []).forEach(function(id){
-      const el = document.getElementById(id);
-      if(!el || el.dataset.afFreezeBound === '1') return;
-      el.dataset.afFreezeBound = '1';
-      el.dataset.afFreezeMode = 'overflow-y-hidden-soft-release';
-      el.addEventListener('beforeinput', function(ev){
-        const it = ev.inputType || '';
-        if(it === 'insertReplacementText' || it === 'insertFromPaste'){
-          freeze(760, el);
-          return;
-        }
-        if(it === 'insertText'){
-          const t = now();
-          biTimes.push(t);
-          while(biTimes.length && t - biTimes[0] > 80) biTimes.shift();
-          if(biTimes.length >= 3 && (t - lastKeyT) > 180){
-            freeze(760, el);
-          }
-        }
-      }, true);
-      el.addEventListener('input', function(ev){
-        /* На некоторых iOS-сборках contact autofill приходит уже как input-
-           пачка без beforeinput. Если это не клавиатурный ввод — включаем
-           тот же стабилизатор, но не мешаем ручной печати. */
-        if((now() - lastKeyT) > 180 && (ev && ev.inputType !== 'deleteContentBackward')){
-          if(valueOf(el)) freeze(680, el);
-        }
-      }, true);
-      el.addEventListener('focusout', function(){
-        lastFocusOutT = now();
-        if(frozenUntil && now() < frozenUntil) markAutofillSettling(el, Math.max(360, frozenUntil - now() + 300));
-      }, true);
-      el.addEventListener('focusin', function(){
-        const t = now();
-        if((t - lastFocusOutT) < 30 && (t - lastPointerT) > 120){
-          freeze(660, el);
-        }
-      }, true);
-      el.addEventListener('change', function(){
-        if((now() - lastKeyT) > 180){
-          freeze(640, el);
-        }
-      }, true);
-    });
-  };
-
-  window.inspectPatch5FieldExitSoft = function(){
-    const fields = collect().map(function(el){
-      return {
-        id: el.id || null,
-        name: el.getAttribute('name') || null,
-        selector: el.matches && el.matches('textarea[data-chk-echo-editor-text]') ? 'textarea[data-chk-echo-editor-text]' : null,
-        bound: el.dataset.ewSoftFieldExit === '1',
-        filled: el.classList.contains('filled'),
-        focused: document.activeElement === el,
-        hasValue: !!valueOf(el),
-        autofillSettling: el.classList.contains('ew-field-autofill-settling')
-      };
-    });
-    const panels = ['chkModalPanel','echoOrderModal','returnModalPanel'].map(function(id){
-      const p = document.getElementById(id);
-      return {
-        id: id,
-        found: !!p,
-        afFreezeInit: !!(p && p.dataset.afFreezeInit === '1'),
-        afFreezeMode: p ? (p.dataset.afFreezeMode || null) : null,
-        overflowY: p ? (p.style.overflowY || '') : null,
-        scrollAnchor: !!(p && p.classList.contains('ew-autofill-scroll-anchor')),
-        overflowFreeze: !!(p && p.classList.contains('ew-autofill-overflow-freeze')),
-        overflowRelease: !!(p && p.classList.contains('ew-autofill-overflow-release'))
-      };
-    });
-    return {
-      ok: fields.length > 0 && fields.every(function(x){ return x.bound; }),
-      patch: 'P5_FIELD_EXIT_SOFT_AUTOFILL_SETTLE_OVERFLOW_BRIDGE',
-      visualMotion: 'modal-opening-preserved',
-      autofillWindowActive: isAutofillSettling(),
-      fields: fields,
-      panels: panels
     };
   };
 
