@@ -4463,38 +4463,6 @@ select:-webkit-autofill {
   caret-color: var(--cyan) !important;
 }
 
-
-
-/* P5.4 · AUTOFILL EXIT HARDENING
-   Итог диагностики: рывок был не в цвете поля. Формы покупки/Эхо/возврата
-   находились в iOS Contact AutoFill-группе внутри scrollable bottom-sheet.
-   «Заказать конденсацию» работает спокойно, потому что там фактически
-   участвует только одно поле browser-autofill — email. Ниже повторяем этот
-   профиль: email остаётся autocomplete=email, остальные поля не попадают
-   в contact-card autofill-группу. */
-.ew-autofill-safe-field {
-  scroll-margin-top: 0 !important;
-  scroll-margin-bottom: 0 !important;
-  -webkit-appearance: none !important;
-  appearance: none !important;
-}
-.chk-field input.ew-email-only-autofill:-webkit-autofill,
-.chk-field textarea.ew-email-only-autofill:-webkit-autofill {
-  -webkit-text-fill-color: var(--white) !important;
-  -webkit-box-shadow: 0 0 0 1000px #061819 inset !important;
-          box-shadow: 0 0 0 1000px #061819 inset !important;
-  border-color: rgba(0,200,200,0.32) !important;
-  caret-color: var(--cyan) !important;
-}
-:root[data-theme="light"] .chk-field input.ew-email-only-autofill:-webkit-autofill,
-:root[data-theme="light"] .chk-field textarea.ew-email-only-autofill:-webkit-autofill {
-  -webkit-text-fill-color: var(--ink) !important;
-  -webkit-box-shadow: 0 0 0 1000px #ddeff0 inset !important;
-          box-shadow: 0 0 0 1000px #ddeff0 inset !important;
-  border-color: rgba(11,118,126,0.34) !important;
-  caret-color: var(--cyan) !important;
-}
-
 /* ── ADDRESS AUTOCOMPLETE (DaData) ─────────────────────────────── */
 .addr-wrap { position: relative; }
 .addr-suggest {
@@ -14313,7 +14281,7 @@ button, a, [role="button"], label,
            поэтому убрано.
            onsubmit=return false — Enter не отправляет форму, отправка
            идёт через swipe-confirm. -->
-      <form autocomplete="off" novalidate onsubmit="event.preventDefault();return false;" style="display:contents;">
+      <form autocomplete="on" novalidate onsubmit="event.preventDefault();return false;" style="display:contents;">
       <div class="chk-section">
         <div class="chk-section-title">Сигнатура · поток Виша</div>
         <div class="chk-gender-hint">От выбранного потока зависит, каким Виш родится в Полях Конденсации. Это не шаблон, не модель — это живое существо, чьи черты определит ваш Конденсат, направленный в один из двух потоков.</div>
@@ -14467,7 +14435,7 @@ button, a, [role="button"], label,
       <!-- form-уровень autocomplete=ON — iOS Safari предлагает автозаполнение
            Email/Телефона. Имя / Telegram / Маркер подавлены точечно
            (autocomplete=off + readonly-трюк на самих полях). -->
-      <form autocomplete="off" novalidate onsubmit="event.preventDefault();return false;" style="display:contents;">
+      <form autocomplete="on" novalidate onsubmit="event.preventDefault();return false;" style="display:contents;">
 
       <!-- Сводка содержимого Эхо -->
       <div class="chk-section">
@@ -16151,12 +16119,6 @@ function renderEchoSlots(count){
     </div>`;
   }
   list.innerHTML=html;
-  try {
-    list.querySelectorAll('textarea').forEach(function(ta){
-      if(typeof _bindFilledHighlight === 'function') _bindFilledHighlight(ta);
-    });
-    if(typeof _ewApplyAutofillSafeProfile === 'function') _ewApplyAutofillSafeProfile();
-  } catch(e) {}
 }
 function updateEchoSlotCounter(idx){
   const ta=document.getElementById('echoSlotInput'+idx);
@@ -18296,15 +18258,14 @@ function _setupModalUnstickAfterBlur(panel, inputsOrSelector, openBodyClass){
     if(!f || f.dataset.unstickBound === '1') return;
     f.dataset.unstickBound = '1';
     f.addEventListener('blur', () => {
-      // P5.4: НЕ пинаем overflow в тот же кадр blur/autofill.
-      // Именно мгновенный hidden→restore менял геометрию scroll-panel,
-      // из-за чего системное окно автозаполнения схлопывалось рывком.
-      // Unstick оставляем как страховку, но переносим после анимации
-      // клавиатуры/QuickType, когда пользователь уже не смотрит на
-      // anchored popup. При ручном выходе поле успевает спокойно “погаснуть”.
-      if(f._ewUnstickTimer) clearTimeout(f._ewUnstickTimer);
-      f._ewUnstickTimer = setTimeout(unstick, 560);
-      setTimeout(unstick, 860);
+      // Один unstick сразу + один отложенный через 360мс (типовая
+      // длительность анимации закрытия iOS-клавиатуры).
+      // Раньше слушали visualViewport.resize и вызывали unstick на
+      // каждый resize — на iOS это создаёт каскад overflow:auto↔hidden
+      // длительностью ~500мс, во время которого тапы по чекбоксу и
+      // крестику теряются (форма «залипала»).
+      unstick();
+      setTimeout(unstick, 360);
     });
   }
   if(typeof inputsOrSelector === 'string'){
@@ -18461,91 +18422,13 @@ function _bindFilledHighlight(el){
   el.addEventListener('focus', () => el.classList.remove('filled'));
   el.addEventListener('change', update);
 }
-
-
-/* P5.4 · AUTOFILL EXIT HARDENING
-   Железная версия: не пытаемся “анимировать” системное окно автозаполнения.
-   Мы убираем сам триггер рывка — multi-field Contact AutoFill-группу внутри
-   scrollable modal. Повторяем рабочий профиль «Заказать конденсацию»:
-   только email остаётся нативно автозаполняемым, остальные поля получают
-   нейтральный профиль и не заставляют iOS прыгать по форме. */
-const EW_AUTOFILL_EMAIL_IDS = ['chkEmail','echoOrderEmail','returnEmail'];
-const EW_AUTOFILL_NEUTRAL_IDS = [
-  'chkName','chkPhone','chkAddr',
-  'echoTextInput','echoOrderName','echoOrderPhone','echoOrderTelegram','echoOrderMarker',
-  'returnName','returnTelegram','returnArtifactId','returnOrderId','returnReason'
-];
-function _ewApplyAutofillSafeProfile(){
-  function neutralize(el, token){
-    if(!el) return;
-    el.classList.add('ew-autofill-safe-field');
-    el.setAttribute('autocomplete', token || 'new-password');
-    el.setAttribute('autocorrect', 'off');
-    el.setAttribute('spellcheck', 'false');
-    el.setAttribute('data-lpignore', 'true');
-    el.setAttribute('data-form-type', 'other');
-    el.setAttribute('data-1p-ignore', 'true');
-    el.setAttribute('data-bwignore', 'true');
-    // Меняем name: iOS/менеджеры паролей часто строят autofill-группу по name,
-    // даже когда autocomplete уже выключен. Value/id не трогаем — payload цел.
-    if(!el.dataset.ewOriginalName) el.dataset.ewOriginalName = el.getAttribute('name') || '';
-    el.setAttribute('name', 'ew_neutral_' + (el.id || 'field'));
-    // readonly-on-first-paint ломает раннее сканирование autofill, но снимается
-    // в момент настоящего фокуса. Для email не используем — ему autofill нужен.
-    if(el.type !== 'textarea' && el.tagName !== 'TEXTAREA' && !el.hasAttribute('data-ew-no-readonly')){
-      el.setAttribute('readonly','readonly');
-      const unlock = function(){
-        el.removeAttribute('readonly');
-        el.removeEventListener('focus', unlock);
-        el.removeEventListener('pointerdown', unlock);
-        el.removeEventListener('touchstart', unlock);
-      };
-      el.addEventListener('focus', unlock, {passive:true});
-      el.addEventListener('pointerdown', unlock, {passive:true});
-      el.addEventListener('touchstart', unlock, {passive:true});
-    }
-  }
-  EW_AUTOFILL_EMAIL_IDS.forEach(function(id){
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.classList.add('ew-autofill-safe-field','ew-email-only-autofill');
-    el.setAttribute('autocomplete','email');
-    el.setAttribute('inputmode','email');
-    el.setAttribute('autocorrect','off');
-    el.setAttribute('autocapitalize','off');
-    el.setAttribute('spellcheck','false');
-    if(!el.dataset.ewOriginalName) el.dataset.ewOriginalName = el.getAttribute('name') || '';
-    el.setAttribute('name','email');
-  });
-  EW_AUTOFILL_NEUTRAL_IDS.forEach(function(id){
-    const el = document.getElementById(id);
-    if(!el) return;
-    const token = (id.indexOf('Phone') >= 0 || id === 'chkPhone') ? 'new-password' : 'new-password';
-    neutralize(el, token);
-  });
-  try {
-    document.querySelectorAll('textarea[id^="echoSlotInput"]').forEach(function(el){ neutralize(el, 'off'); });
-  } catch(e) {}
-  // Формы не объявляем contact-form контейнерами. Email-поля всё равно имеют
-  // собственный autocomplete=email, как preorderContact.
-  ['chkOverlay','echoOrderOverlay','returnForm'].forEach(function(id){
-    const root = document.getElementById(id);
-    if(!root) return;
-    const form = root.tagName === 'FORM' ? root : root.querySelector('form');
-    if(form) form.setAttribute('autocomplete','off');
-  });
-}
-window._ewApplyAutofillSafeProfile = _ewApplyAutofillSafeProfile;
-
 (function setupFilledFieldHighlight(){
   function bindAll(){
     const ids = ['chkName', 'chkPhone', 'chkEmail', 'chkAddr',
                  'preorderItem', 'preorderContact',
                  'echoTextInput',
-                 'echoOrderName', 'echoOrderEmail', 'echoOrderPhone', 'echoOrderTelegram', 'echoOrderMarker',
-                 'returnName', 'returnEmail', 'returnTelegram', 'returnArtifactId', 'returnOrderId', 'returnReason'];
+                 'echoOrderName', 'echoOrderEmail', 'echoOrderPhone', 'echoOrderTelegram', 'echoOrderMarker'];
     ids.forEach(id => _bindFilledHighlight(document.getElementById(id)));
-    if(typeof _ewApplyAutofillSafeProfile === 'function') _ewApplyAutofillSafeProfile();
   }
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', bindAll);
@@ -18553,56 +18436,6 @@ window._ewApplyAutofillSafeProfile = _ewApplyAutofillSafeProfile;
     bindAll();
   }
 })();
-
-window.inspectPatch5FieldExitSoft = function(){
-  if(typeof _ewApplyAutofillSafeProfile === 'function') _ewApplyAutofillSafeProfile();
-  const emailIds = EW_AUTOFILL_EMAIL_IDS.slice();
-  const neutralIds = EW_AUTOFILL_NEUTRAL_IDS.slice();
-  const fields = emailIds.concat(neutralIds).map(id => {
-    const el = document.getElementById(id);
-    return {
-      id,
-      found: !!el,
-      autocomplete: el ? el.getAttribute('autocomplete') : null,
-      name: el ? el.getAttribute('name') : null,
-      emailOnly: !!(el && el.classList && el.classList.contains('ew-email-only-autofill')),
-      neutralized: !!(el && el.classList && el.classList.contains('ew-autofill-safe-field')),
-      filledBound: !!(el && el.dataset && el.dataset.filledBound === '1'),
-      afFreezeBound: !!(el && el.dataset && el.dataset.afFreezeBound === '1'),
-      readonlyNow: !!(el && el.hasAttribute('readonly'))
-    };
-  });
-  const panels = [
-    ['checkout','chkModalPanel'],
-    ['echoOrder','echoOrderModal'],
-    ['return','returnModalPanel']
-  ].map(pair => {
-    const el = document.getElementById(pair[1]);
-    return {
-      name: pair[0],
-      id: pair[1],
-      found: !!el,
-      afFreezeInit: !!(el && el.dataset && el.dataset.afFreezeInit === '1'),
-      unstickAfterBlurInit: !!(el && el.dataset && el.dataset.unstickAfterBlurInit === '1'),
-      overflowY: el ? el.style.overflowY : null
-    };
-  });
-  const badEmail = fields.filter(f => emailIds.indexOf(f.id) >= 0 && f.autocomplete !== 'email').map(f => f.id);
-  const badNeutral = fields.filter(f => neutralIds.indexOf(f.id) >= 0 && f.autocomplete !== 'new-password' && f.autocomplete !== 'off').map(f => f.id);
-  return {
-    ok: !badEmail.length && !badNeutral.length,
-    patch: 'P5_FIELD_EXIT_HARD_AUTOFILL_PROFILE',
-    problem: 'not field animation; iOS Contact AutoFill group inside scrollable modal',
-    strategy: 'preorder-like email-only native autofill + neutralized non-email fields + deferred overflow unstick',
-    emailFields: emailIds,
-    neutralFields: neutralIds,
-    badEmail,
-    badNeutral,
-    fields,
-    panels
-  };
-};
-
 function closeCheckout(){
   const ov = document.getElementById('chkOverlay');
   if(!ov || !ov.classList.contains('open')) return;
@@ -25848,7 +25681,7 @@ function _spinEchoAuraDrum(onDone){
       <button class="panel-close chk-close" type="button" onclick="closeReturnModal()" aria-label="Закрыть">Закрыть</button>
     </div>
     <div class="chk-body return-body" id="returnBody">
-      <form class="return-form" id="returnForm" onsubmit="return submitReturnForm(event)" autocomplete="off" novalidate style="display:contents;">
+      <form class="return-form" id="returnForm" onsubmit="return submitReturnForm(event)" autocomplete="on" novalidate style="display:contents;">
         <div class="legal-modal-status return-status"><span class="req-dot"></span>КАНАЛ ВОЗВРАТА ОТКРЫТ</div>
 
         <div class="req-modal-lore">
