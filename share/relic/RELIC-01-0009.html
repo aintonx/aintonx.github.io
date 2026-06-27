@@ -26772,6 +26772,175 @@ function acceptCookies(){
 }
 </style>
 
+
+
+<!-- PATCH 5.1 · SOFT FIELD EXIT / CONDENSATION-LIKE INPUT SETTLE -->
+<style id="ew-patch5-field-exit-soft">
+/* Поля покупки / Эхо / возврата теперь выходят из focus-состояния тем же
+   спокойным языком, что и поля «Заказать конденсацию»: без резкого янтарного
+   скачка после ручного ввода или автозаполнения. Механика модалок и формы не
+   меняется — только финальный settled-state самих input/textarea. */
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+) {
+  transition:
+    border-color .25s ease,
+    box-shadow .25s ease,
+    background-color .25s ease,
+    background .25s ease,
+    color .25s ease,
+    -webkit-box-shadow .25s ease !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Filled-state как у конденсации: тихий cyan-сигнал, без янтарного рывка.
+   !important нужен, потому что старые секции checkout/echo/return имеют свои
+   более ранние filled/autofill-переопределения. */
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).filled:not(:focus) {
+  background: rgba(0, 200, 200, 0.08) !important;
+  border-color: rgba(0, 200, 200, 0.32) !important;
+  color: var(--white) !important;
+  caret-color: var(--cyan) !important;
+  box-shadow: none !important;
+  transition:
+    border-color .25s ease,
+    box-shadow .25s ease,
+    background-color .25s ease,
+    background .25s ease,
+    color .25s ease,
+    -webkit-box-shadow .25s ease !important;
+}
+
+/* Микро-стабилизация именно кадра blur: класс ставится JS на короткое время.
+   Он не меняет дизайн, но заставляет WebKit держать поле на композитном слое
+   во время ухода клавиатуры/автозаполнения. */
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).ew-field-soft-exiting {
+  will-change: border-color, box-shadow, background, color;
+  transform: translateZ(0);
+}
+
+/* Autofill для этих форм тоже переводим в тот же cyan-settle, как у preorder.
+   Это не трогает данные и не отключает autocomplete; только маскирует нативный
+   жёлтый/тёмный кадр браузера и убирает долгий transition из общего правила. */
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
+  #echoTextInput, #echoMarker,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+):-webkit-autofill,
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
+  #echoTextInput, #echoMarker,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+):-webkit-autofill:hover,
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
+  #echoTextInput, #echoMarker,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+):-webkit-autofill:focus,
+:where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
+  #echoTextInput, #echoMarker,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+):-webkit-autofill:active {
+  -webkit-text-fill-color: var(--white) !important;
+  -webkit-box-shadow: 0 0 0 1000px #061819 inset !important;
+          box-shadow: 0 0 0 1000px #061819 inset !important;
+  border-color: rgba(0,200,200,0.32) !important;
+  caret-color: var(--cyan) !important;
+  transition:
+    border-color .25s ease,
+    box-shadow .25s ease,
+    background-color .25s ease,
+    color .25s ease,
+    -webkit-box-shadow .25s ease !important;
+}
+
+:root[data-theme="light"] :where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoTextInput, #echoMarker,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId, #returnReason,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+).filled:not(:focus) {
+  background: rgba(11,118,126,0.09) !important;
+  border-color: rgba(11,118,126,0.34) !important;
+  color: var(--ink) !important;
+  caret-color: var(--cyan) !important;
+  box-shadow: none !important;
+}
+:root[data-theme="light"] :where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
+  #echoTextInput, #echoMarker,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+):-webkit-autofill,
+:root[data-theme="light"] :where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
+  #echoTextInput, #echoMarker,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+):-webkit-autofill:hover,
+:root[data-theme="light"] :where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
+  #echoTextInput, #echoMarker,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+):-webkit-autofill:focus,
+:root[data-theme="light"] :where(
+  #chkName, #chkPhone, #chkEmail, #chkAddr,
+  #echoOrderName, #echoOrderEmail, #echoOrderPhone, #echoOrderTelegram, #echoOrderMarker,
+  #returnName, #returnEmail, #returnTelegram, #returnArtifactId, #returnOrderId,
+  #echoTextInput, #echoMarker,
+  #echoSlotsList textarea,
+  textarea[data-chk-echo-editor-text]
+):-webkit-autofill:active {
+  -webkit-text-fill-color: var(--ink) !important;
+  -webkit-box-shadow: 0 0 0 1000px #ddeff0 inset !important;
+          box-shadow: 0 0 0 1000px #ddeff0 inset !important;
+  border-color: rgba(11,118,126,0.34) !important;
+  caret-color: var(--cyan) !important;
+}
+</style>
+
 <!-- PATCH · MOBILE VISUAL VIEWPORT SYNC FOR APERTURA PANELS -->
 <script id="ew-apertura-visual-viewport-sync">
 (function(){
@@ -26891,6 +27060,100 @@ function acceptCookies(){
     };
   };
 
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup, { once:true });
+  else setup();
+})();
+</script>
+
+
+
+<!-- PATCH 5.1 · FIELD EXIT STABILITY / OLD MODAL MOTION PRESERVED -->
+<script id="ew-patch5-field-exit-soft-js">
+(function(){
+  const IDS = [
+    'chkName','chkPhone','chkEmail','chkAddr',
+    'echoTextInput','echoMarker',
+    'echoOrderName','echoOrderEmail','echoOrderPhone','echoOrderTelegram','echoOrderMarker',
+    'returnName','returnEmail','returnTelegram','returnArtifactId','returnOrderId','returnReason'
+  ];
+  const EXTRA_SELECTORS = [
+    '#echoSlotsList textarea',
+    'textarea[data-chk-echo-editor-text]'
+  ];
+  function isField(el){
+    return !!(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'));
+  }
+  function valueOf(el){ return ((el && el.value) || '').trim(); }
+  function syncFilled(el){
+    if(!isField(el)) return;
+    if(valueOf(el) && document.activeElement !== el) el.classList.add('filled');
+    else if(!valueOf(el)) el.classList.remove('filled');
+  }
+  function markSoftExit(el){
+    if(!isField(el)) return;
+    el.classList.add('ew-field-soft-exiting');
+    if(el._ewSoftExitTimer) clearTimeout(el._ewSoftExitTimer);
+    el._ewSoftExitTimer = setTimeout(function(){
+      try{ el.classList.remove('ew-field-soft-exiting'); }catch(e){}
+      el._ewSoftExitTimer = null;
+    }, 340);
+  }
+  function bind(el){
+    if(!isField(el) || el.dataset.ewSoftFieldExit === '1') return;
+    el.dataset.ewSoftFieldExit = '1';
+    el.classList.add('ew-soft-field-exit-target');
+    el.addEventListener('blur', function(){
+      markSoftExit(el);
+      requestAnimationFrame(function(){ syncFilled(el); });
+      setTimeout(function(){ syncFilled(el); }, 90);
+      setTimeout(function(){ syncFilled(el); }, 420);
+    }, true);
+    el.addEventListener('change', function(){
+      markSoftExit(el);
+      requestAnimationFrame(function(){ syncFilled(el); });
+    }, true);
+    el.addEventListener('input', function(){
+      if(!valueOf(el)) el.classList.remove('filled');
+    }, true);
+    el.addEventListener('focus', function(){
+      el.classList.remove('filled');
+      el.classList.remove('ew-field-soft-exiting');
+    }, true);
+    setTimeout(function(){ syncFilled(el); }, 0);
+  }
+  function collect(){
+    const out = [];
+    IDS.forEach(function(id){ const el = document.getElementById(id); if(el) out.push(el); });
+    EXTRA_SELECTORS.forEach(function(sel){ document.querySelectorAll(sel).forEach(function(el){ out.push(el); }); });
+    return out;
+  }
+  function setup(){
+    collect().forEach(bind);
+    try{
+      const mo = new MutationObserver(function(){ collect().forEach(bind); });
+      mo.observe(document.body, { childList:true, subtree:true });
+      window.__ewFieldExitSoftObserver = mo;
+    }catch(e){}
+  }
+  window.inspectPatch5FieldExitSoft = function(){
+    const fields = collect().map(function(el){
+      return {
+        id: el.id || null,
+        name: el.getAttribute('name') || null,
+        selector: el.matches && el.matches('textarea[data-chk-echo-editor-text]') ? 'textarea[data-chk-echo-editor-text]' : null,
+        bound: el.dataset.ewSoftFieldExit === '1',
+        filled: el.classList.contains('filled'),
+        focused: document.activeElement === el,
+        hasValue: !!valueOf(el)
+      };
+    });
+    return {
+      ok: fields.length > 0 && fields.every(function(x){ return x.bound; }),
+      patch: 'P5_FIELD_EXIT_SOFT_CONDENSATION_LOGIC',
+      visualMotion: 'modal-opening-preserved',
+      fields
+    };
+  };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup, { once:true });
   else setup();
 })();
