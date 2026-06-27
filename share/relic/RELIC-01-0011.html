@@ -3,9 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<!-- P4.2 · full-site share shell: соцсети читают meta, живой пользователь видит обычную загрузку сайта -->
+<base href="https://www.echoworld.space/">
+<script>(function(){
+  var code="RELIC-01-0011";
+  var deep="/?relic=RELIC-01-0011";
+  try{
+    window.__EW_STATIC_SHARE_ENTRY__={code:code,deepLink:deep,mode:"full-site-shell"};
+    if(location.pathname.indexOf("/share/relic/")===0){
+      history.replaceState(Object.assign({}, history.state || {}, {ewShareEntry:code}), "", deep);
+    }
+  }catch(e){}
+})();</script>
 <meta name="theme-color" content="#04040a">
 <meta name="color-scheme" content="dark">
-<script id="ew-share-native-url-normalize">try{(function(){var target='/?relic=RELIC-01-0011';if(location.pathname.indexOf('/share/relic/')===0){history.replaceState(history.state,'',target);}})();}catch(e){}</script>
 <!-- ═══════════════════════════════════════════════════════════════
      ECHOWORLD · BUILD R6 · «МОДАЛКИ ФУТЕРА + ФОРМЫ + СВЯЗНОСТЬ»
      Проверка деплоя: откройте окно «Реквизиты» в футере — справа в
@@ -21,9 +33,9 @@
 
 <title>EchoWorld · Ночной мухомор</title>
 <meta name="description" content="Выглядел он пугающе и нарочно набивал себе славу опасного — а если кто всерьёз пугался, сам первый и смеялся. Поставьте его у изголовья: пугать умеет, но светит по-настоящему, и т…">
-<meta name="keywords" content="EchoWorld, Marketspace, арт-маркетплейс, авторские артефакты, реликвии, цифровая подпись, NFT, Marketspace вселенная">
+<meta name="keywords" content="EchoWorld, Marketspace, Ночной мухомор, RELIC-01-0011, реликвия, артефакт">
 <meta name="author" content="aintonx · Архитектор EchoWorld">
-<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0011/">
 
 <!-- Open Graph -->
@@ -36,7 +48,7 @@
 <meta property="og:image" content="https://www.echoworld.space/img/grib.webp">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="EchoWorld · Ночной мухомор">
+<meta property="og:image:alt" content="EchoWorld · Ночной мухомор · RELIC-01-0011">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
@@ -13099,333 +13111,6 @@ button, a, [role="button"], label,
   }
 }
 
-
-/* ═══════════════════════════════════════════════════════════════
-   PATCH 5 · MODAL LAYERS / APERTURA MOTION POLISH
-   Единый слой движения для карточки реликвии, корзины, checkout,
-   legal-модалок и Apertura Console. Без изменения API/БД/корзины.
-   ═══════════════════════════════════════════════════════════════ */
-:root {
-  --ew-layer-in: .42s;
-  --ew-layer-out: .28s;
-  --ew-layer-ease: cubic-bezier(.16, 1, .3, 1);
-  --ew-layer-ease-out: cubic-bezier(.55, 0, .78, 1);
-  --ew-layer-veil:
-    radial-gradient(900px 520px at 50% -8%, rgba(0,200,200,.055), transparent 62%),
-    radial-gradient(820px 520px at 50% 108%, rgba(192,40,40,.06), transparent 62%),
-    var(--void);
-}
-
-/* Все большие слои получают единый "interface shell", чтобы открытие/закрытие
-   ощущалось одним языком, а не набором разных окон. */
-.moverlay,
-.chk-overlay,
-#reqModal,
-#offerModal,
-#privacyModal,
-.ap-console-overlay {
-  isolation: isolate;
-  overflow: hidden;
-  background: var(--ew-layer-veil) !important;
-}
-
-.moverlay::before,
-.chk-overlay::before,
-#reqModal::before,
-#offerModal::before,
-#privacyModal::before,
-.ap-console-overlay::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, transparent 0 8%, rgba(0,200,200,.035) 50%, transparent 92%),
-    repeating-linear-gradient(0deg, transparent 0 9px, rgba(255,255,255,.018) 9px 10px);
-  opacity: 0;
-  transform: translate3d(0, 8px, 0) scale(1.01);
-  transition:
-    opacity .32s var(--ew-layer-ease),
-    transform .42s var(--ew-layer-ease);
-}
-
-.moverlay.open::before,
-.chk-overlay.open::before,
-#reqModal.open::before,
-#offerModal.open::before,
-#privacyModal.open::before,
-.ap-console-overlay.open::before {
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-}
-
-.moverlay.closing::before,
-.chk-overlay.closing::before,
-#reqModal.closing::before,
-#offerModal.closing::before,
-#privacyModal.closing::before,
-.ap-console-overlay.closing::before {
-  opacity: 0;
-  transform: translate3d(0, -6px, 0) scale(1.005);
-  transition-duration: .22s;
-}
-
-/* Панели всегда выше технической вуали. */
-.modal,
-.chk-modal,
-.legal-modal,
-.ap-console-panel,
-.ap-status-panel {
-  position: relative;
-  z-index: 1;
-  transform: translate3d(0,0,0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  will-change: transform, opacity, filter;
-  contain: layout paint;
-}
-
-/* Корзина живёт в отдельном overlay/panel-слое. Её собственная анимация
-   остаётся keyframe-based, но получает тот же характер easing/материализации. */
-.cart-panel {
-  transform: translate3d(100%, 0, 0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  will-change: transform, opacity, filter;
-}
-.cart-panel.open:not(.cart-closing) {
-  transform: translate3d(0, 0, 0);
-}
-
-/* Более мягкая материализация окон: меньше "прыжка", больше ощущения,
-   что интерфейс собирается из слоя Apertura. */
-@keyframes modalQuickIn {
-  0%   { opacity: 0; transform: translate3d(0, 22px, 0) scale(.982); filter: blur(7px) brightness(1.18); }
-  48%  { opacity: 1; filter: blur(2px) brightness(1.07); }
-  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-}
-@keyframes modalQuickOut {
-  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  100% { opacity: 0; transform: translate3d(0, 18px, 0) scale(.982); filter: blur(6px) brightness(1.16); }
-}
-@keyframes mIn {
-  0%   { opacity: 0; transform: translate3d(0, 22px, 0) scale(.982); filter: blur(7px) brightness(1.18); }
-  48%  { opacity: 1; filter: blur(2px) brightness(1.07); }
-  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-}
-@keyframes modalFadeOut {
-  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  100% { opacity: 0; transform: translate3d(0, 18px, 0) scale(.982); filter: blur(6px) brightness(1.16); }
-}
-@keyframes legalIn {
-  0%   { opacity: 0; transform: translate3d(0, 22px, 0) scale(.982); filter: blur(7px) brightness(1.18); }
-  48%  { opacity: 1; filter: blur(2px) brightness(1.07); }
-  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-}
-@keyframes legalOut {
-  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  100% { opacity: 0; transform: translate3d(0, 18px, 0) scale(.982); filter: blur(6px) brightness(1.16); }
-}
-@keyframes chkClose {
-  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  100% { opacity: 0; transform: translate3d(0, 18px, 0) scale(.982); filter: blur(6px) brightness(1.16); }
-}
-@keyframes apConsoleIn {
-  0%   { opacity: 0; transform: translate3d(0, 20px, 0) scale(.982); filter: blur(7px) brightness(1.16); }
-  48%  { opacity: 1; filter: blur(2px) brightness(1.06); }
-  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-}
-@keyframes apConsoleOut {
-  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  100% { opacity: 0; transform: translate3d(0, 18px, 0) scale(.982); filter: blur(6px) brightness(1.12); }
-}
-@keyframes cartSlideIn {
-  0%   { transform: translate3d(100%,0,0); opacity: .96; filter: blur(2px) brightness(1.12); }
-  68%  { opacity: 1; filter: blur(.4px) brightness(1.03); }
-  100% { transform: translate3d(0,0,0); opacity: 1; filter: none; }
-}
-@keyframes cartSlideOut {
-  0%   { transform: translate3d(0,0,0); opacity: 1; filter: none; }
-  100% { transform: translate3d(100%,0,0); opacity: .98; filter: blur(1.5px) brightness(1.08); }
-}
-@keyframes cartOverlayFadeIn {
-  0%   { opacity: 0; }
-  100% { opacity: 1; }
-}
-@keyframes cartOverlayFade {
-  0%   { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-/* Стабильная длительность и один rhythm на всех слоях. */
-@media(min-width:961px){
-  .moverlay.open .modal,
-  .chk-overlay.open .chk-modal,
-  #reqModal.open .legal-modal,
-  #offerModal.open .legal-modal,
-  #privacyModal.open .legal-modal,
-  .ap-console-overlay.open .ap-console-panel,
-  .ap-console-overlay.open .ap-status-panel {
-    animation-duration: var(--ew-layer-in) !important;
-    animation-timing-function: var(--ew-layer-ease) !important;
-  }
-  .moverlay.closing .modal,
-  .chk-overlay.closing .chk-modal,
-  #reqModal.closing .legal-modal,
-  #offerModal.closing .legal-modal,
-  #privacyModal.closing .legal-modal,
-  .ap-console-overlay.closing .ap-console-panel,
-  .ap-console-overlay.closing .ap-status-panel {
-    animation-duration: var(--ew-layer-out) !important;
-    animation-timing-function: var(--ew-layer-ease-out) !important;
-  }
-}
-
-/* Мобильная версия больше не "падает" с полного экрана: bottom-sheet
-   появляется как обычное открытие сайта + мягкая сборка панели. */
-@media(max-width:960px){
-  @keyframes modalMobIn {
-    0%   { opacity: 0; transform: translate3d(0, 42px, 0) scale(.992); filter: blur(6px) brightness(1.14); }
-    54%  { opacity: 1; filter: blur(1.5px) brightness(1.05); }
-    100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  }
-  @keyframes modalMobOut {
-    0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-    100% { opacity: 0; transform: translate3d(0, 44px, 0) scale(.992); filter: blur(6px) brightness(1.12); }
-  }
-  @keyframes legalIn {
-    0%   { opacity: 0; transform: translate3d(0, 42px, 0) scale(.992); filter: blur(6px) brightness(1.14); }
-    54%  { opacity: 1; filter: blur(1.5px) brightness(1.05); }
-    100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  }
-  @keyframes legalOut {
-    0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-    100% { opacity: 0; transform: translate3d(0, 44px, 0) scale(.992); filter: blur(6px) brightness(1.12); }
-  }
-  @keyframes chkClose {
-    0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-    100% { opacity: 0; transform: translate3d(0, 44px, 0) scale(.992); filter: blur(6px) brightness(1.12); }
-  }
-  @keyframes apConsoleIn {
-    0%   { opacity: 0; transform: translate3d(0, 42px, 0) scale(.992); filter: blur(6px) brightness(1.14); }
-    54%  { opacity: 1; filter: blur(1.5px) brightness(1.05); }
-    100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  }
-  @keyframes apConsoleOut {
-    0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-    100% { opacity: 0; transform: translate3d(0, 44px, 0) scale(.992); filter: blur(6px) brightness(1.12); }
-  }
-
-  .modal,
-  .chk-modal,
-  .legal-modal,
-  .ap-console-panel,
-  .ap-status-panel {
-    border-radius: 18px 18px 0 0 !important;
-    max-height: min(calc(var(--ew-vvh, 100dvh) - env(safe-area-inset-top, 0px) - 8px), 94dvh) !important;
-  }
-
-  .moverlay.open .modal,
-  .chk-overlay.open .chk-modal,
-  #reqModal.open .legal-modal,
-  #offerModal.open .legal-modal,
-  #privacyModal.open .legal-modal,
-  .ap-console-overlay.open .ap-console-panel,
-  .ap-console-overlay.open .ap-status-panel {
-    animation-duration: .44s !important;
-    animation-timing-function: var(--ew-layer-ease) !important;
-  }
-  .moverlay.closing .modal,
-  .chk-overlay.closing .chk-modal,
-  #reqModal.closing .legal-modal,
-  #offerModal.closing .legal-modal,
-  #privacyModal.closing .legal-modal,
-  .ap-console-overlay.closing .ap-console-panel,
-  .ap-console-overlay.closing .ap-status-panel {
-    animation-duration: .28s !important;
-    animation-timing-function: var(--ew-layer-ease-out) !important;
-  }
-}
-
-/* Закрывающие кнопки получают одинаковый тактильный отклик без резких hover-прыжков. */
-.mhead-close,
-.chk-close,
-.cart-close,
-.legal-modal-close,
-.ap-console-close,
-.ap-status-close {
-  transform: translate3d(0,0,0) scale(1);
-  transition:
-    border-color .2s ease,
-    background-color .2s ease,
-    color .2s ease,
-    box-shadow .2s ease,
-    transform .12s ease,
-    filter .12s ease !important;
-  will-change: transform, filter;
-}
-.mhead-close:active,
-.chk-close:active,
-.cart-close:active,
-.legal-modal-close:active,
-.ap-console-close:active,
-.ap-status-close:active,
-.mhead-close.ew-p5-pressing,
-.chk-close.ew-p5-pressing,
-.cart-close.ew-p5-pressing,
-.legal-modal-close.ew-p5-pressing,
-.ap-console-close.ew-p5-pressing,
-.ap-status-close.ew-p5-pressing {
-  transform: translate3d(0,1px,0) scale(.965);
-  filter: brightness(.92);
-}
-
-/* Контентные блоки внутри слоёв не должны внезапно "всплывать" при
-   первом кадре открытия: на старте они чуть мягче и собираются вместе с панелью. */
-.moverlay.open .mbody,
-.chk-overlay.open .chk-body,
-#reqModal.open .legal-modal-body,
-#offerModal.open .legal-modal-body,
-#privacyModal.open .legal-modal-body,
-.ap-console-overlay.open .ap-console-body,
-.ap-console-overlay.open .ap-status-body {
-  animation: ewLayerContentIn .50s var(--ew-layer-ease) both;
-}
-@keyframes ewLayerContentIn {
-  0%   { opacity: .72; transform: translate3d(0, 8px, 0); filter: blur(2px); }
-  100% { opacity: 1; transform: none; filter: none; }
-}
-
-/* Если пользователь просит уменьшить движение — оставляем без рывков, но почти без motion. */
-@media (prefers-reduced-motion: reduce){
-  .moverlay.open .modal,
-  .chk-overlay.open .chk-modal,
-  #reqModal.open .legal-modal,
-  #offerModal.open .legal-modal,
-  #privacyModal.open .legal-modal,
-  .ap-console-overlay.open .ap-console-panel,
-  .ap-console-overlay.open .ap-status-panel,
-  .moverlay.closing .modal,
-  .chk-overlay.closing .chk-modal,
-  #reqModal.closing .legal-modal,
-  #offerModal.closing .legal-modal,
-  #privacyModal.closing .legal-modal,
-  .ap-console-overlay.closing .ap-console-panel,
-  .ap-console-overlay.closing .ap-status-panel,
-  .cart-panel.cart-opening,
-  .cart-panel.cart-closing,
-  .moverlay.open .mbody,
-  .chk-overlay.open .chk-body,
-  #reqModal.open .legal-modal-body,
-  #offerModal.open .legal-modal-body,
-  #privacyModal.open .legal-modal-body,
-  .ap-console-overlay.open .ap-console-body,
-  .ap-console-overlay.open .ap-status-body {
-    animation-duration: .001s !important;
-    filter: none !important;
-  }
-}
 
 </style>
 <script>
@@ -27119,134 +26804,94 @@ function acceptCookies(){
 })();
 </script>
 
-
-<!-- PATCH 5 · MODAL LAYER COORDINATION / INSPECTOR -->
-<script id="ew-patch5-modal-layer-polish">
+<!-- PATCH 5 · STABILITY CORE / OLD MODAL MOTION PRESERVED -->
+<script id="ew-patch5-stability-core">
 (function(){
-  const CLOSE_SELECTORS = '.mhead-close,.chk-close,.cart-close,.legal-modal-close,.ap-console-close,.ap-status-close';
+  const LAYERS = [
+    ['relicModal', '#moverlay', ['#modalPanel', '.mbody']],
+    ['cart', '#cartOverlay', ['#cartPanel', '.cart-body']],
+    ['checkout', '#chkOverlay', ['#chkModalPanel', '#chkBody']],
+    ['returnModal', '#returnModal', ['#returnModalPanel', '.return-body']],
+    ['requisites', '#reqModal', ['.legal-modal-body']],
+    ['offer', '#offerModal', ['.legal-modal-body']],
+    ['privacy', '#privacyModal', ['.legal-modal-body']],
+    ['apConsoleGate', '#apConsoleGateOverlay', ['#apConsoleGatePanel', '.ap-console-body']],
+    ['apConsole', '#apConsoleOverlay', ['#apConsolePanel', '.ap-console-body']],
+    ['apStatus', '#apStatusOverlay', ['#apStatusPanel', '.ap-status-body']]
+  ];
 
   function q(sel, root){ return (root || document).querySelector(sel); }
-  function qa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-
-  function resetScrollTargets(targets, root){
+  function resetNode(node){
+    if(!node) return;
+    try { node.scrollTop = 0; } catch(e){}
+    try { node.scrollLeft = 0; } catch(e){}
+  }
+  function resetLayerScroll(targets, overlay){
     (targets || []).forEach(function(sel){
-      const node = typeof sel === 'string' ? q(sel, root || document) : sel;
-      if(!node) return;
-      try { node.scrollTop = 0; } catch(e){}
-      try { node.scrollLeft = 0; } catch(e){}
+      resetNode(q(sel, overlay || document));
+      resetNode(q(sel));
     });
   }
-
-  function pulseLayerClass(overlay){
-    if(!overlay) return;
-    overlay.classList.remove('ew-p5-layer-live');
-    void overlay.offsetWidth;
-    overlay.classList.add('ew-p5-layer-live');
-    clearTimeout(overlay._ewP5LiveTimer);
-    overlay._ewP5LiveTimer = setTimeout(function(){
-      overlay.classList.remove('ew-p5-layer-live');
-    }, 620);
+  function cleanupStaleBlurFlags(){
+    try { document.body.classList.remove('_blur-fading'); } catch(e){}
   }
-
-  function bindLayer(overlaySelector, targets){
-    const overlay = q(overlaySelector);
-    if(!overlay || overlay.dataset.ewP5Bound === '1') return;
-    overlay.dataset.ewP5Bound = '1';
+  function bindLayer(row){
+    const overlay = q(row[1]);
+    const targets = row[2] || [];
+    if(!overlay || overlay.dataset.ewP5Stable === '1') return;
+    overlay.dataset.ewP5Stable = '1';
 
     let wasOpen = overlay.classList.contains('open');
     const onChange = function(){
       const isOpen = overlay.classList.contains('open');
       const isClosing = overlay.classList.contains('closing');
-
       if(isOpen && !wasOpen && !isClosing){
-        pulseLayerClass(overlay);
+        cleanupStaleBlurFlags();
         requestAnimationFrame(function(){
-          resetScrollTargets(targets, overlay);
-          requestAnimationFrame(function(){ resetScrollTargets(targets, overlay); });
+          resetLayerScroll(targets, overlay);
+          requestAnimationFrame(function(){ resetLayerScroll(targets, overlay); });
         });
       }
       wasOpen = isOpen;
     };
-
-    const mo = new MutationObserver(onChange);
-    mo.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+    try {
+      const observer = new MutationObserver(onChange);
+      observer.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+      overlay._ewP5StabilityObserver = observer;
+    } catch(e){}
     onChange();
   }
-
-  function bindClosePressFeedback(){
-    if(document.documentElement.dataset.ewP5ClosePress === '1') return;
-    document.documentElement.dataset.ewP5ClosePress = '1';
-
-    document.addEventListener('pointerdown', function(e){
-      const btn = e.target && e.target.closest ? e.target.closest(CLOSE_SELECTORS) : null;
-      if(btn) btn.classList.add('ew-p5-pressing');
-    }, true);
-
-    ['pointerup','pointercancel','pointerleave'].forEach(function(type){
-      document.addEventListener(type, function(e){
-        const btn = e.target && e.target.closest ? e.target.closest(CLOSE_SELECTORS) : null;
-        if(btn) setTimeout(function(){ btn.classList.remove('ew-p5-pressing'); }, 120);
-      }, true);
-    });
-  }
-
   function setup(){
-    bindLayer('#moverlay', ['#modalPanel', '.mbody']);
-    bindLayer('#chkOverlay', ['#chkModalPanel', '#chkBody']);
-    bindLayer('#returnModal', ['#returnModalPanel', '.return-body']);
-    bindLayer('#reqModal', ['.legal-modal-body']);
-    bindLayer('#offerModal', ['.legal-modal-body']);
-    bindLayer('#privacyModal', ['.legal-modal-body']);
-    bindLayer('#apConsoleGateOverlay', ['.ap-console-panel', '.ap-console-body']);
-    bindLayer('#apConsoleOverlay', ['.ap-console-panel', '.ap-console-body']);
-    bindLayer('#apStatusOverlay', ['.ap-status-panel', '.ap-status-body']);
-    bindClosePressFeedback();
+    LAYERS.forEach(bindLayer);
   }
 
-  window.inspectPatch5ModalLayers = function(){
-    const layers = [
-      ['relicModal', '#moverlay', '#modalPanel'],
-      ['cart', '#cartOverlay', '#cartPanel'],
-      ['checkout', '#chkOverlay', '#chkModalPanel'],
-      ['returnModal', '#returnModal', '#returnModalPanel'],
-      ['requisites', '#reqModal', '#reqModal .legal-modal'],
-      ['offer', '#offerModal', '#offerModal .legal-modal'],
-      ['privacy', '#privacyModal', '#privacyModal .legal-modal'],
-      ['apConsoleGate', '#apConsoleGateOverlay', '#apConsoleGatePanel'],
-      ['apConsole', '#apConsoleOverlay', '#apConsolePanel'],
-      ['apStatus', '#apStatusOverlay', '#apStatusPanel']
-    ].map(function(row){
-      const ov = q(row[1]);
-      const panel = q(row[2]);
+  window.inspectPatch5StabilityCore = function(){
+    const layers = LAYERS.map(function(row){
+      const overlay = q(row[1]);
+      const panel = q(row[2] && row[2][0]);
       return {
         name: row[0],
-        overlayFound: !!ov,
+        overlayFound: !!overlay,
         panelFound: !!panel,
-        open: !!(ov && ov.classList.contains('open')),
-        closing: !!(ov && ov.classList.contains('closing')),
-        bound: !!(ov && ov.dataset.ewP5Bound === '1'),
+        open: !!(overlay && overlay.classList.contains('open')),
+        closing: !!(overlay && overlay.classList.contains('closing')),
+        stabilityBound: !!(overlay && overlay.dataset.ewP5Stable === '1'),
         panelScrollTop: panel ? panel.scrollTop : null
       };
     });
-
-    const openLayers = layers.filter(function(x){ return x.open; }).map(function(x){ return x.name; });
     return {
-      ok: layers.every(function(x){ return x.overlayFound && x.panelFound; }),
-      patch: 'P5_MODAL_LAYERS',
-      openLayers,
+      ok: layers.every(function(x){ return x.overlayFound && x.panelFound && x.stabilityBound; }),
+      patch: 'P5_STABILITY_CORE_OLD_MOTION',
+      visualMotion: 'preserved-from-index-opening',
       body: {
-        className: document.body.className,
+        className: document.body ? document.body.className : '',
         scrollLockCount: (typeof _scrollLockCount !== 'undefined') ? _scrollLockCount : null
-      },
-      motion: {
-        layerIn: getComputedStyle(document.documentElement).getPropertyValue('--ew-layer-in').trim(),
-        layerOut: getComputedStyle(document.documentElement).getPropertyValue('--ew-layer-out').trim()
       },
       layers
     };
   };
 
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup, { once:true });
   else setup();
 })();
 </script>

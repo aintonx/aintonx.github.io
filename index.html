@@ -3965,6 +3965,29 @@ body.cart-open header { z-index: 398 !important; }
    body.scroll-restoring (там transition:none !important убивал слайд). */
 @keyframes cartSlideOut { from { transform: translateX(0); } to { transform: translateX(100%); } }
 @keyframes cartOverlayFade { from { opacity: 1; } to { opacity: 0; } }
+/* Открытие корзины — тоже keyframe-анимацией. Это важно для сценария
+   “реликвия уже в корзине”: корзина открывается сразу после закрытия
+   карточки товара, когда body ещё может быть в scroll-restoring и
+   глобально глушить transitions. Animation не срезается, поэтому панель
+   въезжает плавно, без резкого появления. */
+@keyframes cartSlideIn {
+  0%   { transform: translateX(100%); opacity: .96; filter: blur(1px); }
+  70%  { opacity: 1; filter: blur(0); }
+  100% { transform: translateX(0); opacity: 1; filter: none; }
+}
+@keyframes cartOverlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.cart-panel.cart-opening {
+  animation: cartSlideIn .42s cubic-bezier(.16,1,.3,1) both;
+  will-change: transform, opacity, filter;
+}
+.cart-overlay.cart-opening {
+  animation: cartOverlayFadeIn .28s ease-out both;
+}
+body.scroll-restoring .cart-panel.cart-opening,
+body.scroll-restoring .cart-overlay.cart-opening { animation-play-state: running !important; }
 .cart-panel.cart-closing {
   animation: cartSlideOut .3s cubic-bezier(.4,0,.2,1) forwards;
   /* Тень гасим в момент старта закрытия: на старте она лежит на ещё
@@ -13075,6 +13098,7 @@ button, a, [role="button"], label,
   }
 }
 
+
 </style>
 <script>
   /* Тема — выставляем как можно раньше, чтобы не было вспышки при загрузке.
@@ -15782,11 +15806,98 @@ function getRelicShareBaseUrl(){
   url.hash = '';
   return url;
 }
-function getRelicShareUrl(product){
+const RELIC_SHARE_PATH_PREFIX = '/share/relic/';
+
+function getRelicDeepLinkUrl(product){
   const code = getRelicCode(product);
   const url = getRelicShareBaseUrl();
   if(code) url.searchParams.set(RELIC_DEEP_LINK_PARAM, code);
   return url.toString();
+}
+
+function getRelicShareUrl(product){
+  const code = getRelicCode(product);
+  const url = getRelicShareBaseUrl();
+  url.search = '';
+  url.hash = '';
+  if(code){
+    url.pathname = RELIC_SHARE_PATH_PREFIX + encodeURIComponent(code) + '/';
+  }
+  return url.toString();
+}
+
+/* P4.2 · STATIC RELIC SHARE PAGES
+   Основной deep-link ?relic=... остаётся единственным способом открыть карточку.
+   Share URL ведёт на статичную страницу /share/relic/RELIC-.../,
+   где OG/Twitter meta уже находятся в исходном HTML для Telegram/VK/WA.
+   Для живого пользователя эта страница отдаёт полный shell основного сайта,
+   ранним history.replaceState подменяет URL на /?relic=... и открывает карточку
+   штатной deep-link логикой — без промежуточной карточки и без отдельного редиректа. */
+function _relicPreviewText(text, max){
+  const raw = (typeof safeText === 'function')
+    ? safeText(text, {maxLength:max || 180})
+    : String(text == null ? '' : text).replace(/\s+/g,' ').trim().slice(0, max || 180);
+  return raw;
+}
+function _absoluteAssetUrl(path){
+  const raw = String(path || '').trim();
+  if(!raw) return '';
+  try{ return new URL(raw, getRelicShareBaseUrl()).toString(); }
+  catch(_){ return raw; }
+}
+function getRelicShareMeta(product){
+  const p = product || cur || null;
+  const code = getRelicCode(p);
+  const title = p ? ('EchoWorld · ' + (p.name || code)) : 'EchoWorld — Артефакты из Marketspace';
+  const description = p
+    ? _relicPreviewText((p.desc || '') + ' · Реликвия ' + code + ' в активном потоке EchoWorld.', 180)
+    : 'Параллельный мир. Реальные артефакты. Каждый — кто-то, кто был.';
+  return {
+    title,
+    description,
+    image: _absoluteAssetUrl(p && p.img ? p.img : 'og-cover.jpg'),
+    url: p ? getRelicShareUrl(p) : getRelicShareBaseUrl().toString(),
+    deepLinkUrl: p ? getRelicDeepLinkUrl(p) : getRelicShareBaseUrl().toString(),
+    code,
+    mode: 'static-share-page-ready',
+    serverPreviewReady: true
+  };
+}
+function _setMetaContent(selector, content){
+  const el = document.querySelector(selector);
+  if(el) el.setAttribute('content', content || '');
+}
+function updateRelicShareMeta(product){
+  const meta = getRelicShareMeta(product);
+  try{ document.title = meta.title; }catch(_){ }
+  _setMetaContent('meta[name="description"]', meta.description);
+  _setMetaContent('meta[property="og:title"]', meta.title);
+  _setMetaContent('meta[property="og:description"]', meta.description);
+  _setMetaContent('meta[property="og:image"]', meta.image);
+  _setMetaContent('meta[property="og:url"]', meta.url);
+  _setMetaContent('meta[name="twitter:title"]', meta.title);
+  _setMetaContent('meta[name="twitter:description"]', meta.description);
+  _setMetaContent('meta[name="twitter:image"]', meta.image);
+  return meta;
+}
+function inspectRelicSharePreviewReadiness(product){
+  const meta = getRelicShareMeta(product || products[0]);
+  const issues = [];
+  if(!meta.code) issues.push('missing-relic-code');
+  if(!meta.image) issues.push('missing-image');
+  if(!meta.description || meta.description.length < 40) issues.push('description-too-short');
+  if(meta.serverPreviewReady !== true) issues.push('static-share-page-missing');
+  const contentOk = issues.filter(i=>i !== 'static-share-page-missing').length === 0;
+  const messengerOk = contentOk && meta.serverPreviewReady === true;
+  return {
+    okForBrowserMeta: contentOk,
+    okForTelegramVkWhatsapp: messengerOk,
+    reason: messengerOk
+      ? 'Статичные full-shell share-страницы /share/relic/RELIC-.../ готовы: мессенджеры видят OG/Twitter meta до выполнения JS, а пользователь попадает в обычную загрузку сайта.'
+      : 'Для превью в мессенджерах нужна статичная share-страница с meta-тегами в исходном HTML.',
+    issues,
+    meta
+  };
 }
 function _removeRelicParamFromUrl(){
   try{
@@ -15871,11 +15982,110 @@ function inspectRelicSharePatch(){
     firstCode: codes[0] || null,
     shareApiAvailable: !!navigator.share,
     clipboardAvailable: !!(navigator.clipboard && navigator.clipboard.writeText),
-    sampleUrl: products[0] ? getRelicShareUrl(products[0]) : null
+    sampleUrl: products[0] ? getRelicShareUrl(products[0]) : null,
+    previewReadiness: typeof inspectRelicSharePreviewReadiness === 'function' ? inspectRelicSharePreviewReadiness(products[0]) : null
   };
 }
 
 let cur=null,echoChecked=false,cart=[];
+
+
+/* P4 extended → P7 prep · CART / ORDER DATA READINESS
+   Фронт уже держит реликвию как уникальный предмет: quantity всегда 1,
+   дубли по RELIC-коду удаляются до формирования будущего API payload.
+   Это не заменяет backend/YDB-транзакцию, но не даёт собрать грязный заказ. */
+function getCartProductKey(product){
+  return getRelicCode(product) || String(product && product.id ? product.id : '').trim();
+}
+function findCartIndexByProduct(product){
+  const key = getCartProductKey(product);
+  if(!key || !Array.isArray(cart)) return -1;
+  return cart.findIndex(item => getCartProductKey(item) === key);
+}
+function _normalizeEchoArrayForItem(item){
+  const count = Math.max(1, Math.min(4, getEchoSlotCount(item)));
+  const current = Array.isArray(item && item.echoes) ? item.echoes.slice(0, count) : (item && item.echoText ? [item.echoText] : []);
+  while(current.length < count) current.push('');
+  return current.map(v => String(v || '').trim());
+}
+function createCartItemFromProduct(product){
+  const basePrice = getRelicBasePrice(product);
+  const echoes = Array(getEchoSlotCount(product)).fill('');
+  const key = getCartProductKey(product);
+  return {
+    ...product,
+    productId: key,
+    cartKey: key,
+    quantity: 1,
+    price: basePrice,
+    echoes,
+    echoCost: 0,
+    withEcho: false,
+    echoReveal: false,
+    echoMarker: '',
+    total: basePrice
+  };
+}
+function normalizeCartForApiPreparation(){
+  const result = { changed:false, removedDuplicates:0, normalizedItems:0 };
+  if(!Array.isArray(cart)){ cart=[]; result.changed=true; return result; }
+  const seen = new Set();
+  const next = [];
+  cart.forEach(item=>{
+    if(!item){ result.changed=true; return; }
+    const key = getCartProductKey(item);
+    if(!key){ result.changed=true; return; }
+    if(seen.has(key)){ result.changed=true; result.removedDuplicates++; return; }
+    seen.add(key);
+    const canonical = products.find(p => getCartProductKey(p) === key);
+    const normalized = { ...(canonical || {}), ...item };
+    normalized.productId = key;
+    normalized.cartKey = key;
+    normalized.quantity = 1;
+    normalized.price = getRelicBasePrice(normalized);
+    normalized.echoes = _normalizeEchoArrayForItem(normalized);
+    const filled = normalized.echoes.filter(t => t && String(t).trim().length > 0).length;
+    normalized.echoCost = 0;
+    normalized.withEcho = filled > 0;
+    normalized.total = getProductDisplayPrice(normalized);
+    delete normalized.echoText;
+    next.push(normalized);
+    result.normalizedItems++;
+  });
+  if(next.length !== cart.length) result.changed = true;
+  for(let i=0;i<next.length;i++){
+    if(cart[i] !== next[i]){ result.changed = true; break; }
+  }
+  if(result.changed){ cart.splice(0, cart.length, ...next); }
+  return result;
+}
+function addProductToCart(product){
+  normalizeCartForApiPreparation();
+  const existingIndex = findCartIndexByProduct(product);
+  if(existingIndex >= 0){
+    return { added:false, duplicate:true, index:existingIndex, item:cart[existingIndex] };
+  }
+  const item = createCartItemFromProduct(product);
+  cart.push(item);
+  normalizeCartForApiPreparation();
+  return { added:true, duplicate:false, index:cart.length-1, item };
+}
+function openCartIfClosed(){
+  const panel = document.getElementById('cartPanel');
+  if(panel && !panel.classList.contains('open') && typeof toggleCart === 'function') toggleCart();
+}
+function inspectCartApiReadiness(){
+  const norm = normalizeCartForApiPreparation();
+  const issues = [];
+  const keys = cart.map(getCartProductKey).filter(Boolean);
+  if(new Set(keys).size !== keys.length) issues.push('duplicate-relics-in-cart');
+  cart.forEach((item, idx)=>{
+    if(item.quantity !== 1) issues.push('bad-quantity-at-'+idx);
+    if(!item.productId || !/^RELIC-\d{2}-\d{4}$/.test(item.productId)) issues.push('bad-product-id-at-'+idx);
+    if(!Array.isArray(item.echoes)) issues.push('bad-echo-array-at-'+idx);
+  });
+  return { ok:issues.length===0, issues, normalization:norm, cart:cart.map(item=>({productId:item.productId,name:item.name,quantity:item.quantity,echoSlots:Array.isArray(item.echoes)?item.echoes.length:0})) };
+}
 
 /* ── РЕНДЕР МУЛЬТИ-СЛОТОВ ЭХО ─────────────────────────────────────
    Создаёт N textarea-слотов по числу резонансных слоёв Виша (Мощь).
@@ -16896,6 +17106,7 @@ function openModal(i){
   const statusLabel=getProductStatusLabel(p);
   const orderable=isProductOrderable(p);
   cur=p;echoChecked=false;
+  try { updateRelicShareMeta(p); } catch(e){ console.warn('shareMeta:', e); }
   // Сброс блока подписи Маркером — новая карточка = чистое состояние
   try { resetEchoReveal(); } catch(e){}
   // Flash "data read" effect on the correct card
@@ -17111,24 +17322,15 @@ function addToCart(ev){
     return;
   }
   if(!isProductOrderable(cur)) return;
-  // Эхо теперь заполняется на следующем шаге — в форме оформления заказа.
-  // В карточке товара оставляем только объяснение, чтобы не перегружать выбор.
-  const echoes = Array(getEchoSlotCount(cur)).fill('');
-  const echoCost = 0;
-  const echoMeta = { reveal:false, marker:'' };
-  const basePrice = getRelicBasePrice(cur);
-  const total = basePrice + echoCost;
-  cart.push({
-    ...cur,
-    price: basePrice,
-    echoes: echoes,
-    echoCost: echoCost,
-    withEcho: false,
-    echoReveal: echoMeta.reveal,
-    echoMarker: echoMeta.marker,
-    total: total
-  });
+  const result = addProductToCart(cur);
   try { updateCartUI(); } catch(e){ console.error('updateCartUI failed:', e); }
+  if(result.duplicate){
+    closeModal(function(){
+      showNotif('// Эта реликвия уже в корзине. Открываю корзину.', {contextual:true});
+      setTimeout(openCartIfClosed, 120);
+    });
+    return;
+  }
   closeModal(function(){
     showNotif('// Артефакт добавлен в корзину. Конденсат ожидает подтверждения.', {contextual:true});
   });
@@ -17138,24 +17340,11 @@ function buyNow(ev){
   if(ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
   if(ev && typeof ev.preventDefault === 'function') ev.preventDefault();
   if(!cur || !isProductOrderable(cur)) return;
-  // Эхо теперь заполняется на следующем шаге — в форме оформления заказа.
-  // В карточке товара оставляем только объяснение, чтобы не перегружать выбор.
-  const echoes = Array(getEchoSlotCount(cur)).fill('');
-  const echoCost = 0;
-  const echoMeta = { reveal:false, marker:'' };
-  const basePrice = getRelicBasePrice(cur);
-  const total = basePrice + echoCost;
-  cart.push({
-    ...cur,
-    price: basePrice,
-    echoes: echoes,
-    echoCost: echoCost,
-    withEcho: false,
-    echoReveal: echoMeta.reveal,
-    echoMarker: echoMeta.marker,
-    total: total
-  });
+  const result = addProductToCart(cur);
   try { updateCartUI(); } catch(e){ console.error('updateCartUI failed:', e); }
+  if(result.duplicate && typeof showNotif === 'function'){
+    showNotif('// Эта реликвия уже была в корзине. Переходим к оформлению.', {contextual:true, overOverlay:true});
+  }
   // Мгновенный переход: directCheckout сам форс-очистит модалку карточки
   // и сразу откроет чекаут. Без 380мс задержки между «Купить сейчас»
   // и видимым чекаутом.
@@ -17394,6 +17583,7 @@ function animateCartRemove(i, source){
   }, lastItem ? 520 : 380);
 }
 function updateCartUI(){
+  try { normalizeCartForApiPreparation(); } catch(e){ console.warn('normalizeCartForApiPreparation:', e); }
   const count=cart.length;
   const cartCountEl = document.getElementById('cartCount');
   if(cartCountEl) cartCountEl.textContent=count;
@@ -17483,18 +17673,7 @@ function updateCartUI(){
 }
 
 function normalizeCartEchoData(){
-  if(!Array.isArray(cart)) return;
-  cart.forEach(item=>{
-    if(!item) return;
-    const count=getEchoSlotCount(item);
-    const current=Array.isArray(item.echoes) ? item.echoes.slice(0,count) : [];
-    while(current.length<count) current.push('');
-    item.echoes=current;
-    const filled=current.filter(t=>t&&String(t).trim().length>0).length;
-    item.echoCost=0;
-    item.withEcho=filled>0;
-    item.total=getProductDisplayPrice(item);
-  });
+  normalizeCartForApiPreparation();
 }
 function _escapeHtmlAttr(v){
   return String(v==null?'':v)
@@ -17757,6 +17936,139 @@ function _renderCheckoutSummaryOnly(){
   if(totalEl) totalEl.textContent=formatRelicPrice(total);
 }
 
+/* P4 extended → P7 prep · ORDER PAYLOAD PREVIEW
+   Пока API/БД нет, фронт уже собирает будущий заказ в стабильный объект.
+   Проверка в консоли: inspectCheckoutOrderPayload() или window.__APERTURA_LAST_ORDER_PAYLOAD
+   после инициации оформления. */
+function _checkoutValue(id, max){
+  const el = document.getElementById(id);
+  const raw = el ? el.value : '';
+  return (typeof safeText === 'function') ? safeText(raw, {maxLength:max || 240}) : String(raw || '').trim().slice(0, max || 240);
+}
+function _checkoutConsentValue(){
+  const c = document.getElementById('chkConsent');
+  return !!(c && c.checked);
+}
+function getAperturaClientSessionId(){
+  const KEY='ew:client-session-id:v1';
+  try{
+    let v=sessionStorage.getItem(KEY);
+    if(!v){ v='sess_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10); sessionStorage.setItem(KEY,v); }
+    return v;
+  }catch(_){ return 'sess_volatile_'+Date.now().toString(36); }
+}
+function getCheckoutDraftId(){
+  const KEY='ew:checkout-draft-id:v1';
+  try{
+    let v=sessionStorage.getItem(KEY);
+    if(!v){ v='draft_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10); sessionStorage.setItem(KEY,v); }
+    return v;
+  }catch(_){ return 'draft_volatile_'+Date.now().toString(36); }
+}
+function collectOrderEchoSlots(item){
+  const limit = CHECKOUT_ECHO_SLOT_WORD_LIMIT;
+  const capacity = getEchoSlotCount(item);
+  const echoes = Array.isArray(item.echoes) ? item.echoes.slice(0, capacity) : [];
+  const slots = [];
+  echoes.forEach((text, idx)=>{
+    const trimmed = _chkEchoTrimToLimit(text || '');
+    if(!trimmed) return;
+    slots.push({
+      slotIndex: idx + 1,
+      type: 'text',
+      text: trimmed,
+      wordCount: _chkEchoWordCount(trimmed),
+      wordLimit: limit
+    });
+  });
+  return slots;
+}
+function buildCheckoutOrderPayload(extra){
+  normalizeCartForApiPreparation();
+  const items = cart.map(item=>{
+    const productId = getCartProductKey(item);
+    const unitPrice = getProductDisplayPrice(item);
+    const echoSlotCapacity = getEchoSlotCount(item);
+    return {
+      productId,
+      relicId: item.id || productId.replace(/^RELIC-/, ''),
+      title: safeText(item.name || 'Реликвия', {maxLength:120}),
+      powerClass: item.power || null,
+      powerName: item.powerName || null,
+      quantity: 1,
+      unitPrice,
+      total: unitPrice,
+      currency: 'RUB',
+      echoSlotCapacity,
+      echoSlots: collectOrderEchoSlots(item)
+    };
+  });
+  const total = items.reduce((sum,item)=>sum + (Number(item.total)||0), 0);
+  return {
+    schema: 'echoworld.checkout.order.v1',
+    mode: 'frontend-preview-no-api',
+    clientSessionId: getAperturaClientSessionId(),
+    checkoutDraftId: getCheckoutDraftId(),
+    idempotencyKey: getCheckoutDraftId(),
+    createdAtClient: new Date().toISOString(),
+    customer: {
+      name: _checkoutValue('chkName', 120),
+      phone: _checkoutValue('chkPhone', 80),
+      email: _checkoutValue('chkEmail', 160)
+    },
+    delivery: {
+      method: 'post_ru',
+      title: 'Почта России',
+      address: _checkoutValue('chkAddr', 360),
+      price: 0,
+      currency: 'RUB'
+    },
+    items,
+    totals: {
+      relics: total,
+      echo: 0,
+      delivery: 0,
+      total,
+      currency: 'RUB'
+    },
+    consent: {
+      privacyAccepted: _checkoutConsentValue(),
+      offerAccepted: _checkoutConsentValue()
+    },
+    apiReadiness: {
+      canSendToApiShape: true,
+      requiresBackendReservation: true,
+      requiresYooKassaPayment: true,
+      requiresYdbTransaction: true
+    },
+    debug: extra || {}
+  };
+}
+function validateCheckoutOrderPayload(payload){
+  const issues=[];
+  if(!payload || !Array.isArray(payload.items)) issues.push('payload-missing-items');
+  if(payload && (!payload.customer.name || !payload.customer.phone || !payload.customer.email)) issues.push('customer-required-fields-missing');
+  if(payload && !payload.delivery.address) issues.push('delivery-address-missing');
+  if(payload && (!payload.consent.privacyAccepted || !payload.consent.offerAccepted)) issues.push('consent-not-accepted');
+  const ids = payload && Array.isArray(payload.items) ? payload.items.map(i=>i.productId) : [];
+  if(new Set(ids).size !== ids.length) issues.push('duplicate-products-in-payload');
+  (payload.items || []).forEach((item, idx)=>{
+    if(item.quantity !== 1) issues.push('bad-quantity-'+idx);
+    if(!/^RELIC-\d{2}-\d{4}$/.test(item.productId || '')) issues.push('bad-product-id-'+idx);
+    if(!Array.isArray(item.echoSlots)) issues.push('bad-echo-slots-'+idx);
+    (item.echoSlots || []).forEach(slot=>{
+      if(slot.slotIndex < 1 || slot.slotIndex > item.echoSlotCapacity) issues.push('bad-echo-slot-index-'+idx+'-'+slot.slotIndex);
+      if(slot.wordCount > CHECKOUT_ECHO_SLOT_WORD_LIMIT) issues.push('echo-word-limit-'+idx+'-'+slot.slotIndex);
+    });
+  });
+  return issues;
+}
+function inspectCheckoutOrderPayload(){
+  const payload = buildCheckoutOrderPayload({source:'manual-inspection'});
+  const issues = validateCheckoutOrderPayload(payload);
+  return { ok:issues.length===0, issues, payload };
+}
+
 /* Делегированный обработчик удаления из корзины. Привязка к cartBody
    один раз — гарантирует, что click срабатывает поверх любых
    родительских touch-handlers. */
@@ -17809,12 +18121,25 @@ function toggleCart(){
       _materializeHeader();
     }, 300);
   } else {
-    panel.classList.add('open');
-    if(overlay) overlay.classList.add('open');
+    // Открытие через keyframe-класс, а не только transition: в сценарии
+    // duplicate → closeModal → openCart body ещё может держать
+    // scroll-restoring, который глушит transitions. Animation остаётся
+    // плавной и не даёт корзине резко “прыгнуть” на экран.
+    panel.classList.remove('cart-closing','cart-opening');
+    if(overlay) overlay.classList.remove('cart-closing','cart-opening');
     // Чистим stale blur fade flag — иначе открытие корзины поверх
     // закрывающейся модалки оставит блюр в filter:none.
     document.body.classList.remove('_blur-fading');
-    lockScroll(); document.body.classList.add('cart-open'); _hideAllNotifs(); _closeWorldDrop();
+    lockScroll();
+    document.body.classList.add('cart-open');
+    if(overlay) overlay.classList.add('open','cart-opening');
+    panel.classList.add('open','cart-opening');
+    if(panel._cartOpeningTimer) clearTimeout(panel._cartOpeningTimer);
+    panel._cartOpeningTimer = setTimeout(()=>{
+      panel.classList.remove('cart-opening');
+      if(overlay) overlay.classList.remove('cart-opening');
+    }, 460);
+    _hideAllNotifs(); _closeWorldDrop();
   }
 }
 /* ── iOS AUTOFILL FIX ─────────────────────────────────────────────
@@ -18144,7 +18469,15 @@ function selectDelivery(el){document.querySelectorAll('.chk-del-opt').forEach(o=
 function submitOrder(){
   // Не закрываем чекаут — барабан показывается внутри него.
   // Корзину очистим после реального подтверждения оплаты.
-  // Пока только нотификация + drum запустится через onComplete().
+  // Пока API/БД нет: фиксируем будущий payload локально для проверки.
+  try{
+    const payload = buildCheckoutOrderPayload({source:'submitOrder-preview'});
+    window.__APERTURA_LAST_ORDER_PAYLOAD = payload;
+    try{ sessionStorage.setItem('ew:last-order-payload-preview', JSON.stringify(payload)); }catch(_){ }
+    console.log('%cAPERTURA · ORDER PAYLOAD PREVIEW','color:#00c8c8', payload);
+  }catch(e){
+    console.warn('order payload preview failed:', e);
+  }
 }
 const catalogState={status:'all',category:'all',query:''};
 const catalogCategories={
@@ -26455,6 +26788,98 @@ function acceptCookies(){
     window.visualViewport.addEventListener('resize', requestSync, { passive: true });
     window.visualViewport.addEventListener('scroll', requestSync, { passive: true });
   }
+})();
+</script>
+
+<!-- PATCH 5 · STABILITY CORE / OLD MODAL MOTION PRESERVED -->
+<script id="ew-patch5-stability-core">
+(function(){
+  const LAYERS = [
+    ['relicModal', '#moverlay', ['#modalPanel', '.mbody']],
+    ['cart', '#cartOverlay', ['#cartPanel', '.cart-body']],
+    ['checkout', '#chkOverlay', ['#chkModalPanel', '#chkBody']],
+    ['returnModal', '#returnModal', ['#returnModalPanel', '.return-body']],
+    ['requisites', '#reqModal', ['.legal-modal-body']],
+    ['offer', '#offerModal', ['.legal-modal-body']],
+    ['privacy', '#privacyModal', ['.legal-modal-body']],
+    ['apConsoleGate', '#apConsoleGateOverlay', ['#apConsoleGatePanel', '.ap-console-body']],
+    ['apConsole', '#apConsoleOverlay', ['#apConsolePanel', '.ap-console-body']],
+    ['apStatus', '#apStatusOverlay', ['#apStatusPanel', '.ap-status-body']]
+  ];
+
+  function q(sel, root){ return (root || document).querySelector(sel); }
+  function resetNode(node){
+    if(!node) return;
+    try { node.scrollTop = 0; } catch(e){}
+    try { node.scrollLeft = 0; } catch(e){}
+  }
+  function resetLayerScroll(targets, overlay){
+    (targets || []).forEach(function(sel){
+      resetNode(q(sel, overlay || document));
+      resetNode(q(sel));
+    });
+  }
+  function cleanupStaleBlurFlags(){
+    try { document.body.classList.remove('_blur-fading'); } catch(e){}
+  }
+  function bindLayer(row){
+    const overlay = q(row[1]);
+    const targets = row[2] || [];
+    if(!overlay || overlay.dataset.ewP5Stable === '1') return;
+    overlay.dataset.ewP5Stable = '1';
+
+    let wasOpen = overlay.classList.contains('open');
+    const onChange = function(){
+      const isOpen = overlay.classList.contains('open');
+      const isClosing = overlay.classList.contains('closing');
+      if(isOpen && !wasOpen && !isClosing){
+        cleanupStaleBlurFlags();
+        requestAnimationFrame(function(){
+          resetLayerScroll(targets, overlay);
+          requestAnimationFrame(function(){ resetLayerScroll(targets, overlay); });
+        });
+      }
+      wasOpen = isOpen;
+    };
+    try {
+      const observer = new MutationObserver(onChange);
+      observer.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+      overlay._ewP5StabilityObserver = observer;
+    } catch(e){}
+    onChange();
+  }
+  function setup(){
+    LAYERS.forEach(bindLayer);
+  }
+
+  window.inspectPatch5StabilityCore = function(){
+    const layers = LAYERS.map(function(row){
+      const overlay = q(row[1]);
+      const panel = q(row[2] && row[2][0]);
+      return {
+        name: row[0],
+        overlayFound: !!overlay,
+        panelFound: !!panel,
+        open: !!(overlay && overlay.classList.contains('open')),
+        closing: !!(overlay && overlay.classList.contains('closing')),
+        stabilityBound: !!(overlay && overlay.dataset.ewP5Stable === '1'),
+        panelScrollTop: panel ? panel.scrollTop : null
+      };
+    });
+    return {
+      ok: layers.every(function(x){ return x.overlayFound && x.panelFound && x.stabilityBound; }),
+      patch: 'P5_STABILITY_CORE_OLD_MOTION',
+      visualMotion: 'preserved-from-index-opening',
+      body: {
+        className: document.body ? document.body.className : '',
+        scrollLockCount: (typeof _scrollLockCount !== 'undefined') ? _scrollLockCount : null
+      },
+      layers
+    };
+  };
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup, { once:true });
+  else setup();
 })();
 </script>
 
