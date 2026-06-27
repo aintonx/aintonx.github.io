@@ -26928,14 +26928,14 @@ function acceptCookies(){
 }
 </style>
 
-<!-- PATCH 5.2 · AUTOFILL SETTLE REFINEMENT / NO POPUP-KILLING OVERFLOW -->
+<!-- PATCH 5.2 · AUTOFILL SETTLE REFINEMENT / OVERFLOW FREEZE BRIDGE -->
 <style id="ew-patch5-autofill-settle-refine">
-/* Причина резкого выхода после финального автозаполнения email была не в
-   открытии модалок, а в стабилизаторе autofill: он на 600-700мс ставил
-   scroll-контейнеру overflow-y:hidden. Для браузерного окна подсказок это
-   выглядит как смена геометрии якоря поля → popup закрывается резким кадром.
-   Здесь финальный кадр autofill держится без layout-мутаций: box-shadow
-   переключается сразу, остальные свойства мягко дотекают. */
+/* Возвращаем нужный iOS-стабилизатор автозаполнения: во время системной
+   подстановки scroll-контейнер кратко получает overflow-y:hidden, чтобы
+   контент не прыгал после заполнения группы полей. Чтобы выход из поля не
+   выглядел резким, визуальный filled/autofill-state удерживается в
+   ew-field-autofill-settling, а возврат overflow разводится по кадрам через
+   soft-release. Механика открытия модалок не меняется. */
 :where(
   #chkName, #chkPhone, #chkEmail, #chkAddr,
   #echoTextInput, #echoMarker,
@@ -26985,7 +26985,7 @@ function acceptCookies(){
           box-shadow: 0 0 0 1000px #061819 inset !important;
   border-color: rgba(0,200,200,0.32) !important;
   caret-color: var(--cyan) !important;
-  transition: border-color .18s ease, color .18s ease !important;
+  transition: border-color .22s ease, color .22s ease !important;
 }
 :root[data-theme="light"] :where(
   #chkName, #chkPhone, #chkEmail, #chkAddr,
@@ -27025,9 +27025,13 @@ function acceptCookies(){
   border-color: rgba(11,118,126,0.34) !important;
   caret-color: var(--cyan) !important;
 }
-.ew-autofill-scroll-anchor {
-  /* Диагностический класс на панели: намеренно без визуальных свойств.
-     Главное правило патча — НЕ менять overflow у scroll-контейнера. */
+.ew-autofill-scroll-anchor,
+.ew-autofill-overflow-freeze,
+.ew-autofill-overflow-release {
+  scrollbar-gutter: stable;
+}
+.ew-autofill-overflow-release {
+  scroll-behavior: auto !important;
 }
 </style>
 
@@ -27311,59 +27315,112 @@ function acceptCookies(){
     }catch(e){}
   }
 
-  /* Replaces the older overflow-y:hidden autofill freeze with a non-layout
-     scroll anchor. The old version could close/kill the browser autofill popup
-     exactly after the last email suggestion because changing overflow mutates
-     the popup anchor geometry. */
+  /* HYBRID AUTOFILL FREEZE:
+     возвращаем старый нужный стабилизатор overflow-y:hidden, потому что он
+     действительно запрещает iOS/браузеру прыгать к последнему заполненному
+     полю после контактного autofill. Резкость убираем не отключением freeze,
+     а мягким мостом выхода: держим поле в ew-field-autofill-settling,
+     восстанавливаем overflow только на следующем кадре и ещё ~260мс держим
+     scrollTop-якорь без визуальной смены модалки. */
   window._setupAutofillFreeze = function(panel, ids){
     if(!panel || panel.dataset.afFreezeInit === '1') return;
     if(!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches)) return;
     panel.dataset.afFreezeInit = '1';
-    panel.dataset.afFreezeMode = 'scroll-anchor-no-overflow';
-    let holdUntil = 0;
-    let anchorTop = 0;
-    let anchorLeft = 0;
+    panel.dataset.afFreezeMode = 'overflow-y-hidden-soft-release';
+
+    let frozenUntil = 0;
+    let keepTop = 0;
+    let keepLeft = 0;
+    let prevOverflowY = '';
+    let prevOverscrollBehavior = '';
+    let prevScrollBehavior = '';
     let raf = 0;
+    let releasing = false;
     let lastFocusOutT = -1e9;
     const biTimes = [];
 
-    function hold(ms){
-      const t = now();
-      if(!holdUntil || t > holdUntil){
-        anchorTop = panel.scrollTop;
-        anchorLeft = panel.scrollLeft || 0;
-      }
-      holdUntil = Math.max(holdUntil, t + (ms || 700));
-      panel.classList.add('ew-autofill-scroll-anchor');
-      if(!raf) raf = requestAnimationFrame(tick);
+    function setPanelFreezeState(on){
+      try{
+        panel.classList.toggle('ew-autofill-scroll-anchor', !!on);
+        panel.classList.toggle('ew-autofill-overflow-freeze', !!on);
+      }catch(e){}
+    }
+    function restorePanelStyles(){
+      panel.style.overflowY = prevOverflowY || '';
+      panel.style.overscrollBehavior = prevOverscrollBehavior || '';
+      panel.style.scrollBehavior = prevScrollBehavior || '';
+    }
+    function clampToAnchor(){
+      if(Math.abs(panel.scrollTop - keepTop) > 0) panel.scrollTop = keepTop;
+      if(Math.abs((panel.scrollLeft || 0) - keepLeft) > 0) panel.scrollLeft = keepLeft;
+    }
+    function softRelease(){
+      if(releasing) return;
+      releasing = true;
+      clampToAnchor();
+      panel.classList.add('ew-autofill-overflow-release');
+      /* Разводим восстановление overflow и field-settle по кадрам: системное
+         окно autofill закрывается, но поле и scrollTop не получают резкий
+         layout/visual-snap в том же кадре. */
+      requestAnimationFrame(function(){
+        clampToAnchor();
+        restorePanelStyles();
+        setPanelFreezeState(false);
+        const releaseUntil = now() + 260;
+        (function holdAfterRelease(){
+          if(!panel.isConnected){ releasing = false; frozenUntil = 0; return; }
+          if(now() < releaseUntil){
+            if((now() - lastPointerT) > 140) clampToAnchor();
+            requestAnimationFrame(holdAfterRelease);
+            return;
+          }
+          panel.classList.remove('ew-autofill-overflow-release');
+          releasing = false;
+          frozenUntil = 0;
+        })();
+      });
     }
     function tick(){
       raf = 0;
       if(!panel.isConnected) return;
-      const t = now();
-      if(t <= holdUntil){
-        const dy = panel.scrollTop - anchorTop;
-        const dx = (panel.scrollLeft || 0) - anchorLeft;
-        /* Only cancel browser/programmatic jumps. User drag/touch/wheel stays
-           free; we do not lock overflow and do not kill the suggestion UI. */
-        if((t - lastPointerT) > 140 && Math.abs(dy) > 32) panel.scrollTop = anchorTop;
-        if((t - lastPointerT) > 140 && Math.abs(dx) > 12) panel.scrollLeft = anchorLeft;
+      if(now() < frozenUntil){
+        clampToAnchor();
         raf = requestAnimationFrame(tick);
         return;
       }
-      panel.classList.remove('ew-autofill-scroll-anchor');
-      holdUntil = 0;
+      softRelease();
     }
+    function freeze(ms, el){
+      const duration = ms || 700;
+      const t = now();
+      if(!frozenUntil || t >= frozenUntil){
+        keepTop = panel.scrollTop;
+        keepLeft = panel.scrollLeft || 0;
+        prevOverflowY = panel.style.overflowY || '';
+        prevOverscrollBehavior = panel.style.overscrollBehavior || '';
+        prevScrollBehavior = panel.style.scrollBehavior || '';
+        releasing = false;
+        panel.classList.remove('ew-autofill-overflow-release');
+        panel.style.scrollBehavior = 'auto';
+        panel.style.overscrollBehavior = 'contain';
+        panel.style.overflowY = 'hidden';
+        setPanelFreezeState(true);
+      }
+      frozenUntil = Math.max(frozenUntil, t + duration);
+      markAutofillSettling(el || document.activeElement, duration + 420);
+      clampToAnchor();
+      if(!raf) raf = requestAnimationFrame(tick);
+    }
+
     (ids || []).forEach(function(id){
       const el = document.getElementById(id);
       if(!el || el.dataset.afFreezeBound === '1') return;
       el.dataset.afFreezeBound = '1';
-      el.dataset.afFreezeMode = 'scroll-anchor-no-overflow';
+      el.dataset.afFreezeMode = 'overflow-y-hidden-soft-release';
       el.addEventListener('beforeinput', function(ev){
         const it = ev.inputType || '';
         if(it === 'insertReplacementText' || it === 'insertFromPaste'){
-          markAutofillSettling(el, 820);
-          hold(760);
+          freeze(760, el);
           return;
         }
         if(it === 'insertText'){
@@ -27371,23 +27428,31 @@ function acceptCookies(){
           biTimes.push(t);
           while(biTimes.length && t - biTimes[0] > 80) biTimes.shift();
           if(biTimes.length >= 3 && (t - lastKeyT) > 180){
-            markAutofillSettling(el, 760);
-            hold(720);
+            freeze(760, el);
           }
         }
       }, true);
-      el.addEventListener('focusout', function(){ lastFocusOutT = now(); }, true);
+      el.addEventListener('input', function(ev){
+        /* На некоторых iOS-сборках contact autofill приходит уже как input-
+           пачка без beforeinput. Если это не клавиатурный ввод — включаем
+           тот же стабилизатор, но не мешаем ручной печати. */
+        if((now() - lastKeyT) > 180 && (ev && ev.inputType !== 'deleteContentBackward')){
+          if(valueOf(el)) freeze(680, el);
+        }
+      }, true);
+      el.addEventListener('focusout', function(){
+        lastFocusOutT = now();
+        if(frozenUntil && now() < frozenUntil) markAutofillSettling(el, Math.max(360, frozenUntil - now() + 300));
+      }, true);
       el.addEventListener('focusin', function(){
         const t = now();
         if((t - lastFocusOutT) < 30 && (t - lastPointerT) > 120){
-          markAutofillSettling(el, 680);
-          hold(640);
+          freeze(660, el);
         }
       }, true);
       el.addEventListener('change', function(){
         if((now() - lastKeyT) > 180){
-          markAutofillSettling(el, 680);
-          hold(620);
+          freeze(640, el);
         }
       }, true);
     });
@@ -27414,12 +27479,14 @@ function acceptCookies(){
         afFreezeInit: !!(p && p.dataset.afFreezeInit === '1'),
         afFreezeMode: p ? (p.dataset.afFreezeMode || null) : null,
         overflowY: p ? (p.style.overflowY || '') : null,
-        scrollAnchor: !!(p && p.classList.contains('ew-autofill-scroll-anchor'))
+        scrollAnchor: !!(p && p.classList.contains('ew-autofill-scroll-anchor')),
+        overflowFreeze: !!(p && p.classList.contains('ew-autofill-overflow-freeze')),
+        overflowRelease: !!(p && p.classList.contains('ew-autofill-overflow-release'))
       };
     });
     return {
       ok: fields.length > 0 && fields.every(function(x){ return x.bound; }),
-      patch: 'P5_FIELD_EXIT_SOFT_AUTOFILL_SETTLE_NO_OVERFLOW',
+      patch: 'P5_FIELD_EXIT_SOFT_AUTOFILL_SETTLE_OVERFLOW_BRIDGE',
       visualMotion: 'modal-opening-preserved',
       autofillWindowActive: isAutofillSettling(),
       fields: fields,
