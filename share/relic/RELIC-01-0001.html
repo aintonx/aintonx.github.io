@@ -4476,216 +4476,52 @@ select:-webkit-autofill {
 }
 
 
-/* P5.2 · FIELD EXIT · перенос рабочей логики «Заказать конденсацию»
-   на покупку / Эхо / возврат.
-   ВАЖНО: стабилизатор автозаполнения НЕ трогаем. Он остаётся старым:
-   overflow-y:hidden + удержание scrollTop на момент системного autofill.
-   Здесь только та же визуальная логика выхода из поля, что у
-   #preorderItem / #preorderContact: cyan-filled вместо общего amber. */
-#chkName.filled:not(:focus),
-#chkPhone.filled:not(:focus),
-#chkEmail.filled:not(:focus),
-#chkAddr.filled:not(:focus),
-#echoTextInput.filled:not(:focus),
-#echoOrderName.filled:not(:focus),
-#echoOrderEmail.filled:not(:focus),
-#echoOrderPhone.filled:not(:focus),
-#echoOrderTelegram.filled:not(:focus),
-#echoOrderMarker.filled:not(:focus),
-#echoSlotInput0.filled:not(:focus),
-#echoSlotInput1.filled:not(:focus),
-#echoSlotInput2.filled:not(:focus),
-#echoSlotInput3.filled:not(:focus),
-#echoSlotInput4.filled:not(:focus),
-#returnName.filled:not(:focus),
-#returnEmail.filled:not(:focus),
-#returnTelegram.filled:not(:focus),
-#returnArtifactId.filled:not(:focus),
-#returnOrderId.filled:not(:focus),
-#returnReason.filled:not(:focus) {
+/* P5.3 · FIELD EXIT · буквальная механика «Заказать конденсацию»
+   Проблема прошлой попытки: мы перенесли только итоговый цвет .filled/autofill,
+   но оставили поля заказа жить в общей .chk-field-механике: background/color
+   transitions, scroll-margin 120px и расширенный autofill-settle. У
+   #preorderItem / #preorderContact этого нет: там простой inline-focus/blur
+   только border-color + box-shadow, поэтому выход из поля спокойный.
+   Ниже та же механика переносится на формы покупки / Эхо / возврата. */
+.chk-field input.ew-preorder-field-clone,
+.chk-field textarea.ew-preorder-field-clone {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--white) !important;
+  font-family: var(--font-input) !important;
+  font-size: 13px !important;
+  letter-spacing: .005em !important;
+  padding: 11px 14px !important;
+  outline: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  transition: border-color .2s, box-shadow .2s !important;
+  scroll-margin-top: 0 !important;
+  scroll-margin-bottom: 0 !important;
+}
+.chk-field textarea.ew-preorder-field-clone {
+  resize: none;
+}
+.chk-field input.ew-preorder-field-clone.filled:not(:focus),
+.chk-field textarea.ew-preorder-field-clone.filled:not(:focus) {
   background: rgba(0, 200, 200, 0.08) !important;
   border-color: rgba(0, 200, 200, 0.32) !important;
   color: var(--white) !important;
   caret-color: var(--cyan) !important;
-  transition: background .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease !important;
+  transition: background .25s ease, border-color .25s ease, color .25s ease !important;
 }
-
-#chkName:-webkit-autofill,
-#chkName:-webkit-autofill:hover,
-#chkName:-webkit-autofill:focus,
-#chkName:-webkit-autofill:active,
-#chkPhone:-webkit-autofill,
-#chkPhone:-webkit-autofill:hover,
-#chkPhone:-webkit-autofill:focus,
-#chkPhone:-webkit-autofill:active,
-#chkEmail:-webkit-autofill,
-#chkEmail:-webkit-autofill:hover,
-#chkEmail:-webkit-autofill:focus,
-#chkEmail:-webkit-autofill:active,
-#chkAddr:-webkit-autofill,
-#chkAddr:-webkit-autofill:hover,
-#chkAddr:-webkit-autofill:focus,
-#chkAddr:-webkit-autofill:active,
-#echoTextInput:-webkit-autofill,
-#echoTextInput:-webkit-autofill:hover,
-#echoTextInput:-webkit-autofill:focus,
-#echoTextInput:-webkit-autofill:active,
-#echoOrderName:-webkit-autofill,
-#echoOrderName:-webkit-autofill:hover,
-#echoOrderName:-webkit-autofill:focus,
-#echoOrderName:-webkit-autofill:active,
-#echoOrderEmail:-webkit-autofill,
-#echoOrderEmail:-webkit-autofill:hover,
-#echoOrderEmail:-webkit-autofill:focus,
-#echoOrderEmail:-webkit-autofill:active,
-#echoOrderPhone:-webkit-autofill,
-#echoOrderPhone:-webkit-autofill:hover,
-#echoOrderPhone:-webkit-autofill:focus,
-#echoOrderPhone:-webkit-autofill:active,
-#echoOrderTelegram:-webkit-autofill,
-#echoOrderTelegram:-webkit-autofill:hover,
-#echoOrderTelegram:-webkit-autofill:focus,
-#echoOrderTelegram:-webkit-autofill:active,
-#echoOrderMarker:-webkit-autofill,
-#echoOrderMarker:-webkit-autofill:hover,
-#echoOrderMarker:-webkit-autofill:focus,
-#echoOrderMarker:-webkit-autofill:active,
-#echoSlotInput0:-webkit-autofill,
-#echoSlotInput0:-webkit-autofill:hover,
-#echoSlotInput0:-webkit-autofill:focus,
-#echoSlotInput0:-webkit-autofill:active,
-#echoSlotInput1:-webkit-autofill,
-#echoSlotInput1:-webkit-autofill:hover,
-#echoSlotInput1:-webkit-autofill:focus,
-#echoSlotInput1:-webkit-autofill:active,
-#echoSlotInput2:-webkit-autofill,
-#echoSlotInput2:-webkit-autofill:hover,
-#echoSlotInput2:-webkit-autofill:focus,
-#echoSlotInput2:-webkit-autofill:active,
-#echoSlotInput3:-webkit-autofill,
-#echoSlotInput3:-webkit-autofill:hover,
-#echoSlotInput3:-webkit-autofill:focus,
-#echoSlotInput3:-webkit-autofill:active,
-#echoSlotInput4:-webkit-autofill,
-#echoSlotInput4:-webkit-autofill:hover,
-#echoSlotInput4:-webkit-autofill:focus,
-#echoSlotInput4:-webkit-autofill:active,
-#returnName:-webkit-autofill,
-#returnName:-webkit-autofill:hover,
-#returnName:-webkit-autofill:focus,
-#returnName:-webkit-autofill:active,
-#returnEmail:-webkit-autofill,
-#returnEmail:-webkit-autofill:hover,
-#returnEmail:-webkit-autofill:focus,
-#returnEmail:-webkit-autofill:active,
-#returnTelegram:-webkit-autofill,
-#returnTelegram:-webkit-autofill:hover,
-#returnTelegram:-webkit-autofill:focus,
-#returnTelegram:-webkit-autofill:active,
-#returnArtifactId:-webkit-autofill,
-#returnArtifactId:-webkit-autofill:hover,
-#returnArtifactId:-webkit-autofill:focus,
-#returnArtifactId:-webkit-autofill:active,
-#returnOrderId:-webkit-autofill,
-#returnOrderId:-webkit-autofill:hover,
-#returnOrderId:-webkit-autofill:focus,
-#returnOrderId:-webkit-autofill:active,
-#returnReason:-webkit-autofill,
-#returnReason:-webkit-autofill:hover,
-#returnReason:-webkit-autofill:focus,
-#returnReason:-webkit-autofill:active {
+.chk-field input.ew-preorder-field-clone:-webkit-autofill,
+.chk-field textarea.ew-preorder-field-clone:-webkit-autofill {
   -webkit-text-fill-color: var(--white) !important;
   -webkit-box-shadow: 0 0 0 1000px #061819 inset !important;
           box-shadow: 0 0 0 1000px #061819 inset !important;
   border-color: rgba(0,200,200,0.32) !important;
   caret-color: var(--cyan) !important;
-  transition: background-color 600000s 0s, color 600000s 0s !important;
+  transition: border-color .2s, box-shadow .2s !important;
 }
-
-:root[data-theme="light"] #chkName:-webkit-autofill,
-:root[data-theme="light"] #chkName:-webkit-autofill:hover,
-:root[data-theme="light"] #chkName:-webkit-autofill:focus,
-:root[data-theme="light"] #chkName:-webkit-autofill:active,
-:root[data-theme="light"] #chkPhone:-webkit-autofill,
-:root[data-theme="light"] #chkPhone:-webkit-autofill:hover,
-:root[data-theme="light"] #chkPhone:-webkit-autofill:focus,
-:root[data-theme="light"] #chkPhone:-webkit-autofill:active,
-:root[data-theme="light"] #chkEmail:-webkit-autofill,
-:root[data-theme="light"] #chkEmail:-webkit-autofill:hover,
-:root[data-theme="light"] #chkEmail:-webkit-autofill:focus,
-:root[data-theme="light"] #chkEmail:-webkit-autofill:active,
-:root[data-theme="light"] #chkAddr:-webkit-autofill,
-:root[data-theme="light"] #chkAddr:-webkit-autofill:hover,
-:root[data-theme="light"] #chkAddr:-webkit-autofill:focus,
-:root[data-theme="light"] #chkAddr:-webkit-autofill:active,
-:root[data-theme="light"] #echoTextInput:-webkit-autofill,
-:root[data-theme="light"] #echoTextInput:-webkit-autofill:hover,
-:root[data-theme="light"] #echoTextInput:-webkit-autofill:focus,
-:root[data-theme="light"] #echoTextInput:-webkit-autofill:active,
-:root[data-theme="light"] #echoOrderName:-webkit-autofill,
-:root[data-theme="light"] #echoOrderName:-webkit-autofill:hover,
-:root[data-theme="light"] #echoOrderName:-webkit-autofill:focus,
-:root[data-theme="light"] #echoOrderName:-webkit-autofill:active,
-:root[data-theme="light"] #echoOrderEmail:-webkit-autofill,
-:root[data-theme="light"] #echoOrderEmail:-webkit-autofill:hover,
-:root[data-theme="light"] #echoOrderEmail:-webkit-autofill:focus,
-:root[data-theme="light"] #echoOrderEmail:-webkit-autofill:active,
-:root[data-theme="light"] #echoOrderPhone:-webkit-autofill,
-:root[data-theme="light"] #echoOrderPhone:-webkit-autofill:hover,
-:root[data-theme="light"] #echoOrderPhone:-webkit-autofill:focus,
-:root[data-theme="light"] #echoOrderPhone:-webkit-autofill:active,
-:root[data-theme="light"] #echoOrderTelegram:-webkit-autofill,
-:root[data-theme="light"] #echoOrderTelegram:-webkit-autofill:hover,
-:root[data-theme="light"] #echoOrderTelegram:-webkit-autofill:focus,
-:root[data-theme="light"] #echoOrderTelegram:-webkit-autofill:active,
-:root[data-theme="light"] #echoOrderMarker:-webkit-autofill,
-:root[data-theme="light"] #echoOrderMarker:-webkit-autofill:hover,
-:root[data-theme="light"] #echoOrderMarker:-webkit-autofill:focus,
-:root[data-theme="light"] #echoOrderMarker:-webkit-autofill:active,
-:root[data-theme="light"] #echoSlotInput0:-webkit-autofill,
-:root[data-theme="light"] #echoSlotInput0:-webkit-autofill:hover,
-:root[data-theme="light"] #echoSlotInput0:-webkit-autofill:focus,
-:root[data-theme="light"] #echoSlotInput0:-webkit-autofill:active,
-:root[data-theme="light"] #echoSlotInput1:-webkit-autofill,
-:root[data-theme="light"] #echoSlotInput1:-webkit-autofill:hover,
-:root[data-theme="light"] #echoSlotInput1:-webkit-autofill:focus,
-:root[data-theme="light"] #echoSlotInput1:-webkit-autofill:active,
-:root[data-theme="light"] #echoSlotInput2:-webkit-autofill,
-:root[data-theme="light"] #echoSlotInput2:-webkit-autofill:hover,
-:root[data-theme="light"] #echoSlotInput2:-webkit-autofill:focus,
-:root[data-theme="light"] #echoSlotInput2:-webkit-autofill:active,
-:root[data-theme="light"] #echoSlotInput3:-webkit-autofill,
-:root[data-theme="light"] #echoSlotInput3:-webkit-autofill:hover,
-:root[data-theme="light"] #echoSlotInput3:-webkit-autofill:focus,
-:root[data-theme="light"] #echoSlotInput3:-webkit-autofill:active,
-:root[data-theme="light"] #echoSlotInput4:-webkit-autofill,
-:root[data-theme="light"] #echoSlotInput4:-webkit-autofill:hover,
-:root[data-theme="light"] #echoSlotInput4:-webkit-autofill:focus,
-:root[data-theme="light"] #echoSlotInput4:-webkit-autofill:active,
-:root[data-theme="light"] #returnName:-webkit-autofill,
-:root[data-theme="light"] #returnName:-webkit-autofill:hover,
-:root[data-theme="light"] #returnName:-webkit-autofill:focus,
-:root[data-theme="light"] #returnName:-webkit-autofill:active,
-:root[data-theme="light"] #returnEmail:-webkit-autofill,
-:root[data-theme="light"] #returnEmail:-webkit-autofill:hover,
-:root[data-theme="light"] #returnEmail:-webkit-autofill:focus,
-:root[data-theme="light"] #returnEmail:-webkit-autofill:active,
-:root[data-theme="light"] #returnTelegram:-webkit-autofill,
-:root[data-theme="light"] #returnTelegram:-webkit-autofill:hover,
-:root[data-theme="light"] #returnTelegram:-webkit-autofill:focus,
-:root[data-theme="light"] #returnTelegram:-webkit-autofill:active,
-:root[data-theme="light"] #returnArtifactId:-webkit-autofill,
-:root[data-theme="light"] #returnArtifactId:-webkit-autofill:hover,
-:root[data-theme="light"] #returnArtifactId:-webkit-autofill:focus,
-:root[data-theme="light"] #returnArtifactId:-webkit-autofill:active,
-:root[data-theme="light"] #returnOrderId:-webkit-autofill,
-:root[data-theme="light"] #returnOrderId:-webkit-autofill:hover,
-:root[data-theme="light"] #returnOrderId:-webkit-autofill:focus,
-:root[data-theme="light"] #returnOrderId:-webkit-autofill:active,
-:root[data-theme="light"] #returnReason:-webkit-autofill,
-:root[data-theme="light"] #returnReason:-webkit-autofill:hover,
-:root[data-theme="light"] #returnReason:-webkit-autofill:focus,
-:root[data-theme="light"] #returnReason:-webkit-autofill:active {
+:root[data-theme="light"] .chk-field input.ew-preorder-field-clone:-webkit-autofill,
+:root[data-theme="light"] .chk-field textarea.ew-preorder-field-clone:-webkit-autofill {
   -webkit-text-fill-color: var(--ink) !important;
   -webkit-box-shadow: 0 0 0 1000px #ddeff0 inset !important;
           box-shadow: 0 0 0 1000px #ddeff0 inset !important;
@@ -16349,6 +16185,12 @@ function renderEchoSlots(count){
     </div>`;
   }
   list.innerHTML=html;
+  try {
+    list.querySelectorAll('textarea').forEach(function(ta){
+      if(typeof _bindFilledHighlight === 'function') _bindFilledHighlight(ta);
+    });
+    if(typeof _applyPreorderFieldMechanics === 'function') _applyPreorderFieldMechanics(list);
+  } catch(e) {}
 }
 function updateEchoSlotCounter(idx){
   const ta=document.getElementById('echoSlotInput'+idx);
@@ -18652,6 +18494,64 @@ function _bindFilledHighlight(el){
   el.addEventListener('focus', () => el.classList.remove('filled'));
   el.addEventListener('change', update);
 }
+
+/* P5.3 · FIELD EXIT · literally same focus/blur mechanics as
+   «Заказать конденсацию».
+   Важно: стабилизатор автозаполнения не трогаем. Эта функция не меняет
+   freeze/scrollTop/overflow-y:hidden, не переписывает модалки и не лезет в
+   submit/payload. Она только навешивает на нужные поля тот же базовый
+   field-behaviour, что у #preorderItem / #preorderContact. */
+const EW_PREORDER_FIELD_MECHANIC_IDS = [
+  'chkName', 'chkPhone', 'chkEmail', 'chkAddr',
+  'echoTextInput',
+  'echoOrderName', 'echoOrderEmail', 'echoOrderPhone', 'echoOrderTelegram', 'echoOrderMarker',
+  'returnName', 'returnEmail', 'returnTelegram', 'returnArtifactId', 'returnOrderId', 'returnReason'
+];
+function _applyPreorderFieldMechanics(root){
+  root = root || document;
+  const fields = [];
+  EW_PREORDER_FIELD_MECHANIC_IDS.forEach(function(id){
+    const el = document.getElementById(id);
+    if(el) fields.push(el);
+  });
+  try {
+    root.querySelectorAll('textarea[id^="echoSlotInput"]').forEach(function(el){ fields.push(el); });
+  } catch(e) {}
+  fields.forEach(function(el){
+    if(!el || el.dataset.preorderFieldMechanics === '1') return;
+    el.dataset.preorderFieldMechanics = '1';
+    el.classList.add('ew-preorder-field-clone');
+
+    /* База один-в-один как у поля «Заказать конденсацию».
+       Не ставим background/color transitions: именно они в .chk-field
+       давали резкий кадр после системного autofill. */
+    el.style.background = 'var(--surface)';
+    el.style.border = '1px solid var(--border)';
+    el.style.borderRadius = 'var(--radius-sm)';
+    el.style.color = 'var(--white)';
+    el.style.fontFamily = 'var(--font-input)';
+    el.style.fontSize = '13px';
+    el.style.letterSpacing = '.005em';
+    el.style.padding = '11px 14px';
+    el.style.outline = 'none';
+    el.style.transition = 'border-color .2s, box-shadow .2s';
+    el.style.webkitAppearance = 'none';
+    el.style.appearance = 'none';
+    el.style.scrollMarginTop = '0px';
+    el.style.scrollMarginBottom = '0px';
+
+    el.addEventListener('focus', function(){
+      el.style.borderColor = 'var(--cyan)';
+      el.style.boxShadow = '0 0 0 1px rgba(0,200,200,0.22), 0 0 14px rgba(0,200,200,0.10)';
+    });
+    el.addEventListener('blur', function(){
+      el.style.borderColor = 'var(--border)';
+      el.style.boxShadow = '';
+    });
+  });
+}
+window._applyPreorderFieldMechanics = _applyPreorderFieldMechanics;
+
 (function setupFilledFieldHighlight(){
   function bindAll(){
     const ids = ['chkName', 'chkPhone', 'chkEmail', 'chkAddr',
@@ -18660,6 +18560,7 @@ function _bindFilledHighlight(el){
                  'echoOrderName', 'echoOrderEmail', 'echoOrderPhone', 'echoOrderTelegram', 'echoOrderMarker',
                  'returnName', 'returnEmail', 'returnTelegram', 'returnArtifactId', 'returnOrderId', 'returnReason'];
     ids.forEach(id => _bindFilledHighlight(document.getElementById(id)));
+    if(typeof _applyPreorderFieldMechanics === 'function') _applyPreorderFieldMechanics(document);
   }
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', bindAll);
@@ -18668,21 +18569,23 @@ function _bindFilledHighlight(el){
   }
 })();
 
-/* P5.2 diagnostics: проверка, что формы используют старый стабилизатор
-   autofill и визуальную cyan-логику «Заказать конденсацию». */
 window.inspectPatch5FieldExitSoft = function(){
-  const ids = [
-    'chkName','chkPhone','chkEmail','chkAddr',
-    'echoTextInput','echoOrderName','echoOrderEmail','echoOrderPhone','echoOrderTelegram','echoOrderMarker',
-    'returnName','returnEmail','returnTelegram','returnArtifactId','returnOrderId','returnReason'
-  ];
-  const fields = ids.map(id => {
+  const ids = EW_PREORDER_FIELD_MECHANIC_IDS.slice();
+  const slotIds = [];
+  try {
+    document.querySelectorAll('textarea[id^="echoSlotInput"]').forEach(function(el){ slotIds.push(el.id); });
+  } catch(e) {}
+  const allIds = ids.concat(slotIds);
+  const fields = allIds.map(id => {
     const el = document.getElementById(id);
     return {
       id,
       found: !!el,
       filledBound: !!(el && el.dataset && el.dataset.filledBound === '1'),
-      afFreezeBound: !!(el && el.dataset && el.dataset.afFreezeBound === '1')
+      preorderMechanics: !!(el && el.dataset && el.dataset.preorderFieldMechanics === '1'),
+      classApplied: !!(el && el.classList && el.classList.contains('ew-preorder-field-clone')),
+      transition: el ? el.style.transition : null,
+      scrollMarginBottom: el ? el.style.scrollMarginBottom : null
     };
   });
   const panels = [
@@ -18700,13 +18603,16 @@ window.inspectPatch5FieldExitSoft = function(){
     };
   });
   const missing = fields.filter(f => !f.found).map(f => f.id);
+  const notApplied = fields.filter(f => f.found && !f.preorderMechanics).map(f => f.id);
   return {
-    ok: missing.length === 0,
-    patch: 'P5_FIELD_EXIT_PREORDER_LOGIC_APPLIED',
-    visualLogic: 'same-as-preorder-condensation',
-    autofillStabilizer: 'preserved-overflow-y-hidden-scrolltop-freeze',
+    ok: missing.length === 0 && notApplied.length === 0,
+    patch: 'P5_FIELD_EXIT_LITERAL_PREORDER_MECHANICS',
+    visualLogic: 'literal-focus-blur-from-preorder-condensation',
+    autofillStabilizer: 'preserved-existing-overflow-y-hidden-scrolltop-freeze',
+    removedPreviousFailedPatch: true,
     modalOpening: 'preserved',
     missing,
+    notApplied,
     fields,
     panels
   };
