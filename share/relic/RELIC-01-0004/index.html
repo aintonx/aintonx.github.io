@@ -31,17 +31,17 @@
 })();
 </script>
 <title>EchoWorld · Лесной гость</title>
-<meta name="description" content="Ворчал он без передышки — на погоду, на чужую безалаберность, на вещь, которая сломалась не у него и его вообще не касалась. Но пока другие охали, он молча закатывал рукава и прив…">
+<meta name="description" content="Ворчал он без передышки — на погоду, на чужую безалаберность, на вещь, которая сломалась не у него и его вообще не касалась. Но пока другие охали, он молча закатывал рукава и приводил в поря…">
 <meta name="keywords" content="EchoWorld, Marketspace, арт-маркетплейс, авторские артефакты, реликвии, цифровая подпись, NFT, Marketspace вселенная">
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0004/">
 
 <!-- Open Graph -->
-<meta property="og:type" content="article">
+<meta property="og:type" content="product">
 <meta property="og:site_name" content="EchoWorld">
 <meta property="og:title" content="EchoWorld · Лесной гость">
-<meta property="og:description" content="Ворчал он без передышки — на погоду, на чужую безалаберность, на вещь, которая сломалась не у него и его вообще не касалась. Но пока другие охали, он молча закатывал рукава и прив…">
+<meta property="og:description" content="Ворчал он без передышки — на погоду, на чужую безалаберность, на вещь, которая сломалась не у него и его вообще не касалась. Но пока другие охали, он молча закатывал рукава и приводил в поря…">
 <meta property="og:url" content="https://www.echoworld.space/share/relic/RELIC-01-0004/">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:image" content="https://www.echoworld.space/img/bobr.webp">
@@ -52,7 +52,7 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="EchoWorld · Лесной гость">
-<meta name="twitter:description" content="Ворчал он без передышки — на погоду, на чужую безалаберность, на вещь, которая сломалась не у него и его вообще не касалась. Но пока другие охали, он молча закатывал рукава и прив…">
+<meta name="twitter:description" content="Ворчал он без передышки — на погоду, на чужую безалаберность, на вещь, которая сломалась не у него и его вообще не касалась. Но пока другие охали, он молча закатывал рукава и приводил в поря…">
 <meta name="twitter:image" content="https://www.echoworld.space/img/bobr.webp">
 
 <!-- Favicon: inline SVG = быстро, без отдельного файла -->
@@ -4476,52 +4476,30 @@ select:-webkit-autofill {
 }
 
 
-/* P5.3 · FIELD EXIT · буквальная механика «Заказать конденсацию»
-   Проблема прошлой попытки: мы перенесли только итоговый цвет .filled/autofill,
-   но оставили поля заказа жить в общей .chk-field-механике: background/color
-   transitions, scroll-margin 120px и расширенный autofill-settle. У
-   #preorderItem / #preorderContact этого нет: там простой inline-focus/blur
-   только border-color + box-shadow, поэтому выход из поля спокойный.
-   Ниже та же механика переносится на формы покупки / Эхо / возврата. */
-.chk-field input.ew-preorder-field-clone,
-.chk-field textarea.ew-preorder-field-clone {
-  background: var(--surface) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-sm) !important;
-  color: var(--white) !important;
-  font-family: var(--font-input) !important;
-  font-size: 13px !important;
-  letter-spacing: .005em !important;
-  padding: 11px 14px !important;
-  outline: none !important;
-  -webkit-appearance: none !important;
-  appearance: none !important;
-  transition: border-color .2s, box-shadow .2s !important;
+
+/* P5.4 · AUTOFILL EXIT HARDENING
+   Итог диагностики: рывок был не в цвете поля. Формы покупки/Эхо/возврата
+   находились в iOS Contact AutoFill-группе внутри scrollable bottom-sheet.
+   «Заказать конденсацию» работает спокойно, потому что там фактически
+   участвует только одно поле browser-autofill — email. Ниже повторяем этот
+   профиль: email остаётся autocomplete=email, остальные поля не попадают
+   в contact-card autofill-группу. */
+.ew-autofill-safe-field {
   scroll-margin-top: 0 !important;
   scroll-margin-bottom: 0 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
 }
-.chk-field textarea.ew-preorder-field-clone {
-  resize: none;
-}
-.chk-field input.ew-preorder-field-clone.filled:not(:focus),
-.chk-field textarea.ew-preorder-field-clone.filled:not(:focus) {
-  background: rgba(0, 200, 200, 0.08) !important;
-  border-color: rgba(0, 200, 200, 0.32) !important;
-  color: var(--white) !important;
-  caret-color: var(--cyan) !important;
-  transition: background .25s ease, border-color .25s ease, color .25s ease !important;
-}
-.chk-field input.ew-preorder-field-clone:-webkit-autofill,
-.chk-field textarea.ew-preorder-field-clone:-webkit-autofill {
+.chk-field input.ew-email-only-autofill:-webkit-autofill,
+.chk-field textarea.ew-email-only-autofill:-webkit-autofill {
   -webkit-text-fill-color: var(--white) !important;
   -webkit-box-shadow: 0 0 0 1000px #061819 inset !important;
           box-shadow: 0 0 0 1000px #061819 inset !important;
   border-color: rgba(0,200,200,0.32) !important;
   caret-color: var(--cyan) !important;
-  transition: border-color .2s, box-shadow .2s !important;
 }
-:root[data-theme="light"] .chk-field input.ew-preorder-field-clone:-webkit-autofill,
-:root[data-theme="light"] .chk-field textarea.ew-preorder-field-clone:-webkit-autofill {
+:root[data-theme="light"] .chk-field input.ew-email-only-autofill:-webkit-autofill,
+:root[data-theme="light"] .chk-field textarea.ew-email-only-autofill:-webkit-autofill {
   -webkit-text-fill-color: var(--ink) !important;
   -webkit-box-shadow: 0 0 0 1000px #ddeff0 inset !important;
           box-shadow: 0 0 0 1000px #ddeff0 inset !important;
@@ -14347,7 +14325,7 @@ button, a, [role="button"], label,
            поэтому убрано.
            onsubmit=return false — Enter не отправляет форму, отправка
            идёт через swipe-confirm. -->
-      <form autocomplete="on" novalidate onsubmit="event.preventDefault();return false;" style="display:contents;">
+      <form autocomplete="off" novalidate onsubmit="event.preventDefault();return false;" style="display:contents;">
       <div class="chk-section">
         <div class="chk-section-title">Сигнатура · поток Виша</div>
         <div class="chk-gender-hint">От выбранного потока зависит, каким Виш родится в Полях Конденсации. Это не шаблон, не модель — это живое существо, чьи черты определит ваш Конденсат, направленный в один из двух потоков.</div>
@@ -14501,7 +14479,7 @@ button, a, [role="button"], label,
       <!-- form-уровень autocomplete=ON — iOS Safari предлагает автозаполнение
            Email/Телефона. Имя / Telegram / Маркер подавлены точечно
            (autocomplete=off + readonly-трюк на самих полях). -->
-      <form autocomplete="on" novalidate onsubmit="event.preventDefault();return false;" style="display:contents;">
+      <form autocomplete="off" novalidate onsubmit="event.preventDefault();return false;" style="display:contents;">
 
       <!-- Сводка содержимого Эхо -->
       <div class="chk-section">
@@ -16189,7 +16167,7 @@ function renderEchoSlots(count){
     list.querySelectorAll('textarea').forEach(function(ta){
       if(typeof _bindFilledHighlight === 'function') _bindFilledHighlight(ta);
     });
-    if(typeof _applyPreorderFieldMechanics === 'function') _applyPreorderFieldMechanics(list);
+    if(typeof _ewApplyAutofillSafeProfile === 'function') _ewApplyAutofillSafeProfile();
   } catch(e) {}
 }
 function updateEchoSlotCounter(idx){
@@ -18330,14 +18308,15 @@ function _setupModalUnstickAfterBlur(panel, inputsOrSelector, openBodyClass){
     if(!f || f.dataset.unstickBound === '1') return;
     f.dataset.unstickBound = '1';
     f.addEventListener('blur', () => {
-      // Один unstick сразу + один отложенный через 360мс (типовая
-      // длительность анимации закрытия iOS-клавиатуры).
-      // Раньше слушали visualViewport.resize и вызывали unstick на
-      // каждый resize — на iOS это создаёт каскад overflow:auto↔hidden
-      // длительностью ~500мс, во время которого тапы по чекбоксу и
-      // крестику теряются (форма «залипала»).
-      unstick();
-      setTimeout(unstick, 360);
+      // P5.4: НЕ пинаем overflow в тот же кадр blur/autofill.
+      // Именно мгновенный hidden→restore менял геометрию scroll-panel,
+      // из-за чего системное окно автозаполнения схлопывалось рывком.
+      // Unstick оставляем как страховку, но переносим после анимации
+      // клавиатуры/QuickType, когда пользователь уже не смотрит на
+      // anchored popup. При ручном выходе поле успевает спокойно “погаснуть”.
+      if(f._ewUnstickTimer) clearTimeout(f._ewUnstickTimer);
+      f._ewUnstickTimer = setTimeout(unstick, 560);
+      setTimeout(unstick, 860);
     });
   }
   if(typeof inputsOrSelector === 'string'){
@@ -18495,62 +18474,80 @@ function _bindFilledHighlight(el){
   el.addEventListener('change', update);
 }
 
-/* P5.3 · FIELD EXIT · literally same focus/blur mechanics as
-   «Заказать конденсацию».
-   Важно: стабилизатор автозаполнения не трогаем. Эта функция не меняет
-   freeze/scrollTop/overflow-y:hidden, не переписывает модалки и не лезет в
-   submit/payload. Она только навешивает на нужные поля тот же базовый
-   field-behaviour, что у #preorderItem / #preorderContact. */
-const EW_PREORDER_FIELD_MECHANIC_IDS = [
-  'chkName', 'chkPhone', 'chkEmail', 'chkAddr',
-  'echoTextInput',
-  'echoOrderName', 'echoOrderEmail', 'echoOrderPhone', 'echoOrderTelegram', 'echoOrderMarker',
-  'returnName', 'returnEmail', 'returnTelegram', 'returnArtifactId', 'returnOrderId', 'returnReason'
+
+/* P5.4 · AUTOFILL EXIT HARDENING
+   Железная версия: не пытаемся “анимировать” системное окно автозаполнения.
+   Мы убираем сам триггер рывка — multi-field Contact AutoFill-группу внутри
+   scrollable modal. Повторяем рабочий профиль «Заказать конденсацию»:
+   только email остаётся нативно автозаполняемым, остальные поля получают
+   нейтральный профиль и не заставляют iOS прыгать по форме. */
+const EW_AUTOFILL_EMAIL_IDS = ['chkEmail','echoOrderEmail','returnEmail'];
+const EW_AUTOFILL_NEUTRAL_IDS = [
+  'chkName','chkPhone','chkAddr',
+  'echoTextInput','echoOrderName','echoOrderPhone','echoOrderTelegram','echoOrderMarker',
+  'returnName','returnTelegram','returnArtifactId','returnOrderId','returnReason'
 ];
-function _applyPreorderFieldMechanics(root){
-  root = root || document;
-  const fields = [];
-  EW_PREORDER_FIELD_MECHANIC_IDS.forEach(function(id){
+function _ewApplyAutofillSafeProfile(){
+  function neutralize(el, token){
+    if(!el) return;
+    el.classList.add('ew-autofill-safe-field');
+    el.setAttribute('autocomplete', token || 'new-password');
+    el.setAttribute('autocorrect', 'off');
+    el.setAttribute('spellcheck', 'false');
+    el.setAttribute('data-lpignore', 'true');
+    el.setAttribute('data-form-type', 'other');
+    el.setAttribute('data-1p-ignore', 'true');
+    el.setAttribute('data-bwignore', 'true');
+    // Меняем name: iOS/менеджеры паролей часто строят autofill-группу по name,
+    // даже когда autocomplete уже выключен. Value/id не трогаем — payload цел.
+    if(!el.dataset.ewOriginalName) el.dataset.ewOriginalName = el.getAttribute('name') || '';
+    el.setAttribute('name', 'ew_neutral_' + (el.id || 'field'));
+    // readonly-on-first-paint ломает раннее сканирование autofill, но снимается
+    // в момент настоящего фокуса. Для email не используем — ему autofill нужен.
+    if(el.type !== 'textarea' && el.tagName !== 'TEXTAREA' && !el.hasAttribute('data-ew-no-readonly')){
+      el.setAttribute('readonly','readonly');
+      const unlock = function(){
+        el.removeAttribute('readonly');
+        el.removeEventListener('focus', unlock);
+        el.removeEventListener('pointerdown', unlock);
+        el.removeEventListener('touchstart', unlock);
+      };
+      el.addEventListener('focus', unlock, {passive:true});
+      el.addEventListener('pointerdown', unlock, {passive:true});
+      el.addEventListener('touchstart', unlock, {passive:true});
+    }
+  }
+  EW_AUTOFILL_EMAIL_IDS.forEach(function(id){
     const el = document.getElementById(id);
-    if(el) fields.push(el);
+    if(!el) return;
+    el.classList.add('ew-autofill-safe-field','ew-email-only-autofill');
+    el.setAttribute('autocomplete','email');
+    el.setAttribute('inputmode','email');
+    el.setAttribute('autocorrect','off');
+    el.setAttribute('autocapitalize','off');
+    el.setAttribute('spellcheck','false');
+    if(!el.dataset.ewOriginalName) el.dataset.ewOriginalName = el.getAttribute('name') || '';
+    el.setAttribute('name','email');
+  });
+  EW_AUTOFILL_NEUTRAL_IDS.forEach(function(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const token = (id.indexOf('Phone') >= 0 || id === 'chkPhone') ? 'new-password' : 'new-password';
+    neutralize(el, token);
   });
   try {
-    root.querySelectorAll('textarea[id^="echoSlotInput"]').forEach(function(el){ fields.push(el); });
+    document.querySelectorAll('textarea[id^="echoSlotInput"]').forEach(function(el){ neutralize(el, 'off'); });
   } catch(e) {}
-  fields.forEach(function(el){
-    if(!el || el.dataset.preorderFieldMechanics === '1') return;
-    el.dataset.preorderFieldMechanics = '1';
-    el.classList.add('ew-preorder-field-clone');
-
-    /* База один-в-один как у поля «Заказать конденсацию».
-       Не ставим background/color transitions: именно они в .chk-field
-       давали резкий кадр после системного autofill. */
-    el.style.background = 'var(--surface)';
-    el.style.border = '1px solid var(--border)';
-    el.style.borderRadius = 'var(--radius-sm)';
-    el.style.color = 'var(--white)';
-    el.style.fontFamily = 'var(--font-input)';
-    el.style.fontSize = '13px';
-    el.style.letterSpacing = '.005em';
-    el.style.padding = '11px 14px';
-    el.style.outline = 'none';
-    el.style.transition = 'border-color .2s, box-shadow .2s';
-    el.style.webkitAppearance = 'none';
-    el.style.appearance = 'none';
-    el.style.scrollMarginTop = '0px';
-    el.style.scrollMarginBottom = '0px';
-
-    el.addEventListener('focus', function(){
-      el.style.borderColor = 'var(--cyan)';
-      el.style.boxShadow = '0 0 0 1px rgba(0,200,200,0.22), 0 0 14px rgba(0,200,200,0.10)';
-    });
-    el.addEventListener('blur', function(){
-      el.style.borderColor = 'var(--border)';
-      el.style.boxShadow = '';
-    });
+  // Формы не объявляем contact-form контейнерами. Email-поля всё равно имеют
+  // собственный autocomplete=email, как preorderContact.
+  ['chkOverlay','echoOrderOverlay','returnForm'].forEach(function(id){
+    const root = document.getElementById(id);
+    if(!root) return;
+    const form = root.tagName === 'FORM' ? root : root.querySelector('form');
+    if(form) form.setAttribute('autocomplete','off');
   });
 }
-window._applyPreorderFieldMechanics = _applyPreorderFieldMechanics;
+window._ewApplyAutofillSafeProfile = _ewApplyAutofillSafeProfile;
 
 (function setupFilledFieldHighlight(){
   function bindAll(){
@@ -18560,7 +18557,7 @@ window._applyPreorderFieldMechanics = _applyPreorderFieldMechanics;
                  'echoOrderName', 'echoOrderEmail', 'echoOrderPhone', 'echoOrderTelegram', 'echoOrderMarker',
                  'returnName', 'returnEmail', 'returnTelegram', 'returnArtifactId', 'returnOrderId', 'returnReason'];
     ids.forEach(id => _bindFilledHighlight(document.getElementById(id)));
-    if(typeof _applyPreorderFieldMechanics === 'function') _applyPreorderFieldMechanics(document);
+    if(typeof _ewApplyAutofillSafeProfile === 'function') _ewApplyAutofillSafeProfile();
   }
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', bindAll);
@@ -18570,22 +18567,21 @@ window._applyPreorderFieldMechanics = _applyPreorderFieldMechanics;
 })();
 
 window.inspectPatch5FieldExitSoft = function(){
-  const ids = EW_PREORDER_FIELD_MECHANIC_IDS.slice();
-  const slotIds = [];
-  try {
-    document.querySelectorAll('textarea[id^="echoSlotInput"]').forEach(function(el){ slotIds.push(el.id); });
-  } catch(e) {}
-  const allIds = ids.concat(slotIds);
-  const fields = allIds.map(id => {
+  if(typeof _ewApplyAutofillSafeProfile === 'function') _ewApplyAutofillSafeProfile();
+  const emailIds = EW_AUTOFILL_EMAIL_IDS.slice();
+  const neutralIds = EW_AUTOFILL_NEUTRAL_IDS.slice();
+  const fields = emailIds.concat(neutralIds).map(id => {
     const el = document.getElementById(id);
     return {
       id,
       found: !!el,
+      autocomplete: el ? el.getAttribute('autocomplete') : null,
+      name: el ? el.getAttribute('name') : null,
+      emailOnly: !!(el && el.classList && el.classList.contains('ew-email-only-autofill')),
+      neutralized: !!(el && el.classList && el.classList.contains('ew-autofill-safe-field')),
       filledBound: !!(el && el.dataset && el.dataset.filledBound === '1'),
-      preorderMechanics: !!(el && el.dataset && el.dataset.preorderFieldMechanics === '1'),
-      classApplied: !!(el && el.classList && el.classList.contains('ew-preorder-field-clone')),
-      transition: el ? el.style.transition : null,
-      scrollMarginBottom: el ? el.style.scrollMarginBottom : null
+      afFreezeBound: !!(el && el.dataset && el.dataset.afFreezeBound === '1'),
+      readonlyNow: !!(el && el.hasAttribute('readonly'))
     };
   });
   const panels = [
@@ -18599,20 +18595,21 @@ window.inspectPatch5FieldExitSoft = function(){
       id: pair[1],
       found: !!el,
       afFreezeInit: !!(el && el.dataset && el.dataset.afFreezeInit === '1'),
+      unstickAfterBlurInit: !!(el && el.dataset && el.dataset.unstickAfterBlurInit === '1'),
       overflowY: el ? el.style.overflowY : null
     };
   });
-  const missing = fields.filter(f => !f.found).map(f => f.id);
-  const notApplied = fields.filter(f => f.found && !f.preorderMechanics).map(f => f.id);
+  const badEmail = fields.filter(f => emailIds.indexOf(f.id) >= 0 && f.autocomplete !== 'email').map(f => f.id);
+  const badNeutral = fields.filter(f => neutralIds.indexOf(f.id) >= 0 && f.autocomplete !== 'new-password' && f.autocomplete !== 'off').map(f => f.id);
   return {
-    ok: missing.length === 0 && notApplied.length === 0,
-    patch: 'P5_FIELD_EXIT_LITERAL_PREORDER_MECHANICS',
-    visualLogic: 'literal-focus-blur-from-preorder-condensation',
-    autofillStabilizer: 'preserved-existing-overflow-y-hidden-scrolltop-freeze',
-    removedPreviousFailedPatch: true,
-    modalOpening: 'preserved',
-    missing,
-    notApplied,
+    ok: !badEmail.length && !badNeutral.length,
+    patch: 'P5_FIELD_EXIT_HARD_AUTOFILL_PROFILE',
+    problem: 'not field animation; iOS Contact AutoFill group inside scrollable modal',
+    strategy: 'preorder-like email-only native autofill + neutralized non-email fields + deferred overflow unstick',
+    emailFields: emailIds,
+    neutralFields: neutralIds,
+    badEmail,
+    badNeutral,
     fields,
     panels
   };
@@ -25863,7 +25860,7 @@ function _spinEchoAuraDrum(onDone){
       <button class="panel-close chk-close" type="button" onclick="closeReturnModal()" aria-label="Закрыть">Закрыть</button>
     </div>
     <div class="chk-body return-body" id="returnBody">
-      <form class="return-form" id="returnForm" onsubmit="return submitReturnForm(event)" autocomplete="on" novalidate style="display:contents;">
+      <form class="return-form" id="returnForm" onsubmit="return submitReturnForm(event)" autocomplete="off" novalidate style="display:contents;">
         <div class="legal-modal-status return-status"><span class="req-dot"></span>КАНАЛ ВОЗВРАТА ОТКРЫТ</div>
 
         <div class="req-modal-lore">
