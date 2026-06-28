@@ -2889,11 +2889,17 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
     content: '✕' !important;
     color: var(--red2) !important;
   }
-  .mhead-close:hover,
   .mhead-close:active {
     background: rgba(192,40,40,0.2) !important;
     border-color: var(--red2) !important;
     box-shadow: 0 0 10px rgba(192,40,40,0.25) !important;
+  }
+  @media (hover:hover) and (pointer:fine) {
+    .mhead-close:hover {
+      background: rgba(192,40,40,0.2) !important;
+      border-color: var(--red2) !important;
+      box-shadow: 0 0 10px rgba(192,40,40,0.25) !important;
+    }
   }
   /* Drag handles: both modal and checkout visible on mobile */
   #modalDragHandle { display: flex; }
@@ -5084,7 +5090,7 @@ select:-webkit-autofill {
   transform-origin: top;
   transition: transform .2s ease;
 }
-@media (hover: hover) and (pointer: fine) {
+@media (hover:hover) and (pointer:fine) {
   .faq-item:hover { background: var(--surface2); }
   .faq-item:hover::before { transform: scaleY(1); }
 }
@@ -7062,18 +7068,13 @@ html.legal-modal-open .cookie-banner.show {
 .mob-nav-link[href="#worlds"] .nav-ico { transform: scale(1.2); }
 .mob-nav-link[href="#collab"] .nav-ico { transform: scale(0.9); }
 .mob-nav-link .nav-mark { font-size: 20px; }
-/* Подсветка раздела — чистая заливка строки, без засечки слева. :active +
-   transition = плавно-быстрое появление и затухание выделения даже при
-   случайном свайпе. Ховер — только под настоящим курсором (на touch
-   отклик через :active), чтобы скольжение пальцем не вспыхивало. */
+/* Подсветка мобильной навигации не должна включаться от свайпа по touch-экрану. */
 .mob-nav-link:active {
-  background: var(--surface-hi);
-  color: var(--cyan-hi);
+  background: transparent;
+  color: var(--white);
 }
-@media (hover: hover) {@media (hover:hover) and (pointer:fine) {
-
+@media (hover:hover) and (pointer:fine) {
   .mob-nav-link:hover { background: var(--surface-hi); color: var(--cyan-hi); }
-}
 }
 /* Технологичный вход: пункты материализуются каскадом вслед за панелью */
 @keyframes mnavItemIn {
@@ -7151,17 +7152,17 @@ html.legal-modal-open .cookie-banner.show {
   align-items: center;
   justify-content: center;
 }
-/* Отклик: плавно-быстрое появление и исчезновение подсветки. Ховер только
-   под настоящим курсором (на touch — :active), чтобы скольжение пальцем
-   не оставляло «залипшую» вспышку. */
-@media (hover: hover) {
+/* Отклик плиток мобильного меню: hover только для настоящего курсора. */
+@media (hover:hover) and (pointer:fine) {
   .mnav-tile:not(.mnav-tile-soon):hover {
     border-color: var(--cyan); color: var(--cyan);
     background: var(--surface-hi); box-shadow: 0 0 18px var(--cyan-glow);
   }
 }
 .mnav-tile:not(.mnav-tile-soon):active {
-  border-color: var(--cyan); color: var(--cyan); background: var(--surface-hi);
+  border-color: var(--border2);
+  color: var(--white-mid);
+  background: var(--surface);
 }
 /* Бейдж количества в корзине */
 .mnav-tile-badge {
@@ -7449,8 +7450,10 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   .tech-card::before { display: none; }
   /* На телефоне карточки не интерактивны — гасим tap/hover-отклик */
   .tech-card { cursor: default; -webkit-tap-highlight-color: transparent; }
-  .tech-card:hover { background: var(--surface); transform: none; }
-  .tech-card:hover .tech-card-num { color: var(--ink); text-shadow: none; }
+  @media (hover:hover) and (pointer:fine) {
+    .tech-card:hover { background: var(--surface); transform: none; }
+    .tech-card:hover .tech-card-num { color: var(--ink); text-shadow: none; }
+  }
   .tech-card-title {
     margin-bottom: 12px;
   }
@@ -7677,7 +7680,13 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
     position: relative;
     overflow: hidden;
   }
-  .pre-pane-cta:hover,
+  @media (hover:hover) and (pointer:fine) {
+    .pre-pane-cta:hover {
+      background: rgba(192,40,40,0.08);
+      box-shadow: 0 0 18px rgba(192,40,40,0.2), inset 0 0 0 1px rgba(192,40,40,0.16);
+      outline: none;
+    }
+  }
   .pre-pane-cta:focus-visible {
     background: rgba(192,40,40,0.08);
     box-shadow: 0 0 18px rgba(192,40,40,0.2), inset 0 0 0 1px rgba(192,40,40,0.16);
@@ -11304,14 +11313,16 @@ button, a, [role="button"], label,
     overflow: hidden !important;
     transition: background var(--t-med) var(--ease-out), border-color var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out) !important;
   }
-  .pcard:hover {
-    border-color: var(--line-hi) !important;
-    background: var(--surface-hi) !important;
-    transform: translateY(-3px) !important;
-    box-shadow: 0 16px 36px rgba(0,0,0,0.45), 0 0 0 1px var(--line-hi) !important;
+  @media (hover:hover) and (pointer:fine) {
+    .pcard:hover {
+      border-color: var(--line-hi) !important;
+      background: var(--surface-hi) !important;
+      transform: translateY(-3px) !important;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.45), 0 0 0 1px var(--line-hi) !important;
+    }
+    .pcard.sold:hover { transform: none !important; box-shadow: none !important; border-color: var(--line) !important; background: var(--deep) !important; }
   }
   .pcard.sold { background: var(--deep) !important; }
-  .pcard.sold:hover { transform: none !important; box-shadow: none !important; border-color: var(--line) !important; background: var(--deep) !important; }
 
   /* Изображение карточки */
   .pimg { border-radius: 0 !important; overflow: hidden; }
@@ -11433,10 +11444,12 @@ button, a, [role="button"], label,
     color: var(--ink) !important;
     transition: background var(--t-med) var(--ease-out), border-color var(--t-med) var(--ease-out), color var(--t-med) var(--ease-out) !important;
   }
-  .pbtn:hover {
-    background: var(--red) !important;
-    border-color: var(--red) !important;
-    color: #fff !important;
+  @media (hover:hover) and (pointer:fine) {
+    .pbtn:hover {
+      background: var(--red) !important;
+      border-color: var(--red) !important;
+      color: #fff !important;
+    }
   }
   .pcard.sold .pbtn {
     opacity: 0.45 !important;
@@ -11529,8 +11542,10 @@ button, a, [role="button"], label,
    PCARD HOVER — финальный штрих
    ══════════════════════════════════════════════════════════════ */
 @media (min-width: 961px) {
-  .pcard:hover .pname { color: var(--red-hi) !important; transition: color var(--t-med) var(--ease-out); }
-  .pcard.sold:hover .pname { color: var(--ink-3) !important; }
+  @media (hover:hover) and (pointer:fine) {
+    .pcard:hover .pname { color: var(--red-hi) !important; transition: color var(--t-med) var(--ease-out); }
+    .pcard.sold:hover .pname { color: var(--ink-3) !important; }
+  }
   .pcard .pname { transition: color var(--t-med) var(--ease-out); }
 }
 
@@ -12708,7 +12723,7 @@ button, a, [role="button"], label,
     width: 100%;
   }
 }
-@media (hover: hover) and (pointer: fine) {
+@media (hover:hover) and (pointer:fine) {
   .ap-status-action:hover {
     border-color: var(--cyan);
     color: var(--white);
@@ -12787,7 +12802,7 @@ button, a, [role="button"], label,
   background: var(--red2);
   box-shadow: 0 0 22px rgba(192,40,40,.30);
 }
-@media (hover: hover) and (pointer: fine) {
+@media (hover:hover) and (pointer:fine) {
   .ap-status-action:hover {
     border-color: var(--cyan);
     background: rgba(0,200,200,.045);
@@ -12838,7 +12853,7 @@ button, a, [role="button"], label,
   border-color: var(--red2);
   color: #fff;
 }
-@media (hover: hover) and (pointer: fine) {
+@media (hover:hover) and (pointer:fine) {
   :root[data-theme="light"] .ap-status-action:hover {
     background: rgba(11,118,126,.055);
     border-color: rgba(11,118,126,.34);
@@ -13677,6 +13692,158 @@ button, a, [role="button"], label,
 </script>
 <noscript><div><img src="https://mc.yandex.ru/watch/109875902" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <!-- /Yandex.Metrika counter -->
+<style id="ew-touch-active-press">
+/* Touch devices: keep intentional button press states without restoring hover-on-swipe. */
+@media (hover: none), (pointer: coarse) {
+  .cta-secondary.cta-echo:active {
+    border-color: var(--cyan);
+    background: rgba(0,200,200,0.06);
+    box-shadow: 0 0 20px rgba(0,200,200,0.16);
+  }
+
+  .cta-primary:active {
+    background: var(--red2);
+    box-shadow: 0 0 30px rgba(192,40,40,0.4);
+  }
+
+  .cta-secondary:active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .hbtn:active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    box-shadow: 0 0 12px var(--cyan-glow);
+  }
+
+  .hbtn.danger:active {
+    border-color: var(--red2);
+    color: var(--red2);
+  }
+
+  .pbtn:active {
+    background: var(--red2);
+    box-shadow: 0 0 20px rgba(192,40,40,0.4);
+  }
+
+  .pbtn:active::after {
+    left: 100%;
+  }
+
+  .sbtn:active,
+  .pbtn.sbtn:active {
+    background: transparent;
+    border-color: var(--border2);
+    color: var(--white-dim);
+    box-shadow: none;
+  }
+
+  .cart-empty-btn:active {
+    background: var(--cyan-dim);
+    box-shadow: 0 0 16px var(--cyan-glow);
+  }
+
+  .cart-checkout-btn:active,
+  .chk-pay-btn:active,
+  #preorderBtn:active {
+    background: var(--red2) !important;
+    box-shadow: 0 0 24px rgba(192,40,40,0.4);
+  }
+
+  .echo-submit:active {
+    background: rgba(0,200,200,0.18) !important;
+    box-shadow: 0 0 0 1px var(--cyan), 0 6px 22px var(--cyan-glow) !important;
+  }
+
+  .return-submit:active:not(:disabled) {
+    background: rgba(192,40,40,0.1);
+    box-shadow: 0 0 18px rgba(192,40,40,0.22), inset 0 0 0 1px rgba(192,40,40,0.16);
+  }
+
+  .cookie-banner-ok:active {
+    background: rgba(192,40,40,0.22);
+    border-color: var(--red2);
+    box-shadow: 0 0 12px rgba(192,40,40,0.3);
+    color: #fff;
+  }
+
+  .btn-primary:active {
+    background: var(--red-hi);
+    border-color: var(--red-hi);
+    box-shadow: 0 0 0 1px rgba(230,56,56,0.35), 0 12px 36px rgba(192,40,40,0.30);
+  }
+
+  .btn-cyan:active {
+    background: rgba(0,200,200,0.08);
+    color: var(--cyan-hi);
+    border-color: var(--cyan);
+    box-shadow: var(--shadow-cyan);
+  }
+
+  .btn-ghost:active {
+    background: var(--surface-hi);
+    color: var(--ink);
+    border-color: var(--ink-4);
+  }
+
+  .echo-pane-cta:active {
+    background: rgba(0,200,200,0.08);
+    box-shadow: 0 0 18px rgba(0,200,200,0.2), inset 0 0 0 1px rgba(0,200,200,0.16);
+  }
+
+  .echo-voice-retry:active {
+    border-color: var(--red2);
+    color: var(--red2);
+    box-shadow: 0 0 10px rgba(192,40,40,0.16);
+  }
+
+  .ap-gate-submit:active,
+  .ap-test-btn:active {
+    border-color: var(--cyan);
+    color: var(--white);
+    transform: translateY(-1px);
+  }
+
+  .attr-pay-btn:active {
+    border-color: var(--white-dim);
+    color: var(--white-mid);
+    box-shadow: 0 0 14px rgba(255,255,255,.04);
+  }
+
+  .attr-pay-btn:active::before {
+    transform: translateX(100%);
+  }
+
+  .mob-nav-link,
+  .mnav-tile {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mob-nav-link:active {
+    background: transparent !important;
+    color: var(--white) !important;
+  }
+
+  .mob-nav-link:active .nav-ico,
+  .mob-nav-link:active .nav-mark {
+    color: var(--cyan) !important;
+  }
+
+  .mnav-tile:not(.mnav-tile-soon):active {
+    background: var(--surface) !important;
+    border-color: var(--border2) !important;
+    color: var(--white-mid) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .mnav-tile:not(.mnav-tile-soon):active .mnav-tile-ico,
+  .mnav-tile:not(.mnav-tile-soon):active .mnav-tile-label {
+    color: inherit !important;
+  }
+}
+</style>
 </head>
 <body>
 <div id="ewSmartCaptchaRoot" aria-hidden="true"></div>
