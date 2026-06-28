@@ -16,7 +16,7 @@
    в конце файла после загрузки ПЛАВНО привозит пользователя туда, где он был
    (якорь-секция + смещение). Ключ позиции — БЕЗ hash: застрявший фрагмент
    (#catalog и т.п.) не должен ломать возврат, поэтому при ожидающем возврате
-   он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';window.__ewRestoreUserIntent=false;(function(){function mark(){window.__ewRestoreUserIntent=true;}var events=['wheel','touchstart','keydown','pointerdown'];try{events.forEach(function(ev){window.addEventListener(ev,mark,{passive:true,capture:true});});}catch(e){events.forEach(function(ev){window.addEventListener(ev,mark,true);});}})();(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
+   он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';window.__ewRestoreUserIntent=false;window.__ewRestoreProgrammatic=false;(function(){function mark(){if(!window.__ewRestoreProgrammatic)window.__ewRestoreUserIntent=true;}var events=['wheel','touchstart','touchmove','keydown','pointerdown','scroll'];try{events.forEach(function(ev){window.addEventListener(ev,mark,{passive:true,capture:true});});}catch(e){events.forEach(function(ev){window.addEventListener(ev,mark,true);});}})();(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
 
 <title>EchoWorld — Реликвии из параллельного мира MARKETSPACE</title>
 <meta name="description" content="EchoWorld — арт-маркетплейс реликвий из параллельного мира MARKETSPACE. Каждая реликвия — кристаллизованная история живого существа, прошедшего Переход. Не товары — следы Вишей.">
@@ -26435,16 +26435,18 @@ function acceptCookies(){
       return;
     }
     restoring=true;
+    window.__ewRestoreProgrammatic=true;
     var prevSB=html.style.scrollBehavior;
     html.style.scrollBehavior='auto'; /* едем своей rAF-анимацией — без двойного сглаживания с CSS smooth */
     function finish(){
       html.style.scrollBehavior=prevSB;
+      window.__ewRestoreProgrammatic=false;
       restoring=false;
       save(true);
     }
     var userTouched=false, restoreStarted=false;
-    function onUser(){ userTouched=true; window.__ewRestoreUserIntent=true; }
-    ['wheel','touchstart','keydown','pointerdown'].forEach(function(ev){
+    function onUser(){ userTouched=true; window.__ewRestoreUserIntent=true; window.__ewRestoreProgrammatic=false; }
+    ['wheel','touchstart','touchmove','keydown','pointerdown'].forEach(function(ev){
       window.addEventListener(ev, onUser, {passive:true, once:true});
     });
     function interrupted(){
@@ -26495,7 +26497,9 @@ function acceptCookies(){
     /* старт с короткой паузой после первой отрисовки: заход не дёргается */
     setTimeout(function(){ requestAnimationFrame(glide); }, 180);
   }
-  if(document.readyState==='loading'){
+  if(document.body){
+    setTimeout(run, 0);
+  } else if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 0); }, {once:true});
   } else {
     setTimeout(run, 0);
