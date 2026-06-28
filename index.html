@@ -70,6 +70,34 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="format-detection" content="telephone=no">
 <script src="https://smartcaptcha.cloud.yandex.ru/captcha.js?render=onload&onload=onAperturaSmartCaptchaLoad" defer></script>
+<style id="ew-app-scroll-root-css">
+html,
+body {
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+body {
+  width: 100%;
+}
+#ewAppScroll {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: auto;
+  background: var(--void, #04040a);
+  scrollbar-gutter: stable;
+}
+@supports (height: 100svh) {
+  #ewAppScroll { height: 100svh; }
+}
+</style>
 <style>
 :root {
   /* Нативные контролы и хром браузера следуют теме сайта. Статичный
@@ -13198,6 +13226,160 @@ button, a, [role="button"], label,
 </head>
 <body>
 <div id="ewSmartCaptchaRoot" aria-hidden="true"></div>
+<div id="ewAppScroll" class="ew-app-scroll">
+<script id="ew-app-scroll-root-compat">
+(function(){
+  var nativeScrollTo = window.scrollTo ? window.scrollTo.bind(window) : null;
+  var nativeScrollBy = window.scrollBy ? window.scrollBy.bind(window) : null;
+  function root(){
+    return document.getElementById('ewAppScroll') || document.documentElement || document.body;
+  }
+  function maxY(){
+    var r=root();
+    return Math.max(0, (r.scrollHeight || 0) - (r.clientHeight || window.innerHeight || 0));
+  }
+  function clampY(y){
+    y=Number(y);
+    if(!isFinite(y)) y=0;
+    return Math.max(0, Math.min(Math.round(y), maxY()));
+  }
+  function currentY(){
+    var r=root();
+    return Math.max(0, Math.round((r && r.scrollTop) || 0));
+  }
+  function currentX(){
+    var r=root();
+    return Math.max(0, Math.round((r && r.scrollLeft) || 0));
+  }
+  function parsePoint(args, relative){
+    var a=args && args[0], b=args && args[1];
+    var out={left:relative?0:currentX(), top:relative?0:currentY(), behavior:undefined};
+    if(a && typeof a==='object'){
+      if(typeof a.left==='number') out.left=(relative?0:currentX())+a.left;
+      if(typeof a.top==='number') out.top=(relative?0:currentY())+a.top;
+      if(a.behavior) out.behavior=a.behavior;
+    } else {
+      if(typeof a==='number') out.left=(relative?0:currentX())+a;
+      if(typeof b==='number') out.top=(relative?0:currentY())+b;
+    }
+    out.top=clampY(out.top);
+    return out;
+  }
+  function appScrollTo(){
+    var r=root();
+    if(!r || r===document.documentElement && !document.getElementById('ewAppScroll')){
+      if(nativeScrollTo) return nativeScrollTo.apply(window, arguments);
+      return;
+    }
+    var p=parsePoint(arguments, false);
+    try{
+      if(typeof r.scrollTo==='function') r.scrollTo({left:p.left, top:p.top, behavior:p.behavior || 'auto'});
+      else { r.scrollLeft=p.left; r.scrollTop=p.top; }
+    }catch(e){
+      r.scrollLeft=p.left;
+      r.scrollTop=p.top;
+    }
+  }
+  function appScrollBy(){
+    var r=root();
+    if(!r || r===document.documentElement && !document.getElementById('ewAppScroll')){
+      if(nativeScrollBy) return nativeScrollBy.apply(window, arguments);
+      return;
+    }
+    var p=parsePoint(arguments, true);
+    try{
+      if(typeof r.scrollTo==='function') r.scrollTo({left:p.left, top:p.top, behavior:p.behavior || 'auto'});
+      else { r.scrollLeft=p.left; r.scrollTop=p.top; }
+    }catch(e){
+      r.scrollLeft=p.left;
+      r.scrollTop=p.top;
+    }
+  }
+  function elementTop(el){
+    var r=root();
+    if(!el || !r) return 0;
+    var rb=r.getBoundingClientRect ? r.getBoundingClientRect() : {top:0};
+    var eb=el.getBoundingClientRect();
+    return Math.round((eb.top - rb.top) + currentY());
+  }
+  function scrollElementIntoView(el, behavior, offset){
+    if(!el) return;
+    appScrollTo({top: elementTop(el) - (offset || 0), left:0, behavior:behavior || 'smooth'});
+  }
+  try{ window.scrollTo = appScrollTo; }catch(e){}
+  try{ window.scroll = appScrollTo; }catch(e){}
+  try{ window.scrollBy = appScrollBy; }catch(e){}
+  function defineGetter(obj, prop, getter){
+    try{ Object.defineProperty(obj, prop, {configurable:true, get:getter}); }catch(e){}
+  }
+  defineGetter(window, 'scrollY', currentY);
+  defineGetter(window, 'pageYOffset', currentY);
+  defineGetter(window, 'scrollX', currentX);
+  defineGetter(window, 'pageXOffset', currentX);
+  try{ Object.defineProperty(document, 'scrollingElement', {configurable:true, get:root}); }catch(e){}
+  function patchScrollTop(node){
+    if(!node || node.__ewAppScrollTopPatched) return;
+    try{
+      Object.defineProperty(node, 'scrollTop', {
+        configurable:true,
+        get:currentY,
+        set:function(v){ root().scrollTop=clampY(v); }
+      });
+      Object.defineProperty(node, 'scrollLeft', {
+        configurable:true,
+        get:currentX,
+        set:function(v){ root().scrollLeft=Number(v)||0; }
+      });
+      node.__ewAppScrollTopPatched=true;
+    }catch(e){}
+  }
+  patchScrollTop(document.documentElement);
+  function bind(){
+    var r=root();
+    patchScrollTop(document.body);
+    if(r && !r.__ewAppScrollBound){
+      r.__ewAppScrollBound=true;
+      r.addEventListener('scroll', function(){
+        try{ window.dispatchEvent(new Event('scroll')); }catch(e){}
+      }, {passive:true});
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind, {once:true});
+  else bind();
+  document.addEventListener('click', function(e){
+    var a=e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    if(!a) return;
+    var href=a.getAttribute('href') || '';
+    if(href==='#'){
+      e.preventDefault();
+      appScrollTo({top:0, left:0, behavior:'smooth'});
+      try{ history.pushState(null, '', location.pathname + location.search); }catch(_){}
+      return;
+    }
+    var id='';
+    try{ id=decodeURIComponent(href.slice(1)); }catch(_){ id=href.slice(1); }
+    var el=id ? document.getElementById(id) : null;
+    if(!el) return;
+    e.preventDefault();
+    scrollElementIntoView(el, 'smooth', 0);
+    try{ history.pushState(null, '', location.pathname + location.search + '#' + encodeURIComponent(id)); }catch(_){}
+  }, true);
+  window.addEventListener('hashchange', function(){
+    var id=(location.hash||'').slice(1);
+    if(!id) return;
+    try{ id=decodeURIComponent(id); }catch(e){}
+    setTimeout(function(){ scrollElementIntoView(document.getElementById(id), 'auto', 0); }, 0);
+  });
+  window.EW_APP_SCROLL = {
+    root: root,
+    y: currentY,
+    topOf: elementTop,
+    scrollTo: appScrollTo,
+    scrollBy: appScrollBy,
+    scrollElementIntoView: scrollElementIntoView
+  };
+})();
+</script>
 
 <!-- ===== ICON SPRITE · Lucide v1.17.0 (ISC) + Simple Icons (telegram) ═ единственный источник UI-иконок.
      Использование: <svg class="ico"><use href="#i-имя"/></svg>; цвет — currentColor, толщина — класс .ico.
@@ -27129,5 +27311,6 @@ function acceptCookies(){
   else setup();
 })();
 </script>
+</div>
 </body>
 </html>
