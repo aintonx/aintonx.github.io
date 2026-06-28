@@ -22558,6 +22558,8 @@ function _renderAperturaStatus(payload){
     ov.dataset.copyCode=payload.copyCode || '';
   }
   const titleText = String(payload.title || '');
+  const kicker=document.querySelector('#apStatusOverlay .ap-status-kicker');
+  if(kicker) kicker.textContent = payload.kicker || '// APERTURA · STATUS';
   const titleLen = Array.from(titleText).length;
   const titleFitClass = titleLen >= 34 ? ' ap-title-xxl' : (titleLen >= 29 ? ' ap-title-xl' : (titleLen >= 22 ? ' ap-title-long' : ''));
   body.innerHTML=`
@@ -22588,6 +22590,52 @@ function showAperturaStatus(key, opts){
     actions: opts.actions || state.actions
   });
 }
+
+/* INSTAGRAM ENTRY · мягкий вход для внешнего слоя (?signal=instagram).
+   Не меняет URL, не трогает scroll/touch/cart/checkout/API и не мешает
+   deep-link карточек: если есть ?relic=..., карточка остаётся главным входом. */
+const EW_ENTRY_SIGNAL_PARAM = 'signal';
+const EW_ENTRY_SIGNAL_INSTAGRAM = 'instagram';
+const EW_ENTRY_SIGNAL_INSTAGRAM_KEY = 'ew:entry-signal:instagram:v1';
+function isInstagramEntrySignal(){
+  try{
+    const url = new URL(location.href);
+    const signal = String(url.searchParams.get(EW_ENTRY_SIGNAL_PARAM) || '').trim().toLowerCase();
+    if(signal !== EW_ENTRY_SIGNAL_INSTAGRAM) return false;
+    if(url.searchParams.has(RELIC_DEEP_LINK_PARAM)) return false;
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+function showInstagramEntryStatus(){
+  _renderAperturaStatus({
+    key: 'entry-instagram',
+    source: 'entry-instagram',
+    kicker: '// APERTURA · ENTRY STATUS',
+    title: 'ВНЕШНИЙ СЛОЙ РАСПОЗНАН',
+    text: 'Вы вошли в EchoWorld — интерфейс, через который в наш мир попадают физические реликвии из MARKETSPACE.',
+    html: '<div class="ap-status-info">Если вы здесь впервые — начните с каталога, узнайте, что такое MARKETSPACE, или оставьте ЭХО.</div>',
+    actions: [
+      {label:'Открыть каталог', action:'catalog', primary:true},
+      {label:'Что такое MARKETSPACE?', action:'marketspace'},
+      {label:'Оставить ЭХО', action:'echo'}
+    ]
+  });
+}
+function bootInstagramEntrySignal(){
+  if(!isInstagramEntrySignal()) return;
+  try{
+    if(sessionStorage.getItem(EW_ENTRY_SIGNAL_INSTAGRAM_KEY) === '1') return;
+    sessionStorage.setItem(EW_ENTRY_SIGNAL_INSTAGRAM_KEY, '1');
+  }catch(e){}
+  setTimeout(showInstagramEntryStatus, 520);
+}
+(function setupInstagramEntrySignalBoot(){
+  function boot(){ bootInstagramEntrySignal(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
 function _apRelicCode(item){
   const raw = item && item.id ? String(item.id).replace(/^RELIC-?/i, '') : '01-0000';
   return 'RELIC-' + raw;
@@ -22841,6 +22889,11 @@ function handleAperturaStatusAction(action, key){
   if(action==='echo'){
     closeAperturaStatus(); closeArchitectConsole();
     setTimeout(()=>{ const sec=document.getElementById('echo'); if(sec) sec.scrollIntoView({behavior:'smooth', block:'start'}); }, 160);
+    return;
+  }
+  if(action==='marketspace'){
+    closeAperturaStatus(); closeArchitectConsole();
+    setTimeout(()=>_apScrollTo('worlds'), 160);
     return;
   }
   if(action==='echo-text'){
