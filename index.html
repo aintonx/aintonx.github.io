@@ -12,7 +12,7 @@
      Или: F12 → Console → строка «APERTURA · BUILD R6».
      ═══════════════════════════════════════════════════════════════ -->
 <script>try{console.log('%cAPERTURA · BUILD R6','color:#00c8c8');}catch(e){}</script>
-<script id="ew-scroll-diag">
+<script id="ew-scroll-diag" type="text/plain" data-disabled="production">
 (function(){
   var enabled=false, off=false;
   try{
@@ -203,7 +203,7 @@
    в конце файла после загрузки ПЛАВНО привозит пользователя туда, где он был
    (якорь-секция + смещение). Ключ позиции — БЕЗ hash: застрявший фрагмент
    (#catalog и т.п.) не должен ломать возврат, поэтому при ожидающем возврате
-   он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';window.__ewRestoreUserIntent=false;window.__ewRestoreProgrammatic=false;(function(){function mark(){if(!window.__ewRestoreProgrammatic)window.__ewRestoreUserIntent=true;}var events=['wheel','touchstart','touchmove','keydown','pointerdown','scroll'];try{events.forEach(function(ev){window.addEventListener(ev,mark,{passive:true,capture:true});});}catch(e){events.forEach(function(ev){window.addEventListener(ev,mark,true);});}})();(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
+   он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';window.__ewRestoreUserIntent=false;window.__ewRestoreProgrammatic=false;(function(){function mark(){if(!window.__ewRestoreProgrammatic)window.__ewRestoreUserIntent=true;}var events=['wheel','touchstart','touchmove','keydown','pointerdown'];try{events.forEach(function(ev){window.addEventListener(ev,mark,{passive:true,capture:true});});}catch(e){events.forEach(function(ev){window.addEventListener(ev,mark,true);});}})();(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
 
 <title>EchoWorld — Реликвии из параллельного мира MARKETSPACE</title>
 <meta name="description" content="EchoWorld — арт-маркетплейс реликвий из параллельного мира MARKETSPACE. Каждая реликвия — кристаллизованная история живого существа, прошедшего Переход. Не товары — следы Вишей.">
@@ -26599,9 +26599,7 @@ function acceptCookies(){
     var max=Math.max(0, (se.scrollHeight || 0) - window.innerHeight);
     return Math.max(0, Math.min(y, max));
   }
-  function diag(type, data, withStack){
-    try{ if(window.EWScrollDiag && EWScrollDiag.log) EWScrollDiag.log(type, data || {}, !!withStack); }catch(e){}
-  }
+  function diag(){}
   function run(){
     try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
     var html=document.documentElement;
