@@ -12,364 +12,13 @@
      Или: F12 → Console → строка «APERTURA · BUILD R6».
      ═══════════════════════════════════════════════════════════════ -->
 <script>try{console.log('%cAPERTURA · BUILD R6','color:#00c8c8');}catch(e){}</script>
-<script id="ew-scroll-diag" type="text/plain" data-disabled="production">
-(function(){
-  var enabled=false, off=false;
-  try{
-    var qs=new URLSearchParams(location.search);
-    enabled=qs.has('ewScrollDiag') || qs.get('ewScrollDiag')==='1';
-    off=qs.has('ewScrollDiagOff');
-    if(off) localStorage.removeItem('ew:scroll-diag');
-    if(enabled) localStorage.setItem('ew:scroll-diag','1');
-    enabled=enabled || localStorage.getItem('ew:scroll-diag')==='1';
-  }catch(e){}
-  if(!enabled) return;
-  var KEY='ew:scroll-diag:logs:v1';
-  var MAX=320;
-  var logs=[];
-  try{ logs=JSON.parse(sessionStorage.getItem(KEY)||'[]')||[]; }catch(e){ logs=[]; }
-  var lastRender=0, overlay=null;
-  function navType(){
-    try{
-      var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];
-      if(n&&n.type) return n.type;
-      if(performance.navigation){
-        if(performance.navigation.type===1) return 'reload';
-        if(performance.navigation.type===2) return 'back_forward';
-      }
-    }catch(e){}
-    return '';
-  }
-  function currentY(){
-    try{
-      var se=document.scrollingElement||document.documentElement||document.body;
-      return Math.round((se&&se.scrollTop)||window.pageYOffset||window.scrollY||0);
-    }catch(e){ return -1; }
-  }
-  function traceRec(){
-    try{ return JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null'); }catch(e){ return null; }
-  }
-  function stack(){
-    try{ throw new Error('ew-scroll-diag'); }catch(e){
-      return String(e&&e.stack||'').split('\n').slice(2,9).map(function(s){
-        return s.replace(location.href,'<page>').trim();
-      });
-    }
-  }
-  function snap(extra){
-    var html=document.documentElement, body=document.body;
-    var vv=window.visualViewport;
-    var out={
-      t:Math.round(performance.now()),
-      clock:new Date().toISOString(),
-      type:extra&&extra.type||'',
-      y:currentY(),
-      nav:navType(),
-      ready:document.readyState,
-      hash:location.hash||'',
-      rest:(history&&'scrollRestoration' in history)?history.scrollRestoration:null,
-      restoreUser:!!window.__ewRestoreUserIntent,
-      restoreProg:!!window.__ewRestoreProgrammatic,
-      bodyClass:body?body.className:'',
-      htmlClass:html?html.className:'',
-      sb:html&&html.style?html.style.scrollBehavior:'',
-      vv:vv?{h:Math.round(vv.height),top:Math.round(vv.offsetTop),scale:vv.scale}:null,
-      trace:traceRec()
-    };
-    if(extra){ Object.keys(extra).forEach(function(k){ if(k!=='type') out[k]=extra[k]; }); }
-    return out;
-  }
-  function persist(){
-    try{ sessionStorage.setItem(KEY, JSON.stringify(logs.slice(-MAX))); }catch(e){}
-  }
-  function line(e){
-    return e.t+' '+e.type+' y='+e.y+' user='+(e.restoreUser?1:0)+' prog='+(e.restoreProg?1:0);
-  }
-  function render(){
-    if(!document.body) return;
-    var now=Date.now();
-    if(now-lastRender<80) return;
-    lastRender=now;
-    if(!overlay){
-      overlay=document.createElement('div');
-      overlay.id='ewScrollDiagPanel';
-      overlay.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;max-height:34vh;overflow:auto;pointer-events:none;background:rgba(0,0,0,.78);color:#9ff;font:10px/1.35 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:1px solid rgba(0,200,200,.45);border-radius:6px;padding:8px;white-space:pre-wrap;box-shadow:0 8px 34px rgba(0,0,0,.45)';
-      document.body.appendChild(overlay);
-    }
-    overlay.textContent='EWScrollDiag ON  dump: EWScrollDiag.copy()\\n'+logs.slice(-16).map(line).join('\\n');
-  }
-  function log(type, data, withStack){
-    var e=snap({type:type, data:data||{}});
-    if(withStack) e.stack=stack();
-    logs.push(e);
-    if(logs.length>MAX) logs=logs.slice(-MAX);
-    persist();
-    try{ console.debug('[EWScrollDiag]', type, e); }catch(_){}
-    render();
-    return e;
-  }
-  function compact(){
-    return logs.filter(function(e){
-      return /scrollTo|scrollBy|scrollTop:set|scrollIntoView|restore|pagehide|pageshow|visibility|beforeunload|load|user:|event:scroll/.test(e.type);
-    }).slice(-180);
-  }
-  window.EWScrollDiag={
-    log:log,
-    dump:function(){ return logs.slice(); },
-    summary:compact,
-    copy:function(){
-      var txt=JSON.stringify(compact(), null, 2);
-      try{ navigator.clipboard&&navigator.clipboard.writeText(txt); }catch(e){}
-      return txt;
-    },
-    clear:function(){ logs=[]; persist(); render(); return true; },
-    off:function(){ try{ localStorage.removeItem('ew:scroll-diag'); }catch(e){} return 'off: reload page'; },
-    on:function(){ try{ localStorage.setItem('ew:scroll-diag','1'); }catch(e){} return 'on: reload page'; }
-  };
-  function wrap(obj, name, type){
-    try{
-      var orig=obj&&obj[name];
-      if(typeof orig!=='function'||orig.__ewScrollDiag) return;
-      var fn=function(){
-        var args=Array.prototype.slice.call(arguments).map(function(v){
-          if(v&&typeof v==='object'){
-            try{ return JSON.parse(JSON.stringify(v)); }catch(e){ return String(v); }
-          }
-          return v;
-        });
-        log(type||name, {args:args}, true);
-        return orig.apply(this, arguments);
-      };
-      fn.__ewScrollDiag=true;
-      obj[name]=fn;
-    }catch(e){}
-  }
-  wrap(window,'scrollTo','window.scrollTo');
-  wrap(window,'scrollBy','window.scrollBy');
-  wrap(window,'scroll','window.scroll');
-  try{
-    if(window.Element&&Element.prototype){
-      wrap(Element.prototype,'scrollTo','element.scrollTo');
-      wrap(Element.prototype,'scrollBy','element.scrollBy');
-      wrap(Element.prototype,'scrollIntoView','element.scrollIntoView');
-    }
-  }catch(e){}
-  function hookScrollTop(proto, label){
-    try{
-      if(!proto||proto.__ewScrollDiagScrollTop) return;
-      var d=Object.getOwnPropertyDescriptor(proto,'scrollTop');
-      if(!d||!d.configurable||!d.get||!d.set) return;
-      Object.defineProperty(proto,'scrollTop',{
-        configurable:true,
-        enumerable:d.enumerable,
-        get:function(){ return d.get.call(this); },
-        set:function(v){
-          var isPage=false;
-          try{ isPage=this===document.documentElement||this===document.body||this===document.scrollingElement; }catch(e){}
-          if(isPage) log('scrollTop:set', {node:label, value:v, before:d.get.call(this)}, true);
-          return d.set.call(this,v);
-        }
-      });
-      proto.__ewScrollDiagScrollTop=true;
-    }catch(e){}
-  }
-  hookScrollTop(window.Element&&Element.prototype,'Element');
-  hookScrollTop(window.HTMLElement&&HTMLElement.prototype,'HTMLElement');
-  ['wheel','touchstart','touchmove','pointerdown','keydown'].forEach(function(ev){
-    window.addEventListener(ev,function(e){
-      log('user:'+ev, {key:e.key||'', dy:e.deltaY||0, target:e.target&&e.target.tagName||''}, false);
-    }, {passive:true,capture:true});
-  });
-  var lastScroll=0;
-  window.addEventListener('scroll', function(){
-    var now=performance.now();
-    if(now-lastScroll>120){ lastScroll=now; log('event:scroll', {}, false); }
-  }, {passive:true,capture:true});
-  ['pagehide','pageshow','beforeunload','load','DOMContentLoaded','visibilitychange','resize'].forEach(function(ev){
-    var target=(ev==='DOMContentLoaded')?document:window;
-    target.addEventListener(ev,function(e){ log('event:'+ev, {persisted:!!(e&&e.persisted), visibility:document.visibilityState}, false); }, {capture:true});
-  });
-  try{
-    if(window.visualViewport){
-      visualViewport.addEventListener('resize', function(){ log('vv:resize', {}, false); }, {passive:true});
-      visualViewport.addEventListener('scroll', function(){ log('vv:scroll', {}, false); }, {passive:true});
-    }
-  }catch(e){}
-  if(document.body) render(); else document.addEventListener('DOMContentLoaded', render, {once:true});
-  log('diag:init', {}, false);
-})();
-</script>
 <script>/* Возврат позиции после reload: браузер сам не скроллит (manual), движок
    в конце файла после загрузки ПЛАВНО привозит пользователя туда, где он был
    (якорь-секция + смещение). Ключ позиции — БЕЗ hash: застрявший фрагмент
    (#catalog и т.п.) не должен ломать возврат, поэтому при ожидающем возврате
-   он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
-<script type="text/plain" data-disabled="overbroad-scroll-arbiter">/* Reload scroll arbitration: in the first seconds after reload/back,
-   a real user scroll gesture wins over restore, viewport resize and late scripts. */try{(function(){if(window.__ewScrollUserWinsInstalled)return;window.__ewScrollUserWinsInstalled=1;function navType(){try{var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)return n.type;if(performance.navigation){if(performance.navigation.type===1)return'reload';if(performance.navigation.type===2)return'back_forward';}}catch(e){}return'';}var nt=navType();if(nt!=='reload'&&nt!=='back_forward')return;var started=performance.now(),until=0,maxY=0,lastTouchY=null,downIntent=false,fixing=false;function y(){var se=document.scrollingElement||document.documentElement||document.body;return Math.max(0,Math.round((se&&se.scrollTop)||window.pageYOffset||window.scrollY||0));}function arm(){window.__ewRestoreUserIntent=true;window.__ewNativeScrollIntent=true;until=performance.now()+2600;maxY=Math.max(maxY,y());}function allowWindow(){return performance.now()-started<8000&&performance.now()<until;}function isPageNode(n){return n===document.documentElement||n===document.body||n===document.scrollingElement;}function preventSnapBack(){if(!allowWindow()||!downIntent||fixing)return;var cur=y();if(cur>maxY)maxY=cur;if(maxY>180&&cur<maxY-120){var html=document.documentElement,prev=html.style.scrollBehavior;fixing=true;window.__ewScrollArbiterFixing=true;html.style.scrollBehavior='auto';try{window.scrollTo(0,maxY);}catch(e){}requestAnimationFrame(function(){html.style.scrollBehavior=prev;window.__ewScrollArbiterFixing=false;fixing=false;});}}function shouldBlock(){return allowWindow()&&downIntent&&!window.__ewScrollArbiterFixing;}function wrap(obj,name){try{var orig=obj&&obj[name];if(typeof orig!=='function'||orig.__ewUserWins)return;var fn=function(){if(shouldBlock())return;return orig.apply(this,arguments);};fn.__ewUserWins=1;obj[name]=fn;}catch(e){}}function hook(proto){try{if(!proto||proto.__ewUserWinsScrollTop)return;var d=Object.getOwnPropertyDescriptor(proto,'scrollTop');if(!d||!d.configurable||!d.get||!d.set)return;Object.defineProperty(proto,'scrollTop',{configurable:true,enumerable:d.enumerable,get:function(){return d.get.call(this);},set:function(v){if(isPageNode(this)&&shouldBlock())return;return d.set.call(this,v);}});proto.__ewUserWinsScrollTop=1;}catch(e){}}wrap(window,'scrollTo');wrap(window,'scrollBy');wrap(window,'scroll');try{if(window.Element&&Element.prototype){wrap(Element.prototype,'scrollIntoView');}}catch(e){}hook(window.Element&&Element.prototype);hook(window.HTMLElement&&HTMLElement.prototype);window.addEventListener('touchstart',function(e){try{lastTouchY=e.touches&&e.touches[0]?e.touches[0].clientY:null;}catch(_){lastTouchY=null;}},{passive:true,capture:true});window.addEventListener('touchmove',function(e){try{var ty=e.touches&&e.touches[0]?e.touches[0].clientY:null;if(lastTouchY!=null&&ty!=null&&ty<lastTouchY-2){downIntent=true;arm();}lastTouchY=ty;}catch(_){downIntent=true;arm();}},{passive:true,capture:true});window.addEventListener('wheel',function(e){if(e.deltaY>0){downIntent=true;arm();}},{passive:true,capture:true});window.addEventListener('keydown',function(e){if(/^( |Spacebar|PageDown|ArrowDown|End)$/.test(e.key||'')){downIntent=true;arm();}},{passive:true,capture:true});window.addEventListener('scroll',function(){if(allowWindow())requestAnimationFrame(preventSnapBack);},{passive:true,capture:true});if(window.visualViewport){visualViewport.addEventListener('resize',function(){if(allowWindow())requestAnimationFrame(preventSnapBack);},{passive:true});visualViewport.addEventListener('scroll',function(){if(allowWindow())requestAnimationFrame(preventSnapBack);},{passive:true});}})();}catch(e){}</script>
-<script type="text/plain" data-disabled="scroll-guard-v2">
-/* Reload scroll guard v2: protects against early programmatic snap-back only
-   until the user explicitly scrolls upward. */
-try{(function(){
-  if(window.__ewScrollUserWinsInstalledV2) return;
-  window.__ewScrollUserWinsInstalledV2=1;
-
-  function navType(){
-    try{
-      var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];
-      if(n&&n.type) return n.type;
-      if(performance.navigation){
-        if(performance.navigation.type===1) return 'reload';
-        if(performance.navigation.type===2) return 'back_forward';
-      }
-    }catch(e){}
-    return '';
-  }
-  var nt=navType();
-  if(nt!=='reload'&&nt!=='back_forward') return;
-
-  var started=performance.now();
-  var protectUntil=0;
-  var maxY=0;
-  var lastTouchY=null;
-  var downIntent=false;
-  var upIntentAt=0;
-  var fixing=false;
-
-  function now(){ return performance.now(); }
-  function currentY(){
-    var se=document.scrollingElement||document.documentElement||document.body;
-    return Math.max(0, Math.round((se&&se.scrollTop)||window.pageYOffset||window.scrollY||0));
-  }
-  function startupWindow(){ return now()-started<8000; }
-  function armDown(){
-    downIntent=true;
-    window.__ewRestoreUserIntent=true;
-    window.__ewNativeScrollIntent=true;
-    window.__ewScrollGuardUpIntent=false;
-    protectUntil=now()+1800;
-    maxY=Math.max(maxY,currentY());
-  }
-  function releaseUp(){
-    upIntentAt=now();
-    downIntent=false;
-    protectUntil=0;
-    maxY=currentY();
-    window.__ewScrollGuardUpIntent=true;
-  }
-  function active(){
-    return startupWindow()&&downIntent&&now()<protectUntil&&!fixing&&(now()-upIntentAt>180);
-  }
-  function isPageNode(node){
-    return node===document.documentElement||node===document.body||node===document.scrollingElement;
-  }
-  function targetY(name,args,ctx){
-    var cur=currentY();
-    var a=args&&args[0], b=args&&args[1];
-    if(name==='scrollIntoView'&&ctx&&ctx.getBoundingClientRect){
-      return Math.round(ctx.getBoundingClientRect().top+(window.pageYOffset||0));
-    }
-    if(name==='scrollBy'){
-      if(typeof b==='number') return cur+b;
-      if(a&&typeof a==='object'&&typeof a.top==='number') return cur+a.top;
-      return null;
-    }
-    if(typeof b==='number') return b;
-    if(a&&typeof a==='object'&&typeof a.top==='number') return a.top;
-    return null;
-  }
-  function shouldBlock(name,args,ctx){
-    if(!active()||window.__ewScrollArbiterFixing) return false;
-    var target=targetY(name,args,ctx);
-    if(target==null) return false;
-    return target<Math.max(maxY,currentY())-120;
-  }
-  function preventSnapBack(){
-    if(!active()||window.__ewScrollArbiterFixing) return;
-    var cur=currentY();
-    if(cur>maxY){ maxY=cur; return; }
-    if(maxY>180&&cur<maxY-120){
-      var html=document.documentElement;
-      var prev=html.style.scrollBehavior;
-      fixing=true;
-      window.__ewScrollArbiterFixing=true;
-      html.style.scrollBehavior='auto';
-      try{ window.scrollTo(0,maxY); }catch(e){}
-      requestAnimationFrame(function(){
-        html.style.scrollBehavior=prev;
-        window.__ewScrollArbiterFixing=false;
-        fixing=false;
-      });
-    }
-  }
-  function wrap(obj,name){
-    try{
-      var orig=obj&&obj[name];
-      if(typeof orig!=='function'||orig.__ewUserWinsV2) return;
-      var fn=function(){
-        if(shouldBlock(name,arguments,this)) return;
-        return orig.apply(this,arguments);
-      };
-      fn.__ewUserWinsV2=1;
-      obj[name]=fn;
-    }catch(e){}
-  }
-  function hook(proto){
-    try{
-      if(!proto||proto.__ewUserWinsScrollTopV2) return;
-      var d=Object.getOwnPropertyDescriptor(proto,'scrollTop');
-      if(!d||!d.configurable||!d.get||!d.set) return;
-      Object.defineProperty(proto,'scrollTop',{
-        configurable:true,
-        enumerable:d.enumerable,
-        get:function(){ return d.get.call(this); },
-        set:function(v){
-          if(isPageNode(this)&&shouldBlock('scrollTop',[null,Number(v)],this)) return;
-          return d.set.call(this,v);
-        }
-      });
-      proto.__ewUserWinsScrollTopV2=1;
-    }catch(e){}
-  }
-
-  wrap(window,'scrollTo');
-  wrap(window,'scrollBy');
-  wrap(window,'scroll');
-  try{ if(window.Element&&Element.prototype) wrap(Element.prototype,'scrollIntoView'); }catch(e){}
-  hook(window.Element&&Element.prototype);
-  hook(window.HTMLElement&&HTMLElement.prototype);
-
-  window.addEventListener('touchstart',function(e){
-    try{ lastTouchY=e.touches&&e.touches[0]?e.touches[0].clientY:null; }catch(_){ lastTouchY=null; }
-  },{passive:true,capture:true});
-  window.addEventListener('touchmove',function(e){
-    try{
-      var ty=e.touches&&e.touches[0]?e.touches[0].clientY:null;
-      if(lastTouchY!=null&&ty!=null){
-        if(ty<lastTouchY-2) armDown();
-        else if(ty>lastTouchY+2) releaseUp();
-      }
-      lastTouchY=ty;
-    }catch(_){ armDown(); }
-  },{passive:true,capture:true});
-  window.addEventListener('touchend',function(){ lastTouchY=null; },{passive:true,capture:true});
-  window.addEventListener('wheel',function(e){
-    if(e.deltaY>0) armDown();
-    else if(e.deltaY<0) releaseUp();
-  },{passive:true,capture:true});
-  window.addEventListener('keydown',function(e){
-    var k=e.key||'';
-    if(/^( |Spacebar|PageDown|ArrowDown|End)$/.test(k)) armDown();
-    else if(/^(PageUp|ArrowUp|Home)$/.test(k)) releaseUp();
-  },{passive:true,capture:true});
-  window.addEventListener('scroll',function(){
-    if(active()) requestAnimationFrame(preventSnapBack);
-  },{passive:true,capture:true});
-  if(window.visualViewport){
-    visualViewport.addEventListener('resize',function(){ if(active()) requestAnimationFrame(preventSnapBack); },{passive:true});
-    visualViewport.addEventListener('scroll',function(){ if(active()) requestAnimationFrame(preventSnapBack); },{passive:true});
-  }
-})();}catch(e){}
-</script>
+   он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему.
+   Важно: ранние touch/wheel только помечают намерение пользователя, но ничего
+   не блокируют и не перехватывают. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';window.__ewRestoreUserIntent=false;window.__ewRestoreUserIntentAt=0;window.__ewRestoreProgrammatic=false;(function(){function mark(){if(window.__ewRestoreProgrammatic)return;window.__ewRestoreUserIntent=true;window.__ewRestoreUserIntentAt=Date.now();}var events=['wheel','touchstart','touchmove','keydown','pointerdown'];try{events.forEach(function(ev){window.addEventListener(ev,mark,{passive:true,capture:true});});}catch(e){events.forEach(function(ev){window.addEventListener(ev,mark,true);});}})();(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
 
 <title>EchoWorld — Реликвии из параллельного мира MARKETSPACE</title>
 <meta name="description" content="EchoWorld — арт-маркетплейс реликвий из параллельного мира MARKETSPACE. Каждая реликвия — кристаллизованная история живого существа, прошедшего Переход. Не товары — следы Вишей.">
@@ -26682,34 +26331,60 @@ function acceptCookies(){
 })();
 </script>
 
-<script type="text/plain" data-disabled="scroll-restore-experimental">
-/* ── ВОЗВРАТ ПОЗИЦИИ ПОСЛЕ RELOAD ──────────────────────────────────
-   Пишем позицию непрерывно: Y + якорь (ближайшая секция сверху + смещение
-   внутри неё). После reload / возврата по истории страница стартует сверху
-   и ПЛАВНО едет к якорю (easeOutCubic — та же кривая, что у навигации по
-   разделам). Якорь, а не голый Y: пока lazy-картинки выше точки не
-   загружены, абсолютный Y уезжает на тысячи пикселей. Цель пересчитывается
-   каждый кадр — анимация догоняет даже плывущий layout; после приезда
-   крупные сдвиги от долетающих картинок дожимаются, пока юзер не вмешался.
-   Обычный заход (navigate) — без всякой прокрутки. */
+
+
+<script>
+/* ── USER-FIRST SCROLL RESTORE ──────────────────────────────────────
+   На тяжёлой мобильной странице restore не должен соревноваться с пальцем.
+   Если пользователь коснулся/скроллит до старта восстановления — restore
+   полностью отменяется. Если пользователь ничего не делает — позиция
+   возвращается коротко и без долгой анимации/дожима. */
 (function(){
   var KEY='ew:architect-trace:v3';
   var ANCHORS=['relic','catalog','echo','impulse','about','worlds','collab','preorderSection','faq','architect'];
   var restoring=false;
+  var restorePending=false;
+  var restoredOnce=false;
   var last=0, lastSavedY=-1, lastSavedKey='';
-  /* подчистка ключей старой версии механики */
+  var loadedAt=0;
+
   try{
     ['ew:architect-trace:v2','ew:architect-trace:pending:v2'].forEach(function(k){
       sessionStorage.removeItem(k); localStorage.removeItem(k);
     });
   }catch(e){}
-  /* ключ БЕЗ hash: застрявший в URL фрагмент (#catalog) не должен ломать возврат */
+
   function pageKey(){
     return location.pathname + location.search;
+  }
+  function readRec(){
+    try{ return JSON.parse(sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'null'); }
+    catch(e){ return null; }
   }
   function currentY(){
     var se=document.scrollingElement || document.documentElement || document.body;
     return Math.max(0, Math.round((se && se.scrollTop) || window.pageYOffset || window.scrollY || 0));
+  }
+  function navType(){
+    try{
+      var n=performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      if(n && n.type) return n.type;
+      if(performance.navigation){
+        if(performance.navigation.type === 1) return 'reload';
+        if(performance.navigation.type === 2) return 'back_forward';
+      }
+    }catch(e){}
+    return '';
+  }
+  function isRestoreNav(){
+    var nt=navType();
+    return nt==='reload' || nt==='back_forward';
+  }
+  function freshRec(rec){
+    return !!(rec && rec.key===pageKey() && isFinite(rec.y) && rec.y>80 && Date.now()-(rec.t||0)<=30*60*1000);
+  }
+  function userIntent(){
+    return !!(window.__ewRestoreUserIntent || (window.__ewRestoreUserIntentAt && Date.now()-window.__ewRestoreUserIntentAt<10000));
   }
   function anchorFor(y){
     var best=null, bestTop=-1;
@@ -26721,11 +26396,25 @@ function acceptCookies(){
     }
     return best ? {aid:best, dy:Math.round(y-bestTop)} : null;
   }
+  function clampY(y){
+    var se=document.scrollingElement || document.documentElement;
+    var max=Math.max(0, (se.scrollHeight || 0) - window.innerHeight);
+    return Math.max(0, Math.min(y, max));
+  }
+  function targetFor(rec){
+    if(rec && rec.aid){
+      var el=document.getElementById(rec.aid);
+      if(el) return clampY(Math.round(el.getBoundingClientRect().top + (window.pageYOffset||0) + (rec.dy||0)));
+    }
+    return clampY(rec ? rec.y : 0);
+  }
   function save(force){
     if(restoring) return;
     var now=Date.now();
     var key=pageKey();
     var y=currentY();
+    var rec=readRec();
+    if(restorePending && !userIntent() && y<=2 && freshRec(rec)) return;
     if(!force && key===lastSavedKey && y===lastSavedY && now-last<700) return;
     if(!force && now-last<80) return;
     last=now;
@@ -26738,6 +26427,8 @@ function acceptCookies(){
       localStorage.setItem(KEY, payload);
     }catch(e){}
   }
+
+  restorePending=isRestoreNav() && freshRec(readRec());
   window.addEventListener('scroll', function(){ save(false); }, {passive:true});
   ['touchend','pointerup','mouseup','keyup','resize'].forEach(function(ev){
     window.addEventListener(ev, function(){ save(true); }, {passive:true});
@@ -26745,275 +26436,64 @@ function acceptCookies(){
   window.setInterval(function(){ save(false); }, 650);
   window.addEventListener('pagehide', function(){ save(true); });
   window.addEventListener('beforeunload', function(){ save(true); });
+  window.addEventListener('load', function(){ loadedAt=Date.now(); });
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState==='hidden') save(true);
   });
 
-  function navType(){
-    try{
-      var n=performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-      if(n && n.type) return n.type;
-      if(performance.navigation){
-        if(performance.navigation.type === 1) return 'reload';
-        if(performance.navigation.type === 2) return 'back_forward';
-      }
-      return '';
-    }catch(e){ return ''; }
-  }
-  function clampY(y){
-    var se=document.scrollingElement || document.documentElement;
-    var max=Math.max(0, (se.scrollHeight || 0) - window.innerHeight);
-    return Math.max(0, Math.min(y, max));
-  }
-  function diag(){}
   function run(){
     try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
-    var html=document.documentElement;
-    var nt=navType();
-    var rec=null;
-    try{ rec=JSON.parse(sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'null'); }catch(e){}
-    var fresh=!!(rec && rec.key === pageKey() && isFinite(rec.y) && Date.now() - (rec.t || 0) <= 30*60*1000);
-    diag('restore:v3 run', {nt:nt, fresh:fresh, rec:rec, y:currentY()});
-    if((nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80){
-      diag('restore:v3 skip', {reason:(nt !== 'reload' && nt !== 'back_forward')?'nav-type':(!fresh?'not-fresh':'small-y'), nt:nt, fresh:fresh, rec:rec, y:currentY()});
-      return;
-    }
-    function target(){
-      if(rec.aid){
-        var el=document.getElementById(rec.aid);
-        if(el) return clampY(Math.round(el.getBoundingClientRect().top + (window.pageYOffset||0) + rec.dy));
-      }
-      return clampY(rec.y);
-    }
-    if(window.__ewRestoreUserIntent){ diag('restore:v3 skip', {reason:'early-user-intent', rec:rec, y:currentY()}); save(true); return; }
+    var rec=readRec();
+    if(!isRestoreNav() || !freshRec(rec)){ restorePending=false; return; }
+    if(userIntent()){ restorePending=false; save(true); return; }
     var entryY=currentY();
-    var entryTarget=target();
-    if(entryY > 2 && Math.abs(entryY - entryTarget) > 24){
-      diag('restore:v3 skip', {reason:'entry-moved', entryY:entryY, entryTarget:entryTarget, rec:rec});
-      save(true);
-      return;
-    }
-    diag('restore:v3 start', {entryY:entryY, entryTarget:entryTarget, rec:rec});
+    var target=targetFor(rec);
+    if(entryY>8 && Math.abs(entryY-target)>24){ restorePending=false; save(true); return; }
+
     restoring=true;
     window.__ewRestoreProgrammatic=true;
+    var html=document.documentElement;
     var prevSB=html.style.scrollBehavior;
-    html.style.scrollBehavior='auto'; /* едем своей rAF-анимацией — без двойного сглаживания с CSS smooth */
+    var cancelled=false;
+    function cancel(){
+      cancelled=true;
+      window.__ewRestoreUserIntent=true;
+      window.__ewRestoreUserIntentAt=Date.now();
+    }
+    ['wheel','touchstart','touchmove','keydown','pointerdown'].forEach(function(ev){
+      window.addEventListener(ev, cancel, {passive:true, once:true, capture:true});
+    });
     function finish(){
       html.style.scrollBehavior=prevSB;
       window.__ewRestoreProgrammatic=false;
       restoring=false;
-      save(true);
-      diag('restore:v3 finish', {y:currentY(), userTouched:userTouched, rec:rec});
-    }
-    var userTouched=false, restoreStarted=false;
-    function onUser(){ userTouched=true; window.__ewRestoreUserIntent=true; window.__ewRestoreProgrammatic=false; diag('restore:v3 user-interrupt', {y:currentY(), rec:rec}); }
-    ['wheel','touchstart','touchmove','keydown','pointerdown'].forEach(function(ev){
-      window.addEventListener(ev, onUser, {passive:true, once:true});
-    });
-    var interruptedLogged=false;
-    function interrupted(){
-      var moved=!restoreStarted && Math.abs(currentY() - entryY) > 4;
-      var hit=userTouched || window.__ewRestoreUserIntent || moved;
-      if(hit && !interruptedLogged){
-        interruptedLogged=true;
-        diag('restore:v3 interrupted', {userTouched:userTouched, globalIntent:!!window.__ewRestoreUserIntent, moved:moved, y:currentY(), entryY:entryY, rec:rec});
-      }
-      return hit;
-    }
-    var reduce=false;
-    try{ reduce=!!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
-    var t0=performance.now(), loadedAt=0;
-    /* Дожим после приезда: пока документ грузится, + 1.2с после load
-       (максимум 15с). Без scroll anchoring (iOS Safari) поздние
-       lazy-картинки выше точки раздвигают страницу и утаскивают контент
-       из-под пользователя — дожим тихо возвращает якорь на место,
-       пока пользователь не взял управление. */
-    function settleDeadline(now){
-      if(document.readyState !== 'complete') return Infinity;
-      if(!loadedAt) loadedAt=now;
-      return Math.min(loadedAt + 1200, t0 + 15000);
-    }
-    function settle(){
-      var now=performance.now();
-      if(interrupted() || now >= settleDeadline(now)){ finish(); return; }
-      var t=target();
-      if(Math.abs(currentY()-t) > 24){
-        diag('restore:v3 settle-scroll', {from:currentY(), to:t, rec:rec});
-        window.scrollTo(0, t);
-      }
-      requestAnimationFrame(settle);
-    }
-    function glide(){
-      if(interrupted()){ finish(); return; }
-      restoreStarted=true;
-      var startY=currentY();
-      var dist=Math.abs(target()-startY);
-      if(dist < 2){ settle(); return; }
-      if(reduce){ window.scrollTo(0, target()); settle(); return; }
-      /* длительность от дистанции: короткий путь — быстро, длинный — величаво */
-      var dur=Math.max(450, Math.min(1200, 500 + dist*0.12));
-      var ts=performance.now();
-      (function step(now){
-        if(interrupted()){ finish(); return; }
-        var p=Math.min((now-ts)/dur, 1);
-        var e=1 - Math.pow(1-p, 3); /* easeOutCubic — как у _smoothScrollTo */
-        /* цель живая: якорь пересчитывается каждый кадр — анимация догоняет
-           layout, даже если картинки раздвигают страницу прямо во время езды */
-        window.scrollTo(0, Math.round(startY + (target()-startY)*e));
-        if(p < 1) requestAnimationFrame(step);
-        else settle();
-      })(ts);
-    }
-    /* старт с короткой паузой после первой отрисовки: заход не дёргается */
-    diag('restore:v3 scheduled', {delay:180, rec:rec});
-    setTimeout(function(){ requestAnimationFrame(glide); }, 180);
-  }
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 0); }, {once:true});
-  } else {
-    setTimeout(run, 0);
-  }
-})();
-</script>
-
-<script>
-/* ── ВОЗВРАТ ПОЗИЦИИ ПОСЛЕ RELOAD ──────────────────────────────────
-   Механика из BACKUP: сохраняем Y + ближайший якорь, после reload/back
-   плавно возвращаемся, а при первом действии пользователя сразу отдаём
-   управление браузеру. Без перехвата scrollTop/scrollTo/visualViewport. */
-(function(){
-  var KEY='ew:architect-trace:v3';
-  var ANCHORS=['relic','catalog','echo','impulse','about','worlds','collab','preorderSection','faq','architect'];
-  var restoring=false;
-  var last=0, lastSavedY=-1, lastSavedKey='';
-  try{
-    ['ew:architect-trace:v2','ew:architect-trace:pending:v2'].forEach(function(k){
-      sessionStorage.removeItem(k); localStorage.removeItem(k);
-    });
-  }catch(e){}
-  function pageKey(){
-    return location.pathname + location.search;
-  }
-  function currentY(){
-    var se=document.scrollingElement || document.documentElement || document.body;
-    return Math.max(0, Math.round((se && se.scrollTop) || window.pageYOffset || window.scrollY || 0));
-  }
-  function anchorFor(y){
-    var best=null, bestTop=-1;
-    for(var i=0;i<ANCHORS.length;i++){
-      var el=document.getElementById(ANCHORS[i]);
-      if(!el) continue;
-      var top=el.getBoundingClientRect().top + (window.pageYOffset||0);
-      if(top <= y+90 && top > bestTop){ bestTop=top; best=ANCHORS[i]; }
-    }
-    return best ? {aid:best, dy:Math.round(y-bestTop)} : null;
-  }
-  function save(force){
-    if(restoring) return;
-    var now=Date.now();
-    var key=pageKey();
-    var y=currentY();
-    if(!force && key===lastSavedKey && y===lastSavedY && now-last<700) return;
-    if(!force && now-last<80) return;
-    last=now;
-    lastSavedKey=key;
-    lastSavedY=y;
-    try{
-      var a=anchorFor(y);
-      var payload=JSON.stringify({ key:key, y:y, aid:a?a.aid:null, dy:a?a.dy:0, t:now });
-      sessionStorage.setItem(KEY, payload);
-      localStorage.setItem(KEY, payload);
-    }catch(e){}
-  }
-  window.addEventListener('scroll', function(){ save(false); }, {passive:true});
-  ['touchend','pointerup','mouseup','keyup','resize'].forEach(function(ev){
-    window.addEventListener(ev, function(){ save(true); }, {passive:true});
-  });
-  window.setInterval(function(){ save(false); }, 650);
-  window.addEventListener('pagehide', function(){ save(true); });
-  window.addEventListener('beforeunload', function(){ save(true); });
-  document.addEventListener('visibilitychange', function(){
-    if(document.visibilityState==='hidden') save(true);
-  });
-
-  function navType(){
-    try{
-      var n=performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-      if(n && n.type) return n.type;
-      if(performance.navigation){
-        if(performance.navigation.type === 1) return 'reload';
-        if(performance.navigation.type === 2) return 'back_forward';
-      }
-      return '';
-    }catch(e){ return ''; }
-  }
-  function clampY(y){
-    var se=document.scrollingElement || document.documentElement;
-    var max=Math.max(0, (se.scrollHeight || 0) - window.innerHeight);
-    return Math.max(0, Math.min(y, max));
-  }
-  function run(){
-    try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
-    var html=document.documentElement;
-    var nt=navType();
-    var rec=null;
-    try{ rec=JSON.parse(sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'null'); }catch(e){}
-    var fresh=!!(rec && rec.key === pageKey() && isFinite(rec.y) && Date.now() - (rec.t || 0) <= 30*60*1000);
-    if((nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80) return;
-    restoring=true;
-    var prevSB=html.style.scrollBehavior;
-    html.style.scrollBehavior='auto';
-    function target(){
-      if(rec.aid){
-        var el=document.getElementById(rec.aid);
-        if(el) return clampY(Math.round(el.getBoundingClientRect().top + (window.pageYOffset||0) + rec.dy));
-      }
-      return clampY(rec.y);
-    }
-    function finish(){
-      html.style.scrollBehavior=prevSB;
-      restoring=false;
+      restorePending=false;
       save(true);
     }
-    var userTouched=false;
-    function onUser(){ userTouched=true; }
-    ['wheel','touchstart','keydown','pointerdown'].forEach(function(ev){
-      window.addEventListener(ev, onUser, {passive:true, once:true});
+    function applyRestore(){
+      if(cancelled || userIntent()){ finish(); return; }
+      var t=targetFor(rec);
+      html.style.scrollBehavior='auto';
+      if(Math.abs(currentY()-t)>24) window.scrollTo(0,t);
+      restoredOnce=true;
+    }
+    function correction(delay){
+      setTimeout(function(){
+        if(cancelled || userIntent()){ finish(); return; }
+        applyRestore();
+        if(delay>=900 || (loadedAt && Date.now()-loadedAt>140)) finish();
+      }, delay);
+    }
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        applyRestore();
+        correction(140);
+        correction(420);
+        correction(900);
+      });
     });
-    var reduce=false;
-    try{ reduce=!!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
-    var t0=performance.now(), loadedAt=0;
-    function settleDeadline(now){
-      if(document.readyState !== 'complete') return Infinity;
-      if(!loadedAt) loadedAt=now;
-      return Math.min(loadedAt + 1200, t0 + 15000);
-    }
-    function settle(){
-      var now=performance.now();
-      if(userTouched || now >= settleDeadline(now)){ finish(); return; }
-      var t=target();
-      if(Math.abs(currentY()-t) > 24) window.scrollTo(0, t);
-      requestAnimationFrame(settle);
-    }
-    function glide(){
-      if(userTouched){ finish(); return; }
-      var startY=currentY();
-      var dist=Math.abs(target()-startY);
-      if(dist < 2){ settle(); return; }
-      if(reduce){ window.scrollTo(0, target()); settle(); return; }
-      var dur=Math.max(450, Math.min(1200, 500 + dist*0.12));
-      var ts=performance.now();
-      (function step(now){
-        if(userTouched){ finish(); return; }
-        var p=Math.min((now-ts)/dur, 1);
-        var e=1 - Math.pow(1-p, 3);
-        window.scrollTo(0, Math.round(startY + (target()-startY)*e));
-        if(p < 1) requestAnimationFrame(step);
-        else settle();
-      })(ts);
-    }
-    setTimeout(function(){ requestAnimationFrame(glide); }, 180);
   }
+
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 0); }, {once:true});
   } else {
