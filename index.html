@@ -205,8 +205,172 @@
    (якорь-секция + смещение). Ключ позиции — БЕЗ hash: застрявший фрагмент
    (#catalog и т.п.) не должен ломать возврат, поэтому при ожидающем возврате
    он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';window.__ewRestoreUserIntent=false;window.__ewRestoreProgrammatic=false;(function(){function mark(){if(!window.__ewRestoreProgrammatic)window.__ewRestoreUserIntent=true;}var events=['wheel','touchstart','touchmove','keydown','pointerdown'];try{events.forEach(function(ev){window.addEventListener(ev,mark,{passive:true,capture:true});});}catch(e){events.forEach(function(ev){window.addEventListener(ev,mark,true);});}})();(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
-<script>/* Reload scroll arbitration: in the first seconds after reload/back,
+<script type="text/plain" data-disabled="overbroad-scroll-arbiter">/* Reload scroll arbitration: in the first seconds after reload/back,
    a real user scroll gesture wins over restore, viewport resize and late scripts. */try{(function(){if(window.__ewScrollUserWinsInstalled)return;window.__ewScrollUserWinsInstalled=1;function navType(){try{var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)return n.type;if(performance.navigation){if(performance.navigation.type===1)return'reload';if(performance.navigation.type===2)return'back_forward';}}catch(e){}return'';}var nt=navType();if(nt!=='reload'&&nt!=='back_forward')return;var started=performance.now(),until=0,maxY=0,lastTouchY=null,downIntent=false,fixing=false;function y(){var se=document.scrollingElement||document.documentElement||document.body;return Math.max(0,Math.round((se&&se.scrollTop)||window.pageYOffset||window.scrollY||0));}function arm(){window.__ewRestoreUserIntent=true;window.__ewNativeScrollIntent=true;until=performance.now()+2600;maxY=Math.max(maxY,y());}function allowWindow(){return performance.now()-started<8000&&performance.now()<until;}function isPageNode(n){return n===document.documentElement||n===document.body||n===document.scrollingElement;}function preventSnapBack(){if(!allowWindow()||!downIntent||fixing)return;var cur=y();if(cur>maxY)maxY=cur;if(maxY>180&&cur<maxY-120){var html=document.documentElement,prev=html.style.scrollBehavior;fixing=true;window.__ewScrollArbiterFixing=true;html.style.scrollBehavior='auto';try{window.scrollTo(0,maxY);}catch(e){}requestAnimationFrame(function(){html.style.scrollBehavior=prev;window.__ewScrollArbiterFixing=false;fixing=false;});}}function shouldBlock(){return allowWindow()&&downIntent&&!window.__ewScrollArbiterFixing;}function wrap(obj,name){try{var orig=obj&&obj[name];if(typeof orig!=='function'||orig.__ewUserWins)return;var fn=function(){if(shouldBlock())return;return orig.apply(this,arguments);};fn.__ewUserWins=1;obj[name]=fn;}catch(e){}}function hook(proto){try{if(!proto||proto.__ewUserWinsScrollTop)return;var d=Object.getOwnPropertyDescriptor(proto,'scrollTop');if(!d||!d.configurable||!d.get||!d.set)return;Object.defineProperty(proto,'scrollTop',{configurable:true,enumerable:d.enumerable,get:function(){return d.get.call(this);},set:function(v){if(isPageNode(this)&&shouldBlock())return;return d.set.call(this,v);}});proto.__ewUserWinsScrollTop=1;}catch(e){}}wrap(window,'scrollTo');wrap(window,'scrollBy');wrap(window,'scroll');try{if(window.Element&&Element.prototype){wrap(Element.prototype,'scrollIntoView');}}catch(e){}hook(window.Element&&Element.prototype);hook(window.HTMLElement&&HTMLElement.prototype);window.addEventListener('touchstart',function(e){try{lastTouchY=e.touches&&e.touches[0]?e.touches[0].clientY:null;}catch(_){lastTouchY=null;}},{passive:true,capture:true});window.addEventListener('touchmove',function(e){try{var ty=e.touches&&e.touches[0]?e.touches[0].clientY:null;if(lastTouchY!=null&&ty!=null&&ty<lastTouchY-2){downIntent=true;arm();}lastTouchY=ty;}catch(_){downIntent=true;arm();}},{passive:true,capture:true});window.addEventListener('wheel',function(e){if(e.deltaY>0){downIntent=true;arm();}},{passive:true,capture:true});window.addEventListener('keydown',function(e){if(/^( |Spacebar|PageDown|ArrowDown|End)$/.test(e.key||'')){downIntent=true;arm();}},{passive:true,capture:true});window.addEventListener('scroll',function(){if(allowWindow())requestAnimationFrame(preventSnapBack);},{passive:true,capture:true});if(window.visualViewport){visualViewport.addEventListener('resize',function(){if(allowWindow())requestAnimationFrame(preventSnapBack);},{passive:true});visualViewport.addEventListener('scroll',function(){if(allowWindow())requestAnimationFrame(preventSnapBack);},{passive:true});}})();}catch(e){}</script>
+<script>
+/* Reload scroll guard v2: protects against early programmatic snap-back only
+   until the user explicitly scrolls upward. */
+try{(function(){
+  if(window.__ewScrollUserWinsInstalledV2) return;
+  window.__ewScrollUserWinsInstalledV2=1;
+
+  function navType(){
+    try{
+      var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];
+      if(n&&n.type) return n.type;
+      if(performance.navigation){
+        if(performance.navigation.type===1) return 'reload';
+        if(performance.navigation.type===2) return 'back_forward';
+      }
+    }catch(e){}
+    return '';
+  }
+  var nt=navType();
+  if(nt!=='reload'&&nt!=='back_forward') return;
+
+  var started=performance.now();
+  var protectUntil=0;
+  var maxY=0;
+  var lastTouchY=null;
+  var downIntent=false;
+  var upIntentAt=0;
+  var fixing=false;
+
+  function now(){ return performance.now(); }
+  function currentY(){
+    var se=document.scrollingElement||document.documentElement||document.body;
+    return Math.max(0, Math.round((se&&se.scrollTop)||window.pageYOffset||window.scrollY||0));
+  }
+  function startupWindow(){ return now()-started<8000; }
+  function armDown(){
+    downIntent=true;
+    window.__ewRestoreUserIntent=true;
+    window.__ewNativeScrollIntent=true;
+    window.__ewScrollGuardUpIntent=false;
+    protectUntil=now()+1800;
+    maxY=Math.max(maxY,currentY());
+  }
+  function releaseUp(){
+    upIntentAt=now();
+    downIntent=false;
+    protectUntil=0;
+    maxY=currentY();
+    window.__ewScrollGuardUpIntent=true;
+  }
+  function active(){
+    return startupWindow()&&downIntent&&now()<protectUntil&&!fixing&&(now()-upIntentAt>180);
+  }
+  function isPageNode(node){
+    return node===document.documentElement||node===document.body||node===document.scrollingElement;
+  }
+  function targetY(name,args,ctx){
+    var cur=currentY();
+    var a=args&&args[0], b=args&&args[1];
+    if(name==='scrollIntoView'&&ctx&&ctx.getBoundingClientRect){
+      return Math.round(ctx.getBoundingClientRect().top+(window.pageYOffset||0));
+    }
+    if(name==='scrollBy'){
+      if(typeof b==='number') return cur+b;
+      if(a&&typeof a==='object'&&typeof a.top==='number') return cur+a.top;
+      return null;
+    }
+    if(typeof b==='number') return b;
+    if(a&&typeof a==='object'&&typeof a.top==='number') return a.top;
+    return null;
+  }
+  function shouldBlock(name,args,ctx){
+    if(!active()||window.__ewScrollArbiterFixing) return false;
+    var target=targetY(name,args,ctx);
+    if(target==null) return false;
+    return target<Math.max(maxY,currentY())-120;
+  }
+  function preventSnapBack(){
+    if(!active()||window.__ewScrollArbiterFixing) return;
+    var cur=currentY();
+    if(cur>maxY){ maxY=cur; return; }
+    if(maxY>180&&cur<maxY-120){
+      var html=document.documentElement;
+      var prev=html.style.scrollBehavior;
+      fixing=true;
+      window.__ewScrollArbiterFixing=true;
+      html.style.scrollBehavior='auto';
+      try{ window.scrollTo(0,maxY); }catch(e){}
+      requestAnimationFrame(function(){
+        html.style.scrollBehavior=prev;
+        window.__ewScrollArbiterFixing=false;
+        fixing=false;
+      });
+    }
+  }
+  function wrap(obj,name){
+    try{
+      var orig=obj&&obj[name];
+      if(typeof orig!=='function'||orig.__ewUserWinsV2) return;
+      var fn=function(){
+        if(shouldBlock(name,arguments,this)) return;
+        return orig.apply(this,arguments);
+      };
+      fn.__ewUserWinsV2=1;
+      obj[name]=fn;
+    }catch(e){}
+  }
+  function hook(proto){
+    try{
+      if(!proto||proto.__ewUserWinsScrollTopV2) return;
+      var d=Object.getOwnPropertyDescriptor(proto,'scrollTop');
+      if(!d||!d.configurable||!d.get||!d.set) return;
+      Object.defineProperty(proto,'scrollTop',{
+        configurable:true,
+        enumerable:d.enumerable,
+        get:function(){ return d.get.call(this); },
+        set:function(v){
+          if(isPageNode(this)&&shouldBlock('scrollTop',[null,Number(v)],this)) return;
+          return d.set.call(this,v);
+        }
+      });
+      proto.__ewUserWinsScrollTopV2=1;
+    }catch(e){}
+  }
+
+  wrap(window,'scrollTo');
+  wrap(window,'scrollBy');
+  wrap(window,'scroll');
+  try{ if(window.Element&&Element.prototype) wrap(Element.prototype,'scrollIntoView'); }catch(e){}
+  hook(window.Element&&Element.prototype);
+  hook(window.HTMLElement&&HTMLElement.prototype);
+
+  window.addEventListener('touchstart',function(e){
+    try{ lastTouchY=e.touches&&e.touches[0]?e.touches[0].clientY:null; }catch(_){ lastTouchY=null; }
+  },{passive:true,capture:true});
+  window.addEventListener('touchmove',function(e){
+    try{
+      var ty=e.touches&&e.touches[0]?e.touches[0].clientY:null;
+      if(lastTouchY!=null&&ty!=null){
+        if(ty<lastTouchY-2) armDown();
+        else if(ty>lastTouchY+2) releaseUp();
+      }
+      lastTouchY=ty;
+    }catch(_){ armDown(); }
+  },{passive:true,capture:true});
+  window.addEventListener('touchend',function(){ lastTouchY=null; },{passive:true,capture:true});
+  window.addEventListener('wheel',function(e){
+    if(e.deltaY>0) armDown();
+    else if(e.deltaY<0) releaseUp();
+  },{passive:true,capture:true});
+  window.addEventListener('keydown',function(e){
+    var k=e.key||'';
+    if(/^( |Spacebar|PageDown|ArrowDown|End)$/.test(k)) armDown();
+    else if(/^(PageUp|ArrowUp|Home)$/.test(k)) releaseUp();
+  },{passive:true,capture:true});
+  window.addEventListener('scroll',function(){
+    if(active()) requestAnimationFrame(preventSnapBack);
+  },{passive:true,capture:true});
+  if(window.visualViewport){
+    visualViewport.addEventListener('resize',function(){ if(active()) requestAnimationFrame(preventSnapBack); },{passive:true});
+    visualViewport.addEventListener('scroll',function(){ if(active()) requestAnimationFrame(preventSnapBack); },{passive:true});
+  }
+})();}catch(e){}
+</script>
 
 <title>EchoWorld — Реликвии из параллельного мира MARKETSPACE</title>
 <meta name="description" content="EchoWorld — арт-маркетплейс реликвий из параллельного мира MARKETSPACE. Каждая реликвия — кристаллизованная история живого существа, прошедшего Переход. Не товары — следы Вишей.">
