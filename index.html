@@ -17,6 +17,9 @@
    (якорь-секция + смещение). Ключ позиции — БЕЗ hash: застрявший фрагмент
    (#catalog и т.п.) не должен ломать возврат, поэтому при ожидающем возврате
    он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
+<script>/* R6.6 · ранний признак намеренного скролла/тапа.
+   Нужен для reload-restore: если человек начал скроллить сразу после обновления,
+   система больше не возвращает его назад к сохранённой позиции в HERO. */try{window.__ewUserScrollIntent=false;(function(){function mark(){window.__ewUserScrollIntent=true;}['wheel','touchstart','touchmove','pointerdown','keydown'].forEach(function(ev){window.addEventListener(ev,mark,{passive:true,capture:true,once:true});});})();}catch(e){}</script>
 
 <title>EchoWorld — Реликвии из параллельного мира MARKETSPACE</title>
 <meta name="description" content="EchoWorld — арт-маркетплейс реликвий из параллельного мира MARKETSPACE. Каждая реликвия — кристаллизованная история живого существа, прошедшего Переход. Не товары — следы Вишей.">
@@ -26677,7 +26680,13 @@ function acceptCookies(){
     var rec=null;
     try{ rec=JSON.parse(sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'null'); }catch(e){}
     var fresh=!!(rec && rec.key === pageKey() && isFinite(rec.y) && Date.now() - (rec.t || 0) <= 30*60*1000);
-    if((nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80) return;
+    /* R6.6: не фиксируем пользователя в HERO после reload.
+       Если сохранённая позиция ещё не привязана к реальной секции ниже HERO
+       (aid отсутствует) или находится прямо перед первым блоком «relic»,
+       авто-возврат не запускается. Также не стартуем restore, если человек
+       уже начал скроллить/тапать во время загрузки. */
+    var heroScope=!!(rec && (!rec.aid || (rec.aid === 'relic' && Number(rec.dy) < 0)));
+    if(window.__ewUserScrollIntent || (nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80 || heroScope) return;
     restoring=true;
     var prevSB=html.style.scrollBehavior;
     html.style.scrollBehavior='auto'; /* едем своей rAF-анимацией — без двойного сглаживания с CSS smooth */
@@ -26693,8 +26702,8 @@ function acceptCookies(){
       restoring=false;
       save(true);
     }
-    var userTouched=false;
-    function onUser(){ userTouched=true; }
+    var userTouched=!!window.__ewUserScrollIntent;
+    function onUser(){ userTouched=true; window.__ewUserScrollIntent=true; }
     ['wheel','touchstart','keydown','pointerdown'].forEach(function(ev){
       window.addEventListener(ev, onUser, {passive:true, once:true});
     });
@@ -27325,6 +27334,88 @@ function acceptCookies(){
     background: rgba(0,200,200,0.06) !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRESS FEEDBACK · R6.6
+   Hover остаётся только для мыши. На touch-устройствах glow/press
+   воспроизводится не от случайного касания при скролле, а только после
+   настоящего клика/тапа без заметного движения пальца.
+   ═══════════════════════════════════════════════════════════════ */
+.ew-press-pulse {
+  transform: translateY(1px) scale(.992) !important;
+  transition: transform .14s var(--ease-out), background .18s var(--ease-out),
+              border-color .18s var(--ease-out), color .18s var(--ease-out),
+              box-shadow .18s var(--ease-out), opacity .18s var(--ease-out) !important;
+}
+.cta-primary.ew-press-pulse,
+.pbtn.ew-press-pulse,
+.mbtn.primary.ew-press-pulse,
+.cart-checkout-btn.ew-press-pulse,
+.chk-pay-btn.ew-press-pulse,
+.echo-submit.ew-press-pulse,
+.return-submit.ew-press-pulse,
+.preorder-btn.ew-press-pulse,
+.preorder-select.ew-press-pulse,
+#preorderBtn.ew-press-pulse,
+.attr-pay-btn.ew-press-pulse,
+.ap-gate-submit.ew-press-pulse,
+.ap-status-action.primary.ew-press-pulse,
+.ap-test-btn.ew-press-pulse,
+.cookie-banner-ok.ew-press-pulse,
+.btn-primary.ew-press-pulse {
+  background: var(--red2) !important;
+  border-color: var(--red2) !important;
+  color: #fff !important;
+  box-shadow: 0 0 24px rgba(192,40,40,0.36) !important;
+}
+.cta-secondary.ew-press-pulse,
+.hbtn.ew-press-pulse,
+.ws.ew-press-pulse,
+.wopt.ew-press-pulse,
+.desktop-menu-btn.ew-press-pulse,
+.navlink.ew-press-pulse,
+.mob-nav-link.ew-press-pulse,
+.mnav-tile.ew-press-pulse,
+.panel-close.ew-press-pulse,
+.mhead-close.ew-press-pulse,
+.mbtn.ew-press-pulse,
+.cart-close.ew-press-pulse,
+.cart-empty-btn.ew-press-pulse,
+.cart-item-remove.ew-press-pulse,
+.chk-close.ew-press-pulse,
+.faq-unlock.ew-press-pulse,
+.architect-link.ew-press-pulse,
+.foot-legal-link.ew-press-pulse,
+.readmore-btn.ew-press-pulse,
+.echo-pane-cta.ew-press-pulse,
+.echo-player-btn.ew-press-pulse,
+.echo-voice-retry.ew-press-pulse,
+.echo-reveal-toggle.ew-press-pulse,
+.btn-cyan.ew-press-pulse,
+.btn-ghost.ew-press-pulse,
+.access-pill.ew-press-pulse,
+.ap-status-action.ew-press-pulse,
+.ap-info-btn.ew-press-pulse,
+.ap-first-form-row.ew-press-pulse,
+.mstatus-field.status-first-form.ew-press-pulse,
+.pre-pane-cta.ew-press-pulse,
+.cat-chip.ew-press-pulse,
+.clink.ew-press-pulse,
+.clink-copy.ew-press-pulse,
+.ftag.ew-press-pulse {
+  border-color: var(--cyan) !important;
+  color: var(--cyan) !important;
+  box-shadow: 0 0 18px rgba(0,200,200,0.18) !important;
+}
+.cta-secondary.cta-echo.ew-press-pulse,
+.btn-cyan.ew-press-pulse,
+.cart-empty-btn.ew-press-pulse,
+.echo-pane-cta.ew-press-pulse {
+  background: rgba(0,200,200,0.06) !important;
+}
+@media (prefers-reduced-motion: reduce){
+  .ew-press-pulse { transform: none !important; transition: none !important; }
+}
 </style>
 
 <!-- PATCH · MOBILE VISUAL VIEWPORT SYNC FOR APERTURA PANELS -->
@@ -27452,7 +27543,7 @@ function acceptCookies(){
 </script>
 
 
-<script id="ew-touch-hover-gate-r65">
+<script id="ew-touch-hover-gate-r66">
 (function(){
   var PRESSABLE_SELECTOR = [
     'a[href]', 'button', '[role="button"]', '[tabindex]:not([tabindex="-1"])',
@@ -27468,11 +27559,9 @@ function acceptCookies(){
     '.btn-primary', '.btn-cyan', '.btn-ghost', '.access-pill', '.pre-pane-cta',
     '.cat-chip', '.clink', '.clink-copy', '.ftag'
   ].join(',');
-  var pulseTimer = new WeakMap();
-  function isCoarse(){
-    try { return window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches; }
-    catch(e){ return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0); }
-  }
+  var timers = new WeakMap();
+  var down = null;
+  var lastPulseAt = new WeakMap();
   function mark(root){
     try {
       (root || document).querySelectorAll(PRESSABLE_SELECTOR).forEach(function(el){
@@ -27480,22 +27569,62 @@ function acceptCookies(){
       });
     } catch(e) {}
   }
-  function pulse(el){
-    if(!isCoarse() || !el || el.disabled || el.getAttribute('aria-disabled') === 'true') return;
-    el.classList.remove('ew-tap-pulse');
-    // force reflow so repeated taps replay the same technological glow
-    try { void el.offsetWidth; } catch(e) {}
-    el.classList.add('ew-tap-pulse');
-    var old = pulseTimer.get(el);
-    if(old) clearTimeout(old);
-    pulseTimer.set(el, setTimeout(function(){ el.classList.remove('ew-tap-pulse'); }, 230));
+  function disabled(el){
+    return !el || el.disabled || el.getAttribute('aria-disabled') === 'true' || el.classList.contains('dis');
   }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ mark(document); });
-  else mark(document);
+  function pulse(el){
+    if(disabled(el)) return;
+    var now = Date.now();
+    var prev = lastPulseAt.get(el) || 0;
+    if(now - prev < 80) return;
+    lastPulseAt.set(el, now);
+    el.classList.remove('ew-press-pulse');
+    el.classList.remove('ew-tap-pulse');
+    try { void el.offsetWidth; } catch(e) {}
+    el.classList.add('ew-press-pulse');
+    var old = timers.get(el);
+    if(old) clearTimeout(old);
+    timers.set(el, setTimeout(function(){ el.classList.remove('ew-press-pulse'); }, 340));
+  }
+  function closestPressable(target){
+    return target && target.closest ? target.closest(PRESSABLE_SELECTOR) : null;
+  }
+  document.addEventListener('pointerdown', function(ev){
+    var el = closestPressable(ev.target);
+    if(!el || disabled(el)) { down = null; return; }
+    down = { el: el, id: ev.pointerId, x: ev.clientX || 0, y: ev.clientY || 0, moved: false, t: Date.now() };
+  }, true);
+  document.addEventListener('pointermove', function(ev){
+    if(!down || (ev.pointerId != null && down.id != null && ev.pointerId !== down.id)) return;
+    var dx = Math.abs((ev.clientX || 0) - down.x);
+    var dy = Math.abs((ev.clientY || 0) - down.y);
+    if(dx > 10 || dy > 10) down.moved = true;
+  }, {capture:true, passive:true});
+  document.addEventListener('pointerup', function(ev){
+    if(!down || (ev.pointerId != null && down.id != null && ev.pointerId !== down.id)) return;
+    var el = closestPressable(ev.target);
+    var same = el && (el === down.el || down.el.contains(el) || el.contains(down.el));
+    var ok = same && !down.moved;
+    var target = down.el;
+    down = null;
+    if(ok) pulse(target);
+  }, true);
+  ['pointercancel','scroll'].forEach(function(ev){
+    window.addEventListener(ev, function(){ if(down) down.moved = true; }, {capture:true, passive:true});
+  });
   document.addEventListener('click', function(ev){
-    var el = ev.target && ev.target.closest ? ev.target.closest(PRESSABLE_SELECTOR) : null;
+    /* fallback for keyboard click / old Safari; movement-filtered pointerup already
+       pulsed real taps, the WeakMap throttle prevents double glow. */
+    var el = closestPressable(ev.target);
     if(el) pulse(el);
   }, true);
+  document.addEventListener('keydown', function(ev){
+    if(ev.key !== 'Enter' && ev.key !== ' ') return;
+    var el = closestPressable(ev.target);
+    if(el) pulse(el);
+  }, true);
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ mark(document); });
+  else mark(document);
   try {
     new MutationObserver(function(records){
       records.forEach(function(r){
@@ -27503,7 +27632,7 @@ function acceptCookies(){
       });
     }).observe(document.documentElement, {childList:true, subtree:true});
   } catch(e) {}
-  window.inspectTouchHoverGate65 = function(){
+  function inspect(){
     var hoverRules = 0, unguarded = [];
     try {
       Array.prototype.forEach.call(document.styleSheets, function(sheet){
@@ -27511,7 +27640,6 @@ function acceptCookies(){
         try { rules = sheet.cssRules || []; } catch(e){ return; }
         function walk(list, hoverGuard){
           Array.prototype.forEach.call(list, function(rule){
-            var txt = rule.cssText || '';
             var guard = hoverGuard || (rule.conditionText && /hover\s*:\s*hover|pointer\s*:\s*fine/i.test(rule.conditionText));
             if(rule.cssRules) walk(rule.cssRules, guard);
             else if(rule.selectorText && rule.selectorText.indexOf(':hover') !== -1){
@@ -27523,7 +27651,34 @@ function acceptCookies(){
         walk(rules, false);
       });
     } catch(e) {}
-    return { ok: unguarded.length === 0, hoverRules: hoverRules, unguarded: unguarded.slice(0,20), touchFeedbackNodes: document.querySelectorAll('.ew-touch-feedback').length };
+    return {
+      ok: unguarded.length === 0,
+      patch: 'R6.6_TOUCH_HOVER_GATE_PRESS_FEEDBACK',
+      hoverRules: hoverRules,
+      unguarded: unguarded.slice(0,20),
+      touchFeedbackNodes: document.querySelectorAll('.ew-touch-feedback').length,
+      pressPulseNodes: document.querySelectorAll('.ew-press-pulse').length
+    };
+  }
+  window.inspectTouchHoverGate66 = inspect;
+  window.inspectTouchHoverGate65 = inspect;
+})();
+</script>
+
+<script id="ew-reload-scroll-guard-r66">
+(function(){
+  window.inspectReloadScrollGuard66 = function(){
+    var rec=null;
+    try{ rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null'); }catch(e){}
+    var heroScope=!!(rec && (!rec.aid || (rec.aid === 'relic' && Number(rec.dy) < 0)));
+    return {
+      ok:true,
+      patch:'R6.6_RELOAD_SCROLL_GUARD',
+      earlyUserScrollIntent:!!window.__ewUserScrollIntent,
+      savedAnchor:rec && rec.aid || null,
+      savedDy:rec && rec.dy,
+      heroScopeSkipped:heroScope
+    };
   };
 })();
 </script>
