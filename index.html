@@ -10661,11 +10661,23 @@ input, select, textarea {
   }
 }
 @media(max-width:640px) {
+  /* Echo title mobile fix: увеличиваем относительно прежнего мобильного
+     размера, но держим строку «в MARKETSPACE» внутри карточки даже на
+     узких экранах. Не трогаем десктоп. */
   .echo-title {
-    font-size: clamp(26px, 8vw, 32px);
-    line-height: 1.03;
-    letter-spacing: -0.025em;
+    font-size: clamp(22px, 6.1vw, 26px);
+    line-height: 1.08;
+    letter-spacing: -0.045em;
     max-width: 100%;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+}
+@media(max-width:380px) {
+  .echo-title {
+    font-size: clamp(20.5px, 5.8vw, 22px);
+    line-height: 1.1;
+    letter-spacing: -0.052em;
   }
 }
 @media(min-width: 961px) {
