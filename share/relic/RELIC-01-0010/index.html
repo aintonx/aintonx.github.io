@@ -1164,38 +1164,70 @@ header.scrolled {
 .hero-title {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(42px, 5vw, 72px);
+  /* HERO R6.4: чуть компактнее на десктопе, чтобы первая строка
+     «Каждая реликвия —» оставалась одной строкой и не ломала соседний терминал. */
+  font-size: clamp(42px, 4.45vw, 64px);
   line-height: 0.95;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--white);
   margin-bottom: 24px;
 }
+.hero-title-line { display: inline-block; white-space: nowrap; }
 .hero-title .dim { color: var(--white-dim); font-weight: 400; }
 .hero-title .accent { color: var(--red2); }
+.hero-dash {
+  display: inline-block;
+  font-size: 0.72em;
+  line-height: 1;
+  margin-left: 0.03em;
+  transform: translateY(-0.04em);
+  transform-origin: 50% 50%;
+}
 
 .hero-sub {
   font-size: 12px;
   color: var(--white-mid);
   line-height: 1.85;
   letter-spacing: 0.03em;
-  max-width: 440px;
-  margin-bottom: 36px;
+  max-width: 500px;
+  margin-bottom: 30px;
 }
 .hero-sub em { color: var(--white-mid); font-style: normal; }
 
-/* Лидирующая строка про Эхо — короткое CTA-обещание под main-sub */
+/* HERO R6.4 · CTA-сетка: две равные главные кнопки + ЭХО на их общую ширину.
+   Высота, радиус, шрифт и плотность одинаковые у всех трёх CTA; отличается
+   только роль: каталог — primary, объяснение/ЭХО — secondary. */
+.hero-cta,
+.hero-echo-action {
+  width: min(100%, 500px);
+}
+.hero-cta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+.hero-echo-action {
+  display: flex;
+  margin-top: 12px;
+}
+.hero-echo-action .cta-echo {
+  width: 100%;
+  text-align: center;
+}
 .hero-sub-echo {
   font-family: var(--font-code);
   font-size: 11px;
   color: var(--white-dim);
   line-height: 1.7;
   letter-spacing: 0.04em;
-  max-width: 460px;
-  margin-top: -22px;
-  margin-bottom: 30px;
-  padding-left: 12px;
+  max-width: 500px;
+  margin-top: 18px;
+  padding-left: 14px;
   border-left: 1px solid var(--cyan-dim);
 }
+.hero-sub-echo strong { color: var(--cyan) !important; font-weight: 600 !important; }
+.hero-sub-echo .hero-marketspace { color: var(--white) !important; font-weight: 500 !important; }
 /* ── АКЦЕНТЫ (тихие) ──────────────────────────────────────────────────
    Единый спокойный акцент терминов/имён вселенной: только яркость (белый),
    без жирности — выделяется органично, не «выпячивает». Перекрывает прежние
@@ -1204,14 +1236,7 @@ header.scrolled {
    тексте — проход «первое упоминание». */
 strong { color: var(--white) !important; font-weight: 400 !important; }
 .about-callout strong, .nft-footnote strong, .pfooter strong { color: inherit !important; font-weight: inherit !important; }
-.hero-sub-echo strong { color: var(--cyan) !important; font-weight: 600 !important; }
-.hero-sub-echo strong.hero-marketspace { color: var(--white) !important; }
 
-.hero-cta {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
 /* Cyan-акцент на CTA Эхо — отличает от «О технологии» */
 .cta-secondary.cta-echo {
   border-color: rgba(0,200,200,0.4);
@@ -1230,6 +1255,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   font-size: 9px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
+  min-height: 54px;
   padding: 14px 28px;
   background: var(--red);
   border: 1px solid var(--red2);
@@ -1237,7 +1263,11 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   cursor: pointer;
   transition: all .2s;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 @media (hover:hover) and (pointer:fine) {
 
@@ -1248,6 +1278,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   font-size: 9px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
+  min-height: 54px;
   padding: 14px 28px;
   background: transparent;
   border: 1px solid var(--border2);
@@ -1255,7 +1286,11 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   cursor: pointer;
   transition: all .2s;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 @media (hover:hover) and (pointer:fine) {
 
@@ -6382,6 +6417,19 @@ footer {
 .cookie-banner.hiding {
   animation: cookieBannerOut .3s cubic-bezier(.55,0,.78,1) forwards;
 }
+body.mob-nav-open .cookie-banner.show,
+body.modal-open .cookie-banner.show,
+body.chk-open .cookie-banner.show,
+body.cart-open .cookie-banner.show,
+body.ap-console-open .cookie-banner.show,
+html.legal-modal-open .cookie-banner.show {
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0 !important;
+  transform: translate3d(0, 24px, 0) !important;
+  animation: none !important;
+  transition: opacity .18s ease, transform .18s ease;
+}
 @keyframes cookieBannerIn {
   0%   { opacity: 0; transform: translateY(20px); }
   100% { opacity: 1; transform: translateY(0); }
@@ -7033,10 +7081,10 @@ footer {
 .mob-nav-link[href="#worlds"] .nav-ico { transform: scale(1.2); }
 .mob-nav-link[href="#collab"] .nav-ico { transform: scale(0.9); }
 .mob-nav-link .nav-mark { font-size: 20px; }
-/* Подсветка мобильной навигации не должна включаться от свайпа по touch-экрану. */
+/* Touch-подсветка мобильной навигации: визуальный отклик при касании/скольжении. */
 .mob-nav-link:active {
-  background: transparent;
-  color: var(--white);
+  background: var(--surface-hi);
+  color: var(--cyan-hi);
 }
 @media (hover:hover) and (pointer:fine) {
   .mob-nav-link:hover { background: var(--surface-hi); color: var(--cyan-hi); }
@@ -7125,9 +7173,10 @@ footer {
   }
 }
 .mnav-tile:not(.mnav-tile-soon):active {
-  border-color: var(--border2);
-  color: var(--white-mid);
-  background: var(--surface);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: var(--surface-hi);
+  box-shadow: 0 0 18px var(--cyan-glow);
 }
 /* Бейдж количества в корзине */
 .mnav-tile-badge {
@@ -7319,16 +7368,36 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
     margin-bottom: 28px;
   }
   .hero-cta {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 10px;
+    width: 100%;
+  }
+  .hero-echo-action {
     width: 100%;
   }
   .cta-primary, .cta-secondary {
     text-align: center;
-    display: block;
+    display: inline-flex;
     width: 100%;
+    min-height: 54px;
     box-sizing: border-box;
     padding: 14px 20px;
+  }
+  .hero-title-line { white-space: normal; }
+  .hero-title .dim { white-space: nowrap; }
+  .hero-echo-action {
+    margin-top: 10px;
+    width: 100%;
+  }
+  .hero-echo-action .cta-echo {
+    width: 100%;
+    min-width: 0;
+  }
+  .hero-sub-echo {
+    margin-top: 14px;
+    font-size: 10.5px;
+    line-height: 1.65;
+    max-width: 100%;
   }
 
   #heroBar {
@@ -13638,7 +13707,7 @@ button, a, [role="button"], label,
 <noscript><div><img src="https://mc.yandex.ru/watch/109875902" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <!-- /Yandex.Metrika counter -->
 <style id="ew-touch-active-press">
-/* Touch devices: keep intentional button press states without restoring hover-on-swipe. */
+/* Touch devices: keep intentional button press states and selected touch scroll accents. */
 @media (hover: none), (pointer: coarse) {
   .cta-secondary.cta-echo:active {
     border-color: var(--cyan);
@@ -13760,14 +13829,28 @@ button, a, [role="button"], label,
     transform: translateX(100%);
   }
 
+  .clink:active {
+    border-color: var(--border2);
+    background: var(--surface2);
+  }
+
+  .clink:active::before {
+    transform: scaleY(1);
+  }
+
+  .clink:active .clink-arr,
+  .clink-copy:active .clink-copy-ico svg {
+    color: var(--cyan);
+  }
+
   .mob-nav-link,
   .mnav-tile {
     -webkit-tap-highlight-color: transparent;
   }
 
   .mob-nav-link:active {
-    background: transparent !important;
-    color: var(--white) !important;
+    background: var(--surface-hi) !important;
+    color: var(--cyan-hi) !important;
   }
 
   .mob-nav-link:active .nav-ico,
@@ -13776,10 +13859,10 @@ button, a, [role="button"], label,
   }
 
   .mnav-tile:not(.mnav-tile-soon):active {
-    background: var(--surface) !important;
-    border-color: var(--border2) !important;
-    color: var(--white-mid) !important;
-    box-shadow: none !important;
+    background: var(--surface-hi) !important;
+    border-color: var(--cyan) !important;
+    color: var(--cyan) !important;
+    box-shadow: 0 0 18px var(--cyan-glow) !important;
     transform: none !important;
   }
 
@@ -13973,23 +14056,26 @@ button, a, [role="button"], label,
   <div>
     <div class="hero-eyebrow">
       <div class="hero-eyebrow-line"></div>
-      <div class="hero-eyebrow-text">// MARKETSPACE · Каталог I</div>
+      <div class="hero-eyebrow-text">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
     </div>
     <h1 class="hero-title">
-      Каждая <span class="dim">реликвия —</span><br>
+      <span class="hero-title-line">Каждая <span class="dim">реликвия <span class="hero-dash">—</span></span></span><br>
       <span class="accent">часть</span> вселенной
     </h1>
     <p class="hero-sub">
-      EchoWorld — единственная компания в мире, которой удалось <em>обнаружить <strong>MARKETSPACE</strong></em> и освоить его технологии. Каждая реликвия в каталоге — физический объект из параллельной вселенной: единственный экземпляр с историей, Вишем и цифровым следом. Это <em>прикосновение к тайне</em>, о которой большинство не догадывается.
-    </p>
-    <p class="hero-sub-echo">
-      Реликвия — для тех, кто хочет забрать объект из <strong class="hero-marketspace">MARKETSPACE</strong>. <strong>Эхо</strong> — для тех, кто хочет оставить там голос. 7 слов или 3 секунды.
+      EchoWorld открывает каталог физических реликвий из <strong>MARKETSPACE</strong> — параллельного мира, рождённого из человеческих желаний. Это не копии и не тираж: у каждой реликвии есть происхождение и история. Каждая существует в единственном экземпляре — и может оказаться в нашем мире. В ваших руках.
     </p>
     <div class="hero-cta">
       <a href="#catalog" class="cta-primary">Открыть каталог</a>
-      <a href="#echo" class="cta-secondary cta-echo">Отправить Эхо</a>
-      <a href="#about" class="cta-secondary">О технологии</a>
+      <a href="#about" class="cta-secondary">Что здесь происходит?</a>
     </div>
+    <div class="hero-echo-action" aria-label="ЭХО — отдельный короткий сигнал в MARKETSPACE">
+      <a href="#echo" class="cta-secondary cta-echo">Оставить ЭХО</a>
+    </div>
+    <p class="hero-sub-echo">
+      <strong>Реликвия</strong> — для тех, кто хочет прикоснуться к <strong class="hero-marketspace">MARKETSPACE</strong> по-настоящему.<br>
+      <strong>ЭХО</strong> — для тех, кто хочет оставить в нём короткий сигнал. 7 слов или 3 секунды.
+    </p>
   </div>
 
   <div class="hero-terminal" id="heroTerminal">
@@ -14446,7 +14532,7 @@ button, a, [role="button"], label,
         <div class="echo-kicker-dot"></div>
         <span>// ЭХО · СИСТЕМА АПЕРТУРА</span>
       </div>
-      <h2 class="echo-title">Отправить <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>
+      <h2 class="echo-title">Отправить <span>ЭХО</span><br>в&nbsp;MARKETSPACE</h2>
       <p class="echo-lead">
         7 слов или 3 секунды голоса. Виш произнесёт их в одном из будущих
         фрагментов — анимированных потоков данных <strong>MARKETSPACE</strong>, в нашем
@@ -14894,7 +14980,7 @@ button, a, [role="button"], label,
     <div class="cart-empty" id="cartEmpty">
       <div class="cart-empty-num">EMPTY · 00</div>
       <div class="cart-empty-h">Корзина молчит.</div>
-      <p class="cart-empty-p">Откройте каталог — выберите Виша, который должен пройти Переход. Пока вы не сделали выбор, Apertura ждёт.</p>
+      <p class="cart-empty-p">Откройте каталог — выберите реликвию, которая должна остаться с вами. Пока вы не сделали выбор, Apertura ждёт.</p>
       <button class="cart-empty-btn" type="button" onclick="cartToCatalog()">К&nbsp;каталогу</button>
     </div>
   </div>
@@ -15652,7 +15738,7 @@ button, a, [role="button"], label,
         <span style="font-family:var(--font-code);font-size:8px;letter-spacing:.28em;color:var(--red2);text-transform:uppercase;">// ЗАСЕКРЕЧЕНО · УРОВЕНЬ ДОСТУПА — А</span>
       </div>
       <h3 class="about-title" style="font-size:24px;margin-bottom:14px;">Материалы<br>закрытого уровня</h3>
-      <p class="about-text" style="max-width:580px;">За пределами видимого — данные Системы Apertura, архивы циклов, протоколы Периметра. Доступ открывается уровнями: каждая реликвия и каждое Эхо повышают позицию в <strong>Протоколе Семи</strong>.<br><br>В кабинете будут храниться NFT<sup class="nft-mark">*</sup>-реликвии: Цифровые Подписи Вишей, прошедших Переход для вас, ваши <strong>Записи Эхо</strong>, персональные фрагменты, незавершённые потоки Конденсата и сигналы, природу которых Apertura ещё распознаёт. Система обучается — углубляет периметр прослушивания. Возможности кабинета развиваются вместе с ней. Где их предел — никто пока не знает.<br><br>Все ваши действия фиксируются в <strong>Памяти Apertura</strong> с самого первого касания — даже до запуска личного кабинета. Когда он откроется — всё, что вы делали до этого, появится автоматически.</p>
+      <p class="about-text" style="max-width:580px;">За пределами видимого — данные Системы Apertura, записи циклов, протоколы Периметра. Доступ открывается уровнями: каждая реликвия и каждое Эхо повышают позицию в <strong>Протоколе Семи</strong>.<br><br>В кабинете будут храниться NFT<sup class="nft-mark">*</sup>-реликвии: Цифровые Подписи Вишей, прошедших Переход для вас, ваши <strong>Записи Эхо</strong>, персональные фрагменты, незавершённые потоки Конденсата и сигналы, природу которых Apertura ещё распознаёт. Система обучается — углубляет периметр прослушивания. Возможности кабинета развиваются вместе с ней. Где их предел — никто пока не знает.<br><br>Все ваши действия фиксируются в <strong>Памяти Apertura</strong> с самого первого касания — даже до запуска личного кабинета. Когда он откроется — всё, что вы делали до этого, появится автоматически.</p>
       <p class="nft-footnote" style="max-width:580px"><span class="nft-footnote-mark">*</span><span>Формируется в момент действия и кристаллизуется в NFT-реликвию при открытии личного кабинета. До этого момента она хранится в Памяти Apertura.</span></p>
     </div>
     <div class="cab-stub" role="status" aria-label="Открытие личного кабинета — скоро">
@@ -15747,7 +15833,7 @@ button, a, [role="button"], label,
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Что такое уровни доступа?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a">Система EchoWorld построена на семи уровнях доступа: <strong>A, I, N, T, O, N, X</strong>. Это <strong>Протокол Семи</strong> — внутренняя иерархия EchoWorld. Каждый уровень открывает новые слои вселенной: архивы циклов, данные Системы Apertura, закрытые материалы Периметра. Уровень определяется историей ваших взаимодействий с EchoWorld.<br><br>Прямо сейчас у всех посетителей сайта — <strong>уровень 0</strong>: гостевой сигнал, зарегистрированный Системой Apertura, но без открытых архивов. Личный кабинет находится в разработке. Когда он откроется — каждый, кто оставил в MARKETSPACE хотя бы один след — реликвию или Эхо — получит уровень <strong>A</strong> автоматически. Каждое следующее взаимодействие повышает уровень дальше по Протоколу.<br><br>Ничего не теряется и до открытия кабинета: каждое ваше действие фиксируется в Памяти Apertura — распределённой сети, где система хранит все сигналы. Когда кабинет откроется — вся ваша история уже будет там.</div>
+        <div class="faq-a">Система EchoWorld построена на семи уровнях доступа: <strong>A, I, N, T, O, N, X</strong>. Это <strong>Протокол Семи</strong> — внутренняя иерархия EchoWorld. Каждый уровень открывает новые слои вселенной: записи циклов, данные Системы Apertura, закрытые материалы Периметра. Уровень определяется историей ваших взаимодействий с EchoWorld.<br><br>Прямо сейчас у всех посетителей сайта — <strong>уровень 0</strong>: гостевой сигнал, зарегистрированный Системой Apertura, но без открытых слоёв памяти. Личный кабинет находится в разработке. Когда он откроется — каждый, кто оставил в MARKETSPACE хотя бы один след — реликвию или Эхо — получит уровень <strong>A</strong> автоматически. Каждое следующее взаимодействие повышает уровень дальше по Протоколу.<br><br>Ничего не теряется и до открытия кабинета: каждое ваше действие фиксируется в Памяти Apertura — распределённой сети, где система хранит все сигналы. Когда кабинет откроется — вся ваша история уже будет там.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
@@ -16641,6 +16727,155 @@ function inspectRelicSharePatch(){
   };
 }
 
+
+function inspectPatch6CopyStates(){
+  const html = document.documentElement ? document.documentElement.innerHTML : '';
+  const bodyText = document.body ? document.body.innerText : '';
+  const issues = [];
+  const countMatches = (text, pattern) => {
+    const m = String(text || '').match(pattern);
+    return m ? m.length : 0;
+  };
+  const forbiddenTerms = {
+    oldEchoRu: countMatches(html, new RegExp('[Ии]м' + 'пульс', 'g')),
+    oldEchoEn: countMatches(html, new RegExp('\\bim' + 'pulse\\b|\\bIM' + 'PULSE\\b', 'g')),
+    archiveRu: countMatches(bodyText, new RegExp('Ар' + 'хив|' + 'ар' + 'хив', 'g'))
+  };
+  if(forbiddenTerms.oldEchoRu > 0) issues.push('forbidden-term-old-echo-ru');
+  if(forbiddenTerms.oldEchoEn > 0) issues.push('forbidden-term-old-echo-en');
+  if(forbiddenTerms.archiveRu > 0) issues.push('archive-visible-copy-present');
+
+  const requiredCopy = {
+    cartAdded: html.includes('Реликвия добавлена в корзину.'),
+    cartDuplicate: html.includes('Реликвия уже в корзине.'),
+    cartRemoved: html.includes('Реликвия удалена из корзины.'),
+    cartEmptyTitle: bodyText.includes('Корзина молчит.'),
+    relicUndefined: html.includes('Реликвия не определена. Откройте карточку заново.'),
+    echoSlotFilledCaption: html.includes("has ? 'Эхо' : 'пусто'") || bodyText.includes('Эхо'),
+    echoEmptyGrammar: html.includes('Эхо пусто.'),
+    echoSlotHint: html.includes('Чем выше Мощь Реликвии, тем больше фрагментов Эхо может пройти вместе с ней.'),
+    echoCtaCaps: html.includes('Отправить <span>ЭХО</span><br>в&nbsp;MARKETSPACE'),
+    consentNoCaps: !html.includes('ПОДТВЕР' + 'ДИТЕ ОБРАБОТКУ ДАННЫХ')
+  };
+  Object.keys(requiredCopy).forEach(key => { if(!requiredCopy[key]) issues.push('missing-copy-' + key); });
+
+  const dom = {
+    notificationRoot: !!document.getElementById('notif') || !!document.querySelector('.notif'),
+    cartPanel: !!document.getElementById('cartPanel'),
+    cartBody: !!document.getElementById('cartBody'),
+    cartEmpty: !!document.getElementById('cartEmpty'),
+    checkoutOverlay: !!document.getElementById('checkoutOverlay'),
+    checkoutEchoSection: !!document.getElementById('chkEchoSection'),
+    echoSlotsList: !!document.getElementById('echoSlotsList'),
+    echoSection: !!document.getElementById('echo'),
+    apertureStatuses: typeof APERTURA_STATUS_STATES !== 'undefined'
+  };
+  Object.keys(dom).forEach(key => { if(!dom[key]) issues.push('missing-dom-' + key); });
+
+  const notificationReadiness = {
+    showNotif: typeof showNotif === 'function',
+    cartAddText: html.includes('Реликвия добавлена в корзину.'),
+    duplicateTextWithoutOpenCartPhrase: html.includes('Реликвия уже в корзине.') && !html.includes('Открываю ' + 'корзину.'),
+    removeText: html.includes('Реликвия удалена из корзины.'),
+    consentLowercase: html.includes('Подтвердите обработку данных.') && !html.includes('ПОДТВЕР' + 'ДИТЕ')
+  };
+  Object.keys(notificationReadiness).forEach(key => { if(!notificationReadiness[key]) issues.push('notification-readiness-' + key); });
+
+  const statusStates = {
+    relicNotFound: typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['relic-not-found'],
+    productUnavailable: typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['product-unavailable'],
+    paymentCheck: typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['payment-check'],
+    reserveExpired: typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['reserve-expired'],
+    checkoutTimeout: typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['checkout-timeout'],
+    voiceUploadMissing: typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['voice-upload-missing'],
+    micDenied: typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['mic-denied']
+  };
+  Object.keys(statusStates).forEach(key => { if(!statusStates[key]) issues.push('missing-status-' + key); });
+
+  const echoLimits = {
+    productCardSlotLimit: typeof ECHO_SLOT_WORD_LIMIT !== 'undefined' ? ECHO_SLOT_WORD_LIMIT : null,
+    checkoutSlotLimit: typeof CHECKOUT_ECHO_SLOT_WORD_LIMIT !== 'undefined' ? CHECKOUT_ECHO_SLOT_WORD_LIMIT : null
+  };
+  if(echoLimits.productCardSlotLimit !== 10) issues.push('bad-product-card-echo-slot-limit');
+  if(echoLimits.checkoutSlotLimit !== 10) issues.push('bad-checkout-echo-slot-limit');
+
+  const ids = Array.from(document.querySelectorAll('[id]')).map(el => el.id);
+  const duplicates = ids.filter((id, idx) => id && ids.indexOf(id) !== idx);
+  if(duplicates.length) issues.push('duplicate-dom-id');
+
+  return {
+    ok: issues.length === 0,
+    issues,
+    forbiddenTerms,
+    requiredCopy,
+    dom,
+    notificationReadiness,
+    statusStates,
+    echoLimits,
+    duplicateIds: Array.from(new Set(duplicates))
+  };
+}
+
+function inspectPatch61TerminologyStates(){
+  const html = document.documentElement ? document.documentElement.innerHTML : '';
+  const bodyText = document.body ? document.body.innerText : '';
+  const issues = [];
+  const has = (s) => html.includes(s) || bodyText.includes(s);
+  const visibleArtifactHits = (bodyText.match(/\b[Аа]ртефакт\w*/g) || []).filter(Boolean);
+  const requiredCopy = {
+    mainTitle: html.includes('EchoWorld — Реликвии из параллельного мира MARKETSPACE'),
+    catalogTitle: has('КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE'),
+    heroEyebrow: has('// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE'),
+    heroRelicLine: has('EchoWorld открывает каталог физических реликвий из MARKETSPACE'),
+    heroLoreCta: has('Что здесь происходит?'),
+    heroEchoEntry: has('ЭХО — короткий сигнал в MARKETSPACE. 7 слов или 3 секунды.'),
+    catalogNewRelics: has('Новые реликвии появятся по мере завершения текущих циклов конденсации.'),
+    catalogEmptyRelic: has('Apertura не уловила реликвию по этому запросу.'),
+    faqPhysicalRelic: has('Физическая реликвия в авторской упаковке с биографией Виша.'),
+    returnRelic: has('Возврат реликвии'),
+    noCatalogArtifactsTitle: !bodyText.includes('КАТАЛОГ ' + 'АРТЕФАКТОВ'),
+    noProductHeroPhrase: !bodyText.includes('Каждый товар в этом ' + 'каталоге'),
+    noOldHeroObjectPhrase: !bodyText.includes('забрать ' + 'объект из MARKETSPACE')
+  };
+  Object.keys(requiredCopy).forEach(key => { if(!requiredCopy[key]) issues.push('patch61-' + key); });
+  return {
+    ok: issues.length === 0,
+    issues,
+    requiredCopy,
+    visibleArtifactHits,
+    note: 'Артефакт может оставаться в широком/лорном значении. В UI-действиях основной термин — Реликвия.'
+  };
+}
+
+function inspectHeroEntryPatch62(){ return inspectHeroEntryPatch64(); }
+function inspectHeroEntryPatch63(){ return inspectHeroEntryPatch64(); }
+function inspectHeroEntryPatch64(){
+  const bodyText = document.body ? document.body.innerText : '';
+  const hero = document.querySelector('.hero');
+  const issues = [];
+  const heroText = hero ? hero.innerText : '';
+  const has = (s) => heroText.includes(s) || bodyText.includes(s);
+  const titleLine = document.querySelector('.hero-title-line');
+  const dash = document.querySelector('.hero-title .hero-dash');
+  const required = {
+    heroEyebrow: has('// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE'),
+    titleFirstLineProtected: !!titleLine && getComputedStyle(titleLine).whiteSpace === 'nowrap',
+    titleSmallDash: !!dash,
+    heroSub: has('EchoWorld открывает каталог физических реликвий из MARKETSPACE'),
+    heroDesireLine: has('параллельного мира, рождённого из человеческих желаний'),
+    catalogCta: !!document.querySelector('.hero-cta a[href="#catalog"]'),
+    loreCta: !!Array.from(document.querySelectorAll('.hero-cta a[href="#about"]')).find(a => a.textContent.trim() === 'Что здесь происходит?'),
+    echoCta: !!document.querySelector('.hero-echo-action a[href="#echo"]'),
+    heroHandsLine: has('В ваших руках.'),
+    echoFootnote: has('ЭХО — для тех, кто хочет оставить в нём короткий сигнал. 7 слов или 3 секунды.'),
+    relicTouchLine: has('Реликвия — для тех, кто хочет прикоснуться к MARKETSPACE по-настоящему.')
+  };
+  Object.keys(required).forEach(key => { if(!required[key]) issues.push('hero64-' + key); });
+  return { ok: issues.length === 0, issues, required };
+}
+
+
+
 let cur=null,echoChecked=false,cart=[];
 
 
@@ -16744,9 +16979,9 @@ function inspectCartApiReadiness(){
 /* ── РЕНДЕР МУЛЬТИ-СЛОТОВ ЭХО ─────────────────────────────────────
    Создаёт N textarea-слотов по числу резонансных слоёв Виша (Мощь).
    Каждый слот — отдельный анимированный поток данных, опционален.
-   Лимит 15 слов на слот (как намёк на Эхо — длиннее не получится).
+   Лимит 10 слов на слот: каждый фрагмент Эхо должен оставаться коротким и точным.
    Все слоты собираются в массив при добавлении в корзину. */
-const ECHO_SLOT_WORD_LIMIT = 15;
+const ECHO_SLOT_WORD_LIMIT = 10;
 /* Эхо в составе заказа реликвии бесплатно. */
 const ECHO_PRICE_PER_SLOT = 0;
 function echoFilledCount(){
@@ -17083,20 +17318,56 @@ function _forceUnlockScroll(){
     }
   }
 }
-/* ── WATCHDOG: при возврате в таб проверяем что нет stuck scroll-lock ──
-   Если все модалки закрыты, но счётчик локов > 0 —
-   сбрасываем форсированно. Бывает после iOS суспенда/возврата. */
-document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState !== 'visible') return;
-  const anyModalOpen =
-    document.body.classList.contains('modal-open') ||
-    document.body.classList.contains('chk-open') ||
-    document.body.classList.contains('cart-open') ||
-    document.documentElement.classList.contains('legal-modal-open');
-  if(!anyModalOpen && _scrollLockCount > 0){
-    _forceUnlockScroll();
+/* ── WATCHDOG: страхуем scroll-lock от залипания и рассинхрона ───────
+   Визуал не трогаем: только проверяем, соответствует ли счётчик реальным
+   открытым слоям. Нужен для iOS suspend/back-forward и быстрых переходов
+   между карточкой, корзиной, checkout, меню и Apertura-панелями. */
+function _hasScrollLockedLayer(){
+  const body = document.body;
+  const nav = document.getElementById('mobNav');
+  return !!(
+    body.classList.contains('modal-open') ||
+    body.classList.contains('chk-open') ||
+    body.classList.contains('cart-open') ||
+    body.classList.contains('ap-console-open') ||
+    document.documentElement.classList.contains('legal-modal-open') ||
+    (nav && (nav.classList.contains('open') || nav.classList.contains('closing'))) ||
+    document.querySelector('#moverlay.open,#moverlay.closing,#cartOverlay.open,#cartOverlay.cart-closing,#chkOverlay.open,#chkOverlay.closing,#returnModal.open,#returnModal.closing,#reqModal.open,#offerModal.open,#privacyModal.open,.ap-console-overlay.open,.ap-console-overlay.is-mounted')
+  );
+}
+function _auditScrollLockState(){
+  if(!document.body) return;
+  const nav = document.getElementById('mobNav');
+  if(document.body.classList.contains('mob-nav-open')
+     && !(nav && (nav.classList.contains('open') || nav.classList.contains('closing')))){
+    document.body.classList.remove('mob-nav-open');
   }
+  const hasLayer = _hasScrollLockedLayer();
+  if(!hasLayer && _scrollLockCount > 0){
+    _forceUnlockScroll();
+  } else if(hasLayer && _scrollLockCount === 0){
+    lockScroll();
+  }
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible') _auditScrollLockState();
 });
+window.addEventListener('pageshow', () => setTimeout(_auditScrollLockState, 0), {passive:true});
+window.addEventListener('resize', () => setTimeout(_auditScrollLockState, 80), {passive:true});
+window.addEventListener('orientationchange', () => setTimeout(_auditScrollLockState, 180), {passive:true});
+setInterval(function(){
+  if(document.visibilityState !== 'hidden') _auditScrollLockState();
+}, 1500);
+window.inspectScrollLockState = function(){
+  return {
+    ok: _hasScrollLockedLayer() ? _scrollLockCount > 0 : _scrollLockCount === 0,
+    lockCount: _scrollLockCount,
+    hasLayer: _hasScrollLockedLayer(),
+    bodyClass: document.body ? document.body.className : '',
+    htmlClass: document.documentElement ? document.documentElement.className : '',
+    scrollY: Math.round(window.scrollY || window.pageYOffset || 0)
+  };
+};
 
 /* ===== Глитч-спойлер внешности Виша (М/Ж) — «утечка из MARKETSPACE».
    Один раз на карточку (localStorage), потом исчезает навсегда.
@@ -17231,7 +17502,7 @@ function showEwDiag(){
 }
 try{ if(window.EWDIAG) window.EWDIAG.vish=showEwDiag; }catch(e){}
 window.ewDiag=showEwDiag;
-try{ if(/diag/i.test((location.hash||'')+(location.search||''))) setTimeout(showEwDiag,400); }catch(e){}
+try{ if(location.hash==='#diag'||/(^|[?&])ewDiag=1(&|$)/i.test(location.search||'')) setTimeout(showEwDiag,400); }catch(e){}
 const PRODUCT_STATUS_MODEL = {
   available: {
     label: 'Доступен',
@@ -17972,7 +18243,7 @@ function addToCart(ev){
   if(ev && typeof ev.preventDefault === 'function') ev.preventDefault();
   if(!cur){
     console.warn('addToCart: cur is null — модал не инициализирован');
-    showNotif('// Ошибка: товар не выбран. Откройте карточку заново.', {contextual:true});
+    showNotif('// Реликвия не определена. Откройте карточку заново.', {contextual:true});
     return;
   }
   if(!isProductOrderable(cur)) return;
@@ -17980,13 +18251,13 @@ function addToCart(ev){
   try { updateCartUI(); } catch(e){ console.error('updateCartUI failed:', e); }
   if(result.duplicate){
     closeModal(function(){
-      showNotif('// Эта реликвия уже в корзине. Открываю корзину.', {contextual:true});
+      showNotif('// Реликвия уже в корзине.', {contextual:true});
       setTimeout(openCartIfClosed, 120);
     });
     return;
   }
   closeModal(function(){
-    showNotif('// Артефакт добавлен в корзину. Конденсат ожидает подтверждения.', {contextual:true});
+    showNotif('// Реликвия добавлена в корзину.', {contextual:true});
   });
 }
 /* Купить сейчас — минуем корзину, сразу открываем форму оформления */
@@ -18218,7 +18489,11 @@ function animateCartRemove(i, source){
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!row || reduce){
     const idx = cart.indexOf(itemRef);
-    if(idx >= 0){ cart.splice(idx,1); updateCartUI(); }
+    if(idx >= 0){
+      cart.splice(idx,1);
+      updateCartUI();
+      if(typeof showNotif === 'function') showNotif('// Реликвия удалена из корзины.', {contextual:true});
+    }
     return;
   }
   if(row.classList.contains('cart-item-removing')) return;
@@ -18232,8 +18507,11 @@ function animateCartRemove(i, source){
   row.classList.add('cart-item-removing');
   setTimeout(function(){
     const idx = cart.indexOf(itemRef);
-    if(idx >= 0) cart.splice(idx,1);
-    updateCartUI();
+    if(idx >= 0){
+      cart.splice(idx,1);
+      updateCartUI();
+      if(typeof showNotif === 'function') showNotif('// Реликвия удалена из корзины.', {contextual:true});
+    }
   }, lastItem ? 520 : 380);
 }
 function updateCartUI(){
@@ -18393,7 +18671,7 @@ function _chkEchoSyncSlotVisual(itemIdx, slotIdx){
   btn.classList.toggle('is-active', __chkEchoActive.itemIdx === itemIdx && __chkEchoActive.slotIdx === slotIdx);
   const cap = btn.querySelector('.chk-echo-slot-caption');
   if(cap){
-    cap.textContent = has ? 'echo' : 'empty';
+    cap.textContent = has ? 'Эхо' : 'пусто';
   }
 }
 function _chkEchoCloseAllEditors(){
@@ -18423,7 +18701,7 @@ function renderCheckoutEchoControls(){
     html+=`<div class="chk-echo-card" data-chk-echo-item="${itemIdx}">
       <div class="chk-echo-head">
         <div class="chk-echo-title">${_escapeHtmlAttr(item.name||'Реликвия')} · ${slots} ${_chkEchoSlotWord(slots)}
-          <small>До ${CHECKOUT_ECHO_SLOT_WORD_LIMIT} слов в каждом слоте. Количество ячеек зависит от Мощи Реликвии.</small>
+          <small>Чем выше Мощь Реликвии, тем больше фрагментов Эхо может пройти вместе с ней. Каждый слот — отдельная запись до ${CHECKOUT_ECHO_SLOT_WORD_LIMIT} слов. Пустые слоты не мешают заказу.</small>
         </div>
         <div class="chk-echo-price">Без доплаты</div>
       </div>
@@ -18443,7 +18721,7 @@ function renderCheckoutEchoControls(){
             <span class="chk-echo-slot-icon-plus"></span>
             <span class="chk-echo-slot-icon-text"></span>
           </span>
-          <span class="chk-echo-slot-caption">${has?'echo':'empty'}</span>
+          <span class="chk-echo-slot-caption">${has?'Эхо':'пусто'}</span>
         </button>`;
     }
     html+=`</div>
@@ -23586,7 +23864,7 @@ function validatePreorderField(kind){
     _setPreorderError('contact', ok?'':'// Apertura не распознала канал. Укажите email в формате name@example.ru.');
   } else if(kind==='consent'){
     ok=consent;
-    _setPreorderError('consent', ok?'':'// ПОДТВЕРДИТЕ ОБРАБОТКУ ДАННЫХ.');
+    _setPreorderError('consent', ok?'':'// Подтвердите обработку данных.');
   }
   return ok;
 }
@@ -23597,7 +23875,7 @@ function validatePreorderForm(){
   const ok=a&&b&&c;
   if(!ok && typeof showNotif==='function'){
     if(!c){
-      showNotif('// ПОДТВЕРДИТЕ ОБРАБОТКУ ДАННЫХ.', {contextual:true});
+      showNotif('// Подтвердите обработку данных.', {contextual:true});
     } else {
       showNotif('// Запрос Конденсации не принят: проверьте подсвеченные поля.', {contextual:true});
     }
@@ -24837,6 +25115,7 @@ function openMobNav(){
   nav.classList.add('open');
   document.getElementById('mobNavOverlay').classList.add('open');
   document.getElementById('mobBurger').classList.add('open');
+  document.body.classList.add('mob-nav-open');
   lockScroll();
   /* Диагностика: снимок темы + плиток меню сразу после открытия — ловим
      «тёмные поля» (нативная подложка кнопок) на реальном iPhone. */
@@ -24859,6 +25138,7 @@ function closeMobNav(){
   setTimeout(()=>{
     document.body.classList.add('scroll-restoring');
     nav.classList.remove('closing');
+    document.body.classList.remove('mob-nav-open');
     unlockScroll();
   }, 420);
 }
@@ -25664,7 +25944,7 @@ function openEchoOrder(){
   if(_echoMode === 'text'){
     const ta = document.getElementById('echoTextInput');
     const txt = ta ? ta.value.trim() : '';
-    if(!txt){ showNotif('// Эхо пуст. Введите слова или переключитесь на голос.'); return; }
+    if(!txt){ showNotif('// Эхо пусто. Введите слова или переключитесь на голос.'); return; }
     const words = txt.split(/\s+/).filter(Boolean);
     if(words.length > 7){ showNotif('// До 7 слов. Сократите формулировку.'); return; }
   } else {
@@ -26769,28 +27049,23 @@ function acceptCookies(){
 })();
 </script>
 
+
+
 <script>
 /* ── ВОЗВРАТ ПОЗИЦИИ ПОСЛЕ RELOAD ──────────────────────────────────
-   Пишем позицию непрерывно: Y + якорь (ближайшая секция сверху + смещение
-   внутри неё). После reload / возврата по истории страница стартует сверху
-   и ПЛАВНО едет к якорю (easeOutCubic — та же кривая, что у навигации по
-   разделам). Якорь, а не голый Y: пока lazy-картинки выше точки не
-   загружены, абсолютный Y уезжает на тысячи пикселей. Цель пересчитывается
-   каждый кадр — анимация догоняет даже плывущий layout; после приезда
-   крупные сдвиги от долетающих картинок дожимаются, пока юзер не вмешался.
-   Обычный заход (navigate) — без всякой прокрутки. */
+   Механика вернулась к стабильной версии из backup: обычный window-scroll,
+   сохранение Y + якоря секции и плавный rAF-проезд после reload/back-forward.
+   Новые секции текущего сайта сохранены в списке якорей, визуал не меняется. */
 (function(){
   var KEY='ew:architect-trace:v3';
-  var ANCHORS=['relic','catalog','echo','about','worlds','collab','preorderSection','faq','architect'];
+  var ANCHORS=['relic','catalog','echo','impulse','about','worlds','collab','preorderSection','faq','architect'];
   var restoring=false;
   var last=0, lastSavedY=-1, lastSavedKey='';
-  /* подчистка ключей старой версии механики */
   try{
     ['ew:architect-trace:v2','ew:architect-trace:pending:v2'].forEach(function(k){
       sessionStorage.removeItem(k); localStorage.removeItem(k);
     });
   }catch(e){}
-  /* ключ БЕЗ hash: застрявший в URL фрагмент (#catalog) не должен ломать возврат */
   function pageKey(){
     return location.pathname + location.search;
   }
@@ -26862,7 +27137,7 @@ function acceptCookies(){
     if((nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80) return;
     restoring=true;
     var prevSB=html.style.scrollBehavior;
-    html.style.scrollBehavior='auto'; /* едем своей rAF-анимацией — без двойного сглаживания с CSS smooth */
+    html.style.scrollBehavior='auto';
     function target(){
       if(rec.aid){
         var el=document.getElementById(rec.aid);
@@ -26883,11 +27158,6 @@ function acceptCookies(){
     var reduce=false;
     try{ reduce=!!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
     var t0=performance.now(), loadedAt=0;
-    /* Дожим после приезда: пока документ грузится, + 1.2с после load
-       (максимум 15с). Без scroll anchoring (iOS Safari) поздние
-       lazy-картинки выше точки раздвигают страницу и утаскивают контент
-       из-под пользователя — дожим тихо возвращает якорь на место,
-       пока пользователь не взял управление. */
     function settleDeadline(now){
       if(document.readyState !== 'complete') return Infinity;
       if(!loadedAt) loadedAt=now;
@@ -26906,21 +27176,17 @@ function acceptCookies(){
       var dist=Math.abs(target()-startY);
       if(dist < 2){ settle(); return; }
       if(reduce){ window.scrollTo(0, target()); settle(); return; }
-      /* длительность от дистанции: короткий путь — быстро, длинный — величаво */
       var dur=Math.max(450, Math.min(1200, 500 + dist*0.12));
       var ts=performance.now();
       (function step(now){
         if(userTouched){ finish(); return; }
         var p=Math.min((now-ts)/dur, 1);
-        var e=1 - Math.pow(1-p, 3); /* easeOutCubic — как у _smoothScrollTo */
-        /* цель живая: якорь пересчитывается каждый кадр — анимация догоняет
-           layout, даже если картинки раздвигают страницу прямо во время езды */
+        var e=1 - Math.pow(1-p, 3);
         window.scrollTo(0, Math.round(startY + (target()-startY)*e));
         if(p < 1) requestAnimationFrame(step);
         else settle();
       })(ts);
     }
-    /* старт с короткой паузой после первой отрисовки: заход не дёргается */
     setTimeout(function(){ requestAnimationFrame(glide); }, 180);
   }
   if(document.readyState==='loading'){
@@ -27568,6 +27834,5 @@ function acceptCookies(){
   else setup();
 })();
 </script>
-
 </body>
 </html>

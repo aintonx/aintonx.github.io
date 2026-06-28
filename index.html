@@ -7068,10 +7068,10 @@ html.legal-modal-open .cookie-banner.show {
 .mob-nav-link[href="#worlds"] .nav-ico { transform: scale(1.2); }
 .mob-nav-link[href="#collab"] .nav-ico { transform: scale(0.9); }
 .mob-nav-link .nav-mark { font-size: 20px; }
-/* Подсветка мобильной навигации не должна включаться от свайпа по touch-экрану. */
+/* Touch-подсветка мобильной навигации: визуальный отклик при касании/скольжении. */
 .mob-nav-link:active {
-  background: transparent;
-  color: var(--white);
+  background: var(--surface-hi);
+  color: var(--cyan-hi);
 }
 @media (hover:hover) and (pointer:fine) {
   .mob-nav-link:hover { background: var(--surface-hi); color: var(--cyan-hi); }
@@ -7160,9 +7160,10 @@ html.legal-modal-open .cookie-banner.show {
   }
 }
 .mnav-tile:not(.mnav-tile-soon):active {
-  border-color: var(--border2);
-  color: var(--white-mid);
-  background: var(--surface);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: var(--surface-hi);
+  box-shadow: 0 0 18px var(--cyan-glow);
 }
 /* Бейдж количества в корзине */
 .mnav-tile-badge {
@@ -13693,7 +13694,7 @@ button, a, [role="button"], label,
 <noscript><div><img src="https://mc.yandex.ru/watch/109875902" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <!-- /Yandex.Metrika counter -->
 <style id="ew-touch-active-press">
-/* Touch devices: keep intentional button press states without restoring hover-on-swipe. */
+/* Touch devices: keep intentional button press states and selected touch scroll accents. */
 @media (hover: none), (pointer: coarse) {
   .cta-secondary.cta-echo:active {
     border-color: var(--cyan);
@@ -13815,14 +13816,28 @@ button, a, [role="button"], label,
     transform: translateX(100%);
   }
 
+  .clink:active {
+    border-color: var(--border2);
+    background: var(--surface2);
+  }
+
+  .clink:active::before {
+    transform: scaleY(1);
+  }
+
+  .clink:active .clink-arr,
+  .clink-copy:active .clink-copy-ico svg {
+    color: var(--cyan);
+  }
+
   .mob-nav-link,
   .mnav-tile {
     -webkit-tap-highlight-color: transparent;
   }
 
   .mob-nav-link:active {
-    background: transparent !important;
-    color: var(--white) !important;
+    background: var(--surface-hi) !important;
+    color: var(--cyan-hi) !important;
   }
 
   .mob-nav-link:active .nav-ico,
@@ -13831,10 +13846,10 @@ button, a, [role="button"], label,
   }
 
   .mnav-tile:not(.mnav-tile-soon):active {
-    background: var(--surface) !important;
-    border-color: var(--border2) !important;
-    color: var(--white-mid) !important;
-    box-shadow: none !important;
+    background: var(--surface-hi) !important;
+    border-color: var(--cyan) !important;
+    color: var(--cyan) !important;
+    box-shadow: 0 0 18px var(--cyan-glow) !important;
     transform: none !important;
   }
 
