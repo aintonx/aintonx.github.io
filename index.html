@@ -12,10 +12,10 @@
      Или: F12 → Console → строка «APERTURA · BUILD R6».
      ═══════════════════════════════════════════════════════════════ -->
 <script>try{console.log('%cAPERTURA · BUILD R6','color:#00c8c8');}catch(e){}</script>
-<script>/* R6.8 · reload-scroll guard based on backup mechanics.
-   Сохраняем manual restoration из рабочего бэкапа, но ставим ранний флаг
-   ручного намерения: если пользователь начал скроллить/тапать до запуска
-   restore-движка, нижний restore не имеет права тянуть страницу назад. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';window.__ewReloadRestoreUserIntent=false;(function(){function mark(){window.__ewReloadRestoreUserIntent=true;}['wheel','touchstart','touchmove','pointerdown','keydown'].forEach(function(ev){window.addEventListener(ev,mark,{passive:true,capture:true,once:true});});})();(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
+<script>/* R6.10 · SCROLL FIX: manual native restoration, no forced reload restore.
+   Важно: это НЕ переносит страницу после reload и не вызывает window.scrollTo.
+   Браузеру запрещено асинхронно восстанавливать старую позицию, а старые ключи
+   кастомного restore очищаются, чтобы страница не тянула пользователя обратно. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';(function(){var keys=['ew:architect-trace:v3','ew:architect-trace:v2','ew:architect-trace:pending:v2'];function clear(){try{keys.forEach(function(k){sessionStorage.removeItem(k);localStorage.removeItem(k);});}catch(e){}}clear();window.addEventListener('pageshow',clear,{passive:true});window.inspectReloadScrollGuard70=function(){var left=[];try{keys.forEach(function(k){if(sessionStorage.getItem(k)||localStorage.getItem(k))left.push(k);});}catch(e){}return{ok:left.length===0,patch:'R6.10_MANUAL_NO_RELOAD_RESTORE',historyScrollRestoration:('scrollRestoration'in history)?history.scrollRestoration:'unsupported',forcedReloadRestore:false,staleKeys:left};};window.inspectReloadScrollGuard69=window.inspectReloadScrollGuard70;window.inspectReloadScrollGuard67=window.inspectReloadScrollGuard70;})();}catch(e){}</script>
 
 <title>EchoWorld — Реликвии из параллельного мира MARKETSPACE</title>
 <meta name="description" content="EchoWorld — арт-маркетплейс реликвий из параллельного мира MARKETSPACE. Каждая реликвия — кристаллизованная история живого существа, прошедшего Переход. Не товары — следы Вишей.">
@@ -26328,170 +26328,24 @@ function acceptCookies(){
 })();
 </script>
 
-<script>
-/* ── ВОЗВРАТ ПОЗИЦИИ ПОСЛЕ RELOAD ──────────────────────────────────
-   Пишем позицию непрерывно: Y + якорь (ближайшая секция сверху + смещение
-   внутри неё). После reload / возврата по истории страница стартует сверху
-   и ПЛАВНО едет к якорю (easeOutCubic — та же кривая, что у навигации по
-   разделам). Якорь, а не голый Y: пока lazy-картинки выше точки не
-   загружены, абсолютный Y уезжает на тысячи пикселей. Цель пересчитывается
-   каждый кадр — анимация догоняет даже плывущий layout; после приезда
-   крупные сдвиги от долетающих картинок дожимаются, пока юзер не вмешался.
-   Обычный заход (navigate) — без всякой прокрутки. */
+<script id="ew-native-scroll-restore-r610">/* R6.10 · reload restore disabled intentionally.
+   Здесь раньше жил R6.7 native auto-scroll restore. Его проблема: history.scrollRestoration='auto'
+   позволяло браузеру асинхронно дернуть страницу после reload. Теперь manual + без window.scrollTo. */
 (function(){
-  var KEY='ew:architect-trace:v3';
-  var ANCHORS=['relic','catalog','echo','impulse','about','worlds','collab','preorderSection','faq','architect'];
-  var restoring=false;
-  var last=0, lastSavedY=-1, lastSavedKey='';
-  /* подчистка ключей старой версии механики */
-  try{
-    ['ew:architect-trace:v2','ew:architect-trace:pending:v2'].forEach(function(k){
-      sessionStorage.removeItem(k); localStorage.removeItem(k);
-    });
-  }catch(e){}
-  /* ключ БЕЗ hash: застрявший в URL фрагмент (#catalog) не должен ломать возврат */
-  function pageKey(){
-    return location.pathname + location.search;
-  }
-  function currentY(){
-    var se=document.scrollingElement || document.documentElement || document.body;
-    return Math.max(0, Math.round((se && se.scrollTop) || window.pageYOffset || window.scrollY || 0));
-  }
-  function anchorFor(y){
-    var best=null, bestTop=-1;
-    for(var i=0;i<ANCHORS.length;i++){
-      var el=document.getElementById(ANCHORS[i]);
-      if(!el) continue;
-      var top=el.getBoundingClientRect().top + (window.pageYOffset||0);
-      if(top <= y+90 && top > bestTop){ bestTop=top; best=ANCHORS[i]; }
-    }
-    return best ? {aid:best, dy:Math.round(y-bestTop)} : null;
-  }
-  function save(force){
-    if(restoring) return;
-    var now=Date.now();
-    var key=pageKey();
-    var y=currentY();
-    if(!force && key===lastSavedKey && y===lastSavedY && now-last<700) return;
-    if(!force && now-last<80) return;
-    last=now;
-    lastSavedKey=key;
-    lastSavedY=y;
-    try{
-      var a=anchorFor(y);
-      var payload=JSON.stringify({ key:key, y:y, aid:a?a.aid:null, dy:a?a.dy:0, t:now });
-      sessionStorage.setItem(KEY, payload);
-      localStorage.setItem(KEY, payload);
-    }catch(e){}
-  }
-  window.addEventListener('scroll', function(){ save(false); }, {passive:true});
-  ['touchend','pointerup','mouseup','keyup','resize'].forEach(function(ev){
-    window.addEventListener(ev, function(){ save(true); }, {passive:true});
-  });
-  window.setInterval(function(){ save(false); }, 650);
-  window.addEventListener('pagehide', function(){ save(true); });
-  window.addEventListener('beforeunload', function(){ save(true); });
-  document.addEventListener('visibilitychange', function(){
-    if(document.visibilityState==='hidden') save(true);
-  });
-
-  function navType(){
-    try{
-      var n=performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-      if(n && n.type) return n.type;
-      if(performance.navigation){
-        if(performance.navigation.type === 1) return 'reload';
-        if(performance.navigation.type === 2) return 'back_forward';
-      }
-      return '';
-    }catch(e){ return ''; }
-  }
-  function clampY(y){
-    var se=document.scrollingElement || document.documentElement;
-    var max=Math.max(0, (se.scrollHeight || 0) - window.innerHeight);
-    return Math.max(0, Math.min(y, max));
-  }
-  function run(){
-    try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
-    var html=document.documentElement;
-    var nt=navType();
-    var rec=null;
-    try{ rec=JSON.parse(sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'null'); }catch(e){}
-    var fresh=!!(rec && rec.key === pageKey() && isFinite(rec.y) && Date.now() - (rec.t || 0) <= 30*60*1000);
-    if((nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80) return;
-    /* R6.8: если пользователь уже начал скроллить/тапать до старта restore,
-       не спорим с ним и не тянем страницу назад. */
-    if(window.__ewReloadRestoreUserIntent || currentY() > 80) return;
-    restoring=true;
-    var prevSB=html.style.scrollBehavior;
-    html.style.scrollBehavior='auto'; /* едем своей rAF-анимацией — без двойного сглаживания с CSS smooth */
-    function target(){
-      if(rec.aid){
-        var el=document.getElementById(rec.aid);
-        if(el) return clampY(Math.round(el.getBoundingClientRect().top + (window.pageYOffset||0) + rec.dy));
-      }
-      return clampY(rec.y);
-    }
-    function finish(){
-      html.style.scrollBehavior=prevSB;
-      restoring=false;
-      save(true);
-    }
-    var userTouched=false;
-    function onUser(){ userTouched=true; window.__ewReloadRestoreUserIntent=true; }
-    ['wheel','touchstart','touchmove','keydown','pointerdown'].forEach(function(ev){
-      window.addEventListener(ev, onUser, {passive:true, once:true});
-    });
-    var reduce=false;
-    try{ reduce=!!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
-    var t0=performance.now(), loadedAt=0;
-    /* Дожим после приезда: пока документ грузится, + 1.2с после load
-       (максимум 15с). Без scroll anchoring (iOS Safari) поздние
-       lazy-картинки выше точки раздвигают страницу и утаскивают контент
-       из-под пользователя — дожим тихо возвращает якорь на место,
-       пока пользователь не взял управление. */
-    function settleDeadline(now){
-      if(document.readyState !== 'complete') return Infinity;
-      if(!loadedAt) loadedAt=now;
-      return Math.min(loadedAt + 1200, t0 + 15000);
-    }
-    function settle(){
-      var now=performance.now();
-      if(userTouched || now >= settleDeadline(now)){ finish(); return; }
-      var t=target();
-      if(Math.abs(currentY()-t) > 24) window.scrollTo(0, t);
-      requestAnimationFrame(settle);
-    }
-    function glide(){
-      if(userTouched){ finish(); return; }
-      var startY=currentY();
-      var dist=Math.abs(target()-startY);
-      if(dist < 2){ settle(); return; }
-      if(reduce){ window.scrollTo(0, target()); settle(); return; }
-      /* длительность от дистанции: короткий путь — быстро, длинный — величаво */
-      var dur=Math.max(450, Math.min(1200, 500 + dist*0.12));
-      var ts=performance.now();
-      (function step(now){
-        if(userTouched){ finish(); return; }
-        var p=Math.min((now-ts)/dur, 1);
-        var e=1 - Math.pow(1-p, 3); /* easeOutCubic — как у _smoothScrollTo */
-        /* цель живая: якорь пересчитывается каждый кадр — анимация догоняет
-           layout, даже если картинки раздвигают страницу прямо во время езды */
-        window.scrollTo(0, Math.round(startY + (target()-startY)*e));
-        if(p < 1) requestAnimationFrame(step);
-        else settle();
-      })(ts);
-    }
-    /* старт с короткой паузой после первой отрисовки: заход не дёргается */
-    setTimeout(function(){ if(userTouched || window.__ewReloadRestoreUserIntent){ finish(); return; } requestAnimationFrame(glide); }, 180);
-  }
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 0); }, {once:true});
-  } else {
-    setTimeout(run, 0);
-  }
-})();
-</script>
+  var keys=['ew:architect-trace:v3','ew:architect-trace:v2','ew:architect-trace:pending:v2'];
+  function clear(){ try{ keys.forEach(function(k){ sessionStorage.removeItem(k); localStorage.removeItem(k); }); }catch(e){} }
+  try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
+  clear();
+  window.addEventListener('pageshow', clear, {passive:true});
+  window.inspectReloadScrollEngine70=function(){
+    var left=[];
+    try{ keys.forEach(function(k){ if(sessionStorage.getItem(k)||localStorage.getItem(k)) left.push(k); }); }catch(e){}
+    return { ok:left.length===0, patch:'R6.10_MANUAL_NO_AUTO_RELOAD_RESTORE', forcedScrollTo:false, nativeAutoRestore:false, historyScrollRestoration:('scrollRestoration' in history)?history.scrollRestoration:'unsupported', staleKeys:left };
+  };
+  window.inspectReloadScrollGuard70=window.inspectReloadScrollGuard70 || window.inspectReloadScrollEngine70;
+  window.inspectReloadScrollGuard69=window.inspectReloadScrollEngine70;
+  window.inspectReloadScrollGuard67=window.inspectReloadScrollEngine70;
+})();</script>
 
 
 <style id="ew-repair-v4">
