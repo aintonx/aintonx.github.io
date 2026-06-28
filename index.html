@@ -1127,14 +1127,25 @@ header.scrolled {
 .hero-title {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(42px, 5vw, 72px);
+  /* HERO R6.3: чуть компактнее на десктопе, чтобы первая строка
+     «Каждая реликвия —» оставалась одной строкой и не ломала соседний терминал. */
+  font-size: clamp(42px, 4.45vw, 64px);
   line-height: 0.95;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--white);
   margin-bottom: 24px;
 }
+.hero-title-line { display: inline-block; white-space: nowrap; }
 .hero-title .dim { color: var(--white-dim); font-weight: 400; }
 .hero-title .accent { color: var(--red2); }
+.hero-dash {
+  display: inline-block;
+  font-size: 0.72em;
+  line-height: 1;
+  margin-left: 0.03em;
+  transform: translateY(-0.04em);
+  transform-origin: 50% 50%;
+}
 
 .hero-sub {
   font-size: 12px;
@@ -1146,50 +1157,30 @@ header.scrolled {
 }
 .hero-sub em { color: var(--white-mid); font-style: normal; }
 
-/* Тихий вход в ЭХО — третий путь после основных CTA.
-   Он не конкурирует с каталогом и объяснением, но даёт мягкое действие
-   для тех, кто пока не готов выбирать реликвию. */
-.hero-echo-entry {
+/* HERO R6.3 · ЭХО как полноценный, но вторичный вход.
+   Кнопка не конкурирует с каталогом: она стоит отдельной строкой,
+   а ниже остаётся поясняющая сноска в прежнем органичном стиле сайта. */
+.hero-echo-action {
+  display: flex;
+  margin-top: 12px;
+}
+.hero-echo-action .cta-echo {
+  min-width: 190px;
+  text-align: center;
+}
+.hero-sub-echo {
+  font-family: var(--font-code);
+  font-size: 11px;
+  color: var(--white-dim);
+  line-height: 1.7;
+  letter-spacing: 0.04em;
   max-width: 500px;
   margin-top: 18px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  background:
-    linear-gradient(90deg, rgba(0,200,200,0.055), rgba(255,255,255,0.018)),
-    var(--surface2);
-  border: 1px solid rgba(0,200,200,0.18);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.015) inset, 0 14px 34px rgba(0,0,0,0.18);
-  position: relative;
-  overflow: hidden;
+  padding-left: 14px;
+  border-left: 1px solid var(--cyan-dim);
 }
-.hero-echo-entry::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 10px; bottom: 10px;
-  width: 1px;
-  background: var(--cyan);
-  opacity: .55;
-  box-shadow: 0 0 12px rgba(0,200,200,0.45);
-}
-.hero-echo-copy {
-  font-family: var(--font-code);
-  font-size: 10.5px;
-  color: var(--white-dim);
-  line-height: 1.65;
-  letter-spacing: 0.04em;
-  margin: 0;
-}
-.hero-echo-copy strong { color: var(--cyan) !important; font-weight: 600 !important; }
-.hero-echo-copy .hero-marketspace { color: var(--white) !important; font-weight: 400 !important; }
-.hero-echo-btn {
-  flex: 0 0 auto;
-  padding: 11px 16px;
-  font-size: 8px;
-  white-space: nowrap;
-}
+.hero-sub-echo strong { color: var(--cyan) !important; font-weight: 600 !important; }
+.hero-sub-echo .hero-marketspace { color: var(--white) !important; font-weight: 500 !important; }
 /* ── АКЦЕНТЫ (тихие) ──────────────────────────────────────────────────
    Единый спокойный акцент терминов/имён вселенной: только яркость (белый),
    без жирности — выделяется органично, не «выпячивает». Перекрывает прежние
@@ -7098,20 +7089,21 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
     box-sizing: border-box;
     padding: 14px 20px;
   }
-  .hero-echo-entry {
-    margin-top: 14px;
-    padding: 12px 13px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  .hero-echo-copy {
-    font-size: 10px;
-    line-height: 1.55;
-  }
-  .hero-echo-btn {
+  .hero-title-line { white-space: normal; }
+  .hero-title .dim { white-space: nowrap; }
+  .hero-echo-action {
+    margin-top: 10px;
     width: 100%;
-    padding: 12px 16px;
+  }
+  .hero-echo-action .cta-echo {
+    width: 100%;
+    min-width: 0;
+  }
+  .hero-sub-echo {
+    margin-top: 14px;
+    font-size: 10.5px;
+    line-height: 1.65;
+    max-width: 100%;
   }
 
   #heroBar {
@@ -13369,20 +13361,23 @@ button, a, [role="button"], label,
       <div class="hero-eyebrow-text">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
     </div>
     <h1 class="hero-title">
-      Каждая <span class="dim">реликвия&nbsp;—</span><br>
+      <span class="hero-title-line">Каждая <span class="dim">реликвия <span class="hero-dash">—</span></span></span><br>
       <span class="accent">часть</span> вселенной
     </h1>
     <p class="hero-sub">
-      Откройте каталог физических реликвий из <strong>MARKETSPACE</strong>. Каждая существует в единственном экземпляре, хранит свою историю и может оказаться в нашем мире.
+      EchoWorld открывает каталог физических реликвий из <strong>MARKETSPACE</strong> — параллельного мира, рождённого из человеческих желаний. Это не копии и не тираж: у каждой реликвии есть происхождение, история и единственный экземпляр, который может оказаться в нашем мире.
     </p>
     <div class="hero-cta">
       <a href="#catalog" class="cta-primary">Открыть каталог</a>
       <a href="#about" class="cta-secondary">Что здесь происходит?</a>
     </div>
-    <div class="hero-echo-entry" aria-label="ЭХО — короткий сигнал в MARKETSPACE">
-      <p class="hero-echo-copy"><strong>ЭХО</strong> — короткий сигнал в <strong class="hero-marketspace">MARKETSPACE</strong>. Оставить его можно даже без реликвии.</p>
-      <a href="#echo" class="cta-secondary cta-echo hero-echo-btn">Оставить ЭХО</a>
+    <div class="hero-echo-action" aria-label="ЭХО — отдельный короткий сигнал в MARKETSPACE">
+      <a href="#echo" class="cta-secondary cta-echo">Оставить ЭХО</a>
     </div>
+    <p class="hero-sub-echo">
+      <strong>Реликвия</strong> — для тех, кто хочет получить физическую часть <strong class="hero-marketspace">MARKETSPACE</strong>.<br>
+      <strong>ЭХО</strong> — короткий сигнал в <strong class="hero-marketspace">MARKETSPACE</strong>. 7 слов или 3 секунды.
+    </p>
   </div>
 
   <div class="hero-terminal" id="heroTerminal">
@@ -16130,9 +16125,9 @@ function inspectPatch61TerminologyStates(){
     mainTitle: html.includes('EchoWorld — Реликвии из параллельного мира MARKETSPACE'),
     catalogTitle: has('КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE'),
     heroEyebrow: has('// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE'),
-    heroRelicLine: has('Откройте каталог физических реликвий из MARKETSPACE.'),
+    heroRelicLine: has('EchoWorld открывает каталог физических реликвий из MARKETSPACE'),
     heroLoreCta: has('Что здесь происходит?'),
-    heroEchoEntry: has('ЭХО — короткий сигнал в MARKETSPACE.'),
+    heroEchoEntry: has('ЭХО — короткий сигнал в MARKETSPACE. 7 слов или 3 секунды.'),
     catalogNewRelics: has('Новые реликвии появятся по мере завершения текущих циклов конденсации.'),
     catalogEmptyRelic: has('Apertura не уловила реликвию по этому запросу.'),
     faqPhysicalRelic: has('Физическая реликвия в авторской упаковке с биографией Виша.'),
@@ -16151,23 +16146,27 @@ function inspectPatch61TerminologyStates(){
   };
 }
 
-function inspectHeroEntryPatch62(){
+function inspectHeroEntryPatch62(){ return inspectHeroEntryPatch63(); }
+function inspectHeroEntryPatch63(){
   const bodyText = document.body ? document.body.innerText : '';
   const hero = document.querySelector('.hero');
   const issues = [];
   const heroText = hero ? hero.innerText : '';
   const has = (s) => heroText.includes(s) || bodyText.includes(s);
-  const titleDim = document.querySelector('.hero-title .dim');
+  const titleLine = document.querySelector('.hero-title-line');
+  const dash = document.querySelector('.hero-title .hero-dash');
   const required = {
     heroEyebrow: has('// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE'),
-    titleNoDashBreakRisk: !!titleDim && titleDim.innerHTML.includes('&nbsp;—'),
-    heroSub: has('Откройте каталог физических реликвий из MARKETSPACE.'),
+    titleFirstLineProtected: !!titleLine && getComputedStyle(titleLine).whiteSpace === 'nowrap',
+    titleSmallDash: !!dash,
+    heroSub: has('EchoWorld открывает каталог физических реликвий из MARKETSPACE'),
+    heroDesireLine: has('параллельного мира, рождённого из человеческих желаний'),
     catalogCta: !!document.querySelector('.hero-cta a[href="#catalog"]'),
     loreCta: !!Array.from(document.querySelectorAll('.hero-cta a[href="#about"]')).find(a => a.textContent.trim() === 'Что здесь происходит?'),
-    echoEntry: !!document.querySelector('.hero-echo-entry'),
-    echoCta: !!document.querySelector('.hero-echo-entry a[href="#echo"]')
+    echoCta: !!document.querySelector('.hero-echo-action a[href="#echo"]'),
+    echoFootnote: has('ЭХО — короткий сигнал в MARKETSPACE. 7 слов или 3 секунды.')
   };
-  Object.keys(required).forEach(key => { if(!required[key]) issues.push('hero62-' + key); });
+  Object.keys(required).forEach(key => { if(!required[key]) issues.push('hero63-' + key); });
   return { ok: issues.length === 0, issues, required };
 }
 
