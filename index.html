@@ -12,6 +12,7 @@
      Или: F12 → Console → строка «APERTURA · BUILD R6».
      ═══════════════════════════════════════════════════════════════ -->
 <script>try{console.log('%cAPERTURA · BUILD R6','color:#00c8c8');}catch(e){}</script>
+<script>try{if('scrollRestoration'in history)history.scrollRestoration='manual';window.__ewRestoreUserIntent=false;window.__ewRestoreProgrammatic=false;}catch(e){}</script>
 <script id="ew-scroll-diag" type="text/plain" data-disabled="production">
 (function(){
   var enabled=false, off=false;
@@ -204,6 +205,8 @@
    (якорь-секция + смещение). Ключ позиции — БЕЗ hash: застрявший фрагмент
    (#catalog и т.п.) не должен ломать возврат, поэтому при ожидающем возврате
    он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';window.__ewRestoreUserIntent=false;window.__ewRestoreProgrammatic=false;(function(){function mark(){if(!window.__ewRestoreProgrammatic)window.__ewRestoreUserIntent=true;}var events=['wheel','touchstart','touchmove','keydown','pointerdown'];try{events.forEach(function(ev){window.addEventListener(ev,mark,{passive:true,capture:true});});}catch(e){events.forEach(function(ev){window.addEventListener(ev,mark,true);});}})();(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
+<script>/* Reload scroll arbitration: in the first seconds after reload/back,
+   a real user scroll gesture wins over restore, viewport resize and late scripts. */try{(function(){if(window.__ewScrollUserWinsInstalled)return;window.__ewScrollUserWinsInstalled=1;function navType(){try{var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)return n.type;if(performance.navigation){if(performance.navigation.type===1)return'reload';if(performance.navigation.type===2)return'back_forward';}}catch(e){}return'';}var nt=navType();if(nt!=='reload'&&nt!=='back_forward')return;var started=performance.now(),until=0,maxY=0,lastTouchY=null,downIntent=false,fixing=false;function y(){var se=document.scrollingElement||document.documentElement||document.body;return Math.max(0,Math.round((se&&se.scrollTop)||window.pageYOffset||window.scrollY||0));}function arm(){window.__ewRestoreUserIntent=true;window.__ewNativeScrollIntent=true;until=performance.now()+2600;maxY=Math.max(maxY,y());}function allowWindow(){return performance.now()-started<8000&&performance.now()<until;}function isPageNode(n){return n===document.documentElement||n===document.body||n===document.scrollingElement;}function preventSnapBack(){if(!allowWindow()||!downIntent||fixing)return;var cur=y();if(cur>maxY)maxY=cur;if(maxY>180&&cur<maxY-120){var html=document.documentElement,prev=html.style.scrollBehavior;fixing=true;window.__ewScrollArbiterFixing=true;html.style.scrollBehavior='auto';try{window.scrollTo(0,maxY);}catch(e){}requestAnimationFrame(function(){html.style.scrollBehavior=prev;window.__ewScrollArbiterFixing=false;fixing=false;});}}function shouldBlock(){return allowWindow()&&downIntent&&!window.__ewScrollArbiterFixing;}function wrap(obj,name){try{var orig=obj&&obj[name];if(typeof orig!=='function'||orig.__ewUserWins)return;var fn=function(){if(shouldBlock())return;return orig.apply(this,arguments);};fn.__ewUserWins=1;obj[name]=fn;}catch(e){}}function hook(proto){try{if(!proto||proto.__ewUserWinsScrollTop)return;var d=Object.getOwnPropertyDescriptor(proto,'scrollTop');if(!d||!d.configurable||!d.get||!d.set)return;Object.defineProperty(proto,'scrollTop',{configurable:true,enumerable:d.enumerable,get:function(){return d.get.call(this);},set:function(v){if(isPageNode(this)&&shouldBlock())return;return d.set.call(this,v);}});proto.__ewUserWinsScrollTop=1;}catch(e){}}wrap(window,'scrollTo');wrap(window,'scrollBy');wrap(window,'scroll');try{if(window.Element&&Element.prototype){wrap(Element.prototype,'scrollIntoView');}}catch(e){}hook(window.Element&&Element.prototype);hook(window.HTMLElement&&HTMLElement.prototype);window.addEventListener('touchstart',function(e){try{lastTouchY=e.touches&&e.touches[0]?e.touches[0].clientY:null;}catch(_){lastTouchY=null;}},{passive:true,capture:true});window.addEventListener('touchmove',function(e){try{var ty=e.touches&&e.touches[0]?e.touches[0].clientY:null;if(lastTouchY!=null&&ty!=null&&ty<lastTouchY-2){downIntent=true;arm();}lastTouchY=ty;}catch(_){downIntent=true;arm();}},{passive:true,capture:true});window.addEventListener('wheel',function(e){if(e.deltaY>0){downIntent=true;arm();}},{passive:true,capture:true});window.addEventListener('keydown',function(e){if(/^( |Spacebar|PageDown|ArrowDown|End)$/.test(e.key||'')){downIntent=true;arm();}},{passive:true,capture:true});window.addEventListener('scroll',function(){if(allowWindow())requestAnimationFrame(preventSnapBack);},{passive:true,capture:true});if(window.visualViewport){visualViewport.addEventListener('resize',function(){if(allowWindow())requestAnimationFrame(preventSnapBack);},{passive:true});visualViewport.addEventListener('scroll',function(){if(allowWindow())requestAnimationFrame(preventSnapBack);},{passive:true});}})();}catch(e){}</script>
 
 <title>EchoWorld — Реликвии из параллельного мира MARKETSPACE</title>
 <meta name="description" content="EchoWorld — арт-маркетплейс реликвий из параллельного мира MARKETSPACE. Каждая реликвия — кристаллизованная история живого существа, прошедшего Переход. Не товары — следы Вишей.">
@@ -16971,7 +16974,7 @@ function showEwDiag(){
 }
 try{ if(window.EWDIAG) window.EWDIAG.vish=showEwDiag; }catch(e){}
 window.ewDiag=showEwDiag;
-try{ if(/diag/i.test((location.hash||'')+(location.search||''))) setTimeout(showEwDiag,400); }catch(e){}
+try{ if(location.hash==='#diag'||/(^|[?&])ewDiag=1(&|$)/i.test(location.search||'')) setTimeout(showEwDiag,400); }catch(e){}
 const PRODUCT_STATUS_MODEL = {
   available: {
     label: 'Доступен',
@@ -26702,9 +26705,7 @@ function acceptCookies(){
     diag('restore:v3 scheduled', {delay:180, rec:rec});
     setTimeout(function(){ requestAnimationFrame(glide); }, 180);
   }
-  if(document.body){
-    setTimeout(run, 0);
-  } else if(document.readyState==='loading'){
+  if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 0); }, {once:true});
   } else {
     setTimeout(run, 0);
