@@ -12,10 +12,11 @@
      Или: F12 → Console → строка «APERTURA · BUILD R6».
      ═══════════════════════════════════════════════════════════════ -->
 <script>try{console.log('%cAPERTURA · BUILD R6','color:#00c8c8');}catch(e){}</script>
-<script>/* R6.10 · SCROLL FIX: manual native restoration, no forced reload restore.
-   Важно: это НЕ переносит страницу после reload и не вызывает window.scrollTo.
-   Браузеру запрещено асинхронно восстанавливать старую позицию, а старые ключи
-   кастомного restore очищаются, чтобы страница не тянула пользователя обратно. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';(function(){var keys=['ew:architect-trace:v3','ew:architect-trace:v2','ew:architect-trace:pending:v2'];function clear(){try{keys.forEach(function(k){sessionStorage.removeItem(k);localStorage.removeItem(k);});}catch(e){}}clear();window.addEventListener('pageshow',clear,{passive:true});window.inspectReloadScrollGuard70=function(){var left=[];try{keys.forEach(function(k){if(sessionStorage.getItem(k)||localStorage.getItem(k))left.push(k);});}catch(e){}return{ok:left.length===0,patch:'R6.10_MANUAL_NO_RELOAD_RESTORE',historyScrollRestoration:('scrollRestoration'in history)?history.scrollRestoration:'unsupported',forcedReloadRestore:false,staleKeys:left};};window.inspectReloadScrollGuard69=window.inspectReloadScrollGuard70;window.inspectReloadScrollGuard67=window.inspectReloadScrollGuard70;})();}catch(e){}</script>
+<script>/* Возврат позиции после reload: браузер сам не скроллит (manual), движок
+   в конце файла после загрузки ПЛАВНО привозит пользователя туда, где он был
+   (якорь-секция + смещение). Ключ позиции — БЕЗ hash: застрявший фрагмент
+   (#catalog и т.п.) не должен ломать возврат, поэтому при ожидающем возврате
+   он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
 
 <title>EchoWorld — Реликвии из параллельного мира MARKETSPACE</title>
 <meta name="description" content="EchoWorld — арт-маркетплейс реликвий из параллельного мира MARKETSPACE. Каждая реликвия — кристаллизованная история живого существа, прошедшего Переход. Не товары — следы Вишей.">
@@ -26328,24 +26329,167 @@ function acceptCookies(){
 })();
 </script>
 
-<script id="ew-native-scroll-restore-r610">/* R6.10 · reload restore disabled intentionally.
-   Здесь раньше жил R6.7 native auto-scroll restore. Его проблема: history.scrollRestoration='auto'
-   позволяло браузеру асинхронно дернуть страницу после reload. Теперь manual + без window.scrollTo. */
+<script>
+/* ── ВОЗВРАТ ПОЗИЦИИ ПОСЛЕ RELOAD ──────────────────────────────────
+   Пишем позицию непрерывно: Y + якорь (ближайшая секция сверху + смещение
+   внутри неё). После reload / возврата по истории страница стартует сверху
+   и ПЛАВНО едет к якорю (easeOutCubic — та же кривая, что у навигации по
+   разделам). Якорь, а не голый Y: пока lazy-картинки выше точки не
+   загружены, абсолютный Y уезжает на тысячи пикселей. Цель пересчитывается
+   каждый кадр — анимация догоняет даже плывущий layout; после приезда
+   крупные сдвиги от долетающих картинок дожимаются, пока юзер не вмешался.
+   Обычный заход (navigate) — без всякой прокрутки. */
 (function(){
-  var keys=['ew:architect-trace:v3','ew:architect-trace:v2','ew:architect-trace:pending:v2'];
-  function clear(){ try{ keys.forEach(function(k){ sessionStorage.removeItem(k); localStorage.removeItem(k); }); }catch(e){} }
-  try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
-  clear();
-  window.addEventListener('pageshow', clear, {passive:true});
-  window.inspectReloadScrollEngine70=function(){
-    var left=[];
-    try{ keys.forEach(function(k){ if(sessionStorage.getItem(k)||localStorage.getItem(k)) left.push(k); }); }catch(e){}
-    return { ok:left.length===0, patch:'R6.10_MANUAL_NO_AUTO_RELOAD_RESTORE', forcedScrollTo:false, nativeAutoRestore:false, historyScrollRestoration:('scrollRestoration' in history)?history.scrollRestoration:'unsupported', staleKeys:left };
-  };
-  window.inspectReloadScrollGuard70=window.inspectReloadScrollGuard70 || window.inspectReloadScrollEngine70;
-  window.inspectReloadScrollGuard69=window.inspectReloadScrollEngine70;
-  window.inspectReloadScrollGuard67=window.inspectReloadScrollEngine70;
-})();</script>
+  var KEY='ew:architect-trace:v3';
+  var ANCHORS=['relic','catalog','echo','impulse','about','worlds','collab','preorderSection','faq','architect'];
+  var restoring=false;
+  var last=0, lastSavedY=-1, lastSavedKey='';
+  /* подчистка ключей старой версии механики */
+  try{
+    ['ew:architect-trace:v2','ew:architect-trace:pending:v2'].forEach(function(k){
+      sessionStorage.removeItem(k); localStorage.removeItem(k);
+    });
+  }catch(e){}
+  /* ключ БЕЗ hash: застрявший в URL фрагмент (#catalog) не должен ломать возврат */
+  function pageKey(){
+    return location.pathname + location.search;
+  }
+  function currentY(){
+    var se=document.scrollingElement || document.documentElement || document.body;
+    return Math.max(0, Math.round((se && se.scrollTop) || window.pageYOffset || window.scrollY || 0));
+  }
+  function anchorFor(y){
+    var best=null, bestTop=-1;
+    for(var i=0;i<ANCHORS.length;i++){
+      var el=document.getElementById(ANCHORS[i]);
+      if(!el) continue;
+      var top=el.getBoundingClientRect().top + (window.pageYOffset||0);
+      if(top <= y+90 && top > bestTop){ bestTop=top; best=ANCHORS[i]; }
+    }
+    return best ? {aid:best, dy:Math.round(y-bestTop)} : null;
+  }
+  function save(force){
+    if(restoring) return;
+    var now=Date.now();
+    var key=pageKey();
+    var y=currentY();
+    if(!force && key===lastSavedKey && y===lastSavedY && now-last<700) return;
+    if(!force && now-last<80) return;
+    last=now;
+    lastSavedKey=key;
+    lastSavedY=y;
+    try{
+      var a=anchorFor(y);
+      var payload=JSON.stringify({ key:key, y:y, aid:a?a.aid:null, dy:a?a.dy:0, t:now });
+      sessionStorage.setItem(KEY, payload);
+      localStorage.setItem(KEY, payload);
+    }catch(e){}
+  }
+  window.addEventListener('scroll', function(){ save(false); }, {passive:true});
+  ['touchend','pointerup','mouseup','keyup','resize'].forEach(function(ev){
+    window.addEventListener(ev, function(){ save(true); }, {passive:true});
+  });
+  window.setInterval(function(){ save(false); }, 650);
+  window.addEventListener('pagehide', function(){ save(true); });
+  window.addEventListener('beforeunload', function(){ save(true); });
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState==='hidden') save(true);
+  });
+
+  function navType(){
+    try{
+      var n=performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      if(n && n.type) return n.type;
+      if(performance.navigation){
+        if(performance.navigation.type === 1) return 'reload';
+        if(performance.navigation.type === 2) return 'back_forward';
+      }
+      return '';
+    }catch(e){ return ''; }
+  }
+  function clampY(y){
+    var se=document.scrollingElement || document.documentElement;
+    var max=Math.max(0, (se.scrollHeight || 0) - window.innerHeight);
+    return Math.max(0, Math.min(y, max));
+  }
+  function run(){
+    try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
+    var html=document.documentElement;
+    var nt=navType();
+    var rec=null;
+    try{ rec=JSON.parse(sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'null'); }catch(e){}
+    var fresh=!!(rec && rec.key === pageKey() && isFinite(rec.y) && Date.now() - (rec.t || 0) <= 30*60*1000);
+    if((nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80) return;
+    restoring=true;
+    var prevSB=html.style.scrollBehavior;
+    html.style.scrollBehavior='auto'; /* едем своей rAF-анимацией — без двойного сглаживания с CSS smooth */
+    function target(){
+      if(rec.aid){
+        var el=document.getElementById(rec.aid);
+        if(el) return clampY(Math.round(el.getBoundingClientRect().top + (window.pageYOffset||0) + rec.dy));
+      }
+      return clampY(rec.y);
+    }
+    function finish(){
+      html.style.scrollBehavior=prevSB;
+      restoring=false;
+      save(true);
+    }
+    var userTouched=false;
+    function onUser(){ userTouched=true; }
+    ['wheel','touchstart','keydown','pointerdown'].forEach(function(ev){
+      window.addEventListener(ev, onUser, {passive:true, once:true});
+    });
+    var reduce=false;
+    try{ reduce=!!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
+    var t0=performance.now(), loadedAt=0;
+    /* Дожим после приезда: пока документ грузится, + 1.2с после load
+       (максимум 15с). Без scroll anchoring (iOS Safari) поздние
+       lazy-картинки выше точки раздвигают страницу и утаскивают контент
+       из-под пользователя — дожим тихо возвращает якорь на место,
+       пока пользователь не взял управление. */
+    function settleDeadline(now){
+      if(document.readyState !== 'complete') return Infinity;
+      if(!loadedAt) loadedAt=now;
+      return Math.min(loadedAt + 1200, t0 + 15000);
+    }
+    function settle(){
+      var now=performance.now();
+      if(userTouched || now >= settleDeadline(now)){ finish(); return; }
+      var t=target();
+      if(Math.abs(currentY()-t) > 24) window.scrollTo(0, t);
+      requestAnimationFrame(settle);
+    }
+    function glide(){
+      if(userTouched){ finish(); return; }
+      var startY=currentY();
+      var dist=Math.abs(target()-startY);
+      if(dist < 2){ settle(); return; }
+      if(reduce){ window.scrollTo(0, target()); settle(); return; }
+      /* длительность от дистанции: короткий путь — быстро, длинный — величаво */
+      var dur=Math.max(450, Math.min(1200, 500 + dist*0.12));
+      var ts=performance.now();
+      (function step(now){
+        if(userTouched){ finish(); return; }
+        var p=Math.min((now-ts)/dur, 1);
+        var e=1 - Math.pow(1-p, 3); /* easeOutCubic — как у _smoothScrollTo */
+        /* цель живая: якорь пересчитывается каждый кадр — анимация догоняет
+           layout, даже если картинки раздвигают страницу прямо во время езды */
+        window.scrollTo(0, Math.round(startY + (target()-startY)*e));
+        if(p < 1) requestAnimationFrame(step);
+        else settle();
+      })(ts);
+    }
+    /* старт с короткой паузой после первой отрисовки: заход не дёргается */
+    setTimeout(function(){ requestAnimationFrame(glide); }, 180);
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 0); }, {once:true});
+  } else {
+    setTimeout(run, 0);
+  }
+})();
+</script>
 
 
 <style id="ew-repair-v4">
@@ -26952,194 +27096,5 @@ function acceptCookies(){
   else setup();
 })();
 </script>
-
-
-
-<style id="ew-touch-press-scroll-fix-r67">
-/* R6.7 · touch navigation swipe guard + real click feedback.
-   Ничего не меняем для desktop hover. На touch-устройствах гасим только
-   :hover/:active-подсветку, которая вспыхивает от случайного свайпа.
-   Реальный tap/click получает короткий class-based отклик через JS ниже. */
-@media (hover:none), (pointer:coarse) {
-  /* Мобильная навигация: свайп по строкам не должен подсвечивать пункты. */
-  .mob-nav-link:active,
-  .mob-nav-link:hover {
-    background: transparent !important;
-    color: var(--white) !important;
-    box-shadow: none !important;
-  }
-  .mnav-tile:not(.mnav-tile-soon):active,
-  .mnav-tile:not(.mnav-tile-soon):hover {
-    border-color: var(--border2) !important;
-    color: var(--white-mid) !important;
-    background: var(--surface) !important;
-    box-shadow: none !important;
-  }
-
-  /* Touch hover reset: браузерный sticky-hover не должен включаться от скролла. */
-  .cta-primary:hover { background: var(--red) !important; border-color: var(--red2) !important; color:#fff !important; box-shadow:none !important; }
-  .cta-secondary:hover { background: transparent !important; border-color: var(--border2) !important; color: var(--white-mid) !important; box-shadow:none !important; }
-  .cta-secondary.cta-echo:hover { background: transparent !important; border-color: rgba(0,200,200,0.4) !important; color: var(--cyan) !important; box-shadow:none !important; }
-  .hbtn:hover { border-color: var(--border2) !important; color: var(--white-mid) !important; box-shadow:none !important; }
-  .hbtn.danger:hover { border-color: var(--border2) !important; color: var(--white-mid) !important; box-shadow:none !important; }
-  .ws:hover { border-color: var(--border2) !important; box-shadow:none !important; }
-  .wopt:hover { background: transparent !important; color: var(--white-dim) !important; }
-  .desktop-menu-btn:hover { border-color: var(--border2) !important; color: var(--white-mid) !important; background: transparent !important; box-shadow:none !important; }
-  .navlink:hover { color: var(--white-dim) !important; }
-  .cat-chip:hover { background: transparent !important; box-shadow: none !important; }
-
-  /* Настоящий click/tap — мягкий технологичный отклик. Класс добавляется
-     только после pointerup/click без заметного движения пальца. */
-  .ew-real-tap {
-    transform: translateY(1px) scale(.992) !important;
-    transition: transform .14s var(--ease-out), background .18s var(--ease-out),
-                border-color .18s var(--ease-out), color .18s var(--ease-out),
-                box-shadow .18s var(--ease-out), opacity .18s var(--ease-out) !important;
-  }
-  .cta-primary.ew-real-tap,
-  .pbtn.ew-real-tap,
-  .mbtn.primary.ew-real-tap,
-  .cart-checkout-btn.ew-real-tap,
-  .chk-pay-btn.ew-real-tap,
-  .echo-submit.ew-real-tap,
-  .return-submit.ew-real-tap,
-  .preorder-btn.ew-real-tap,
-  .preorder-select.ew-real-tap,
-  #preorderBtn.ew-real-tap,
-  .attr-pay-btn.ew-real-tap,
-  .ap-gate-submit.ew-real-tap,
-  .ap-status-action.primary.ew-real-tap,
-  .ap-test-btn.ew-real-tap,
-  .cookie-banner-ok.ew-real-tap,
-  .btn-primary.ew-real-tap {
-    background: var(--red2) !important;
-    border-color: var(--red2) !important;
-    color: #fff !important;
-    box-shadow: 0 0 22px rgba(192,40,40,0.34) !important;
-  }
-  .cta-secondary.ew-real-tap,
-  .hbtn.ew-real-tap,
-  .ws.ew-real-tap,
-  .wopt.ew-real-tap,
-  .desktop-menu-btn.ew-real-tap,
-  .navlink.ew-real-tap,
-  .mob-nav-link.ew-real-tap,
-  .mnav-tile.ew-real-tap,
-  .panel-close.ew-real-tap,
-  .mhead-close.ew-real-tap,
-  .mbtn.ew-real-tap,
-  .cart-close.ew-real-tap,
-  .cart-empty-btn.ew-real-tap,
-  .cart-item-remove.ew-real-tap,
-  .chk-close.ew-real-tap,
-  .faq-unlock.ew-real-tap,
-  .architect-link.ew-real-tap,
-  .foot-legal-link.ew-real-tap,
-  .readmore-btn.ew-real-tap,
-  .echo-pane-cta.ew-real-tap,
-  .echo-player-btn.ew-real-tap,
-  .echo-voice-retry.ew-real-tap,
-  .echo-reveal-toggle.ew-real-tap,
-  .btn-cyan.ew-real-tap,
-  .btn-ghost.ew-real-tap,
-  .access-pill.ew-real-tap,
-  .ap-status-action.ew-real-tap,
-  .ap-info-btn.ew-real-tap,
-  .ap-first-form-row.ew-real-tap,
-  .mstatus-field.status-first-form.ew-real-tap,
-  .pre-pane-cta.ew-real-tap,
-  .cat-chip.ew-real-tap,
-  .clink.ew-real-tap,
-  .clink-copy.ew-real-tap,
-  .ftag.ew-real-tap {
-    border-color: var(--cyan) !important;
-    color: var(--cyan) !important;
-    box-shadow: 0 0 18px rgba(0,200,200,0.16) !important;
-  }
-  .cta-secondary.cta-echo.ew-real-tap,
-  .btn-cyan.ew-real-tap,
-  .cart-empty-btn.ew-real-tap,
-  .echo-pane-cta.ew-real-tap {
-    background: rgba(0,200,200,0.06) !important;
-  }
-}
-@media (prefers-reduced-motion: reduce){ .ew-real-tap { transform: none !important; transition: none !important; } }
-</style>
-
-<script id="ew-touch-real-click-r67">
-(function(){
-  var SELECTOR = [
-    'a[href]', 'button', '[role="button"]', '[tabindex]:not([tabindex="-1"])',
-    '.cta-primary', '.cta-secondary', '.hbtn', '.ws', '.wopt', '.desktop-menu-btn',
-    '.navlink', '.mob-nav-link', '.mnav-tile', '.panel-close', '.mhead-close',
-    '.mbtn', '.cart-close', '.cart-empty-btn', '.cart-item-remove', '.cart-checkout-btn',
-    '.chk-close', '.chk-pay-btn', '.preorder-btn', '.preorder-select', '#preorderBtn',
-    '.pbtn', '.sbtn', '.faq-unlock', '.architect-link', '.foot-legal-link',
-    '.return-submit', '.cookie-banner-ok', '.readmore-btn', '.echo-pane-cta',
-    '.echo-player-btn', '.echo-voice-retry', '.echo-submit', '.echo-reveal-toggle',
-    '.attr-pay-btn', '.ap-gate-submit', '.ap-test-btn', '.ap-status-action',
-    '.ap-info-btn', '.ap-first-form-row', '.mstatus-field.status-first-form',
-    '.btn-primary', '.btn-cyan', '.btn-ghost', '.access-pill', '.pre-pane-cta',
-    '.cat-chip', '.clink', '.clink-copy', '.ftag'
-  ].join(',');
-  var down=null, timers=new WeakMap(), last=new WeakMap();
-  function isTouchLike(){
-    try{ return matchMedia('(hover:none), (pointer:coarse)').matches; }
-    catch(e){ return ('ontouchstart' in window) || navigator.maxTouchPoints > 0; }
-  }
-  function closest(t){ return t && t.closest ? t.closest(SELECTOR) : null; }
-  function disabled(el){ return !el || el.disabled || el.getAttribute('aria-disabled')==='true' || el.classList.contains('dis'); }
-  function pulse(el){
-    if(!isTouchLike() || disabled(el)) return;
-    var now=Date.now(), prev=last.get(el)||0;
-    if(now-prev<90) return;
-    last.set(el, now);
-    el.classList.remove('ew-real-tap');
-    try{ void el.offsetWidth; }catch(e){}
-    el.classList.add('ew-real-tap');
-    var old=timers.get(el); if(old) clearTimeout(old);
-    timers.set(el, setTimeout(function(){ el.classList.remove('ew-real-tap'); }, 240));
-  }
-  document.addEventListener('pointerdown', function(e){
-    if(!isTouchLike()) return;
-    var el=closest(e.target);
-    if(disabled(el)){ down=null; return; }
-    down={ el:el, id:e.pointerId, x:e.clientX||0, y:e.clientY||0, moved:false, startedAt:Date.now() };
-  }, {capture:true, passive:true});
-  document.addEventListener('pointermove', function(e){
-    if(!down || (e.pointerId!=null && down.id!=null && e.pointerId!==down.id)) return;
-    var dx=Math.abs((e.clientX||0)-down.x), dy=Math.abs((e.clientY||0)-down.y);
-    if(dx>9 || dy>9) down.moved=true;
-  }, {capture:true, passive:true});
-  document.addEventListener('pointerup', function(e){
-    if(!down || (e.pointerId!=null && down.id!=null && e.pointerId!==down.id)) return;
-    var el=closest(e.target);
-    var same=el && (el===down.el || down.el.contains(el) || el.contains(down.el));
-    var ok=same && !down.moved && Date.now()-down.startedAt < 900;
-    var target=down.el;
-    down=null;
-    if(ok) pulse(target);
-  }, {capture:true, passive:true});
-  ['pointercancel','touchcancel','scroll'].forEach(function(ev){
-    window.addEventListener(ev, function(){ if(down) down.moved=true; }, {capture:true, passive:true});
-  });
-  document.addEventListener('click', function(e){
-    /* Fallback для клавиатуры/старых браузеров. Движение уже отфильтровано
-       pointerup; WeakMap не даёт двойной вспышки. */
-    var el=closest(e.target);
-    if(el) pulse(el);
-  }, true);
-  window.inspectTouchPressGuard67=function(){
-    return {
-      ok:true,
-      patch:'R6.7_TOUCH_SWIPE_NO_HIGHLIGHT_REAL_CLICK_FEEDBACK',
-      touchLike:isTouchLike(),
-      activePulseNodes:document.querySelectorAll('.ew-real-tap').length,
-      forcedReloadRestore:false
-    };
-  };
-})();
-</script>
-
 </body>
 </html>
