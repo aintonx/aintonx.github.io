@@ -26338,13 +26338,12 @@ function acceptCookies(){
    На тяжёлой мобильной странице restore не должен соревноваться с пальцем.
    Если пользователь коснулся/скроллит до старта восстановления — restore
    полностью отменяется. Если пользователь ничего не делает — позиция
-   возвращается коротко и без долгой анимации/дожима. */
+   возвращается плавной rAF-анимацией, без перехватов scrollTop/scrollTo. */
 (function(){
   var KEY='ew:architect-trace:v3';
   var ANCHORS=['relic','catalog','echo','impulse','about','worlds','collab','preorderSection','faq','architect'];
   var restoring=false;
   var restorePending=false;
-  var restoredOnce=false;
   var last=0, lastSavedY=-1, lastSavedKey='';
   var loadedAt=0;
 
@@ -26470,26 +26469,49 @@ function acceptCookies(){
       restorePending=false;
       save(true);
     }
-    function applyRestore(){
-      if(cancelled || userIntent()){ finish(); return; }
-      var t=targetFor(rec);
-      html.style.scrollBehavior='auto';
-      if(Math.abs(currentY()-t)>24) window.scrollTo(0,t);
-      restoredOnce=true;
+    function interrupted(){
+      return cancelled || userIntent();
     }
-    function correction(delay){
+    function glideTo(target, done){
+      if(interrupted()){ finish(); return; }
+      html.style.scrollBehavior='auto';
+      var startY=currentY();
+      var dist=Math.abs(target-startY);
+      if(dist<3){ if(done) done(); return; }
+      var reduce=false;
+      try{ reduce=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
+      if(reduce){ window.scrollTo(0,target); if(done) done(); return; }
+      var dur=Math.max(420, Math.min(980, 360+dist*0.10));
+      var ts=performance.now();
+      (function step(now){
+        if(interrupted()){ finish(); return; }
+        var p=Math.min((now-ts)/dur,1);
+        var e=1-Math.pow(1-p,3);
+        window.scrollTo(0, Math.round(startY+(target-startY)*e));
+        if(p<1) requestAnimationFrame(step);
+        else if(done) done();
+      })(ts);
+    }
+    function correction(delay, lastOne){
       setTimeout(function(){
-        if(cancelled || userIntent()){ finish(); return; }
-        applyRestore();
-        if(delay>=900 || (loadedAt && Date.now()-loadedAt>140)) finish();
+        if(interrupted()){ finish(); return; }
+        var t=targetFor(rec);
+        if(Math.abs(currentY()-t)>28){
+          var before=currentY();
+          window.scrollTo(0,t);
+          if(Math.abs(currentY()-before)>220 && lastOne){ finish(); }
+        }
+        if(lastOne || (loadedAt && Date.now()-loadedAt>160)) finish();
       }, delay);
     }
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
-        applyRestore();
-        correction(140);
-        correction(420);
-        correction(900);
+        if(interrupted()){ finish(); return; }
+        glideTo(targetFor(rec), function(){
+          correction(180, false);
+          correction(520, false);
+          correction(960, true);
+        });
       });
     });
   }
