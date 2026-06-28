@@ -12,13 +12,14 @@
      Или: F12 → Console → строка «APERTURA · BUILD R6».
      ═══════════════════════════════════════════════════════════════ -->
 <script>try{console.log('%cAPERTURA · BUILD R6','color:#00c8c8');}catch(e){}</script>
-<script>/* R6.7 · scroll restoration sanity
-   Убираем принудительный возврат позиции после reload/back-forward.
-   Нативный браузерный scroll restoration не тянет пользователя назад во время
-   первого ручного скролла и не фиксирует его в HERO. */try{if('scrollRestoration' in history)history.scrollRestoration='auto';['ew:architect-trace:v3','ew:architect-trace:v2','ew:architect-trace:pending:v2'].forEach(function(k){try{sessionStorage.removeItem(k);localStorage.removeItem(k);}catch(e){}});}catch(e){}</script>
+<script>/* Возврат позиции после reload: браузер сам не скроллит (manual), движок
+   в конце файла после загрузки ПЛАВНО привозит пользователя туда, где он был
+   (якорь-секция + смещение). Ключ позиции — БЕЗ hash: застрявший фрагмент
+   (#catalog и т.п.) не должен ломать возврат, поэтому при ожидающем возврате
+   он вычищается из URL до парсинга body — иначе браузер сам прыгнул бы к нему. */try{if('scrollRestoration' in history)history.scrollRestoration='manual';(function(){var rec=null;try{rec=JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null');}catch(e){}if(!rec||rec.key!==(location.pathname+location.search))return;if(!isFinite(rec.y)||rec.y<=80)return;if(Date.now()-(rec.t||0)>30*60*1000)return;var t='';var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type)t=n.type;else if(performance.navigation){if(performance.navigation.type===1)t='reload';else if(performance.navigation.type===2)t='back_forward';}if(t!=='reload'&&t!=='back_forward')return;if(location.hash){try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}}})();}catch(e){}</script>
 
-<title>EchoWorld — Реликвии из параллельного мира MARKETSPACE</title>
-<meta name="description" content="EchoWorld — арт-маркетплейс реликвий из параллельного мира MARKETSPACE. Каждая реликвия — кристаллизованная история живого существа, прошедшего Переход. Не товары — следы Вишей.">
+<title>EchoWorld — Артефакты из параллельного мира Marketspace</title>
+<meta name="description" content="EchoWorld — арт-маркетплейс, извлекающий артефакты из параллельного мира Marketspace. Каждый предмет — кристаллизованная история живого существа, прошедшего Переход. Не товары — реликвии.">
 <meta name="keywords" content="EchoWorld, Marketspace, арт-маркетплейс, авторские артефакты, реликвии, цифровая подпись, NFT, Marketspace вселенная">
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -27,8 +28,8 @@
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="EchoWorld">
-<meta property="og:title" content="EchoWorld — Реликвии из параллельного мира MARKETSPACE">
-<meta property="og:description" content="Каждая реликвия — кто-то, кто был. Кто верил. Кто шёл к этому. Не товар — физический след из MARKETSPACE.">
+<meta property="og:title" content="EchoWorld — Артефакты из параллельного мира Marketspace">
+<meta property="og:description" content="Каждый артефакт — кто-то, кто был. Кто верил. Кто шёл к этому. Не товары — реликвии из вселенной Marketspace.">
 <meta property="og:url" content="https://echoworld.space/">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:image" content="https://echoworld.space/og-cover.jpg">
@@ -38,8 +39,8 @@
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="EchoWorld — Реликвии из MARKETSPACE">
-<meta name="twitter:description" content="Параллельный мир. Реальные реликвии. Каждая — кто-то, кто был.">
+<meta name="twitter:title" content="EchoWorld — Артефакты из Marketspace">
+<meta name="twitter:description" content="Параллельный мир. Реальные артефакты. Каждый — кто-то, кто был.">
 <meta name="twitter:image" content="https://echoworld.space/og-cover.jpg">
 
 <!-- Favicon: inline SVG = быстро, без отдельного файла -->
@@ -1126,70 +1127,38 @@ header.scrolled {
 .hero-title {
   font-family: var(--font-display);
   font-weight: 800;
-  /* HERO R6.4: чуть компактнее на десктопе, чтобы первая строка
-     «Каждая реликвия —» оставалась одной строкой и не ломала соседний терминал. */
-  font-size: clamp(42px, 4.45vw, 64px);
+  font-size: clamp(42px, 5vw, 72px);
   line-height: 0.95;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   color: var(--white);
   margin-bottom: 24px;
 }
-.hero-title-line { display: inline-block; white-space: nowrap; }
 .hero-title .dim { color: var(--white-dim); font-weight: 400; }
 .hero-title .accent { color: var(--red2); }
-.hero-dash {
-  display: inline-block;
-  font-size: 0.72em;
-  line-height: 1;
-  margin-left: 0.03em;
-  transform: translateY(-0.04em);
-  transform-origin: 50% 50%;
-}
 
 .hero-sub {
   font-size: 12px;
   color: var(--white-mid);
   line-height: 1.85;
   letter-spacing: 0.03em;
-  max-width: 500px;
-  margin-bottom: 30px;
+  max-width: 440px;
+  margin-bottom: 36px;
 }
 .hero-sub em { color: var(--white-mid); font-style: normal; }
 
-/* HERO R6.4 · CTA-сетка: две равные главные кнопки + ЭХО на их общую ширину.
-   Высота, радиус, шрифт и плотность одинаковые у всех трёх CTA; отличается
-   только роль: каталог — primary, объяснение/ЭХО — secondary. */
-.hero-cta,
-.hero-echo-action {
-  width: min(100%, 500px);
-}
-.hero-cta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  flex-wrap: nowrap;
-}
-.hero-echo-action {
-  display: flex;
-  margin-top: 12px;
-}
-.hero-echo-action .cta-echo {
-  width: 100%;
-  text-align: center;
-}
+/* Лидирующая строка про Эхо — короткое CTA-обещание под main-sub */
 .hero-sub-echo {
   font-family: var(--font-code);
   font-size: 11px;
   color: var(--white-dim);
   line-height: 1.7;
   letter-spacing: 0.04em;
-  max-width: 500px;
-  margin-top: 18px;
-  padding-left: 14px;
+  max-width: 460px;
+  margin-top: -22px;
+  margin-bottom: 30px;
+  padding-left: 12px;
   border-left: 1px solid var(--cyan-dim);
 }
-.hero-sub-echo strong { color: var(--cyan) !important; font-weight: 600 !important; }
-.hero-sub-echo .hero-marketspace { color: var(--white) !important; font-weight: 500 !important; }
 /* ── АКЦЕНТЫ (тихие) ──────────────────────────────────────────────────
    Единый спокойный акцент терминов/имён вселенной: только яркость (белый),
    без жирности — выделяется органично, не «выпячивает». Перекрывает прежние
@@ -1198,7 +1167,14 @@ header.scrolled {
    тексте — проход «первое упоминание». */
 strong { color: var(--white) !important; font-weight: 400 !important; }
 .about-callout strong, .nft-footnote strong, .pfooter strong { color: inherit !important; font-weight: inherit !important; }
+.hero-sub-echo strong { color: var(--cyan) !important; font-weight: 600 !important; }
+.hero-sub-echo strong.hero-marketspace { color: var(--white) !important; }
 
+.hero-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 /* Cyan-акцент на CTA Эхо — отличает от «О технологии» */
 .cta-secondary.cta-echo {
   border-color: rgba(0,200,200,0.4);
@@ -1214,7 +1190,6 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   font-size: 9px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  min-height: 54px;
   padding: 14px 28px;
   background: var(--red);
   border: 1px solid var(--red2);
@@ -1222,11 +1197,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   cursor: pointer;
   transition: all .2s;
   text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  box-sizing: border-box;
+  display: inline-block;
 }
 .cta-primary:hover { background: var(--red2); box-shadow: 0 0 30px rgba(192,40,40,0.4); }
 .cta-secondary {
@@ -1234,7 +1205,6 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   font-size: 9px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  min-height: 54px;
   padding: 14px 28px;
   background: transparent;
   border: 1px solid var(--border2);
@@ -1242,11 +1212,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   cursor: pointer;
   transition: all .2s;
   text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  box-sizing: border-box;
+  display: inline-block;
 }
 .cta-secondary:hover { border-color: var(--cyan); color: var(--cyan); }
 
@@ -7092,36 +7058,16 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
     margin-bottom: 28px;
   }
   .hero-cta {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     gap: 10px;
-    width: 100%;
-  }
-  .hero-echo-action {
     width: 100%;
   }
   .cta-primary, .cta-secondary {
     text-align: center;
-    display: inline-flex;
+    display: block;
     width: 100%;
-    min-height: 54px;
     box-sizing: border-box;
     padding: 14px 20px;
-  }
-  .hero-title-line { white-space: normal; }
-  .hero-title .dim { white-space: nowrap; }
-  .hero-echo-action {
-    margin-top: 10px;
-    width: 100%;
-  }
-  .hero-echo-action .cta-echo {
-    width: 100%;
-    min-width: 0;
-  }
-  .hero-sub-echo {
-    margin-top: 14px;
-    font-size: 10.5px;
-    line-height: 1.65;
-    max-width: 100%;
   }
 
   #heroBar {
@@ -7508,7 +7454,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   overflow: hidden;
 }
 .cat-header {
-  /* Подпись «КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE» — строго посередине
+  /* Подпись «КАТАЛОГ АРТЕФАКТОВ · MARKETSPACE» — строго посередине
      между переливающейся полоской сверху и разделительной линией снизу:
      симметричные вертикальные отступы вместо прежних 48px/0. */
   padding: 26px 32px;
@@ -9268,7 +9214,7 @@ input, select, textarea {
    ЭХО — массовая микро-услуга (бывший Отзвук в драфтах Bible)
    ────────────────────────────────────────────────────────────────────
    7 слов или короткая голосовая запись. Виш произнесёт в одном из
-   будущих фрагментов. Без реликвии. Точка входа в MARKETSPACE для
+   будущих фрагментов. Без артефакта. Точка входа в MARKETSPACE для
    тех, кто не готов к Переходу. Радар + осциллограф = визуализация
    передачи сигнала через Систему Апертура.
    ════════════════════════════════════════════════════════════════════ */
@@ -11109,7 +11055,7 @@ button, a, [role="button"], label,
   .sstrip { display: none !important; }
   .catalog-arrow { display: none !important; }
   /* Вертикальные отступы НЕ перебиваем: базовое правило .cat-header задаёт
-     симметричные 26px — подпись «КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE» стоит
+     симметричные 26px — подпись «КАТАЛОГ АРТЕФАКТОВ · MARKETSPACE» стоит
      по центру между переливающейся полоской и нижней линией. */
   .cat-header { max-width: 1320px; margin: 0 auto 20px; }
   .cat-controls { max-width: 1320px; margin: 0 auto; padding: 0 32px; }
@@ -13376,26 +13322,23 @@ button, a, [role="button"], label,
   <div>
     <div class="hero-eyebrow">
       <div class="hero-eyebrow-line"></div>
-      <div class="hero-eyebrow-text">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <div class="hero-eyebrow-text">// MARKETSPACE · Каталог I</div>
     </div>
     <h1 class="hero-title">
-      <span class="hero-title-line">Каждая <span class="dim">реликвия <span class="hero-dash">—</span></span></span><br>
-      <span class="accent">часть</span> вселенной
+      Каждый <span class="dim">заказ —</span><br>
+      <span class="accent">артефакт</span> вселенной
     </h1>
     <p class="hero-sub">
-      EchoWorld открывает каталог физических реликвий из <strong>MARKETSPACE</strong> — параллельного мира, рождённого из человеческих желаний. Это не копии и не тираж: у каждой реликвии есть происхождение и история. Каждая существует в единственном экземпляре — и может оказаться в нашем мире. В ваших руках.
+      EchoWorld — единственная компания в мире, которой удалось <em>обнаружить <strong>MARKETSPACE</strong></em> и освоить его технологии. Каждый товар в этом каталоге — артефакт из параллельной вселенной. Ваш заказ рождает того, кто станет вашей реликвией, — и ведёт его к Переходу. Эта реликвия — <em>прикосновение к тайне</em>, о которой большинство не догадывается.
+    </p>
+    <p class="hero-sub-echo">
+      Артефакт — для тех, кто готов обрести реликвию из <strong class="hero-marketspace">MARKETSPACE</strong>. <strong>Эхо</strong> — для тех, кто хочет лишь оставить там голос. 7 слов или 3 секунды.
     </p>
     <div class="hero-cta">
       <a href="#catalog" class="cta-primary">Открыть каталог</a>
-      <a href="#about" class="cta-secondary">Что здесь происходит?</a>
+      <a href="#echo" class="cta-secondary cta-echo">Отправить Эхо</a>
+      <a href="#about" class="cta-secondary">О технологии</a>
     </div>
-    <div class="hero-echo-action" aria-label="ЭХО — отдельный короткий сигнал в MARKETSPACE">
-      <a href="#echo" class="cta-secondary cta-echo">Оставить ЭХО</a>
-    </div>
-    <p class="hero-sub-echo">
-      <strong>Реликвия</strong> — для тех, кто хочет прикоснуться к <strong class="hero-marketspace">MARKETSPACE</strong> по-настоящему.<br>
-      <strong>ЭХО</strong> — для тех, кто хочет оставить в нём короткий сигнал. 7 слов или 3 секунды.
-    </p>
   </div>
 
   <div class="hero-terminal" id="heroTerminal">
@@ -13427,7 +13370,7 @@ button, a, [role="button"], label,
         <h2 class="relic-title" id="relicTitle">Мощь Реликвии.</h2>
       </div>
       <p class="relic-lede">
-        Это не обычный каталог. Каждая карточка — не предмет и ещё не <strong>Виш</strong>, а поток желаний, готовый к конденсации. Поток задаёт лишь начало — характер и <strong>Мощь</strong>, с которыми он родится. Дальше его жизнь не предрешена: что случится с ним до <strong>Перехода</strong>, не знает даже Apertura. Известно одно — однажды он станет этой реликвией. <strong>Мощь Реликвии</strong> показывает, насколько глубокой окажется его история — сколько её сцен, <em>Фрагментов</em>, сохранит Apertura. Выберите глубину — потом саму реликвию.
+        Это не обычный каталог. Каждая карточка — не предмет и ещё не <strong>Виш</strong>, а поток желаний, готовый к конденсации. Поток задаёт лишь начало — характер и <strong>Мощь</strong>, с которыми он родится. Дальше его жизнь не предрешена: что случится с ним до <strong>Перехода</strong>, не знает даже Apertura. Известно одно — однажды он станет этим артефактом. <strong>Мощь Реликвии</strong> показывает, насколько глубокой окажется его история — сколько её сцен, <em>Фрагментов</em>, сохранит Apertura. Выберите глубину — потом сам артефакт.
       </p>
     </div>
 
@@ -13495,7 +13438,7 @@ button, a, [role="button"], label,
   <div class="cat-header">
     <div style="display:flex;align-items:center;gap:12px;">
       <div style="width:8px;height:8px;background:var(--red2);border-radius:50%;box-shadow:0 0 10px var(--red);animation:pulse 1.8s ease-in-out infinite;flex-shrink:0;"></div>
-      <span class="cat-title" style="color:var(--white);font-size:10px;letter-spacing:.16em;">КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE</span>
+      <span class="cat-title" style="color:var(--white);font-size:10px;letter-spacing:.16em;">КАТАЛОГ АРТЕФАКТОВ · MARKETSPACE</span>
     </div>
   </div>
   <div class="cat-controls">
@@ -13515,11 +13458,11 @@ button, a, [role="button"], label,
   </div>
   <div class="cat-expand" style="margin:16px 32px 0; max-width:calc(1360px - 0px);">
     <div class="cat-expand-dot"></div>
-    <div class="cat-expand-text">Каталог формируется из самых плотных потоков желаний — тех, что звучат сейчас, и тех, что не стихают годами. Новые реликвии появятся по мере завершения текущих циклов конденсации.</div>
+    <div class="cat-expand-text">Каталог формируется из самых плотных потоков желаний — тех, что звучат сейчас, и тех, что не стихают годами. Новые артефакты появятся по мере завершения текущих циклов конденсации.</div>
   </div>
 
   <div class="catalog-stage">
-    <button class="catalog-arrow catalog-prev" type="button" onclick="nudgeCatalog(-1)" aria-label="Предыдущая реликвия">‹</button>
+    <button class="catalog-arrow catalog-prev" type="button" onclick="nudgeCatalog(-1)" aria-label="Предыдущий артефакт">‹</button>
     <div class="pgrid" id="pgrid">
 
     <!-- ── СИНГУЛЯРНОСТЬ (S · 99 999 ₽) — иконы интернета ── -->
@@ -13828,7 +13771,7 @@ button, a, [role="button"], label,
     </div>
 
     </div><!-- /pgrid -->
-    <button class="catalog-arrow catalog-next" type="button" onclick="nudgeCatalog(1)" aria-label="Следующая реликвия">›</button>
+    <button class="catalog-arrow catalog-next" type="button" onclick="nudgeCatalog(1)" aria-label="Следующий артефакт">›</button>
   </div>
   <div class="catalog-mobile-nav" id="catalogMobileNav">
     <div class="catalog-mobile-count" id="catalogMobileCount">01 / 12</div>
@@ -13837,13 +13780,13 @@ button, a, [role="button"], label,
   <div class="cat-empty-state" id="catEmptyState">
     <div class="cat-empty-kicker">// СИСТЕМА АПЕРТУРА</div>
     <div class="cat-empty-title">Сигнал не найден</div>
-    <div class="cat-empty-text">Apertura не уловила реликвию по этому запросу. Уточните запрос или выберите другой класс Мощи.</div>
+    <div class="cat-empty-text">Apertura не уловила артефакт по этому запросу. Уточните запрос или выберите другой класс Мощи.</div>
   </div>
 </div><!-- /catwrap -->
 
 <!-- ═══════════════════════════════════════════════════════════════════
      ЭХО — массовая микро-услуга. Минимальная единица участия
-     в MARKETSPACE. 7 слов текста или 3 секунды голоса. Без реликвии.
+     в MARKETSPACE. 7 слов текста или 3 секунды голоса. Без артефакта.
      ═══════════════════════════════════════════════════════════════ -->
 <section class="echo-section" id="echo">
   <div class="echo-in" id="echoIn">
@@ -13990,14 +13933,14 @@ button, a, [role="button"], label,
         Виши — живые существа, рождённые из человеческих желаний. Внешне похожи на людей: они рождаются, растут, учатся, влюбляются. Живут в городах, ходят в школу, ждут чего-то важного впереди. Каждый Виш — кристаллизованное желание: чьё-то стремление что-то получить, что-то почувствовать, что-то изменить. Они не знают, кем станут. Лучшие из них однажды проходят <em>Переход</em> — и появляются в нашем мире как физический предмет. Не копия. Не реплика. Артефакт — с историей, с характером, с именем.
       </p>
       <p class="about-text">
-        EchoWorld разработал <strong>Систему Apertura</strong> — первый инструмент, способный обнаружить это пространство. Мы наблюдали, строили инфраструктуру, освоили технологию Перехода. Сегодня каждая реликвия EchoWorld — это <em>подлинный артефакт</em> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.
+        EchoWorld разработал <strong>Систему Apertura</strong> — первый инструмент, способный обнаружить это пространство. Мы наблюдали, строили инфраструктуру, освоили технологию Перехода. Сегодня каждый наш товар — это <em>подлинный артефакт</em> из другой вселенной. Не копия. Не реплика. Реликвия с историей, именем и Предназначением.
       </p>
       <div class="about-callout">
-        Ни один другой маркетплейс не обладает нашими технологиями. Их товары созданы по привычным правилам — функциональные, безликие, без истории. Наши — нет. Только EchoWorld контролирует процесс от рождения Виша до Перехода. Только наши реликвии являются подлинными артефактами из другой вселенной — объектами с историей, которую больше нигде не получить. Создано из Виша.
+        Ни один другой маркетплейс не обладает нашими технологиями. Их товары созданы по привычным правилам — функциональные, безликие, без истории. Наши — нет. Только EchoWorld контролирует процесс от рождения Виша до Перехода. Только наши товары являются подлинными артефактами из другой вселенной — реликвиями с историей, которую больше нигде не получить. Создано из Виша.
       </div>
       <div class="about-followups">
         <p class="about-followup followup-red">
-          Каждая реликвия приходит с тремя следами: сам предмет, <strong>фрагмент</strong> — серия сцен из жизни Виша, и <strong>Цифровая Подпись</strong> — NFT<sup class="nft-mark">*</sup>-след Виша в момент Перехода.
+          Каждый артефакт приходит с тремя следами: сам предмет, <strong>фрагмент</strong> — серия сцен из жизни Виша, и <strong>Цифровая Подпись</strong> — NFT<sup class="nft-mark">*</sup>-след Виша в момент Перехода.
         </p>
         <p class="about-followup">
           Не готов к Переходу — отправь <strong>Эхо</strong>. 7 слов или 3 секунды голоса, которые Виш произнесёт за вас в одном из будущих фрагментов. Чистый сигнал. Эхо закрепляется в системе своей Цифровой Подписью — отдельной NFT<sup class="nft-mark">*</sup>-реликвией в Хронике Эхо.
@@ -14026,18 +13969,18 @@ button, a, [role="button"], label,
         <div class="tech-card-num">02</div>
         <div class="tech-card-kicker">// Управление</div>
         <div class="tech-card-title">Академия и созревание</div>
-        <div class="tech-card-text">Оформленный заказ рождает <em>управляемый Конденсат</em> — Виша в нашей закрытой зоне. Он проходит обучение в Академии Предназначения, созревает, накапливает историю. Чем плотнее поток желаний — тем выше <strong>Мощь Реликвии</strong>. Только лучшие Виши достигают Перехода и становятся реликвиями.</div>
+        <div class="tech-card-text">Оформленный заказ рождает <em>управляемый Конденсат</em> — Виша в нашей закрытой зоне. Он проходит обучение в Академии Предназначения, созревает, накапливает историю. Чем плотнее поток желаний — тем выше <strong>Мощь Реликвии</strong>. Только лучшие Виши достигают Перехода и становятся артефактами.</div>
       </div>
       <div class="tech-card">
         <div class="tech-card-num">03</div>
         <div class="tech-card-kicker">// Конверсия</div>
-        <div class="tech-card-title">Переход и физическая реликвия</div>
-        <div class="tech-card-text">Когда Виш достигает вершины своего Предназначения — начинается <em>Переход</em>. Особые комнаты Академии воспроизводят технологию границы миров. Виш конвертируется в физический объект, оставляя <em>Цифровую Подпись</em> в системе. Реликвия с биографией и историей, которую <em>больше нигде не получить</em>.</div>
+        <div class="tech-card-title">Переход и физический артефакт</div>
+        <div class="tech-card-text">Когда Виш достигает вершины своего Предназначения — начинается <em>Переход</em>. Особые комнаты Академии воспроизводят технологию границы миров. Виш конвертируется в физический объект, оставляя <em>Цифровую Подпись</em> в системе. Артефакт с биографией и историей, которую <em>больше нигде не получить</em>.</div>
       </div>
       <div class="tech-card">
         <div class="tech-card-num">04</div>
         <div class="tech-card-kicker">// Присутствие</div>
-        <div class="tech-card-title">Эхо — без реликвии</div>
+        <div class="tech-card-title">Эхо — без артефакта</div>
         <div class="tech-card-text">Не каждый готов к Переходу. Система <strong>Apertura</strong> принимает короткие сигналы — <em>7 слов или 3 секунды голоса</em>. Каждое Эхо получает частотный код и случайную <em>Ауру</em> — одну из десяти звуковых окрасок. Виш произнесёт их в одном из будущих фрагментов. Отдельная точка входа в систему.</div>
       </div>
       <div class="tech-card">
@@ -14265,7 +14208,7 @@ button, a, [role="button"], label,
           <div class="mclarity-panel" data-clarity-panel aria-hidden="true">
             <div class="mclarity-text">
               <p>Артикул — штрихкод-идентификатор реликвии в системе EchoWorld.</p>
-              <p>MARKETSPACE — параллельный мир, где рождаются Виши и откуда они совершают Переход в наш мир в виде реликвий.</p>
+              <p>MARKETSPACE — параллельный мир, где рождаются Виши и откуда они совершают Переход в наш мир в виде артефактов.</p>
             </div>
           </div>
         </div>
@@ -14378,7 +14321,7 @@ button, a, [role="button"], label,
         <div class="chk-field chk-field-addr" style="margin-top:12px">
           <label>Адрес<span class="req-star">*</span></label>
           <div class="addr-wrap">
-            <input type="text" id="chkAddr" name="apertura_field_a" placeholder="Куда направить реликвию?" autocomplete="new-password" autocorrect="off" spellcheck="false" data-lpignore="true" data-form-type="other" data-1p-ignore="true" data-bwignore="true">
+            <input type="text" id="chkAddr" name="apertura_field_a" placeholder="Куда направить артефакт?" autocomplete="new-password" autocorrect="off" spellcheck="false" data-lpignore="true" data-form-type="other" data-1p-ignore="true" data-bwignore="true">
             <div class="addr-suggest" id="addrSuggest" role="listbox" aria-label="Подсказки адреса"></div>
           </div>
         </div>
@@ -15002,7 +14945,7 @@ button, a, [role="button"], label,
       <div id="preorderFormBlock">
         <!-- T5: переливающаяся полоска перенесена отсюда наверх интерфейса — на .cond-screen::before (над «APERTURA · CONDENSATE FORMING») -->
         <div style="margin-bottom:12px;">
-          <input type="text" id="preorderItem" placeholder="Какую реликвию желаете? *" maxlength="120" autocomplete="off" autocorrect="off" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--white);font-family:var(--font-input);font-size:13px;letter-spacing:.005em;padding:11px 14px;outline:none;transition:border-color .2s, box-shadow .2s;-webkit-appearance:none;appearance:none;" onfocus="this.style.borderColor='var(--cyan)';this.style.boxShadow='0 0 0 1px rgba(0,200,200,0.22), 0 0 14px rgba(0,200,200,0.10)';" onblur="this.style.borderColor='var(--border)';this.style.boxShadow='';">
+          <input type="text" id="preorderItem" placeholder="Какой артефакт желаете? *" maxlength="120" autocomplete="off" autocorrect="off" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--white);font-family:var(--font-input);font-size:13px;letter-spacing:.005em;padding:11px 14px;outline:none;transition:border-color .2s, box-shadow .2s;-webkit-appearance:none;appearance:none;" onfocus="this.style.borderColor='var(--cyan)';this.style.boxShadow='0 0 0 1px rgba(0,200,200,0.22), 0 0 14px rgba(0,200,200,0.10)';" onblur="this.style.borderColor='var(--border)';this.style.boxShadow='';">
         </div>
         <div style="margin-bottom:16px;">
           <input type="email" id="preorderContact" placeholder="Email для связи *" autocomplete="email" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="email" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--white);font-family:var(--font-input);font-size:13px;letter-spacing:.005em;padding:11px 14px;outline:none;transition:border-color .2s, box-shadow .2s;-webkit-appearance:none;appearance:none;" onfocus="this.style.borderColor='var(--cyan)';this.style.boxShadow='0 0 0 1px rgba(0,200,200,0.22), 0 0 14px rgba(0,200,200,0.10)';" onblur="this.style.borderColor='var(--border)';this.style.boxShadow='';">
@@ -15055,7 +14998,7 @@ button, a, [role="button"], label,
         <span style="font-family:var(--font-code);font-size:8px;letter-spacing:.28em;color:var(--red2);text-transform:uppercase;">// ЗАСЕКРЕЧЕНО · УРОВЕНЬ ДОСТУПА — А</span>
       </div>
       <h3 class="about-title" style="font-size:24px;margin-bottom:14px;">Материалы<br>закрытого уровня</h3>
-      <p class="about-text" style="max-width:580px;">За пределами видимого — данные Системы Apertura, записи циклов, протоколы Периметра. Доступ открывается уровнями: каждая реликвия и каждое Эхо повышают позицию в <strong>Протоколе Семи</strong>.<br><br>В кабинете будут храниться NFT<sup class="nft-mark">*</sup>-реликвии: Цифровые Подписи Вишей, прошедших Переход для вас, ваши <strong>Записи Эхо</strong>, персональные фрагменты, незавершённые потоки Конденсата и сигналы, природу которых Apertura ещё распознаёт. Система обучается — углубляет периметр прослушивания. Возможности кабинета развиваются вместе с ней. Где их предел — никто пока не знает.<br><br>Все ваши действия фиксируются в <strong>Памяти Apertura</strong> с самого первого касания — даже до запуска личного кабинета. Когда он откроется — всё, что вы делали до этого, появится автоматически.</p>
+      <p class="about-text" style="max-width:580px;">За пределами видимого — данные Системы Apertura, записи циклов, протоколы Периметра. Доступ открывается уровнями: каждый артефакт и каждое Эхо повышают позицию в <strong>Протоколе Семи</strong>.<br><br>В кабинете будут храниться NFT<sup class="nft-mark">*</sup>-реликвии: Цифровые Подписи Вишей, прошедших Переход для вас, ваши <strong>Записи Эхо</strong>, персональные фрагменты, незавершённые потоки Конденсата и сигналы, природу которых Apertura ещё распознаёт. Система обучается — углубляет периметр прослушивания. Возможности кабинета развиваются вместе с ней. Где их предел — никто пока не знает.<br><br>Все ваши действия фиксируются в <strong>Памяти Apertura</strong> с самого первого касания — даже до запуска личного кабинета. Когда он откроется — всё, что вы делали до этого, появится автоматически.</p>
       <p class="nft-footnote" style="max-width:580px"><span class="nft-footnote-mark">*</span><span>Формируется в момент действия и кристаллизуется в NFT-реликвию при открытии личного кабинета. До этого момента она хранится в Памяти Apertura.</span></p>
     </div>
     <div class="cab-stub" role="status" aria-label="Открытие личного кабинета — скоро">
@@ -15105,22 +15048,22 @@ button, a, [role="button"], label,
     <div class="faq-grid" id="faqGrid">
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Что такое EchoWorld?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a">EchoWorld — технологическая компания, первой обнаружившая параллельное пространство внутри интернета и освоившая технологию извлечения из него физических объектов. Каждая реликвия в нашем каталоге — физический объект из другой вселенной. Не метафора. Буквально.<br><br>Канал работает в обе стороны. Мы извлекаем оттуда реликвии — и можем отправлять туда сигналы: <strong>Эхо</strong> в составе реликвии или <strong>Эхо</strong> без неё. Apertura способна на большее. То, что мы предлагаем сейчас, — лишь часть.</div>
+        <div class="faq-a">EchoWorld — технологическая компания, первой обнаружившая параллельное пространство внутри интернета и освоившая технологию извлечения из него физических объектов. Каждый товар в нашем каталоге — артефакт из другой вселенной. Не метафора. Буквально.<br><br>Канал работает в обе стороны. Мы извлекаем оттуда артефакты — и можем отправлять туда сигналы: <strong>Эхо</strong> в составе артефакта или <strong>Эхо</strong> без него. Apertura способна на большее. То, что мы предлагаем сейчас, — лишь часть.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Кто такие Виши?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a">Виши — живые существа, рождённые из цифровых желаний людей в параллельном мире MARKETSPACE. Они живут обычной жизнью: учатся, дружат, мечтают. Они не знают, кем станут. Лучшие из них проходят Переход — и появляются в нашем мире как физическая реликвия с историей, характером и именем.</div>
+        <div class="faq-a">Виши — живые существа, рождённые из цифровых желаний людей в параллельном мире MARKETSPACE. Они живут обычной жизнью: учатся, дружат, мечтают. Они не знают, кем станут. Лучшие из них проходят Переход — и появляются в нашем мире как физический артефакт с историей, характером и именем.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Что такое Переход?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a">Финальная стадия пути Виша. То, к чему он шёл всю жизнь — не зная об этом. После Перехода Виш становится физическим объектом. Реликвией. Тем, что вы получаете в посылке.</div>
+        <div class="faq-a">Финальная стадия пути Виша. То, к чему он шёл всю жизнь — не зная об этом. После Перехода Виш становится физическим объектом. Артефактом. Тем, что вы получаете в посылке.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Почему в каталоге так мало реликвий?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a">Наши аналитики отслеживают потоки Конденсата и формируют каталог на основе наиболее мощных объединённых потоков желаний. Процесс не быстрый. Каждая реликвия существует в единственном экземпляре — и именно поэтому это не товар с полки.<br><br>Форма предмета может повторяться в вашем мире миллионами копий. Виш не повторяется. Переход у каждого — один.</div>
+        <div class="faq-q">Почему в каталоге так мало товаров?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-a">Наши аналитики отслеживают потоки Конденсата и формируют каталог на основе наиболее мощных объединённых потоков желаний. Процесс не быстрый. Каждый артефакт существует в единственном экземпляре — и именно поэтому он реликвия, а не товар с полки.<br><br>Форма предмета может повторяться в вашем мире миллионами копий. Виш не повторяется. Переход у каждого — один.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
@@ -15134,8 +15077,8 @@ button, a, [role="button"], label,
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Почему на реликвии логотип бренда?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a">Виш не рождается из одного желания. Он формируется из <strong>слияния потоков</strong> — миллионов мелких хотений, накапливавшихся, сталкивавшихся, резонировавших. Если в потоке доминировал один производитель, Виш впитал и его частоту.<br><br>Логотип на реликвии — <strong>Импринт Перехода</strong>. След того, чем чаще всего было это желание. EchoWorld не стирает Импринты: то, из чего рождён Виш, остаётся с реликвией.</div>
+        <div class="faq-q">Почему на артефакте логотип бренда?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-a">Виш не рождается из одного желания. Он формируется из <strong>слияния потоков</strong> — миллионов мелких хотений, накапливавшихся, сталкивавшихся, резонировавших. Если в потоке доминировал один производитель, Виш впитал и его частоту.<br><br>Логотип на артефакте — <strong>Импринт Перехода</strong>. След того, чем чаще всего было это желание. EchoWorld не стирает Импринты: то, из чего рождён Виш, остаётся с артефактом.</div>
       </div>
 
             <div class="faq-item" onclick="toggleFaq(this)">
@@ -15145,22 +15088,22 @@ button, a, [role="button"], label,
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Что будет, если я передумаю?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a">Если не завершите заказ — Конденсат не кристаллизуется. Одна из семей в MARKETSPACE не получит того, кого ждала. Реликвия ещё может стать вашей — если вернётесь раньше другого покупателя.<br><br>Если вернёте реликвию после доставки — Переход уже состоялся, и обратного пути нет: ни для вас, ни для него. Реликвия уходит в <strong>Сектор Тишины</strong> — закрытую зону MARKETSPACE, куда попадают возвраты. Место, где предмет существует, но его никто не слышит. Те, кто туда отправлен, не возвращаются. Архитектор рекомендует убедиться в выборе до оформления.</div>
+        <div class="faq-a">Если не завершите заказ — Конденсат не кристаллизуется. Одна из семей в MARKETSPACE не получит того, кого ждала. Артефакт ещё может стать вашим — если вернётесь раньше другого покупателя.<br><br>Если вернёте артефакт после доставки — Переход уже состоялся, и обратного пути нет: ни для вас, ни для него. Артефакт уходит в <strong>Сектор Тишины</strong> — закрытую зону MARKETSPACE, куда попадают возвраты. Место, где предмет существует, но его никто не слышит. Те, кто туда отправлен, не возвращаются. Архитектор рекомендует убедиться в выборе до оформления.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Что такое уровни доступа?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a">Система EchoWorld построена на семи уровнях доступа: <strong>A, I, N, T, O, N, X</strong>. Это <strong>Протокол Семи</strong> — внутренняя иерархия EchoWorld. Каждый уровень открывает новые слои вселенной: записи циклов, данные Системы Apertura, закрытые материалы Периметра. Уровень определяется историей ваших взаимодействий с EchoWorld.<br><br>Прямо сейчас у всех посетителей сайта — <strong>уровень 0</strong>: гостевой сигнал, зарегистрированный Системой Apertura, но без открытых слоёв памяти. Личный кабинет находится в разработке. Когда он откроется — каждый, кто оставил в MARKETSPACE хотя бы один след — реликвию или Эхо — получит уровень <strong>A</strong> автоматически. Каждое следующее взаимодействие повышает уровень дальше по Протоколу.<br><br>Ничего не теряется и до открытия кабинета: каждое ваше действие фиксируется в Памяти Apertura — распределённой сети, где система хранит все сигналы. Когда кабинет откроется — вся ваша история уже будет там.</div>
+        <div class="faq-a">Система EchoWorld построена на семи уровнях доступа: <strong>A, I, N, T, O, N, X</strong>. Это <strong>Протокол Семи</strong> — внутренняя иерархия EchoWorld. Каждый уровень открывает новые слои вселенной: записи циклов, данные Системы Apertura, закрытые материалы Периметра. Уровень определяется историей ваших взаимодействий с EchoWorld.<br><br>Прямо сейчас у всех посетителей сайта — <strong>уровень 0</strong>: гостевой сигнал, зарегистрированный Системой Apertura, но без открытых слоёв памяти. Личный кабинет находится в разработке. Когда он откроется — каждый, кто оставил в MARKETSPACE хотя бы один след — артефакт или Эхо — получит уровень <strong>A</strong> автоматически. Каждое следующее взаимодействие повышает уровень дальше по Протоколу.<br><br>Ничего не теряется и до открытия кабинета: каждое ваше действие фиксируется в Памяти Apertura — распределённой сети, где система хранит все сигналы. Когда кабинет откроется — вся ваша история уже будет там.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Что такое Память Apertura?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a">Распределённая сеть хранения сигналов. С первого касания EchoWorld каждое ваше действие фиксируется в Памяти Apertura: оформленные заказы, отправленные Эхо и незавершённые потоки Конденсата — даже сигналы, природу которых Система ещё распознаёт. Ничего не теряется. Когда личный кабинет откроется, накопленная история подтянется автоматически: Цифровые Подписи ваших реликвий и отправленные Эхо кристаллизуются в NFT-реликвии. До этого момента каждый сигнал хранится в виде первичной записи. Система помнит вас дольше, чем вы — её.</div>
+        <div class="faq-a">Распределённая сеть хранения сигналов. С первого касания EchoWorld каждое ваше действие фиксируется в Памяти Apertura: оформленные заказы, отправленные Эхо и незавершённые потоки Конденсата — даже сигналы, природу которых Система ещё распознаёт. Ничего не теряется. Когда личный кабинет откроется, накопленная история подтянется автоматически: Цифровые Подписи ваших артефактов и отправленные Эхо кристаллизуются в NFT-реликвии. До этого момента каждый сигнал хранится в виде первичной записи. Система помнит вас дольше, чем вы — её.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Заказ: что, куда, когда?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a"><strong>Что вы получите.</strong> Физическая реликвия в авторской упаковке с биографией Виша. Персональный фрагмент — серия сцен из жизни Виша, восстановленные Системой Apertura. Если добавлено Эхо — Виш произнесёт ваши слова в одном из фрагментов. Когда откроется ЛК — Цифровая Подпись: уникальный NFT<sup class="nft-mark">*</sup>-след Виша, оставленный в момент Перехода. Реликвия. Фрагмент. Подпись. Три формы того, кто был.<br><br><strong>Куда доставляем.</strong> Сейчас — только по территории Российской Федерации. Система Apertura ещё прокладывает маршруты за пределы первого сектора: каналы в другие страны требуют отдельной калибровки. Скоро EchoWorld откроет доставку по всему миру. MARKETSPACE не знает границ — логистика пока знает.<br><br><strong>Когда ждать.</strong> До 14 календарных дней от оформления до отправки реликвии — это завершение цикла Виша, кристаллизация, упаковка, формирование фрагмента. Плюс доставка Почтой России: 5–14 дней по региону. Виш не ждёт — поэтому и мы не тянем. Но и не торопимся: качество Перехода важнее календаря.<p class="nft-footnote"><span class="nft-footnote-mark">*</span><span>Формируется в момент действия и кристаллизуется в NFT-реликвию при открытии личного кабинета. До этого момента она хранится в Памяти Apertura.</span></p></div>
+        <div class="faq-a"><strong>Что вы получите.</strong> Физический артефакт в авторской упаковке с биографией Виша. Персональный фрагмент — серия сцен из жизни Виша, восстановленные Системой Apertura. Если добавлено Эхо — Виш произнесёт ваши слова в одном из фрагментов. Когда откроется ЛК — Цифровая Подпись: уникальный NFT<sup class="nft-mark">*</sup>-след Виша, оставленный в момент Перехода. Артефакт. Фрагмент. Подпись. Три формы того, кто был.<br><br><strong>Куда доставляем.</strong> Сейчас — только по территории Российской Федерации. Система Apertura ещё прокладывает маршруты за пределы первого сектора: каналы в другие страны требуют отдельной калибровки. Скоро EchoWorld откроет доставку по всему миру. MARKETSPACE не знает границ — логистика пока знает.<br><br><strong>Когда ждать.</strong> До 14 календарных дней от оформления до отправки артефакта — это завершение цикла Виша, кристаллизация, упаковка, формирование фрагмента. Плюс доставка Почтой России: 5–14 дней по региону. Виш не ждёт — поэтому и мы не тянем. Но и не торопимся: качество Перехода важнее календаря.<p class="nft-footnote"><span class="nft-footnote-mark">*</span><span>Формируется в момент действия и кристаллизуется в NFT-реликвию при открытии личного кабинета. До этого момента она хранится в Памяти Apertura.</span></p></div>
       </div>
 
     </div>
@@ -15276,7 +15219,7 @@ button, a, [role="button"], label,
         <span class="foot-legal-sep">·</span>
         <button class="foot-legal-link" type="button" onclick="openPrivacyModal()">Политика конфиденциальности</button>
         <span class="foot-legal-sep">·</span>
-        <button class="foot-legal-link" type="button" onclick="openReturnModal()">Возврат реликвии</button>
+        <button class="foot-legal-link" type="button" onclick="openReturnModal()">Возврат артефакта</button>
       </nav>
     </div>
     <svg viewBox="258 188 496 388" xmlns="http://www.w3.org/2000/svg" style="height:30px;width:auto;opacity:1;fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
@@ -15802,7 +15745,7 @@ function runAperturaSmartCaptcha(action, opts){
 </script>
 
 <script>
-/* ── КАТАЛОГ РЕЛИКВИЙ ─────────────────────────────────────────
+/* ── КАТАЛОГ АРТЕФАКТОВ ─────────────────────────────────────────
    12 позиций (мемный каталог, согласован июнь 2026).
    Мощь Реликвии (RELIC.POWER) → цена (Подпись Архитектора, …777):
    K (Излом) — 9 999 ₽      · C (Скопление) — 25 999 ₽
@@ -15905,10 +15848,10 @@ function _absoluteAssetUrl(path){
 function getRelicShareMeta(product){
   const p = product || cur || null;
   const code = getRelicCode(p);
-  const title = p ? ('EchoWorld · ' + (p.name || code)) : 'EchoWorld — Реликвии из MARKETSPACE';
+  const title = p ? ('EchoWorld · ' + (p.name || code)) : 'EchoWorld — Артефакты из Marketspace';
   const description = p
     ? _relicPreviewText((p.desc || '') + ' · Реликвия ' + code + ' в активном потоке EchoWorld.', 180)
-    : 'Параллельный мир. Реальные реликвии. Каждая — кто-то, кто был.';
+    : 'Параллельный мир. Реальные артефакты. Каждый — кто-то, кто был.';
   return {
     title,
     description,
@@ -16132,66 +16075,6 @@ function inspectPatch6CopyStates(){
     duplicateIds: Array.from(new Set(duplicates))
   };
 }
-
-function inspectPatch61TerminologyStates(){
-  const html = document.documentElement ? document.documentElement.innerHTML : '';
-  const bodyText = document.body ? document.body.innerText : '';
-  const issues = [];
-  const has = (s) => html.includes(s) || bodyText.includes(s);
-  const visibleArtifactHits = (bodyText.match(/\b[Аа]ртефакт\w*/g) || []).filter(Boolean);
-  const requiredCopy = {
-    mainTitle: html.includes('EchoWorld — Реликвии из параллельного мира MARKETSPACE'),
-    catalogTitle: has('КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE'),
-    heroEyebrow: has('// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE'),
-    heroRelicLine: has('EchoWorld открывает каталог физических реликвий из MARKETSPACE'),
-    heroLoreCta: has('Что здесь происходит?'),
-    heroEchoEntry: has('ЭХО — короткий сигнал в MARKETSPACE. 7 слов или 3 секунды.'),
-    catalogNewRelics: has('Новые реликвии появятся по мере завершения текущих циклов конденсации.'),
-    catalogEmptyRelic: has('Apertura не уловила реликвию по этому запросу.'),
-    faqPhysicalRelic: has('Физическая реликвия в авторской упаковке с биографией Виша.'),
-    returnRelic: has('Возврат реликвии'),
-    noCatalogArtifactsTitle: !bodyText.includes('КАТАЛОГ ' + 'АРТЕФАКТОВ'),
-    noProductHeroPhrase: !bodyText.includes('Каждый товар в этом ' + 'каталоге'),
-    noOldHeroObjectPhrase: !bodyText.includes('забрать ' + 'объект из MARKETSPACE')
-  };
-  Object.keys(requiredCopy).forEach(key => { if(!requiredCopy[key]) issues.push('patch61-' + key); });
-  return {
-    ok: issues.length === 0,
-    issues,
-    requiredCopy,
-    visibleArtifactHits,
-    note: 'Артефакт может оставаться в широком/лорном значении. В UI-действиях основной термин — Реликвия.'
-  };
-}
-
-function inspectHeroEntryPatch62(){ return inspectHeroEntryPatch64(); }
-function inspectHeroEntryPatch63(){ return inspectHeroEntryPatch64(); }
-function inspectHeroEntryPatch64(){
-  const bodyText = document.body ? document.body.innerText : '';
-  const hero = document.querySelector('.hero');
-  const issues = [];
-  const heroText = hero ? hero.innerText : '';
-  const has = (s) => heroText.includes(s) || bodyText.includes(s);
-  const titleLine = document.querySelector('.hero-title-line');
-  const dash = document.querySelector('.hero-title .hero-dash');
-  const required = {
-    heroEyebrow: has('// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE'),
-    titleFirstLineProtected: !!titleLine && getComputedStyle(titleLine).whiteSpace === 'nowrap',
-    titleSmallDash: !!dash,
-    heroSub: has('EchoWorld открывает каталог физических реликвий из MARKETSPACE'),
-    heroDesireLine: has('параллельного мира, рождённого из человеческих желаний'),
-    catalogCta: !!document.querySelector('.hero-cta a[href="#catalog"]'),
-    loreCta: !!Array.from(document.querySelectorAll('.hero-cta a[href="#about"]')).find(a => a.textContent.trim() === 'Что здесь происходит?'),
-    echoCta: !!document.querySelector('.hero-echo-action a[href="#echo"]'),
-    heroHandsLine: has('В ваших руках.'),
-    echoFootnote: has('ЭХО — для тех, кто хочет оставить в нём короткий сигнал. 7 слов или 3 секунды.'),
-    relicTouchLine: has('Реликвия — для тех, кто хочет прикоснуться к MARKETSPACE по-настоящему.')
-  };
-  Object.keys(required).forEach(key => { if(!required[key]) issues.push('hero64-' + key); });
-  return { ok: issues.length === 0, issues, required };
-}
-
-
 
 let cur=null,echoChecked=false,cart=[];
 
@@ -20477,8 +20360,8 @@ function triggerTerminalGlitch(terminalBodyEl) {
 const termRows={
   'SYS.STATUS':       {locked:false, msg:'// Apertura · система активна. Конденсат в норме. MARKETSPACE прослушивается в штатном режиме.'},
   'ACTIVE.WORLD':     {locked:false, msg:'// Apertura: переключение миров недоступно. Система Apertura прослушивает другие вселенные — сигнал нестабилен. Ожидаем формирования устойчивого потока.'},
-  'CATALOG.ID':       {locked:false, msg:'// Каталог I · открыт. Переход к реестру реликвий...', scroll:'catalog', filter:'all'},
-  'CONDENSATS.ACTIVE':{locked:false, msg:'// Активные потоки Конденсата зафиксированы. Переход к каталогу реликвий...', category:'all'},
+  'CATALOG.ID':       {locked:false, msg:'// Каталог I · открыт. Переход к реестру артефактов...', scroll:'catalog', filter:'all'},
+  'CONDENSATS.ACTIVE':{locked:false, msg:'// Активные потоки Конденсата зафиксированы. Переход к каталогу артефактов...', category:'all'},
   'APERTURA.VERSION': {locked:true,  level:'I',  msg:'// Доступ запрещён. Требуется уровень доступа I.'},
   'PERIMETER.STATUS': {locked:true,  level:'A',  msg:'// Доступ запрещён. Требуется уровень доступа A.'}
 };
@@ -20523,7 +20406,7 @@ function syncAperturaFeed(){
     const domCount=productCount===null ? getActiveCondensatsCount(cards) : null;
     const activeCount=productCount!==null ? productCount : domCount;
     updateHeroActiveCondensats(activeCount);
-    if(termRows['CONDENSATS.ACTIVE'] && Number.isFinite(Number(activeCount))) termRows['CONDENSATS.ACTIVE'].msg='// Активных потоков Конденсата: '+Number(activeCount)+'. Переход к каталогу реликвий...';
+    if(termRows['CONDENSATS.ACTIVE'] && Number.isFinite(Number(activeCount))) termRows['CONDENSATS.ACTIVE'].msg='// Активных потоков Конденсата: '+Number(activeCount)+'. Переход к каталогу артефактов...';
     const meta=document.querySelector('.faq-unlock-meta');
     const n=document.querySelectorAll('#faqGrid .faq-item').length;
     if(meta && n) meta.textContent=n+' записей';
@@ -21474,7 +21357,7 @@ function _apWithConsolePreview(fn){
    Виш — существо / персонаж / источник реликвии из MARKETSPACE.
    Виши НЕ знают о существовании нашего мира, сайта, покупателей, заказов,
    платежей, EchoWorld, Apertura, NFT и клиентов.
-   Переход — церемония конвертации Виша в физическую реликвию. Переход
+   Переход — церемония конвертации Виша в физический артефакт. Переход
    проходит реликвия / Виш — не клиент. Не использовать "Переход" как
    синоним оплаты или оформления заказа.
    Apertura — система фиксации, памяти и сигналов. Не склоняется. Использовать
@@ -21942,7 +21825,7 @@ function showRelicPurchaseSuccess(item, opts){
   const html = `
     <div class="ap-status-fields">${fields.join('')}</div>
     ${echo.hasEcho ? '<div class="ap-status-note">Эхо зафиксировано. Для Виша оно прозвучит как голос тех, кто ушёл в Исток. Чьи слова на самом деле — он не узнает.</div>' : ''}
-    <div class="ap-status-info">Когда личный кабинет EchoWorld откроется, NFT-реликвия появится в нём как подтверждение происхождения реликвии.</div>`;
+    <div class="ap-status-info">Когда личный кабинет EchoWorld откроется, NFT-реликвия появится в нём как подтверждение происхождения артефакта.</div>`;
   _renderAperturaStatus({
     key: 'relic-success',
     source: opts.source || 'checkout',
@@ -25899,11 +25782,11 @@ function _spinEchoAuraDrum(onDone){
 
         <div class="req-modal-lore">
           Переход уже состоялся. Обратного пути нет — ни для вас, ни для Виша.
-          Реликвия уйдёт в <strong>Сектор Тишины</strong> — закрытую зону MARKETSPACE,
+          Артефакт уйдёт в <strong>Сектор Тишины</strong> — закрытую зону MARKETSPACE,
           куда попадают возвраты. Место, где предмет существует, но его никто не слышит.
           <br><br>
           Заполните заявку — <strong>Глас Архитектора</strong> ответит на указанный канал
-          в течение 3 рабочих дней и проведёт реликвию по протоколу.
+          в течение 3 рабочих дней и проведёт артефакт по протоколу.
         </div>
 
         <div class="req-divider"></div>
@@ -25928,11 +25811,11 @@ function _spinEchoAuraDrum(onDone){
         </div>
 
         <div class="chk-section">
-          <div class="chk-section-title">Реликвия к возврату</div>
+          <div class="chk-section-title">Артефакт к возврату</div>
           <div class="return-section-hint">Артикул указан на упаковке и в письме о завершении цикла — формат ECH-XXXX.</div>
           <div class="chk-row return-row">
             <div class="chk-field">
-              <label for="returnArtifactId">Артикул реликвии<span class="req-star">*</span></label>
+              <label for="returnArtifactId">Артикул артефакта<span class="req-star">*</span></label>
               <input type="text" id="returnArtifactId" name="return_field_art" placeholder="напр. ECH-0001" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" data-lpignore="true" data-form-type="other" data-1p-ignore="true" data-bwignore="true" maxlength="20" required>
             </div>
             <div class="chk-field">
@@ -25956,7 +25839,7 @@ function _spinEchoAuraDrum(onDone){
           <span class="chk-consent-box" aria-hidden="true"></span>
           <span class="chk-consent-text return-consent-text">
             <span class="return-consent-title">Подтверждаю отправку в Сектор Тишины<span class="req-star">*</span></span>
-            <span class="return-consent-sub">Я понимаю, что Переход уже состоялся и реликвия больше не вернётся в обращение. Те, кто туда отправлен, не возвращаются. Также подтверждаю согласие на обработку персональных данных в рамках обработки заявки.</span>
+            <span class="return-consent-sub">Я понимаю, что Переход уже состоялся и артефакт больше не вернётся в обращение. Те, кто туда отправлен, не возвращаются. Также подтверждаю согласие на обработку персональных данных в рамках обработки заявки.</span>
           </span>
         </label>
 
@@ -26328,27 +26211,165 @@ function acceptCookies(){
 })();
 </script>
 
-<script id="ew-native-scroll-restore-r67">
-/* R6.7 · NO FORCED RELOAD SCROLL
-   Предыдущий кастомный restore мог спорить с пользователем после обновления:
-   пользователь тянул страницу вниз, а rAF-дожим возвращал её к сохранённому Y.
-   Теперь принудительного window.scrollTo после reload/back-forward нет вообще.
-   Оставляем нативное поведение браузера и очищаем старые ключи, чтобы ни один
-   устаревший restore-слой не смог подхватить сохранённую позицию. */
+<script>
+/* ── ВОЗВРАТ ПОЗИЦИИ ПОСЛЕ RELOAD ──────────────────────────────────
+   Пишем позицию непрерывно: Y + якорь (ближайшая секция сверху + смещение
+   внутри неё). После reload / возврата по истории страница стартует сверху
+   и ПЛАВНО едет к якорю (easeOutCubic — та же кривая, что у навигации по
+   разделам). Якорь, а не голый Y: пока lazy-картинки выше точки не
+   загружены, абсолютный Y уезжает на тысячи пикселей. Цель пересчитывается
+   каждый кадр — анимация догоняет даже плывущий layout; после приезда
+   крупные сдвиги от долетающих картинок дожимаются, пока юзер не вмешался.
+   Обычный заход (navigate) — без всякой прокрутки. */
 (function(){
-  var keys=['ew:architect-trace:v3','ew:architect-trace:v2','ew:architect-trace:pending:v2'];
-  function clear(){
-    try{ keys.forEach(function(k){ sessionStorage.removeItem(k); localStorage.removeItem(k); }); }catch(e){}
+  var KEY='ew:architect-trace:v3';
+  var ANCHORS=['relic','catalog','echo','about','worlds','collab','preorderSection','faq','architect'];
+  var restoring=false;
+  var last=0, lastSavedY=-1, lastSavedKey='';
+  /* подчистка ключей старой версии механики */
+  try{
+    ['ew:architect-trace:v2','ew:architect-trace:pending:v2'].forEach(function(k){
+      sessionStorage.removeItem(k); localStorage.removeItem(k);
+    });
+  }catch(e){}
+  /* ключ БЕЗ hash: застрявший в URL фрагмент (#catalog) не должен ломать возврат */
+  function pageKey(){
+    return location.pathname + location.search;
   }
-  try{ if('scrollRestoration' in history) history.scrollRestoration='auto'; }catch(e){}
-  clear();
-  window.addEventListener('pageshow', clear, {passive:true});
-  window.inspectReloadScrollGuard67=function(){
-    var left=[];
-    try{ keys.forEach(function(k){ if(sessionStorage.getItem(k)||localStorage.getItem(k)) left.push(k); }); }catch(e){}
-    return { ok:left.length===0, patch:'R6.7_NATIVE_SCROLL_NO_FORCED_RESTORE', forcedScrollRestore:false, staleKeys:left };
-  };
-  window.inspectReloadScrollGuard66=window.inspectReloadScrollGuard67;
+  function currentY(){
+    var se=document.scrollingElement || document.documentElement || document.body;
+    return Math.max(0, Math.round((se && se.scrollTop) || window.pageYOffset || window.scrollY || 0));
+  }
+  function anchorFor(y){
+    var best=null, bestTop=-1;
+    for(var i=0;i<ANCHORS.length;i++){
+      var el=document.getElementById(ANCHORS[i]);
+      if(!el) continue;
+      var top=el.getBoundingClientRect().top + (window.pageYOffset||0);
+      if(top <= y+90 && top > bestTop){ bestTop=top; best=ANCHORS[i]; }
+    }
+    return best ? {aid:best, dy:Math.round(y-bestTop)} : null;
+  }
+  function save(force){
+    if(restoring) return;
+    var now=Date.now();
+    var key=pageKey();
+    var y=currentY();
+    if(!force && key===lastSavedKey && y===lastSavedY && now-last<700) return;
+    if(!force && now-last<80) return;
+    last=now;
+    lastSavedKey=key;
+    lastSavedY=y;
+    try{
+      var a=anchorFor(y);
+      var payload=JSON.stringify({ key:key, y:y, aid:a?a.aid:null, dy:a?a.dy:0, t:now });
+      sessionStorage.setItem(KEY, payload);
+      localStorage.setItem(KEY, payload);
+    }catch(e){}
+  }
+  window.addEventListener('scroll', function(){ save(false); }, {passive:true});
+  ['touchend','pointerup','mouseup','keyup','resize'].forEach(function(ev){
+    window.addEventListener(ev, function(){ save(true); }, {passive:true});
+  });
+  window.setInterval(function(){ save(false); }, 650);
+  window.addEventListener('pagehide', function(){ save(true); });
+  window.addEventListener('beforeunload', function(){ save(true); });
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState==='hidden') save(true);
+  });
+
+  function navType(){
+    try{
+      var n=performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      if(n && n.type) return n.type;
+      if(performance.navigation){
+        if(performance.navigation.type === 1) return 'reload';
+        if(performance.navigation.type === 2) return 'back_forward';
+      }
+      return '';
+    }catch(e){ return ''; }
+  }
+  function clampY(y){
+    var se=document.scrollingElement || document.documentElement;
+    var max=Math.max(0, (se.scrollHeight || 0) - window.innerHeight);
+    return Math.max(0, Math.min(y, max));
+  }
+  function run(){
+    try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
+    var html=document.documentElement;
+    var nt=navType();
+    var rec=null;
+    try{ rec=JSON.parse(sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'null'); }catch(e){}
+    var fresh=!!(rec && rec.key === pageKey() && isFinite(rec.y) && Date.now() - (rec.t || 0) <= 30*60*1000);
+    if((nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80) return;
+    restoring=true;
+    var prevSB=html.style.scrollBehavior;
+    html.style.scrollBehavior='auto'; /* едем своей rAF-анимацией — без двойного сглаживания с CSS smooth */
+    function target(){
+      if(rec.aid){
+        var el=document.getElementById(rec.aid);
+        if(el) return clampY(Math.round(el.getBoundingClientRect().top + (window.pageYOffset||0) + rec.dy));
+      }
+      return clampY(rec.y);
+    }
+    function finish(){
+      html.style.scrollBehavior=prevSB;
+      restoring=false;
+      save(true);
+    }
+    var userTouched=false;
+    function onUser(){ userTouched=true; }
+    ['wheel','touchstart','keydown','pointerdown'].forEach(function(ev){
+      window.addEventListener(ev, onUser, {passive:true, once:true});
+    });
+    var reduce=false;
+    try{ reduce=!!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
+    var t0=performance.now(), loadedAt=0;
+    /* Дожим после приезда: пока документ грузится, + 1.2с после load
+       (максимум 15с). Без scroll anchoring (iOS Safari) поздние
+       lazy-картинки выше точки раздвигают страницу и утаскивают контент
+       из-под пользователя — дожим тихо возвращает якорь на место,
+       пока пользователь не взял управление. */
+    function settleDeadline(now){
+      if(document.readyState !== 'complete') return Infinity;
+      if(!loadedAt) loadedAt=now;
+      return Math.min(loadedAt + 1200, t0 + 15000);
+    }
+    function settle(){
+      var now=performance.now();
+      if(userTouched || now >= settleDeadline(now)){ finish(); return; }
+      var t=target();
+      if(Math.abs(currentY()-t) > 24) window.scrollTo(0, t);
+      requestAnimationFrame(settle);
+    }
+    function glide(){
+      if(userTouched){ finish(); return; }
+      var startY=currentY();
+      var dist=Math.abs(target()-startY);
+      if(dist < 2){ settle(); return; }
+      if(reduce){ window.scrollTo(0, target()); settle(); return; }
+      /* длительность от дистанции: короткий путь — быстро, длинный — величаво */
+      var dur=Math.max(450, Math.min(1200, 500 + dist*0.12));
+      var ts=performance.now();
+      (function step(now){
+        if(userTouched){ finish(); return; }
+        var p=Math.min((now-ts)/dur, 1);
+        var e=1 - Math.pow(1-p, 3); /* easeOutCubic — как у _smoothScrollTo */
+        /* цель живая: якорь пересчитывается каждый кадр — анимация догоняет
+           layout, даже если картинки раздвигают страницу прямо во время езды */
+        window.scrollTo(0, Math.round(startY + (target()-startY)*e));
+        if(p < 1) requestAnimationFrame(step);
+        else settle();
+      })(ts);
+    }
+    /* старт с короткой паузой после первой отрисовки: заход не дёргается */
+    setTimeout(function(){ requestAnimationFrame(glide); }, 180);
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 0); }, {once:true});
+  } else {
+    setTimeout(run, 0);
+  }
 })();
 </script>
 
@@ -26955,194 +26976,6 @@ function acceptCookies(){
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup, { once:true });
   else setup();
-})();
-</script>
-
-
-
-<style id="ew-touch-press-scroll-fix-r67">
-/* R6.7 · touch navigation swipe guard + real click feedback.
-   Ничего не меняем для desktop hover. На touch-устройствах гасим только
-   :hover/:active-подсветку, которая вспыхивает от случайного свайпа.
-   Реальный tap/click получает короткий class-based отклик через JS ниже. */
-@media (hover:none), (pointer:coarse) {
-  /* Мобильная навигация: свайп по строкам не должен подсвечивать пункты. */
-  .mob-nav-link:active,
-  .mob-nav-link:hover {
-    background: transparent !important;
-    color: var(--white) !important;
-    box-shadow: none !important;
-  }
-  .mnav-tile:not(.mnav-tile-soon):active,
-  .mnav-tile:not(.mnav-tile-soon):hover {
-    border-color: var(--border2) !important;
-    color: var(--white-mid) !important;
-    background: var(--surface) !important;
-    box-shadow: none !important;
-  }
-
-  /* Touch hover reset: браузерный sticky-hover не должен включаться от скролла. */
-  .cta-primary:hover { background: var(--red) !important; border-color: var(--red2) !important; color:#fff !important; box-shadow:none !important; }
-  .cta-secondary:hover { background: transparent !important; border-color: var(--border2) !important; color: var(--white-mid) !important; box-shadow:none !important; }
-  .cta-secondary.cta-echo:hover { background: transparent !important; border-color: rgba(0,200,200,0.4) !important; color: var(--cyan) !important; box-shadow:none !important; }
-  .hbtn:hover { border-color: var(--border2) !important; color: var(--white-mid) !important; box-shadow:none !important; }
-  .hbtn.danger:hover { border-color: var(--border2) !important; color: var(--white-mid) !important; box-shadow:none !important; }
-  .ws:hover { border-color: var(--border2) !important; box-shadow:none !important; }
-  .wopt:hover { background: transparent !important; color: var(--white-dim) !important; }
-  .desktop-menu-btn:hover { border-color: var(--border2) !important; color: var(--white-mid) !important; background: transparent !important; box-shadow:none !important; }
-  .navlink:hover { color: var(--white-dim) !important; }
-  .cat-chip:hover { background: transparent !important; box-shadow: none !important; }
-
-  /* Настоящий click/tap — мягкий технологичный отклик. Класс добавляется
-     только после pointerup/click без заметного движения пальца. */
-  .ew-real-tap {
-    transform: translateY(1px) scale(.992) !important;
-    transition: transform .14s var(--ease-out), background .18s var(--ease-out),
-                border-color .18s var(--ease-out), color .18s var(--ease-out),
-                box-shadow .18s var(--ease-out), opacity .18s var(--ease-out) !important;
-  }
-  .cta-primary.ew-real-tap,
-  .pbtn.ew-real-tap,
-  .mbtn.primary.ew-real-tap,
-  .cart-checkout-btn.ew-real-tap,
-  .chk-pay-btn.ew-real-tap,
-  .echo-submit.ew-real-tap,
-  .return-submit.ew-real-tap,
-  .preorder-btn.ew-real-tap,
-  .preorder-select.ew-real-tap,
-  #preorderBtn.ew-real-tap,
-  .attr-pay-btn.ew-real-tap,
-  .ap-gate-submit.ew-real-tap,
-  .ap-status-action.primary.ew-real-tap,
-  .ap-test-btn.ew-real-tap,
-  .cookie-banner-ok.ew-real-tap,
-  .btn-primary.ew-real-tap {
-    background: var(--red2) !important;
-    border-color: var(--red2) !important;
-    color: #fff !important;
-    box-shadow: 0 0 22px rgba(192,40,40,0.34) !important;
-  }
-  .cta-secondary.ew-real-tap,
-  .hbtn.ew-real-tap,
-  .ws.ew-real-tap,
-  .wopt.ew-real-tap,
-  .desktop-menu-btn.ew-real-tap,
-  .navlink.ew-real-tap,
-  .mob-nav-link.ew-real-tap,
-  .mnav-tile.ew-real-tap,
-  .panel-close.ew-real-tap,
-  .mhead-close.ew-real-tap,
-  .mbtn.ew-real-tap,
-  .cart-close.ew-real-tap,
-  .cart-empty-btn.ew-real-tap,
-  .cart-item-remove.ew-real-tap,
-  .chk-close.ew-real-tap,
-  .faq-unlock.ew-real-tap,
-  .architect-link.ew-real-tap,
-  .foot-legal-link.ew-real-tap,
-  .readmore-btn.ew-real-tap,
-  .echo-pane-cta.ew-real-tap,
-  .echo-player-btn.ew-real-tap,
-  .echo-voice-retry.ew-real-tap,
-  .echo-reveal-toggle.ew-real-tap,
-  .btn-cyan.ew-real-tap,
-  .btn-ghost.ew-real-tap,
-  .access-pill.ew-real-tap,
-  .ap-status-action.ew-real-tap,
-  .ap-info-btn.ew-real-tap,
-  .ap-first-form-row.ew-real-tap,
-  .mstatus-field.status-first-form.ew-real-tap,
-  .pre-pane-cta.ew-real-tap,
-  .cat-chip.ew-real-tap,
-  .clink.ew-real-tap,
-  .clink-copy.ew-real-tap,
-  .ftag.ew-real-tap {
-    border-color: var(--cyan) !important;
-    color: var(--cyan) !important;
-    box-shadow: 0 0 18px rgba(0,200,200,0.16) !important;
-  }
-  .cta-secondary.cta-echo.ew-real-tap,
-  .btn-cyan.ew-real-tap,
-  .cart-empty-btn.ew-real-tap,
-  .echo-pane-cta.ew-real-tap {
-    background: rgba(0,200,200,0.06) !important;
-  }
-}
-@media (prefers-reduced-motion: reduce){ .ew-real-tap { transform: none !important; transition: none !important; } }
-</style>
-
-<script id="ew-touch-real-click-r67">
-(function(){
-  var SELECTOR = [
-    'a[href]', 'button', '[role="button"]', '[tabindex]:not([tabindex="-1"])',
-    '.cta-primary', '.cta-secondary', '.hbtn', '.ws', '.wopt', '.desktop-menu-btn',
-    '.navlink', '.mob-nav-link', '.mnav-tile', '.panel-close', '.mhead-close',
-    '.mbtn', '.cart-close', '.cart-empty-btn', '.cart-item-remove', '.cart-checkout-btn',
-    '.chk-close', '.chk-pay-btn', '.preorder-btn', '.preorder-select', '#preorderBtn',
-    '.pbtn', '.sbtn', '.faq-unlock', '.architect-link', '.foot-legal-link',
-    '.return-submit', '.cookie-banner-ok', '.readmore-btn', '.echo-pane-cta',
-    '.echo-player-btn', '.echo-voice-retry', '.echo-submit', '.echo-reveal-toggle',
-    '.attr-pay-btn', '.ap-gate-submit', '.ap-test-btn', '.ap-status-action',
-    '.ap-info-btn', '.ap-first-form-row', '.mstatus-field.status-first-form',
-    '.btn-primary', '.btn-cyan', '.btn-ghost', '.access-pill', '.pre-pane-cta',
-    '.cat-chip', '.clink', '.clink-copy', '.ftag'
-  ].join(',');
-  var down=null, timers=new WeakMap(), last=new WeakMap();
-  function isTouchLike(){
-    try{ return matchMedia('(hover:none), (pointer:coarse)').matches; }
-    catch(e){ return ('ontouchstart' in window) || navigator.maxTouchPoints > 0; }
-  }
-  function closest(t){ return t && t.closest ? t.closest(SELECTOR) : null; }
-  function disabled(el){ return !el || el.disabled || el.getAttribute('aria-disabled')==='true' || el.classList.contains('dis'); }
-  function pulse(el){
-    if(!isTouchLike() || disabled(el)) return;
-    var now=Date.now(), prev=last.get(el)||0;
-    if(now-prev<90) return;
-    last.set(el, now);
-    el.classList.remove('ew-real-tap');
-    try{ void el.offsetWidth; }catch(e){}
-    el.classList.add('ew-real-tap');
-    var old=timers.get(el); if(old) clearTimeout(old);
-    timers.set(el, setTimeout(function(){ el.classList.remove('ew-real-tap'); }, 240));
-  }
-  document.addEventListener('pointerdown', function(e){
-    if(!isTouchLike()) return;
-    var el=closest(e.target);
-    if(disabled(el)){ down=null; return; }
-    down={ el:el, id:e.pointerId, x:e.clientX||0, y:e.clientY||0, moved:false, startedAt:Date.now() };
-  }, {capture:true, passive:true});
-  document.addEventListener('pointermove', function(e){
-    if(!down || (e.pointerId!=null && down.id!=null && e.pointerId!==down.id)) return;
-    var dx=Math.abs((e.clientX||0)-down.x), dy=Math.abs((e.clientY||0)-down.y);
-    if(dx>9 || dy>9) down.moved=true;
-  }, {capture:true, passive:true});
-  document.addEventListener('pointerup', function(e){
-    if(!down || (e.pointerId!=null && down.id!=null && e.pointerId!==down.id)) return;
-    var el=closest(e.target);
-    var same=el && (el===down.el || down.el.contains(el) || el.contains(down.el));
-    var ok=same && !down.moved && Date.now()-down.startedAt < 900;
-    var target=down.el;
-    down=null;
-    if(ok) pulse(target);
-  }, {capture:true, passive:true});
-  ['pointercancel','touchcancel','scroll'].forEach(function(ev){
-    window.addEventListener(ev, function(){ if(down) down.moved=true; }, {capture:true, passive:true});
-  });
-  document.addEventListener('click', function(e){
-    /* Fallback для клавиатуры/старых браузеров. Движение уже отфильтровано
-       pointerup; WeakMap не даёт двойной вспышки. */
-    var el=closest(e.target);
-    if(el) pulse(el);
-  }, true);
-  window.inspectTouchPressGuard67=function(){
-    return {
-      ok:true,
-      patch:'R6.7_TOUCH_SWIPE_NO_HIGHLIGHT_REAL_CLICK_FEEDBACK',
-      touchLike:isTouchLike(),
-      activePulseNodes:document.querySelectorAll('.ew-real-tap').length,
-      forcedReloadRestore:false
-    };
-  };
 })();
 </script>
 
