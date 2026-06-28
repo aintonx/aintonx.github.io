@@ -22615,7 +22615,7 @@ function showInstagramEntryStatus(){
     kicker: '// APERTURA · ENTRY STATUS',
     title: 'ВНЕШНИЙ СЛОЙ РАСПОЗНАН',
     text: 'Вы вошли в EchoWorld — интерфейс, через который в наш мир попадают физические реликвии из MARKETSPACE.',
-    html: '<div class="ap-status-info">Если вы здесь впервые — начните с каталога, узнайте, что такое MARKETSPACE, или оставьте ЭХО.</div>',
+    html: '<div class="ap-status-text">Если вы здесь впервые — начните с каталога, узнайте, что такое MARKETSPACE, или оставьте ЭХО.</div>',
     actions: [
       {label:'Открыть каталог', action:'catalog', primary:true},
       {label:'Что такое MARKETSPACE?', action:'marketspace'},
@@ -22888,12 +22888,12 @@ function handleAperturaStatusAction(action, key){
   }
   if(action==='echo'){
     closeAperturaStatus(); closeArchitectConsole();
-    setTimeout(()=>{ const sec=document.getElementById('echo'); if(sec) sec.scrollIntoView({behavior:'smooth', block:'start'}); }, 160);
+    setTimeout(()=>_apScrollTo('echo'), APERTURA_CONSOLE_CLOSE_MS + 120);
     return;
   }
   if(action==='marketspace'){
     closeAperturaStatus(); closeArchitectConsole();
-    setTimeout(()=>_apScrollTo('worlds'), 160);
+    setTimeout(()=>_apScrollTo('worlds'), APERTURA_CONSOLE_CLOSE_MS + 120);
     return;
   }
   if(action==='echo-text'){
