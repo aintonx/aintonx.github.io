@@ -24059,7 +24059,28 @@ async function submitPreorder(){
         if(typingEl) typingEl.style.display='none';
         if(linesEl){
           linesEl.classList.add('show');
-          linesEl.innerHTML=resultRows.map(r=>`<div class="pt-row"><span class="pt-key">${r.k}</span><span class="pt-val ${r.cls}" title="${String(r.v).replace(/"/g,'&quot;')}">${r.v}</span></div>`).join('');
+          // SECURITY: результат Конденсации строится через DOM/textContent.
+          // Пользовательские item/contact не должны попадать в innerHTML.
+          linesEl.textContent='';
+          const safeValueClasses=new Set(['dim','cyan','red','white']);
+          resultRows.forEach(r=>{
+            const row=document.createElement('div');
+            row.className='pt-row';
+
+            const key=document.createElement('span');
+            key.className='pt-key';
+            key.textContent=String(r.k||'');
+
+            const val=document.createElement('span');
+            const cls=safeValueClasses.has(r.cls)?r.cls:'';
+            val.className=cls?'pt-val '+cls:'pt-val';
+            val.setAttribute('title',String(r.v||''));
+            val.textContent=String(r.v||'');
+
+            row.appendChild(key);
+            row.appendChild(val);
+            linesEl.appendChild(row);
+          });
         }
         if(itemEl) itemEl.value='';
         if(contactEl) contactEl.value='';
