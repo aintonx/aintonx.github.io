@@ -22876,6 +22876,21 @@ document.addEventListener('keyup', function(ev){
   const btn = ev.target && ev.target.closest ? ev.target.closest('.ap-status-action') : null;
   if(btn) _apStatusActionPressOff(btn);
 }, true);
+function _apFollowHeroAnchor(href){
+  href = String(href || '').trim();
+  if(!href || href.charAt(0) !== '#') return;
+  const links = Array.prototype.slice.call(document.querySelectorAll('a[href]'));
+  const heroLink = links.find(a => a.getAttribute('href') === href && a.closest('.hero'));
+  const link = heroLink || links.find(a => a.getAttribute('href') === href);
+  if(link && typeof link.click === 'function'){
+    link.click();
+    return;
+  }
+  try{ location.hash = href; }catch(e){
+    const el = document.getElementById(href.slice(1));
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
 function handleAperturaStatusAction(action, key){
   const source=_apStatusSource();
   if(action==='close'){ closeAperturaStatus(); return; }
@@ -22888,12 +22903,12 @@ function handleAperturaStatusAction(action, key){
   }
   if(action==='echo'){
     closeAperturaStatus(); closeArchitectConsole();
-    setTimeout(()=>_apScrollTo('echo'), APERTURA_CONSOLE_CLOSE_MS + 120);
+    setTimeout(()=>_apFollowHeroAnchor('#echo'), APERTURA_CONSOLE_CLOSE_MS + 120);
     return;
   }
   if(action==='marketspace'){
     closeAperturaStatus(); closeArchitectConsole();
-    setTimeout(()=>_apScrollTo('about'), APERTURA_CONSOLE_CLOSE_MS + 120);
+    setTimeout(()=>_apFollowHeroAnchor('#about'), APERTURA_CONSOLE_CLOSE_MS + 120);
     return;
   }
   if(action==='echo-text'){
