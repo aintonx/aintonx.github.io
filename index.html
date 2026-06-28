@@ -1127,7 +1127,7 @@ header.scrolled {
 .hero-title {
   font-family: var(--font-display);
   font-weight: 800;
-  /* HERO R6.3: чуть компактнее на десктопе, чтобы первая строка
+  /* HERO R6.4: чуть компактнее на десктопе, чтобы первая строка
      «Каждая реликвия —» оставалась одной строкой и не ломала соседний терминал. */
   font-size: clamp(42px, 4.45vw, 64px);
   line-height: 0.95;
@@ -1157,15 +1157,25 @@ header.scrolled {
 }
 .hero-sub em { color: var(--white-mid); font-style: normal; }
 
-/* HERO R6.3 · ЭХО как полноценный, но вторичный вход.
-   Кнопка не конкурирует с каталогом: она стоит отдельной строкой,
-   а ниже остаётся поясняющая сноска в прежнем органичном стиле сайта. */
+/* HERO R6.4 · CTA-сетка: две равные главные кнопки + ЭХО на их общую ширину.
+   Высота, радиус, шрифт и плотность одинаковые у всех трёх CTA; отличается
+   только роль: каталог — primary, объяснение/ЭХО — secondary. */
+.hero-cta,
+.hero-echo-action {
+  width: min(100%, 500px);
+}
+.hero-cta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  flex-wrap: nowrap;
+}
 .hero-echo-action {
   display: flex;
   margin-top: 12px;
 }
 .hero-echo-action .cta-echo {
-  min-width: 190px;
+  width: 100%;
   text-align: center;
 }
 .hero-sub-echo {
@@ -1190,11 +1200,6 @@ header.scrolled {
 strong { color: var(--white) !important; font-weight: 400 !important; }
 .about-callout strong, .nft-footnote strong, .pfooter strong { color: inherit !important; font-weight: inherit !important; }
 
-.hero-cta {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
 /* Cyan-акцент на CTA Эхо — отличает от «О технологии» */
 .cta-secondary.cta-echo {
   border-color: rgba(0,200,200,0.4);
@@ -1210,6 +1215,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   font-size: 9px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
+  min-height: 54px;
   padding: 14px 28px;
   background: var(--red);
   border: 1px solid var(--red2);
@@ -1217,7 +1223,11 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   cursor: pointer;
   transition: all .2s;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 .cta-primary:hover { background: var(--red2); box-shadow: 0 0 30px rgba(192,40,40,0.4); }
 .cta-secondary {
@@ -1225,6 +1235,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   font-size: 9px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
+  min-height: 54px;
   padding: 14px 28px;
   background: transparent;
   border: 1px solid var(--border2);
@@ -1232,7 +1243,11 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   cursor: pointer;
   transition: all .2s;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 .cta-secondary:hover { border-color: var(--cyan); color: var(--cyan); }
 
@@ -7078,14 +7093,18 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
     margin-bottom: 28px;
   }
   .hero-cta {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 10px;
+    width: 100%;
+  }
+  .hero-echo-action {
     width: 100%;
   }
   .cta-primary, .cta-secondary {
     text-align: center;
-    display: block;
+    display: inline-flex;
     width: 100%;
+    min-height: 54px;
     box-sizing: border-box;
     padding: 14px 20px;
   }
@@ -13365,7 +13384,7 @@ button, a, [role="button"], label,
       <span class="accent">часть</span> вселенной
     </h1>
     <p class="hero-sub">
-      EchoWorld открывает каталог физических реликвий из <strong>MARKETSPACE</strong> — параллельного мира, рождённого из человеческих желаний. Это не копии и не тираж: у каждой реликвии есть происхождение, история и единственный экземпляр, который может оказаться в нашем мире.
+      EchoWorld открывает каталог физических реликвий из <strong>MARKETSPACE</strong> — параллельного мира, рождённого из человеческих желаний. Это не копии и не тираж: у каждой реликвии есть происхождение и история. Каждая существует в единственном экземпляре — и может оказаться в нашем мире. В ваших руках.
     </p>
     <div class="hero-cta">
       <a href="#catalog" class="cta-primary">Открыть каталог</a>
@@ -13375,8 +13394,8 @@ button, a, [role="button"], label,
       <a href="#echo" class="cta-secondary cta-echo">Оставить ЭХО</a>
     </div>
     <p class="hero-sub-echo">
-      <strong>Реликвия</strong> — для тех, кто хочет получить физическую часть <strong class="hero-marketspace">MARKETSPACE</strong>.<br>
-      <strong>ЭХО</strong> — короткий сигнал в <strong class="hero-marketspace">MARKETSPACE</strong>. 7 слов или 3 секунды.
+      <strong>Реликвия</strong> — для тех, кто хочет прикоснуться к <strong class="hero-marketspace">MARKETSPACE</strong> по-настоящему.<br>
+      <strong>ЭХО</strong> — для тех, кто хочет оставить в нём короткий сигнал. 7 слов или 3 секунды.
     </p>
   </div>
 
@@ -16146,8 +16165,9 @@ function inspectPatch61TerminologyStates(){
   };
 }
 
-function inspectHeroEntryPatch62(){ return inspectHeroEntryPatch63(); }
-function inspectHeroEntryPatch63(){
+function inspectHeroEntryPatch62(){ return inspectHeroEntryPatch64(); }
+function inspectHeroEntryPatch63(){ return inspectHeroEntryPatch64(); }
+function inspectHeroEntryPatch64(){
   const bodyText = document.body ? document.body.innerText : '';
   const hero = document.querySelector('.hero');
   const issues = [];
@@ -16164,9 +16184,11 @@ function inspectHeroEntryPatch63(){
     catalogCta: !!document.querySelector('.hero-cta a[href="#catalog"]'),
     loreCta: !!Array.from(document.querySelectorAll('.hero-cta a[href="#about"]')).find(a => a.textContent.trim() === 'Что здесь происходит?'),
     echoCta: !!document.querySelector('.hero-echo-action a[href="#echo"]'),
-    echoFootnote: has('ЭХО — короткий сигнал в MARKETSPACE. 7 слов или 3 секунды.')
+    heroHandsLine: has('В ваших руках.'),
+    echoFootnote: has('ЭХО — для тех, кто хочет оставить в нём короткий сигнал. 7 слов или 3 секунды.'),
+    relicTouchLine: has('Реликвия — для тех, кто хочет прикоснуться к MARKETSPACE по-настоящему.')
   };
-  Object.keys(required).forEach(key => { if(!required[key]) issues.push('hero63-' + key); });
+  Object.keys(required).forEach(key => { if(!required[key]) issues.push('hero64-' + key); });
   return { ok: issues.length === 0, issues, required };
 }
 
