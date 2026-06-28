@@ -3110,6 +3110,18 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   color: var(--white-mid);
 }
 .mclarity-text p + p { margin-top: 10px; }
+.mclarity-guide-link {
+  color: var(--red2);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(192,40,40,0.45);
+  transition: color .18s ease, border-color .18s ease, opacity .18s ease;
+}
+@media (hover:hover) and (pointer:fine) {
+  .mclarity-guide-link:hover {
+    color: var(--red-hi);
+    border-color: var(--red-hi);
+  }
+}
 :root[data-theme="light"] .mclarity-item {
   background: var(--surface);
   border-color: var(--border);
@@ -10729,6 +10741,9 @@ input, select, textarea {
   font-style: normal;
   font-weight: 500;
 }
+.relic-lede p { margin: 0; }
+.relic-lede p + p { margin-top: 12px; }
+.relic-spec .echo-proper { text-transform: none; }
 
 .relic-grid {
   display: grid;
@@ -14050,7 +14065,7 @@ button, a, [role="button"], label,
       <span class="accent">часть</span> вселенной
     </h1>
     <p class="hero-sub">
-      EchoWorld открывает каталог физических реликвий из <strong>MARKETSPACE</strong> — параллельного мира, рождённого из человеческих желаний. Это не копии и не тираж: у каждой реликвии есть происхождение и история. Каждая существует в единственном экземпляре — и может оказаться в нашем мире. В ваших руках.
+      EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Это не копии и не тираж: у каждой реликвии есть происхождение и история. Каждая существует в единственном экземпляре — и может оказаться в нашем мире. В ваших руках.
     </p>
     <div class="hero-cta">
       <a href="#catalog" class="cta-primary">Открыть каталог</a>
@@ -14061,7 +14076,7 @@ button, a, [role="button"], label,
     </div>
     <p class="hero-sub-echo">
       <strong>Реликвия</strong> — для тех, кто хочет прикоснуться к <strong class="hero-marketspace">MARKETSPACE</strong> по-настоящему.<br>
-      <strong>ЭХО</strong> — для тех, кто хочет оставить в нём короткий сигнал. 7 слов или 3 секунды.
+      <strong>Эхо</strong> — для тех, кто хочет оставить в нём короткий сигнал. 7 слов или 3 секунды.
     </p>
   </div>
 
@@ -14093,29 +14108,32 @@ button, a, [role="button"], label,
         <div class="relic-kicker">// КАК ЧИТАТЬ КАТАЛОГ · МОЩЬ РЕЛИКВИИ</div>
         <h2 class="relic-title" id="relicTitle">Мощь Реликвии.</h2>
       </div>
-      <p class="relic-lede">
-        Это не обычный каталог. Каждая карточка — не предмет и ещё не <strong>Виш</strong>, а поток желаний, готовый к конденсации. Поток задаёт лишь начало — характер и <strong>Мощь</strong>, с которыми он родится. Дальше его жизнь не предрешена: что случится с ним до <strong>Перехода</strong>, не знает даже Apertura. Известно одно — однажды он станет этой реликвией. <strong>Мощь Реликвии</strong> показывает, насколько глубокой окажется его история — сколько её сцен, <em>Фрагментов</em>, сохранит Apertura. Выберите глубину — потом саму реликвию.
-      </p>
+      <div class="relic-lede">
+        <p>Это глубина контакта с <strong>MARKETSPACE</strong>.</p>
+        <p>За каждой реликвией стоит <strong>Виш</strong> — житель MARKETSPACE. Он живёт, мечтает об Истоке и не знает, что однажды его путь завершится <strong>Переходом</strong> — конвертацией в физический объект.</p>
+        <p><strong>Мощь</strong> показывает силу этой связи: от короткого импульса до полного резонанса.</p>
+        <p>Чем выше Мощь, тем больше видео-фрагментов из жизни Виша станет доступно в EchoWorld — и тем больше слотов <strong>Эхо</strong> откроется для ваших слов, которые однажды прозвучат его устами.</p>
+      </div>
     </div>
 
     <div class="relic-grid">
       <article class="relic-card" data-class="K" role="button" tabindex="0" onclick="relicCardActivate(event,'K')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();relicCardActivate(event,'K');}">
         <div class="relic-letter">K</div>
         <div class="relic-name">Излом</div>
-        <div class="relic-spec">1 слот Эхо</div>
+        <div class="relic-spec">1 слот <span class="echo-proper">Эхо</span> · 1 видео-фрагмент</div>
         <div class="relic-frags" aria-hidden="true">
           <span class="relic-frag on"></span>
           <span class="relic-frag"></span>
           <span class="relic-frag"></span>
           <span class="relic-frag"></span>
         </div>
-        <p class="relic-desc">Самые тихие желания — рассмешить, успокоить, посветить в темноте. Их не записывают в дневниках и не помнят к утру. Излом — жизнь, что оборвётся на первом же светлом кадре: ярко, коротко и без второго дубля.</p>
+        <p class="relic-desc">Тихие вспышки желаний: рассмешить, успокоить, посветить в темноте. Такие вещи не становятся культом — их ловят на миг и забывают к утру. Излом — короткая жизнь потока: ярко, тепло и без второго дубля.</p>
       </article>
 
       <article class="relic-card" data-class="C" role="button" tabindex="0" onclick="relicCardActivate(event,'C')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();relicCardActivate(event,'C');}">
         <div class="relic-letter">C</div>
         <div class="relic-name">Скопление</div>
-        <div class="relic-spec">2 слота Эхо</div>
+        <div class="relic-spec">2 слота <span class="echo-proper">Эхо</span> · 2 видео-фрагмента</div>
         <div class="relic-frags" aria-hidden="true">
           <span class="relic-frag on"></span>
           <span class="relic-frag on"></span>
@@ -14128,27 +14146,27 @@ button, a, [role="button"], label,
       <article class="relic-card" data-class="R" role="button" tabindex="0" onclick="relicCardActivate(event,'R')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();relicCardActivate(event,'R');}">
         <div class="relic-letter">R</div>
         <div class="relic-name">Резонанс</div>
-        <div class="relic-spec">3 слота Эхо</div>
+        <div class="relic-spec">3 слота <span class="echo-proper">Эхо</span> · 3 видео-фрагмента</div>
         <div class="relic-frags" aria-hidden="true">
           <span class="relic-frag on"></span>
           <span class="relic-frag on"></span>
           <span class="relic-frag on"></span>
           <span class="relic-frag"></span>
         </div>
-        <p class="relic-desc">Когда одно и то же хотят миллионы, желание звучит само — на репите, из каждой ленты. Резонанс — жизнь на виду и в полный голос, которую слышали все и не знал никто. Чем громче эхо, тем длиннее путь до тишины.</p>
+        <p class="relic-desc">Когда одно и то же хотят миллионы, желание начинает звучать само — на репите, из каждой ленты. Резонанс — поток, который узнавали все, но по-настоящему не знал никто. Чем громче Эхо, тем длиннее путь до тишины.</p>
       </article>
 
       <article class="relic-card" data-class="S" role="button" tabindex="0" onclick="relicCardActivate(event,'S')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();relicCardActivate(event,'S');}">
         <div class="relic-letter">S</div>
         <div class="relic-name">Сингулярность</div>
-        <div class="relic-spec">4 слота Эхо</div>
+        <div class="relic-spec">4 слота <span class="echo-proper">Эхо</span> · 4 видео-фрагмента</div>
         <div class="relic-frags" aria-hidden="true">
           <span class="relic-frag on"></span>
           <span class="relic-frag on"></span>
           <span class="relic-frag on"></span>
           <span class="relic-frag on"></span>
         </div>
-        <p class="relic-desc">Желание такой плотности, что схлопывается в символ, — его узнают даже те, кто его не хотел. Сингулярность — икона, что переживёт все тренды и самого Виша. Бессмертие в обмен на то, кем он был на самом деле.</p>
+        <p class="relic-desc">Желание такой плотности, что схлопывается в символ: его узнают даже те, кто никогда его не хотел. Сингулярность — икона, пережившая все тренды и самого Виша. Бессмертие в обмен на то, кем он был на самом деле.</p>
       </article>
     </div>
     <div class="relic-mobile-nav" id="relicMobileNav">
@@ -14903,8 +14921,8 @@ button, a, [role="button"], label,
           </button>
           <div class="mclarity-panel" data-clarity-panel aria-hidden="true">
             <div class="mclarity-text">
-              <p>Мощь Реликвии — степень присутствия предмета в EchoWorld.</p>
-              <p>Класс рождается из Конденсата: чем громче текущий поток желаний и глубже осадок прошлого, тем отчётливее предмет звучит в Системе Apertura. Мощь определяет количество видео-фрагментов и слотов Эхо — и указывает, насколько глубокий след реликвия сможет оставить после Перехода.</p>
+              <p>Мощь показывает, насколько глубоко предмет связан с MARKETSPACE.</p>
+              <p>От неё зависит, сколько видео-фрагментов станет доступно в EchoWorld и сколько слотов Эхо откроется для ваших слов. <a href="#relic" class="mclarity-guide-link js-power-guide-link" data-no-smooth-scroll="true">Как читать Мощь Реликвии?</a></p>
             </div>
           </div>
         </div>
@@ -16740,7 +16758,7 @@ function inspectPatch6CopyStates(){
     relicUndefined: html.includes('Реликвия не определена. Откройте карточку заново.'),
     echoSlotFilledCaption: html.includes("has ? 'Эхо' : 'пусто'") || bodyText.includes('Эхо'),
     echoEmptyGrammar: html.includes('Эхо пусто.'),
-    echoSlotHint: html.includes('Чем выше Мощь Реликвии, тем больше фрагментов Эхо может пройти вместе с ней.'),
+    echoSlotHint: html.includes('Чем выше Мощь, тем больше слотов Эхо откроется для ваших слов.'),
     echoCtaCaps: html.includes('Отправить <span>ЭХО</span><br>в&nbsp;MARKETSPACE'),
     consentNoCaps: !html.includes('ПОДТВЕР' + 'ДИТЕ ОБРАБОТКУ ДАННЫХ')
   };
@@ -16813,7 +16831,7 @@ function inspectPatch61TerminologyStates(){
     mainTitle: html.includes('EchoWorld — Реликвии из параллельного мира MARKETSPACE'),
     catalogTitle: has('КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE'),
     heroEyebrow: has('// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE'),
-    heroRelicLine: has('EchoWorld открывает каталог физических реликвий из MARKETSPACE'),
+    heroRelicLine: has('EchoWorld — каталог физических реликвий из MARKETSPACE'),
     heroLoreCta: has('Что здесь происходит?'),
     heroEchoEntry: has('ЭХО — короткий сигнал в MARKETSPACE. 7 слов или 3 секунды.'),
     catalogNewRelics: has('Новые реликвии появятся по мере завершения текущих циклов конденсации.'),
@@ -16848,7 +16866,7 @@ function inspectHeroEntryPatch64(){
     heroEyebrow: has('// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE'),
     titleFirstLineProtected: !!titleLine && getComputedStyle(titleLine).whiteSpace === 'nowrap',
     titleSmallDash: !!dash,
-    heroSub: has('EchoWorld открывает каталог физических реликвий из MARKETSPACE'),
+    heroSub: has('EchoWorld — каталог физических реликвий из MARKETSPACE'),
     heroDesireLine: has('параллельного мира, рождённого из человеческих желаний'),
     catalogCta: !!document.querySelector('.hero-cta a[href="#catalog"]'),
     loreCta: !!Array.from(document.querySelectorAll('.hero-cta a[href="#about"]')).find(a => a.textContent.trim() === 'Что здесь происходит?'),
@@ -18455,6 +18473,29 @@ function _modalActionPressOff(btn){
     bind();
   }
 })();
+(function setupModalPowerGuideLink(){
+  function bind(){
+    document.addEventListener('click', function(e){
+      const link = e.target.closest && e.target.closest('.js-power-guide-link');
+      if(!link) return;
+      e.preventDefault();
+      const go = function(){
+        if(typeof _smoothScrollToHash === 'function') _smoothScrollToHash('#relic');
+        else {
+          const target = document.getElementById('relic');
+          if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      };
+      if(typeof closeModal === 'function') closeModal(function(){ setTimeout(go, 40); });
+      else go();
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
 (function setupRelicDeepLinkBoot(){
   function boot(){ setTimeout(openRelicFromCurrentUrl, 0); }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
@@ -18688,7 +18729,7 @@ function renderCheckoutEchoControls(){
     html+=`<div class="chk-echo-card" data-chk-echo-item="${itemIdx}">
       <div class="chk-echo-head">
         <div class="chk-echo-title">${_escapeHtmlAttr(item.name||'Реликвия')} · ${slots} ${_chkEchoSlotWord(slots)}
-          <small>Чем выше Мощь Реликвии, тем больше фрагментов Эхо может пройти вместе с ней. Каждый слот — отдельная запись до ${CHECKOUT_ECHO_SLOT_WORD_LIMIT} слов. Пустые слоты не мешают заказу.</small>
+          <small>Чем выше Мощь, тем больше слотов Эхо откроется для ваших слов. Каждый слот — отдельная запись до ${CHECKOUT_ECHO_SLOT_WORD_LIMIT} слов. Пустые слоты не мешают заказу.</small>
         </div>
         <div class="chk-echo-price">Без доплаты</div>
       </div>
