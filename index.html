@@ -12,6 +12,193 @@
      Или: F12 → Console → строка «APERTURA · BUILD R6».
      ═══════════════════════════════════════════════════════════════ -->
 <script>try{console.log('%cAPERTURA · BUILD R6','color:#00c8c8');}catch(e){}</script>
+<script id="ew-scroll-diag">
+(function(){
+  var enabled=false, off=false;
+  try{
+    var qs=new URLSearchParams(location.search);
+    enabled=qs.has('ewScrollDiag') || qs.get('ewScrollDiag')==='1';
+    off=qs.has('ewScrollDiagOff');
+    if(off) localStorage.removeItem('ew:scroll-diag');
+    if(enabled) localStorage.setItem('ew:scroll-diag','1');
+    enabled=enabled || localStorage.getItem('ew:scroll-diag')==='1';
+  }catch(e){}
+  if(!enabled) return;
+  var KEY='ew:scroll-diag:logs:v1';
+  var MAX=320;
+  var logs=[];
+  try{ logs=JSON.parse(sessionStorage.getItem(KEY)||'[]')||[]; }catch(e){ logs=[]; }
+  var lastRender=0, overlay=null;
+  function navType(){
+    try{
+      var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];
+      if(n&&n.type) return n.type;
+      if(performance.navigation){
+        if(performance.navigation.type===1) return 'reload';
+        if(performance.navigation.type===2) return 'back_forward';
+      }
+    }catch(e){}
+    return '';
+  }
+  function currentY(){
+    try{
+      var se=document.scrollingElement||document.documentElement||document.body;
+      return Math.round((se&&se.scrollTop)||window.pageYOffset||window.scrollY||0);
+    }catch(e){ return -1; }
+  }
+  function traceRec(){
+    try{ return JSON.parse(sessionStorage.getItem('ew:architect-trace:v3')||localStorage.getItem('ew:architect-trace:v3')||'null'); }catch(e){ return null; }
+  }
+  function stack(){
+    try{ throw new Error('ew-scroll-diag'); }catch(e){
+      return String(e&&e.stack||'').split('\n').slice(2,9).map(function(s){
+        return s.replace(location.href,'<page>').trim();
+      });
+    }
+  }
+  function snap(extra){
+    var html=document.documentElement, body=document.body;
+    var vv=window.visualViewport;
+    var out={
+      t:Math.round(performance.now()),
+      clock:new Date().toISOString(),
+      type:extra&&extra.type||'',
+      y:currentY(),
+      nav:navType(),
+      ready:document.readyState,
+      hash:location.hash||'',
+      rest:(history&&'scrollRestoration' in history)?history.scrollRestoration:null,
+      restoreUser:!!window.__ewRestoreUserIntent,
+      restoreProg:!!window.__ewRestoreProgrammatic,
+      bodyClass:body?body.className:'',
+      htmlClass:html?html.className:'',
+      sb:html&&html.style?html.style.scrollBehavior:'',
+      vv:vv?{h:Math.round(vv.height),top:Math.round(vv.offsetTop),scale:vv.scale}:null,
+      trace:traceRec()
+    };
+    if(extra){ Object.keys(extra).forEach(function(k){ if(k!=='type') out[k]=extra[k]; }); }
+    return out;
+  }
+  function persist(){
+    try{ sessionStorage.setItem(KEY, JSON.stringify(logs.slice(-MAX))); }catch(e){}
+  }
+  function line(e){
+    return e.t+' '+e.type+' y='+e.y+' user='+(e.restoreUser?1:0)+' prog='+(e.restoreProg?1:0);
+  }
+  function render(){
+    if(!document.body) return;
+    var now=Date.now();
+    if(now-lastRender<80) return;
+    lastRender=now;
+    if(!overlay){
+      overlay=document.createElement('div');
+      overlay.id='ewScrollDiagPanel';
+      overlay.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;max-height:34vh;overflow:auto;pointer-events:none;background:rgba(0,0,0,.78);color:#9ff;font:10px/1.35 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:1px solid rgba(0,200,200,.45);border-radius:6px;padding:8px;white-space:pre-wrap;box-shadow:0 8px 34px rgba(0,0,0,.45)';
+      document.body.appendChild(overlay);
+    }
+    overlay.textContent='EWScrollDiag ON  dump: EWScrollDiag.copy()\\n'+logs.slice(-16).map(line).join('\\n');
+  }
+  function log(type, data, withStack){
+    var e=snap({type:type, data:data||{}});
+    if(withStack) e.stack=stack();
+    logs.push(e);
+    if(logs.length>MAX) logs=logs.slice(-MAX);
+    persist();
+    try{ console.debug('[EWScrollDiag]', type, e); }catch(_){}
+    render();
+    return e;
+  }
+  function compact(){
+    return logs.filter(function(e){
+      return /scrollTo|scrollBy|scrollTop:set|scrollIntoView|restore|pagehide|pageshow|visibility|beforeunload|load|user:|event:scroll/.test(e.type);
+    }).slice(-180);
+  }
+  window.EWScrollDiag={
+    log:log,
+    dump:function(){ return logs.slice(); },
+    summary:compact,
+    copy:function(){
+      var txt=JSON.stringify(compact(), null, 2);
+      try{ navigator.clipboard&&navigator.clipboard.writeText(txt); }catch(e){}
+      return txt;
+    },
+    clear:function(){ logs=[]; persist(); render(); return true; },
+    off:function(){ try{ localStorage.removeItem('ew:scroll-diag'); }catch(e){} return 'off: reload page'; },
+    on:function(){ try{ localStorage.setItem('ew:scroll-diag','1'); }catch(e){} return 'on: reload page'; }
+  };
+  function wrap(obj, name, type){
+    try{
+      var orig=obj&&obj[name];
+      if(typeof orig!=='function'||orig.__ewScrollDiag) return;
+      var fn=function(){
+        var args=Array.prototype.slice.call(arguments).map(function(v){
+          if(v&&typeof v==='object'){
+            try{ return JSON.parse(JSON.stringify(v)); }catch(e){ return String(v); }
+          }
+          return v;
+        });
+        log(type||name, {args:args}, true);
+        return orig.apply(this, arguments);
+      };
+      fn.__ewScrollDiag=true;
+      obj[name]=fn;
+    }catch(e){}
+  }
+  wrap(window,'scrollTo','window.scrollTo');
+  wrap(window,'scrollBy','window.scrollBy');
+  wrap(window,'scroll','window.scroll');
+  try{
+    if(window.Element&&Element.prototype){
+      wrap(Element.prototype,'scrollTo','element.scrollTo');
+      wrap(Element.prototype,'scrollBy','element.scrollBy');
+      wrap(Element.prototype,'scrollIntoView','element.scrollIntoView');
+    }
+  }catch(e){}
+  function hookScrollTop(proto, label){
+    try{
+      if(!proto||proto.__ewScrollDiagScrollTop) return;
+      var d=Object.getOwnPropertyDescriptor(proto,'scrollTop');
+      if(!d||!d.configurable||!d.get||!d.set) return;
+      Object.defineProperty(proto,'scrollTop',{
+        configurable:true,
+        enumerable:d.enumerable,
+        get:function(){ return d.get.call(this); },
+        set:function(v){
+          var isPage=false;
+          try{ isPage=this===document.documentElement||this===document.body||this===document.scrollingElement; }catch(e){}
+          if(isPage) log('scrollTop:set', {node:label, value:v, before:d.get.call(this)}, true);
+          return d.set.call(this,v);
+        }
+      });
+      proto.__ewScrollDiagScrollTop=true;
+    }catch(e){}
+  }
+  hookScrollTop(window.Element&&Element.prototype,'Element');
+  hookScrollTop(window.HTMLElement&&HTMLElement.prototype,'HTMLElement');
+  ['wheel','touchstart','touchmove','pointerdown','keydown'].forEach(function(ev){
+    window.addEventListener(ev,function(e){
+      log('user:'+ev, {key:e.key||'', dy:e.deltaY||0, target:e.target&&e.target.tagName||''}, false);
+    }, {passive:true,capture:true});
+  });
+  var lastScroll=0;
+  window.addEventListener('scroll', function(){
+    var now=performance.now();
+    if(now-lastScroll>120){ lastScroll=now; log('event:scroll', {}, false); }
+  }, {passive:true,capture:true});
+  ['pagehide','pageshow','beforeunload','load','DOMContentLoaded','visibilitychange','resize'].forEach(function(ev){
+    var target=(ev==='DOMContentLoaded')?document:window;
+    target.addEventListener(ev,function(e){ log('event:'+ev, {persisted:!!(e&&e.persisted), visibility:document.visibilityState}, false); }, {capture:true});
+  });
+  try{
+    if(window.visualViewport){
+      visualViewport.addEventListener('resize', function(){ log('vv:resize', {}, false); }, {passive:true});
+      visualViewport.addEventListener('scroll', function(){ log('vv:scroll', {}, false); }, {passive:true});
+    }
+  }catch(e){}
+  if(document.body) render(); else document.addEventListener('DOMContentLoaded', render, {once:true});
+  log('diag:init', {}, false);
+})();
+</script>
 <script>/* Возврат позиции после reload: браузер сам не скроллит (manual), движок
    в конце файла после загрузки ПЛАВНО привозит пользователя туда, где он был
    (якорь-секция + смещение). Ключ позиции — БЕЗ hash: застрявший фрагмент
@@ -26412,6 +26599,9 @@ function acceptCookies(){
     var max=Math.max(0, (se.scrollHeight || 0) - window.innerHeight);
     return Math.max(0, Math.min(y, max));
   }
+  function diag(type, data, withStack){
+    try{ if(window.EWScrollDiag && EWScrollDiag.log) EWScrollDiag.log(type, data || {}, !!withStack); }catch(e){}
+  }
   function run(){
     try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
     var html=document.documentElement;
@@ -26419,7 +26609,11 @@ function acceptCookies(){
     var rec=null;
     try{ rec=JSON.parse(sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'null'); }catch(e){}
     var fresh=!!(rec && rec.key === pageKey() && isFinite(rec.y) && Date.now() - (rec.t || 0) <= 30*60*1000);
-    if((nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80) return;
+    diag('restore:v3 run', {nt:nt, fresh:fresh, rec:rec, y:currentY()});
+    if((nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80){
+      diag('restore:v3 skip', {reason:(nt !== 'reload' && nt !== 'back_forward')?'nav-type':(!fresh?'not-fresh':'small-y'), nt:nt, fresh:fresh, rec:rec, y:currentY()});
+      return;
+    }
     function target(){
       if(rec.aid){
         var el=document.getElementById(rec.aid);
@@ -26427,13 +26621,15 @@ function acceptCookies(){
       }
       return clampY(rec.y);
     }
-    if(window.__ewRestoreUserIntent){ save(true); return; }
+    if(window.__ewRestoreUserIntent){ diag('restore:v3 skip', {reason:'early-user-intent', rec:rec, y:currentY()}); save(true); return; }
     var entryY=currentY();
     var entryTarget=target();
     if(entryY > 2 && Math.abs(entryY - entryTarget) > 24){
+      diag('restore:v3 skip', {reason:'entry-moved', entryY:entryY, entryTarget:entryTarget, rec:rec});
       save(true);
       return;
     }
+    diag('restore:v3 start', {entryY:entryY, entryTarget:entryTarget, rec:rec});
     restoring=true;
     window.__ewRestoreProgrammatic=true;
     var prevSB=html.style.scrollBehavior;
@@ -26443,15 +26639,22 @@ function acceptCookies(){
       window.__ewRestoreProgrammatic=false;
       restoring=false;
       save(true);
+      diag('restore:v3 finish', {y:currentY(), userTouched:userTouched, rec:rec});
     }
     var userTouched=false, restoreStarted=false;
-    function onUser(){ userTouched=true; window.__ewRestoreUserIntent=true; window.__ewRestoreProgrammatic=false; }
+    function onUser(){ userTouched=true; window.__ewRestoreUserIntent=true; window.__ewRestoreProgrammatic=false; diag('restore:v3 user-interrupt', {y:currentY(), rec:rec}); }
     ['wheel','touchstart','touchmove','keydown','pointerdown'].forEach(function(ev){
       window.addEventListener(ev, onUser, {passive:true, once:true});
     });
+    var interruptedLogged=false;
     function interrupted(){
-      if(userTouched || window.__ewRestoreUserIntent) return true;
-      return !restoreStarted && Math.abs(currentY() - entryY) > 4;
+      var moved=!restoreStarted && Math.abs(currentY() - entryY) > 4;
+      var hit=userTouched || window.__ewRestoreUserIntent || moved;
+      if(hit && !interruptedLogged){
+        interruptedLogged=true;
+        diag('restore:v3 interrupted', {userTouched:userTouched, globalIntent:!!window.__ewRestoreUserIntent, moved:moved, y:currentY(), entryY:entryY, rec:rec});
+      }
+      return hit;
     }
     var reduce=false;
     try{ reduce=!!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
@@ -26470,7 +26673,10 @@ function acceptCookies(){
       var now=performance.now();
       if(interrupted() || now >= settleDeadline(now)){ finish(); return; }
       var t=target();
-      if(Math.abs(currentY()-t) > 24) window.scrollTo(0, t);
+      if(Math.abs(currentY()-t) > 24){
+        diag('restore:v3 settle-scroll', {from:currentY(), to:t, rec:rec});
+        window.scrollTo(0, t);
+      }
       requestAnimationFrame(settle);
     }
     function glide(){
@@ -26495,6 +26701,7 @@ function acceptCookies(){
       })(ts);
     }
     /* старт с короткой паузой после первой отрисовки: заход не дёргается */
+    diag('restore:v3 scheduled', {delay:180, rec:rec});
     setTimeout(function(){ requestAnimationFrame(glide); }, 180);
   }
   if(document.body){
