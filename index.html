@@ -22613,7 +22613,7 @@ function showInstagramEntryStatus(){
     key: 'entry-instagram',
     source: 'entry-instagram',
     kicker: '// APERTURA · ENTRY STATUS',
-    title: 'ВНЕШНИЙ СЛОЙ РАСПОЗНАН',
+    title: 'Внешний сигнал распознан',
     text: 'Вы вошли в EchoWorld — интерфейс, через который в наш мир попадают физические реликвии из MARKETSPACE.',
     html: '<div class="ap-status-text">Если вы здесь впервые — начните с каталога, узнайте, что такое MARKETSPACE, или оставьте ЭХО.</div>',
     actions: [
@@ -22898,7 +22898,7 @@ function handleAperturaStatusAction(action, key){
   if(action==='copy-echo-code'){ _apCopyCode('Частотный код'); return; }
   if(action==='catalog'){
     closeAperturaStatus(); closeArchitectConsole();
-    setTimeout(()=>{ if(typeof relicToCatalog==='function') relicToCatalog('all'); else cartToCatalog(); }, 160);
+    setTimeout(()=>_apFollowHeroAnchor('#catalog'), APERTURA_CONSOLE_CLOSE_MS + 120);
     return;
   }
   if(action==='echo'){
