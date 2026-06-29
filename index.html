@@ -6805,8 +6805,8 @@ html.legal-modal-open .cookie-banner.show {
   .aw-in { padding: 0; }
   .aw-header { margin-bottom: 24px; padding: 0 18px; }
   .aw-title {
-    font-size: clamp(18px, 5.2vw, 25px);
-    line-height: 1.08;
+    font-size: clamp(18px, 5vw, 24px);
+    line-height: 1.1;
   }
   .aw-lead { font-size: 12px; }
   /* Горизонтальный свайп — одна карточка вселенной в зоне видимости, без
@@ -6857,6 +6857,24 @@ html.legal-modal-open .cookie-banner.show {
     font-size: 10px;
     padding: 12px 14px;
     margin: 0 20px;
+  }
+}
+@media(max-width:640px) {
+  /* MARKETSPACE · первый не последний: мобильный размер заголовка выровнен по секции Эхо. */
+  .aw-title {
+    font-size: clamp(22px, 6.1vw, 26px);
+    line-height: 1.08;
+    letter-spacing: -0.045em;
+    max-width: 100%;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+}
+@media(max-width:380px) {
+  .aw-title {
+    font-size: clamp(20.5px, 5.8vw, 22px);
+    line-height: 1.1;
+    letter-spacing: -0.052em;
   }
 }
 
