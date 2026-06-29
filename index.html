@@ -12209,7 +12209,7 @@ button, a, [role="button"], label,
 
 /* ── LOCKED ARTIFACT CARDS — Первая Форма / Цикл завершён ─────────
    Канон MARKETSPACE: недоступная карточка остаётся на своём месте,
-   темнеет, получает red lock-полоски, цену 0 000 ₽ и замок вместо CTA. */
+   темнеет, получает red lock-полоски, цену по рангу и статус вместо CTA. */
 .pcard.locked,
 .pcard.sold {
   background:
@@ -14661,7 +14661,7 @@ button, a, [role="button"], label,
           <p class="pdesc">Отвечал раньше, чем успеешь договорить, — спокойно, будто всё знал. <em>Сбывалось так часто, что во второй раз боялись подходить.</em> Спросите — ответит, как всем, кто потом жалел.</p>
         </div>
         <div class="pfooter">
-          <div class="pprice">0 000 <span>₽</span></div>
+          <div class="pprice">25 999 <span>₽</span></div>
           <button class="pbtn" onclick="event.stopPropagation();openModal(6)">Первая Форма</button>
         </div>
       </div>
@@ -18227,11 +18227,9 @@ function getRelicBasePrice(product){
   const fallback=Number(product.price);
   return Number.isFinite(fallback) ? fallback : 0;
 }
-// API contract: backend should keep canonical price for order/payment history, but public display price must be 0 when product.status !== 'available'. Frontend mirrors this rule via getProductDisplayPrice(product).
+// API contract: цена реликвии фиксирована по Мощи/рангу и не обнуляется статусом. Статус управляет доступностью покупки, но публичная цена остаётся ценой класса.
 function getProductDisplayPrice(product){
-  if(!isProductOrderable(product)) return 0;
-  const apiDisplay=Number(product && product.displayPrice);
-  return Number.isFinite(apiDisplay) ? apiDisplay : getRelicBasePrice(product);
+  return getRelicBasePrice(product);
 }
 function formatRelicPrice(value){
   const n=Number(value)||0;
