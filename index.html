@@ -7762,6 +7762,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   .pimg { height: 200px; }
   .pname { font-size: 18px; }
   .about-title { font-size: 24px; }
+  .relic-title { font-size: 24px; }
   .faq-title { font-size: 24px; }
   .ctitle { font-size: 22px; }
   .tech-title { font-size: 20px; }
@@ -7772,6 +7773,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
 @media(max-width:375px) {
   .hero-title { font-size: 30px; }
   .about-title { font-size: 20px; }
+  .relic-title { font-size: 20px; }
   .faq-title { font-size: 20px; }
   .mob-nav { width: 100%; }
 }
@@ -10734,6 +10736,13 @@ input, select, textarea {
 @media(max-width:720px){
   .relic-section { padding-top: 40px; padding-bottom: 40px; }
   .relic-head { margin-bottom: 26px; padding-bottom: 22px; }
+  .relic-title {
+    font-size: clamp(26px, 8vw, 36px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    white-space: normal;
+  }
 }
 .relic-in {
   max-width: 1320px;
@@ -14023,7 +14032,7 @@ button, a, [role="button"], label,
       <a href="#catalog" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-layout-grid"/></svg><span>Каталог</span></a>
       <a href="#echo" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
       <a href="#about" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-cpu"/></svg><span>Система</span></a>
-      <a href="#worlds" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-aperture"/></svg><span>Apertura</span></a>
+      <a href="#worlds" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-aperture"/></svg><span>Миры</span></a>
       <a href="#faq" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
       <a href="#collab" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
       <div class="desktop-menu-wrap" id="desktopMenuWrap">
@@ -14032,7 +14041,7 @@ button, a, [role="button"], label,
           <a href="#catalog" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-layout-grid"/></svg><span>Каталог</span></a>
           <a href="#echo" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
           <a href="#about" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-cpu"/></svg><span>Система</span></a>
-          <a href="#worlds" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-aperture"/></svg><span>Apertura</span></a>
+          <a href="#worlds" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-aperture"/></svg><span>Миры</span></a>
           <a href="#faq" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
           <a href="#collab" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
           <a href="#architect" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="nav-mark" aria-hidden="true">@</span><span>Архитектор</span></a>
@@ -14060,7 +14069,7 @@ button, a, [role="button"], label,
     <a href="#catalog" class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-layout-grid"/></svg><span>Каталог</span></a>
     <a href="#echo" class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
     <a href="#about"   class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-cpu"/></svg><span>О системе</span></a>
-    <a href="#worlds"  class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-aperture"/></svg><span>Apertura</span></a>
+    <a href="#worlds"  class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-aperture"/></svg><span>Миры</span></a>
     <a href="#faq"     class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
     <a href="#collab"  class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
     <a href="#architect" class="mob-nav-link mob-nav-link-arch" onclick="closeMobNav()"><span class="nav-mark" aria-hidden="true">@</span><span>Архитектор</span></a>
@@ -14781,7 +14790,7 @@ button, a, [role="button"], label,
     <div class="aw-header">
       <div class="aw-kicker">
         <span class="aw-dot"></span>
-        // СИСТЕМА АПЕРТУРА · ПОИСК ВСЕЛЕННЫХ
+        // ECHOWORLD · КАРТА МИРОВ
       </div>
       <h2 class="aw-title">MARKETSPACE&nbsp;—<br>первый. Не&nbsp;последний.</h2>
       <p class="aw-lead">
