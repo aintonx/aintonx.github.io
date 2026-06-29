@@ -11169,243 +11169,138 @@ button, a, [role="button"], label,
    скругления, контейнеры, каталог под визуал, overflow-фиксы.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ──────────────── CLASSIFIED MATERIALS · закрытый слой Apertura ──── */
+/* ──────────────── CLASSIFIED MATERIALS · личный интерфейс собирается ──── */
 .classified-shell {
   position: relative;
   width: min(100%, 1360px);
+  min-height: 146px;
   margin: 0 auto;
-  min-height: 260px;
-  display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(260px, 0.48fr);
-  gap: 34px;
+  display: flex;
   align-items: center;
+  overflow: hidden;
   isolation: isolate;
+  border: 1px solid rgba(192,40,40,0.34);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(100deg, rgba(192,40,40,0.24), rgba(192,40,40,0.13) 44%, rgba(192,40,40,0.075)),
+    radial-gradient(520px 190px at 84% 50%, rgba(192,40,40,0.22), transparent 70%),
+    rgba(20,20,42,0.52);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.028),
+    0 18px 48px rgba(0,0,0,0.34),
+    0 0 34px rgba(192,40,40,0.08);
 }
 .classified-shell::before {
   content: '';
   position: absolute;
-  inset: -28px -24px;
-  z-index: -2;
+  inset: 0;
+  z-index: 0;
   background:
-    radial-gradient(620px 220px at 14% 10%, rgba(192,40,40,0.12), transparent 64%),
-    radial-gradient(520px 220px at 86% 84%, rgba(0,200,200,0.055), transparent 62%),
-    linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0));
-  opacity: .92;
-}
-.classified-shell::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  z-index: -1;
-  border: 1px solid rgba(192,40,40,0.18);
-  background:
-    linear-gradient(90deg, rgba(192,40,40,0.16), transparent 18%, transparent 82%, rgba(192,40,40,0.12)),
-    repeating-linear-gradient(135deg, transparent 0 12px, rgba(192,40,40,0.025) 12px 14px);
-  border-radius: var(--radius-lg);
+    linear-gradient(90deg, rgba(192,40,40,0.22), transparent 32%, transparent 70%, rgba(192,40,40,0.16));
   pointer-events: none;
 }
 .classified-copy {
   position: relative;
   z-index: 2;
   max-width: 720px;
-  padding: 8px 0 8px 2px;
-}
-.classified-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 11px;
-  margin-bottom: 12px;
-  font-family: var(--font-code);
-  font-size: 8px;
-  letter-spacing: .28em;
-  color: var(--red2);
-  text-transform: uppercase;
-  opacity: .92;
-}
-.classified-kicker::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  flex: 0 0 7px;
-  background: var(--red2);
-  box-shadow: 0 0 10px rgba(192,40,40,.75), 0 0 0 2px rgba(192,40,40,.12);
-  animation: pulse 2.6s ease-in-out infinite;
+  padding: 30px 230px 30px 34px;
 }
 .classified-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(24px, 2.4vw, 34px);
+  font-size: clamp(28px, 2.8vw, 42px);
   line-height: .98;
-  letter-spacing: -.02em;
+  letter-spacing: -.03em;
   color: var(--white);
-  margin: 0 0 16px;
+  margin: 0 0 12px;
 }
 .classified-text {
-  max-width: 660px;
+  max-width: 620px;
+  margin: 0;
   font-family: var(--font-mono);
   font-size: 12px;
-  line-height: 1.9;
-  letter-spacing: .03em;
+  line-height: 1.85;
+  letter-spacing: .035em;
   color: var(--white-mid);
 }
-.classified-text p { margin: 0; }
-.classified-text p + p { margin-top: 12px; }
-.classified-glitch {
-  display: inline-block;
-  position: relative;
-  color: var(--white-mid);
-  text-shadow: 0 0 0 transparent;
-  will-change: contents, text-shadow, filter, opacity;
-  transition: color .18s ease, text-shadow .18s ease, filter .18s ease, opacity .18s ease;
-}
-.classified-glitch.is-glitching {
-  color: var(--white);
-  text-shadow: .08em 0 rgba(192,40,40,.36), -.08em 0 rgba(0,200,200,.22), 0 0 14px rgba(192,40,40,.10);
-  filter: saturate(1.12);
-}
-.classified-glitch.is-settled {
-  animation: classifiedSettle .58s ease-out both;
-}
-@keyframes classifiedSettle {
-  0% { text-shadow: 0 0 14px rgba(0,200,200,.18); }
-  100% { text-shadow: 0 0 0 transparent; }
-}
-.classified-build-panel {
-  position: relative;
-  z-index: 2;
-  min-height: 172px;
-  padding: 20px 22px;
-  border: 1px solid rgba(192,40,40,0.22);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(20,20,42,0.72), rgba(4,4,10,0.82)),
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.026) 0 1px, transparent 1px 26px);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.025), 0 18px 44px rgba(0,0,0,0.36);
-}
-.classified-build-panel::before {
-  content: '';
-  position: absolute;
-  left: -20%;
-  right: -20%;
-  top: 34%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(192,40,40,.52), rgba(0,200,200,.22), transparent);
-  opacity: .45;
-  animation: classifiedScan 7.2s cubic-bezier(.45,0,.2,1) infinite;
-}
-.classified-build-panel::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(360px 160px at 50% 24%, rgba(192,40,40,0.16), transparent 70%);
-  pointer-events: none;
-}
-@keyframes classifiedScan {
-  0%, 16% { transform: translateY(-52px); opacity: 0; }
-  26%, 62% { opacity: .48; }
-  100% { transform: translateY(126px); opacity: 0; }
-}
-.classified-build-head,
-.classified-build-row {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  font-family: var(--font-code);
-  text-transform: uppercase;
-  color: var(--white-dim);
-}
-.classified-build-head {
-  align-items: center;
-  margin-bottom: 22px;
-  font-size: 8px;
-  letter-spacing: .22em;
-}
-.classified-build-head span:last-child {
-  color: var(--red2);
-  opacity: .82;
-}
-.classified-build-row {
-  padding: 8px 0;
-  border-top: 1px solid rgba(255,255,255,0.045);
-  font-size: 8px;
-  letter-spacing: .16em;
-  opacity: .64;
-}
-.classified-build-row span:last-child { color: var(--cyan); opacity: .78; }
-.classified-build-row:nth-child(3) { opacity: .48; }
-.classified-build-row:nth-child(4) { opacity: .34; }
 .classified-big-lock {
   position: absolute;
-  z-index: 3;
-  right: clamp(250px, 26vw, 420px);
+  z-index: 1;
+  right: clamp(30px, 7vw, 92px);
   top: 50%;
-  width: clamp(170px, 19vw, 280px);
-  height: clamp(170px, 19vw, 280px);
-  transform: translate(50%, -48%) rotate(-8deg);
+  width: clamp(118px, 12vw, 176px);
+  height: clamp(118px, 12vw, 176px);
+  transform: translateY(-50%);
   color: var(--red2);
-  opacity: .15;
+  opacity: .26;
   pointer-events: none;
-  filter: drop-shadow(0 0 30px rgba(192,40,40,.32));
+  filter: drop-shadow(0 0 26px rgba(192,40,40,.32));
   mix-blend-mode: screen;
 }
 .classified-big-lock svg {
   width: 100%;
   height: 100%;
-  stroke-width: 1.25;
+  display: block;
+  stroke-width: 1.16;
 }
-.classified-big-lock::after {
-  content: '';
-  position: absolute;
-  inset: 18%;
-  border: 1px solid rgba(192,40,40,.34);
-  transform: rotate(18deg);
-  opacity: .44;
-}
-:root[data-theme="light"] .classified-shell::after {
+:root[data-theme="light"] .classified-shell {
   background:
-    linear-gradient(90deg, rgba(192,40,40,0.12), transparent 20%, transparent 80%, rgba(192,40,40,0.10)),
-    repeating-linear-gradient(135deg, transparent 0 12px, rgba(192,40,40,0.04) 12px 14px);
+    linear-gradient(100deg, rgba(192,40,40,0.18), rgba(192,40,40,0.095) 44%, rgba(192,40,40,0.055)),
+    radial-gradient(520px 190px at 84% 50%, rgba(192,40,40,0.18), transparent 70%),
+    rgba(255,255,255,0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.38),
+    0 18px 44px rgba(18,22,45,0.12),
+    0 0 30px rgba(192,40,40,0.07);
 }
-:root[data-theme="light"] .classified-build-panel {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.74), rgba(245,246,251,0.90)),
-    repeating-linear-gradient(90deg, rgba(18,22,45,0.035) 0 1px, transparent 1px 26px);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.42), 0 18px 44px rgba(18,22,45,0.10);
+:root[data-theme="light"] .classified-big-lock {
+  mix-blend-mode: multiply;
+  opacity: .18;
 }
-:root[data-theme="light"] .classified-big-lock { mix-blend-mode: multiply; opacity: .14; }
 @media (max-width: 960px) {
   .classified-shell {
-    min-height: 0;
-    grid-template-columns: 1fr;
-    gap: 18px;
+    min-height: 150px;
   }
-  .classified-copy { padding: 0; }
-  .classified-title { font-size: 28px; margin-bottom: 14px; }
-  .classified-text { font-size: 11px; line-height: 1.82; }
-  .classified-build-panel {
-    min-height: 128px;
-    padding: 16px 16px;
+  .classified-copy {
+    padding: 28px 26px;
+    max-width: none;
   }
-  .classified-build-head { margin-bottom: 14px; }
-  .classified-build-row { padding: 6px 0; }
+  .classified-title {
+    font-size: 30px;
+    margin-bottom: 10px;
+  }
+  .classified-text {
+    max-width: 320px;
+    font-size: 11px;
+    line-height: 1.75;
+  }
   .classified-big-lock {
-    right: 50%;
-    top: 44%;
-    width: min(54vw, 220px);
-    height: min(54vw, 220px);
-    transform: translate(50%, -50%) rotate(-8deg);
+    right: -18px;
+    top: 50%;
+    width: min(43vw, 160px);
+    height: min(43vw, 160px);
+    transform: translateY(-50%);
     opacity: .18;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .classified-build-panel::before,
-  .classified-kicker::before,
-  .classified-glitch.is-settled { animation: none !important; }
-  .classified-glitch { transition: none !important; }
+@media (max-width: 520px) {
+  .classified-shell {
+    min-height: 168px;
+  }
+  .classified-copy {
+    padding: 28px 24px;
+  }
+  .classified-text {
+    max-width: 260px;
+  }
+  .classified-big-lock {
+    right: -34px;
+    width: min(50vw, 170px);
+    height: min(50vw, 170px);
+    opacity: .16;
+  }
 }
+
 
 /* ──────────────── ACCESS PILL (Уровень доступа [0]) ──── */
 .access-pill {
@@ -11450,9 +11345,9 @@ button, a, [role="button"], label,
 /* Заменили inline-стили на классы — теперь оформляем через CSS */
 .classified-outer {
   background: var(--void);
-  border-top: 1px solid var(--line-hot);
-  border-bottom: 1px solid var(--line-hot);
-  padding: 36px 32px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 24px 32px;
   position: relative;
   z-index: 2;
   overflow: hidden;
@@ -15973,24 +15868,13 @@ button, a, [role="button"], label,
 
 <!-- ===== CLASSIFIED BLOCK ===== -->
 <div class="classified-outer" id="classifiedMaterials">
-  <div class="classified-shell" aria-label="Материалы закрытого уровня">
+  <div class="classified-shell" aria-label="Личный кабинет">
+    <div class="classified-copy">
+      <h3 class="classified-title">Личный кабинет</h3>
+      <p class="classified-text">Apertura уже собирает то, что позже станет вашим личным интерфейсом.</p>
+    </div>
     <div class="classified-big-lock" aria-hidden="true">
       <svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>
-    </div>
-    <div class="classified-copy">
-      <div class="classified-kicker">// ЗАКРЫТЫЙ СЛОЙ · СБОРКА КОНТУРА</div>
-      <h3 class="classified-title">Материалы<br>закрытого уровня</h3>
-      <div class="classified-text">
-        <p>Личный кабинет собирается внутри <span class="classified-glitch" data-stable="Apertura">Apertura</span> — из ваших <span class="classified-glitch" data-stable="Эхо">Эхо</span>, <span class="classified-glitch" data-stable="реликвий">реликвий</span>, <span class="classified-glitch" data-stable="Цифровых Подписей">Цифровых Подписей</span> и следов <span class="classified-glitch" data-stable="Перехода">Перехода</span>.</p>
-        <p>Пока он не стал <span class="classified-glitch" data-stable="интерфейсом">интерфейсом</span>, система показывает только <span class="classified-glitch" data-stable="обрывки данных">обрывки данных</span>.</p>
-      </div>
-    </div>
-    <div class="classified-build-panel" aria-hidden="true">
-      <div class="classified-build-head"><span>APERTURA · ACCOUNT BUILD</span><span>ACTIVE</span></div>
-      <div class="classified-build-row"><span>ECHO.TRACE</span><span>collecting</span></div>
-      <div class="classified-build-row"><span>RELIC.MEMORY</span><span>assembling</span></div>
-      <div class="classified-build-row"><span>SIGNATURE.LAYER</span><span>unstable</span></div>
-      <div class="classified-build-row"><span>INTERFACE.CONTOUR</span><span>pending</span></div>
     </div>
   </div>
 </div>
@@ -28189,71 +28073,7 @@ function acceptCookies(){
 })();
 </script>
 
-<script>
-(function(){
-  var root = document.getElementById('classifiedMaterials');
-  if (!root) return;
-  var reduced = false;
-  try { reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) {}
-  if (reduced) return;
 
-  var nodes = Array.prototype.slice.call(root.querySelectorAll('.classified-glitch[data-stable]'));
-  if (!nodes.length) return;
-  var active = true;
-  var glyphs = '░▒▓█_\/|<>[]{}01#—';
-  var timer = null;
-
-  nodes.forEach(function(node){ node.textContent = node.getAttribute('data-stable') || node.textContent; });
-
-  if ('IntersectionObserver' in window) {
-    var observer = new IntersectionObserver(function(entries){
-      active = entries.some(function(entry){ return entry.isIntersecting; });
-    }, { threshold: 0.18 });
-    observer.observe(root);
-  }
-
-  function random(min, max){ return Math.floor(min + Math.random() * (max - min + 1)); }
-  function corrupt(text, strength){
-    var chars = Array.from(text);
-    return chars.map(function(ch){
-      if (/\s/.test(ch)) return ch;
-      if (/[.,:;!?—–-]/.test(ch)) return ch;
-      if (Math.random() > strength) return ch;
-      return glyphs.charAt(random(0, glyphs.length - 1));
-    }).join('');
-  }
-  function settle(node){
-    node.classList.remove('is-glitching');
-    node.classList.add('is-settled');
-    window.setTimeout(function(){ node.classList.remove('is-settled'); }, 620);
-  }
-  function glitchNode(node){
-    var stable = node.getAttribute('data-stable') || node.textContent;
-    node.classList.add('is-glitching');
-    node.textContent = corrupt(stable, 0.20);
-    window.setTimeout(function(){ node.textContent = corrupt(stable, 0.34); }, random(70, 105));
-    window.setTimeout(function(){ node.textContent = corrupt(stable, 0.16); }, random(150, 210));
-    window.setTimeout(function(){ node.textContent = stable; settle(node); }, random(270, 390));
-  }
-  function loop(){
-    if (active && !document.hidden) {
-      var count = Math.random() > 0.84 ? 2 : 1;
-      var used = [];
-      for (var i = 0; i < count; i++) {
-        var node = nodes[random(0, nodes.length - 1)];
-        if (used.indexOf(node) !== -1) continue;
-        used.push(node);
-        window.setTimeout(function(n){ return function(){ glitchNode(n); }; }(node), i * random(120, 210));
-      }
-    }
-    timer = window.setTimeout(loop, random(1800, 3600));
-  }
-  timer = window.setTimeout(loop, random(900, 1500));
-  document.addEventListener('visibilitychange', function(){
-    if (!document.hidden && !timer) timer = window.setTimeout(loop, random(900, 1500));
-  });
-})();
-</script>
 
 </body>
 </html>
