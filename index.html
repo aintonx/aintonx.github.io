@@ -7753,7 +7753,6 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
 
   /* ── CLASSIFIED ── */
   #classifiedBlock { flex-direction: column !important; gap: 24px !important; }
-  .classified-outer { padding-left: 20px !important; padding-right: 20px !important; }
 }
 
 @media(max-width:600px) {
@@ -11170,15 +11169,17 @@ button, a, [role="button"], label,
    ═══════════════════════════════════════════════════════════════ */
 
 /* ──────────────── CLASSIFIED MATERIALS · личный интерфейс собирается ──── */
-.classified-shell {
+.classified-outer {
   position: relative;
-  width: min(100%, 1360px);
-  min-height: 146px;
-  margin: 0 auto;
+  width: min(calc(100% - 64px), 1360px);
+  min-height: 126px;
+  margin: 24px auto;
+  padding: 28px 260px 28px 34px;
   display: flex;
   align-items: center;
   overflow: hidden;
   isolation: isolate;
+  z-index: 2;
   border: 1px solid rgba(192,40,40,0.34);
   border-radius: var(--radius-lg);
   background:
@@ -11190,7 +11191,7 @@ button, a, [role="button"], label,
     0 18px 48px rgba(0,0,0,0.34),
     0 0 34px rgba(192,40,40,0.08);
 }
-.classified-shell::before {
+.classified-outer::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -11203,19 +11204,18 @@ button, a, [role="button"], label,
   position: relative;
   z-index: 2;
   max-width: 720px;
-  padding: 30px 230px 30px 34px;
 }
-.classified-title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(28px, 2.8vw, 42px);
-  line-height: .98;
-  letter-spacing: -.03em;
-  color: var(--white);
+.classified-kicker {
   margin: 0 0 12px;
+  font-family: var(--font-code);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--white);
 }
 .classified-text {
-  max-width: 620px;
+  max-width: 650px;
   margin: 0;
   font-family: var(--font-mono);
   font-size: 12px;
@@ -11243,7 +11243,7 @@ button, a, [role="button"], label,
   display: block;
   stroke-width: 1.16;
 }
-:root[data-theme="light"] .classified-shell {
+:root[data-theme="light"] .classified-outer {
   background:
     linear-gradient(100deg, rgba(192,40,40,0.18), rgba(192,40,40,0.095) 44%, rgba(192,40,40,0.055)),
     radial-gradient(520px 190px at 84% 50%, rgba(192,40,40,0.18), transparent 70%),
@@ -11258,19 +11258,18 @@ button, a, [role="button"], label,
   opacity: .18;
 }
 @media (max-width: 960px) {
-  .classified-shell {
-    min-height: 150px;
+  .classified-outer {
+    width: calc(100% - 40px);
+    min-height: 136px;
+    padding: 26px 132px 26px 26px;
   }
-  .classified-copy {
-    padding: 28px 26px;
-    max-width: none;
-  }
-  .classified-title {
-    font-size: 30px;
+  .classified-kicker {
     margin-bottom: 10px;
+    font-size: 9px;
+    letter-spacing: .2em;
   }
   .classified-text {
-    max-width: 320px;
+    max-width: 340px;
     font-size: 11px;
     line-height: 1.75;
   }
@@ -11284,14 +11283,15 @@ button, a, [role="button"], label,
   }
 }
 @media (max-width: 520px) {
-  .classified-shell {
-    min-height: 168px;
-  }
-  .classified-copy {
-    padding: 28px 24px;
+  .classified-outer {
+    width: calc(100% - 12px);
+    min-height: 144px;
+    margin-top: 14px;
+    margin-bottom: 14px;
+    padding: 26px 106px 26px 22px;
   }
   .classified-text {
-    max-width: 260px;
+    max-width: 245px;
   }
   .classified-big-lock {
     right: -34px;
@@ -11300,7 +11300,6 @@ button, a, [role="button"], label,
     opacity: .16;
   }
 }
-
 
 /* ──────────────── ACCESS PILL (Уровень доступа [0]) ──── */
 .access-pill {
@@ -11343,15 +11342,7 @@ button, a, [role="button"], label,
 
 /* ──────────────── INLINE CONTAINER STYLING (re-style after stripping inline) ──── */
 /* Заменили inline-стили на классы — теперь оформляем через CSS */
-.classified-outer {
-  background: var(--void);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding: 24px 32px;
-  position: relative;
-  z-index: 2;
-  overflow: hidden;
-}
+/* .classified-outer оформлен выше как цельная заблокированная карточка. */
 #preorderSection {
   background: var(--surface);
   border-top: 1px solid var(--line);
@@ -11660,7 +11651,7 @@ button, a, [role="button"], label,
   /* ЕДИНЫЙ КОНТЕЙНЕР: одинаковая карточка во всех разделах, близко к краям
      экрана (поля 6px), чтобы вмещать больше текста и читаться консистентно. */
   .about, .tech-block, .apertura-worlds, .echo-section, .relic-section,
-  .collab, .architect-section, .classified-outer, .faq-section,
+  .collab, .architect-section, .faq-section,
   #preorderSection, .catwrap {
     margin-left: 6px;
     margin-right: 6px;
@@ -15867,15 +15858,13 @@ button, a, [role="button"], label,
 </div>
 
 <!-- ===== CLASSIFIED BLOCK ===== -->
-<div class="classified-outer" id="classifiedMaterials">
-  <div class="classified-shell" aria-label="Личный кабинет">
-    <div class="classified-copy">
-      <h3 class="classified-title">Личный кабинет</h3>
-      <p class="classified-text">Apertura уже собирает то, что позже станет вашим личным интерфейсом.</p>
-    </div>
-    <div class="classified-big-lock" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>
-    </div>
+<div class="classified-outer" id="classifiedMaterials" aria-label="Личный кабинет">
+  <div class="classified-copy">
+    <div class="classified-kicker">// Личный кабинет</div>
+    <p class="classified-text">Apertura уже собирает то, что позже станет вашим интерфейсом.</p>
+  </div>
+  <div class="classified-big-lock" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>
   </div>
 </div>
 
