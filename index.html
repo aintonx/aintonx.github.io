@@ -12207,7 +12207,7 @@ button, a, [role="button"], label,
 :root[data-theme="light"] .attr-result-title { color: var(--ink-2); }
 :root[data-theme="light"] .attr-result-row-val { color: var(--ink); }
 
-/* ── LOCKED ARTIFACT CARDS — Первая Форма / Цикл завершён ─────────
+/* ── LOCKED ARTIFACT CARDS — Ожидает Перехода / Цикл завершён ─────
    Канон MARKETSPACE: недоступная карточка остаётся на своём месте,
    темнеет, получает red lock-полоски, цену по рангу и статус вместо CTA. */
 .pcard.locked,
@@ -12707,7 +12707,7 @@ button, a, [role="button"], label,
 .ap-info-btn:hover + .ap-info-tip { display: block; }
 }
 
-/* Success-screen First Form explanation: same arrow/dropdown logic as STATUS field. */
+/* Success-screen awaiting-transition explanation: same arrow/dropdown logic as STATUS field. */
 .ap-status-row.ap-first-form-row {
   grid-column: 1 / -1;
   cursor: pointer;
@@ -13075,7 +13075,7 @@ button, a, [role="button"], label,
 
 /* ── APERTURA STATUS · SUCCESS REFINEMENT ─────────────────────────
    Clean success pages: no animated top strip, no layered/white action buttons,
-   no scroll-jump inside the First Form dropdown, and tighter Echo copy. */
+   no scroll-jump inside the awaiting-transition dropdown, and tighter Echo copy. */
 .ap-status-panel::before {
   display: none !important;
   content: none !important;
@@ -13246,7 +13246,7 @@ button, a, [role="button"], label,
 }
 .ico-fill { fill: currentColor; stroke: none; }
 
-/* ── MODAL STATUS · Первая Форма подсказка внутри поля STATUS ─────
+/* ── MODAL STATUS · Ожидает Перехода подсказка внутри поля STATUS ─
    Подсказка живёт прямо в статусном поле карточки/модалки. Всё поле
    становится точкой взаимодействия, а стрелка работает как в переключателях. */
 .mstatus-field {
@@ -13502,7 +13502,7 @@ button, a, [role="button"], label,
   z-index: 3;
 }
 
-/* First Form dropdown on success: keep the Oracle/product-card opening feel,
+/* Awaiting-transition dropdown on success: keep the Oracle/product-card opening feel,
    but without any forced scroll-to-view behavior. */
 .ap-console-overlay[data-status-key$="-success"] .ap-status-row.ap-first-form-row {
   overflow: hidden;
@@ -14651,18 +14651,18 @@ button, a, [role="button"], label,
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0006</div>
-        <div class="pbeacon" data-status="first_form"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Первая Форма</span></div>
+        <div class="pbeacon" data-status="first_form"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Ожидает Перехода</span></div>
         <img src="img/ball.webp" alt="Тёмный оракул" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
-          <div class="pmeta"><span class="pwrld">Marketspace</span><span class="pstatus">Первая Форма</span></div>
+          <div class="pmeta"><span class="pwrld">Marketspace</span><span class="pstatus">Ожидает Перехода</span></div>
           <h3 class="pname">Тёмный оракул</h3>
           <p class="pdesc">Отвечал раньше, чем успеешь договорить, — спокойно, будто всё знал. <em>Сбывалось так часто, что во второй раз боялись подходить.</em> Спросите — ответит, как всем, кто потом жалел.</p>
         </div>
         <div class="pfooter">
           <div class="pprice">25 999 <span>₽</span></div>
-          <button class="pbtn" onclick="event.stopPropagation();openModal(6)">Первая Форма</button>
+          <button class="pbtn" onclick="event.stopPropagation();openModal(6)">Ожидает Перехода</button>
         </div>
       </div>
     </div>
@@ -17845,7 +17845,7 @@ const PRODUCT_STATUS_MODEL = {
     className: 'status-available'
   },
   first_form: {
-    label: 'Первая Форма',
+    label: 'Ожидает Перехода',
     className: 'status-first_form'
   },
   transition_complete: {
@@ -17853,7 +17853,7 @@ const PRODUCT_STATUS_MODEL = {
     className: 'status-transition_complete'
   }
 };
-const FIRST_FORM_HINT_TEXT = 'Первая Форма — первая фиксация предмета в Памяти Apertura. Это не возраст Виша и не стадия заказа: Переход ещё не завершён, но система уже удерживает его след.';
+const FIRST_FORM_HINT_TEXT = 'Apertura обнаружила сигнал этой реликвии в MARKETSPACE, но сама реликвия ещё не появилась в нашем мире. Сейчас её нельзя заказать: система ожидает завершения Перехода.';
 
 function getEchoSlotCount(product){
   const power=String((product&&product.power)||'K').trim().toUpperCase();
@@ -17865,7 +17865,7 @@ function getProductStatusDetails(status){
   if(s==='first_form'){
     return [
       'Статус показывает, на каком этапе находится реликвия в системе EchoWorld.',
-      'Первая Форма — первая фиксация предмета в Памяти Apertura. Переход ещё не завершён, но система уже удерживает его след.'
+      'Apertura обнаружила сигнал этой реликвии в MARKETSPACE, но сама реликвия ещё не появилась в нашем мире. Сейчас её нельзя заказать: система ожидает завершения Перехода.'
     ];
   }
   if(s==='transition_complete'){
@@ -18156,7 +18156,7 @@ function setupModalFirstFormStatusHint(status){
   field.setAttribute('tabindex', isFirstForm ? '0' : '-1');
   field.setAttribute('role', isFirstForm ? 'button' : 'group');
   if(isFirstForm){
-    field.setAttribute('aria-label','STATUS: Первая Форма. Нажмите, чтобы открыть расшифровку статуса.');
+    field.setAttribute('aria-label','STATUS: Ожидает Перехода. Нажмите, чтобы открыть расшифровку статуса.');
   }else{
     field.removeAttribute('aria-label');
   }
@@ -18185,7 +18185,7 @@ function normalizeProductStatusValue(value){
   if(!raw) return '';
   const compact=raw.replace(/[\s_-]+/g,'');
   if(raw==='available'||raw==='доступен'||raw==='готов к конденсации'||compact==='active') return 'available';
-  if(raw==='first_form'||raw==='first-form'||raw==='первая форма'||compact==='reserved'||compact==='paid'||compact==='paymentconfirmed'||compact==='firstform') return 'first_form';
+  if(raw==='first_form'||raw==='first-form'||raw==='первая форма'||raw==='ожидает перехода'||raw==='ожидает переход'||raw==='в ожидании перехода'||raw==='awaiting_transition'||raw==='awaiting-transition'||raw==='waiting_transition'||raw==='waiting-transition'||raw==='transition_pending'||raw==='transition-pending'||compact==='reserved'||compact==='paid'||compact==='paymentconfirmed'||compact==='firstform'||compact==='awaitingtransition'||compact==='waitingtransition'||compact==='transitionpending'||compact==='pendingtransition'||compact==='detectedsignal'||compact==='signaldetected') return 'first_form';
   if(raw==='transition_complete'||raw==='transition-complete'||raw==='прошёл переход'||raw==='прошел переход'||raw==='цикл завершён'||raw==='цикл завершен'||compact==='sold'||compact==='transitioncomplete') return 'transition_complete';
   return '';
 }
@@ -22575,9 +22575,9 @@ function _apWithConsolePreview(fn){
    и Ауру. Аура назначается рандомайзером и сохраняется. На success-экране
    показывается та Аура, что уже выпала, не новая.
    Исток — место, куда уходят Виши после Перехода.
-   Первая Форма — не возраст Виша, а первая фиксация реликвии
-   в Памяти Apertura. В MARKETSPACE время течёт иначе; точка Перехода
-   ещё не наступила.
+   Ожидает Перехода — публичный статус реликвии, чей сигнал уже
+   обнаружен Apertura в MARKETSPACE, но сама реликвия ещё не появилась
+   в нашем мире и пока не может быть заказана.
    Конденсат — цифровая энергия желания. Каталог формируется через Конденсат,
    не "созревает". */
 const APERTURA_STATUS_STATES = {
@@ -23035,14 +23035,14 @@ function _apStatusRow(label, value, htmlValue){
 }
 function _apFirstFormStatusRow(){
   return `
-    <div class="ap-status-row ap-first-form-row" id="apFirstFormRow" role="button" tabindex="0" aria-expanded="false" aria-label="Статус реликвии: Первая Форма. Нажмите, чтобы открыть расшифровку статуса." onclick="toggleFirstFormTip(event)" onkeydown="handleFirstFormTipKey(event)">
+    <div class="ap-status-row ap-first-form-row" id="apFirstFormRow" role="button" tabindex="0" aria-expanded="false" aria-label="Статус реликвии: Ожидает Перехода. Нажмите, чтобы открыть расшифровку статуса." onclick="toggleFirstFormTip(event)" onkeydown="handleFirstFormTipKey(event)">
       <div class="ap-status-label">Статус реликвии</div>
       <div class="ap-status-value ap-first-form-value">
-        <span class="ap-first-form-text">Первая Форма</span>
+        <span class="ap-first-form-text">Ожидает Перехода</span>
         <span class="ap-first-form-arr" aria-hidden="true"><svg class="ico"><use href="#i-arrow-down"/></svg></span>
       </div>
       <div class="ap-first-form-tip" id="apFirstFormTip" aria-hidden="true">
-        <div class="ap-first-form-tip-title">Первая Форма</div>
+        <div class="ap-first-form-tip-title">Ожидает Перехода</div>
         <div class="ap-first-form-tip-text">${_apEsc(FIRST_FORM_HINT_TEXT)}</div>
       </div>
     </div>`;
@@ -23158,7 +23158,7 @@ function _setFirstFormTipOpen(open){
   row.setAttribute('aria-expanded', open ? 'true' : 'false');
   tip.setAttribute('aria-hidden', open ? 'false' : 'true');
   /* Success status pages are already centered in their own overlay. Unlike the
-     product-card First Form hint, this dropdown must not push/scroll the user:
+     product-card awaiting-transition hint, this dropdown must not push/scroll the user:
      the smoothness should come only from the same in-flow CSS expansion used in
      the Oracle/product card. */
 }
@@ -27762,9 +27762,19 @@ function acceptCookies(){
   text-transform: uppercase !important;
   color: var(--cyan) !important;
 }
+.pbeacon.status-first_form .pbeacon-txt,
 .pbeacon.status-first-form .pbeacon-txt,
 .pbeacon[data-status="first_form"] .pbeacon-txt {
   color: var(--red2) !important;
+  max-width: 86px !important;
+  white-space: normal !important;
+  line-height: 1.04 !important;
+  text-align: center !important;
+}
+.pbtn[data-status-button="1"] {
+  white-space: normal !important;
+  line-height: 1.08 !important;
+  text-align: center !important;
 }
 .pbeacon.status-transition-complete .pbeacon-txt,
 .pbeacon[data-status="transition_complete"] .pbeacon-txt {
@@ -27776,7 +27786,7 @@ function acceptCookies(){
   box-shadow: 0 5px 16px rgba(18,22,45,.12) !important;
 }
 
-/* Dark Oracle / first_form / completed cards: same visual shell as every card. */
+/* Dark Oracle / awaiting transition (legacy first_form API key) / completed cards: same visual shell as every card. */
 .pcard.locked,
 .pcard.reserved,
 .pcard.sold {
