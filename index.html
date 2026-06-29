@@ -11171,10 +11171,10 @@ button, a, [role="button"], label,
 /* ──────────────── CLASSIFIED MATERIALS · личный интерфейс собирается ──── */
 .classified-outer {
   position: relative;
-  width: calc(100% - 64px);
-  max-width: 1360px;
+  width: 100%;
+  max-width: none;
   min-height: 148px;
-  margin: 0 auto;
+  margin: 0;
   padding: 38px 300px 38px 32px;
   display: flex;
   align-items: center;
@@ -11188,10 +11188,7 @@ button, a, [role="button"], label,
     linear-gradient(100deg, rgba(192,40,40,0.24), rgba(192,40,40,0.13) 44%, rgba(192,40,40,0.075)),
     radial-gradient(520px 190px at 88% 50%, rgba(192,40,40,0.22), transparent 70%),
     rgba(20,20,42,0.52);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.028),
-    0 18px 48px rgba(0,0,0,0.34),
-    0 0 34px rgba(192,40,40,0.08);
+  box-shadow: none !important;
 }
 .classified-outer::before {
   content: '';
@@ -11239,12 +11236,11 @@ button, a, [role="button"], label,
   color: var(--red2);
   opacity: .26;
   pointer-events: none;
-  filter: drop-shadow(0 0 26px rgba(192,40,40,.32));
+  filter: drop-shadow(0 0 18px rgba(192,40,40,.20));
   mix-blend-mode: screen;
   transition:
-    opacity .56s var(--ease-out),
-    color .56s var(--ease-out),
-    filter .62s var(--ease-out),
+    opacity .68s var(--ease-out),
+    filter .72s var(--ease-out),
     transform .42s var(--ease-out);
 }
 .classified-big-lock svg {
@@ -11275,7 +11271,7 @@ button, a, [role="button"], label,
   animation: classifiedCardDenySoft .56s steps(2, end) both;
 }
 .classified-outer.classified-denied .classified-big-lock {
-  animation: classifiedLockGlyph .78s var(--ease-out) both;
+  animation: classifiedLockGlyph .72s var(--ease-out) both;
 }
 .classified-outer.classified-denied .classified-lock-glitch-a {
   animation: classifiedLockLineA .42s steps(1,end) both;
@@ -11286,10 +11282,7 @@ button, a, [role="button"], label,
 @media (hover:hover) and (pointer:fine) {
   .classified-outer:hover {
     border-color: rgba(192,40,40,0.48);
-    box-shadow:
-      inset 0 0 0 1px rgba(255,255,255,0.034),
-      0 20px 54px rgba(0,0,0,0.38),
-      0 0 42px rgba(192,40,40,0.12);
+    box-shadow: none !important;
   }
 }
 .classified-outer:focus-visible {
@@ -11300,26 +11293,17 @@ button, a, [role="button"], label,
   0%, 100% {
     transform: translate3d(0,0,0);
     border-color: rgba(192,40,40,0.34);
-    box-shadow:
-      inset 0 0 0 1px rgba(255,255,255,0.028),
-      0 18px 48px rgba(0,0,0,0.34),
-      0 0 34px rgba(192,40,40,0.08);
+    box-shadow: none !important;
   }
   14% {
     transform: translate3d(-3px,0,0);
     border-color: rgba(192,40,40,0.58);
-    box-shadow:
-      inset 0 0 0 1px rgba(255,255,255,0.04),
-      0 18px 48px rgba(0,0,0,0.34),
-      0 0 44px rgba(192,40,40,0.16);
+    box-shadow: none !important;
   }
   28% {
     transform: translate3d(2px,0,0);
     border-color: rgba(0,200,200,0.20);
-    box-shadow:
-      inset 0 0 0 1px rgba(0,200,200,0.04),
-      0 18px 48px rgba(0,0,0,0.34),
-      0 0 30px rgba(192,40,40,0.10);
+    box-shadow: none !important;
   }
   42% {
     transform: translate3d(-1px,1px,0);
@@ -11338,32 +11322,27 @@ button, a, [role="button"], label,
   0%, 100% {
     opacity: .26;
     transform: translateY(-50%);
-    color: var(--red2);
-    filter: drop-shadow(0 0 26px rgba(192,40,40,.32));
+    filter: drop-shadow(0 0 18px rgba(192,40,40,.20));
   }
-  14% {
-    opacity: .32;
+  18% {
+    opacity: .31;
     transform: translateY(-50%) translateX(1px);
-    color: var(--red-hi);
-    filter: drop-shadow(0 0 28px rgba(192,40,40,.38)) drop-shadow(0 0 7px rgba(0,200,200,.10));
+    filter: drop-shadow(0 0 22px rgba(192,40,40,.24));
   }
-  29% {
-    opacity: .23;
+  36% {
+    opacity: .24;
     transform: translateY(-50%) translateX(-1px);
-    color: var(--red2);
-    filter: drop-shadow(0 0 18px rgba(192,40,40,.24));
+    filter: drop-shadow(0 0 15px rgba(192,40,40,.18));
   }
-  48% {
-    opacity: .30;
+  62% {
+    opacity: .29;
     transform: translateY(-50%);
-    color: var(--red-hi);
-    filter: drop-shadow(0 0 30px rgba(192,40,40,.34));
+    filter: drop-shadow(0 0 20px rgba(192,40,40,.22));
   }
-  74% {
+  86% {
     opacity: .27;
     transform: translateY(-50%);
-    color: var(--red2);
-    filter: drop-shadow(0 0 27px rgba(192,40,40,.32));
+    filter: drop-shadow(0 0 18px rgba(192,40,40,.20));
   }
 }
 @keyframes classifiedLockLineA {
@@ -11383,10 +11362,7 @@ button, a, [role="button"], label,
     linear-gradient(100deg, rgba(192,40,40,0.18), rgba(192,40,40,0.095) 44%, rgba(192,40,40,0.055)),
     radial-gradient(520px 190px at 88% 50%, rgba(192,40,40,0.18), transparent 70%),
     rgba(255,255,255,0.72);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.38),
-    0 18px 44px rgba(18,22,45,0.12),
-    0 0 30px rgba(192,40,40,0.07);
+  box-shadow: none !important;
 }
 :root[data-theme="light"] .classified-big-lock {
   mix-blend-mode: multiply;
