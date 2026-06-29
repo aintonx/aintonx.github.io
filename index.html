@@ -11227,12 +11227,12 @@ button, a, [role="button"], label,
   isolation: isolate;
   z-index: 2;
   cursor: pointer;
-  border: 1px solid rgba(192,40,40,0.34);
+  border: 1px solid rgba(124,130,150,0.24);
   border-radius: var(--radius-lg);
   background:
-    linear-gradient(100deg, rgba(192,40,40,0.24), rgba(192,40,40,0.13) 44%, rgba(192,40,40,0.075)),
-    radial-gradient(520px 190px at 88% 50%, rgba(192,40,40,0.22), transparent 70%),
-    rgba(20,20,42,0.52);
+    linear-gradient(100deg, rgba(72,76,94,0.30), rgba(42,46,62,0.20) 44%, rgba(24,27,38,0.14)),
+    radial-gradient(520px 190px at 88% 50%, rgba(128,136,160,0.16), transparent 70%),
+    rgba(18,20,34,0.58);
   box-shadow: none !important;
 }
 .classified-outer::before {
@@ -11241,7 +11241,7 @@ button, a, [role="button"], label,
   inset: 0;
   z-index: 0;
   background:
-    linear-gradient(90deg, rgba(192,40,40,0.22), transparent 32%, transparent 70%, rgba(192,40,40,0.16));
+    linear-gradient(90deg, rgba(130,138,160,0.15), transparent 32%, transparent 70%, rgba(104,112,134,0.10));
   pointer-events: none;
 }
 .classified-outer::after {
@@ -11259,7 +11259,7 @@ button, a, [role="button"], label,
   line-height: 1;
   letter-spacing: .22em;
   text-transform: uppercase;
-  color: var(--white);
+  color: rgba(220,224,238,0.90);
 }
 .classified-text {
   max-width: 650px;
@@ -11268,7 +11268,7 @@ button, a, [role="button"], label,
   font-size: 12px;
   line-height: 1.85;
   letter-spacing: .035em;
-  color: var(--white-mid);
+  color: rgba(188,194,214,0.74);
 }
 .classified-big-lock {
   position: absolute;
@@ -11278,10 +11278,10 @@ button, a, [role="button"], label,
   width: clamp(128px, 12vw, 188px);
   height: clamp(128px, 12vw, 188px);
   transform: translateY(-50%);
-  color: var(--red2);
-  opacity: .26;
+  color: rgba(142,150,174,0.86);
+  opacity: .22;
   pointer-events: none;
-  filter: drop-shadow(0 0 18px rgba(192,40,40,.20));
+  filter: drop-shadow(0 0 18px rgba(130,138,160,.12));
   mix-blend-mode: screen;
   transition:
     opacity .68s var(--ease-out),
@@ -11304,10 +11304,10 @@ button, a, [role="button"], label,
   opacity: 0;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(192,40,40,0.15) 18%,
-    rgba(240,240,248,0.26) 45%,
-    rgba(0,200,200,0.22) 55%,
-    rgba(192,40,40,0.16) 78%,
+    rgba(118,126,148,0.12) 18%,
+    rgba(220,224,238,0.22) 45%,
+    rgba(150,158,180,0.18) 55%,
+    rgba(104,112,134,0.12) 78%,
     transparent 100%);
   filter: blur(.15px);
   mix-blend-mode: screen;
@@ -11326,68 +11326,68 @@ button, a, [role="button"], label,
 }
 @media (hover:hover) and (pointer:fine) {
   .classified-outer:hover {
-    border-color: rgba(192,40,40,0.48);
+    border-color: rgba(146,154,176,0.34);
     box-shadow: none !important;
   }
 }
 .classified-outer:focus-visible {
-  outline: 1px solid rgba(0,200,200,0.44);
+  outline: 1px solid rgba(150,158,180,0.32);
   outline-offset: -6px;
 }
 @keyframes classifiedCardDenySoft {
   0%, 100% {
     transform: translate3d(0,0,0);
-    border-color: rgba(192,40,40,0.34);
+    border-color: rgba(124,130,150,0.24);
     box-shadow: none !important;
   }
   14% {
     transform: translate3d(-3px,0,0);
-    border-color: rgba(192,40,40,0.58);
+    border-color: rgba(154,162,184,0.42);
     box-shadow: none !important;
   }
   28% {
     transform: translate3d(2px,0,0);
-    border-color: rgba(0,200,200,0.20);
+    border-color: rgba(118,126,148,0.30);
     box-shadow: none !important;
   }
   42% {
     transform: translate3d(-1px,1px,0);
-    border-color: rgba(192,40,40,0.46);
+    border-color: rgba(142,150,172,0.36);
   }
   58% {
     transform: translate3d(1px,-1px,0);
-    border-color: rgba(192,40,40,0.40);
+    border-color: rgba(132,140,162,0.32);
   }
   74% {
     transform: translate3d(0,0,0);
-    border-color: rgba(192,40,40,0.36);
+    border-color: rgba(124,130,150,0.26);
   }
 }
 @keyframes classifiedLockGlyph {
   0%, 100% {
     opacity: .26;
     transform: translateY(-50%);
-    filter: drop-shadow(0 0 18px rgba(192,40,40,.20));
+    filter: drop-shadow(0 0 18px rgba(130,138,160,.12));
   }
   18% {
     opacity: .31;
     transform: translateY(-50%) translateX(1px);
-    filter: drop-shadow(0 0 22px rgba(192,40,40,.24));
+    filter: drop-shadow(0 0 22px rgba(140,148,170,.15));
   }
   36% {
     opacity: .24;
     transform: translateY(-50%) translateX(-1px);
-    filter: drop-shadow(0 0 15px rgba(192,40,40,.18));
+    filter: drop-shadow(0 0 15px rgba(118,126,148,.10));
   }
   62% {
     opacity: .29;
     transform: translateY(-50%);
-    filter: drop-shadow(0 0 20px rgba(192,40,40,.22));
+    filter: drop-shadow(0 0 20px rgba(132,140,162,.13));
   }
   86% {
     opacity: .27;
     transform: translateY(-50%);
-    filter: drop-shadow(0 0 18px rgba(192,40,40,.20));
+    filter: drop-shadow(0 0 18px rgba(130,138,160,.12));
   }
 }
 @keyframes classifiedLockLineA {
@@ -11404,8 +11404,8 @@ button, a, [role="button"], label,
 }
 :root[data-theme="light"] .classified-outer {
   background:
-    linear-gradient(100deg, rgba(192,40,40,0.18), rgba(192,40,40,0.095) 44%, rgba(192,40,40,0.055)),
-    radial-gradient(520px 190px at 88% 50%, rgba(192,40,40,0.18), transparent 70%),
+    linear-gradient(100deg, rgba(82,88,108,0.12), rgba(82,88,108,0.065) 44%, rgba(82,88,108,0.04)),
+    radial-gradient(520px 190px at 88% 50%, rgba(82,88,108,0.12), transparent 70%),
     rgba(255,255,255,0.72);
   box-shadow: none !important;
 }
@@ -11428,12 +11428,12 @@ button, a, [role="button"], label,
     min-height: 136px;
     margin: 18px auto;
     padding: 26px 132px 26px 26px;
-    border: 1px solid rgba(192,40,40,0.34);
+    border: 1px solid rgba(124,130,150,0.24);
     border-radius: var(--radius-lg);
     background:
-      linear-gradient(100deg, rgba(192,40,40,0.24), rgba(192,40,40,0.13) 44%, rgba(192,40,40,0.075)),
-      radial-gradient(420px 180px at 84% 50%, rgba(192,40,40,0.22), transparent 70%),
-      rgba(20,20,42,0.52);
+      linear-gradient(100deg, rgba(72,76,94,0.30), rgba(42,46,62,0.20) 44%, rgba(24,27,38,0.14)),
+      radial-gradient(420px 180px at 84% 50%, rgba(128,136,160,0.16), transparent 70%),
+      rgba(18,20,34,0.58);
   }
   .classified-kicker {
     margin-bottom: 10px;
