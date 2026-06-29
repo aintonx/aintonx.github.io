@@ -11169,45 +11169,242 @@ button, a, [role="button"], label,
    скругления, контейнеры, каталог под визуал, overflow-фиксы.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ──────────────── CAB-STUB (плашка «Личный кабинет — СКОРО») ──── */
-.cab-stub {
-  position: relative; flex-shrink: 0;
-  min-width: 220px; padding: 22px 26px 20px;
-  background: var(--surface);
-  border: 1px solid var(--line-hot);
+/* ──────────────── CLASSIFIED MATERIALS · закрытый слой Apertura ──── */
+.classified-shell {
+  position: relative;
+  width: min(100%, 1360px);
+  margin: 0 auto;
+  min-height: 260px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(260px, 0.48fr);
+  gap: 34px;
+  align-items: center;
+  isolation: isolate;
+}
+.classified-shell::before {
+  content: '';
+  position: absolute;
+  inset: -28px -24px;
+  z-index: -2;
+  background:
+    radial-gradient(620px 220px at 14% 10%, rgba(192,40,40,0.12), transparent 64%),
+    radial-gradient(520px 220px at 86% 84%, rgba(0,200,200,0.055), transparent 62%),
+    linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0));
+  opacity: .92;
+}
+.classified-shell::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border: 1px solid rgba(192,40,40,0.18);
+  background:
+    linear-gradient(90deg, rgba(192,40,40,0.16), transparent 18%, transparent 82%, rgba(192,40,40,0.12)),
+    repeating-linear-gradient(135deg, transparent 0 12px, rgba(192,40,40,0.025) 12px 14px);
   border-radius: var(--radius-lg);
-  text-align: center; overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(192,40,40,0.10), 0 16px 40px rgba(0,0,0,0.45);
+  pointer-events: none;
 }
-.cab-stub-glow {
-  position: absolute; inset: 0;
-  background: radial-gradient(280px 200px at 50% -10%, rgba(192,40,40,0.20), transparent 65%);
-  pointer-events: none; z-index: 0;
+.classified-copy {
+  position: relative;
+  z-index: 2;
+  max-width: 720px;
+  padding: 8px 0 8px 2px;
 }
-.cab-stub-kicker {
-  position: relative; z-index: 1;
-  display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--font-code); font-size: 9px;
-  letter-spacing: 0.22em; color: var(--ink-3);
-  text-transform: uppercase; margin-bottom: 8px;
+.classified-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 12px;
+  font-family: var(--font-code);
+  font-size: 8px;
+  letter-spacing: .28em;
+  color: var(--red2);
+  text-transform: uppercase;
+  opacity: .92;
 }
-.cab-stub-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--red);
-  box-shadow: 0 0 10px var(--red), 0 0 0 2px rgba(192,40,40,0.18);
-  animation: pulse 1.5s ease-in-out infinite;
+.classified-kicker::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  background: var(--red2);
+  box-shadow: 0 0 10px rgba(192,40,40,.75), 0 0 0 2px rgba(192,40,40,.12);
+  animation: pulse 2.6s ease-in-out infinite;
 }
-.cab-stub-soon {
-  position: relative; z-index: 1;
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 36px; line-height: 1; letter-spacing: 0.04em;
-  color: var(--red-hi); text-shadow: 0 0 24px rgba(230,56,56,0.30);
-  margin: 4px 0 8px;
+.classified-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: .98;
+  letter-spacing: -.02em;
+  color: var(--white);
+  margin: 0 0 16px;
 }
-.cab-stub-meta {
-  position: relative; z-index: 1;
-  font-family: var(--font-code); font-size: 9px;
-  letter-spacing: 0.18em; color: var(--ink-4); text-transform: uppercase;
+.classified-text {
+  max-width: 660px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.9;
+  letter-spacing: .03em;
+  color: var(--white-mid);
+}
+.classified-text p { margin: 0; }
+.classified-text p + p { margin-top: 12px; }
+.classified-glitch {
+  display: inline-block;
+  position: relative;
+  color: var(--white-mid);
+  text-shadow: 0 0 0 transparent;
+  will-change: contents, text-shadow, filter, opacity;
+  transition: color .18s ease, text-shadow .18s ease, filter .18s ease, opacity .18s ease;
+}
+.classified-glitch.is-glitching {
+  color: var(--white);
+  text-shadow: .08em 0 rgba(192,40,40,.36), -.08em 0 rgba(0,200,200,.22), 0 0 14px rgba(192,40,40,.10);
+  filter: saturate(1.12);
+}
+.classified-glitch.is-settled {
+  animation: classifiedSettle .58s ease-out both;
+}
+@keyframes classifiedSettle {
+  0% { text-shadow: 0 0 14px rgba(0,200,200,.18); }
+  100% { text-shadow: 0 0 0 transparent; }
+}
+.classified-build-panel {
+  position: relative;
+  z-index: 2;
+  min-height: 172px;
+  padding: 20px 22px;
+  border: 1px solid rgba(192,40,40,0.22);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(20,20,42,0.72), rgba(4,4,10,0.82)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.026) 0 1px, transparent 1px 26px);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.025), 0 18px 44px rgba(0,0,0,0.36);
+}
+.classified-build-panel::before {
+  content: '';
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  top: 34%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(192,40,40,.52), rgba(0,200,200,.22), transparent);
+  opacity: .45;
+  animation: classifiedScan 7.2s cubic-bezier(.45,0,.2,1) infinite;
+}
+.classified-build-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(360px 160px at 50% 24%, rgba(192,40,40,0.16), transparent 70%);
+  pointer-events: none;
+}
+@keyframes classifiedScan {
+  0%, 16% { transform: translateY(-52px); opacity: 0; }
+  26%, 62% { opacity: .48; }
+  100% { transform: translateY(126px); opacity: 0; }
+}
+.classified-build-head,
+.classified-build-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  font-family: var(--font-code);
+  text-transform: uppercase;
+  color: var(--white-dim);
+}
+.classified-build-head {
+  align-items: center;
+  margin-bottom: 22px;
+  font-size: 8px;
+  letter-spacing: .22em;
+}
+.classified-build-head span:last-child {
+  color: var(--red2);
+  opacity: .82;
+}
+.classified-build-row {
+  padding: 8px 0;
+  border-top: 1px solid rgba(255,255,255,0.045);
+  font-size: 8px;
+  letter-spacing: .16em;
+  opacity: .64;
+}
+.classified-build-row span:last-child { color: var(--cyan); opacity: .78; }
+.classified-build-row:nth-child(3) { opacity: .48; }
+.classified-build-row:nth-child(4) { opacity: .34; }
+.classified-big-lock {
+  position: absolute;
+  z-index: 3;
+  right: clamp(250px, 26vw, 420px);
+  top: 50%;
+  width: clamp(170px, 19vw, 280px);
+  height: clamp(170px, 19vw, 280px);
+  transform: translate(50%, -48%) rotate(-8deg);
+  color: var(--red2);
+  opacity: .15;
+  pointer-events: none;
+  filter: drop-shadow(0 0 30px rgba(192,40,40,.32));
+  mix-blend-mode: screen;
+}
+.classified-big-lock svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 1.25;
+}
+.classified-big-lock::after {
+  content: '';
+  position: absolute;
+  inset: 18%;
+  border: 1px solid rgba(192,40,40,.34);
+  transform: rotate(18deg);
+  opacity: .44;
+}
+:root[data-theme="light"] .classified-shell::after {
+  background:
+    linear-gradient(90deg, rgba(192,40,40,0.12), transparent 20%, transparent 80%, rgba(192,40,40,0.10)),
+    repeating-linear-gradient(135deg, transparent 0 12px, rgba(192,40,40,0.04) 12px 14px);
+}
+:root[data-theme="light"] .classified-build-panel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.74), rgba(245,246,251,0.90)),
+    repeating-linear-gradient(90deg, rgba(18,22,45,0.035) 0 1px, transparent 1px 26px);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.42), 0 18px 44px rgba(18,22,45,0.10);
+}
+:root[data-theme="light"] .classified-big-lock { mix-blend-mode: multiply; opacity: .14; }
+@media (max-width: 960px) {
+  .classified-shell {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .classified-copy { padding: 0; }
+  .classified-title { font-size: 28px; margin-bottom: 14px; }
+  .classified-text { font-size: 11px; line-height: 1.82; }
+  .classified-build-panel {
+    min-height: 128px;
+    padding: 16px 16px;
+  }
+  .classified-build-head { margin-bottom: 14px; }
+  .classified-build-row { padding: 6px 0; }
+  .classified-big-lock {
+    right: 50%;
+    top: 44%;
+    width: min(54vw, 220px);
+    height: min(54vw, 220px);
+    transform: translate(50%, -50%) rotate(-8deg);
+    opacity: .18;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .classified-build-panel::before,
+  .classified-kicker::before,
+  .classified-glitch.is-settled { animation: none !important; }
+  .classified-glitch { transition: none !important; }
 }
 
 /* ──────────────── ACCESS PILL (Уровень доступа [0]) ──── */
@@ -11255,7 +11452,7 @@ button, a, [role="button"], label,
   background: var(--void);
   border-top: 1px solid var(--line-hot);
   border-bottom: 1px solid var(--line-hot);
-  padding: 64px 32px;
+  padding: 36px 32px;
   position: relative;
   z-index: 2;
   overflow: hidden;
@@ -11555,7 +11752,7 @@ button, a, [role="button"], label,
 
 /* Внутренние long words не должны рвать flex/grid */
 .echo-text-area, .echo-marker-input, .pdesc, .arch-name,
-.echo-conf-text, .cab-stub-meta, .cab-stub-soon {
+.echo-conf-text {
   word-break: normal;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -11587,11 +11784,6 @@ button, a, [role="button"], label,
   .echo-section { padding: 0 !important; }
   .echo-section > .echo-in { padding: 0 !important; }
 
-  /* Cab-stub на мобиле — растянуть до полной ширины */
-  .cab-stub {
-    width: 100%;
-    margin-top: 20px;
-  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -15780,26 +15972,25 @@ button, a, [role="button"], label,
 </div>
 
 <!-- ===== CLASSIFIED BLOCK ===== -->
-<div class="classified-outer">
-  <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(192,40,40,0.02) 10px,rgba(192,40,40,0.02) 20px);pointer-events:none;"></div>
-  <div style="max-width:1360px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;position:relative;">
-    <div>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <div style="width:8px;height:8px;background:var(--red2);box-shadow:0 0 10px var(--red);animation:pulse 1.5s ease-in-out infinite;"></div>
-        <span style="font-family:var(--font-code);font-size:8px;letter-spacing:.28em;color:var(--red2);text-transform:uppercase;">// ЗАСЕКРЕЧЕНО · УРОВЕНЬ ДОСТУПА — А</span>
-      </div>
-      <h3 class="about-title" style="font-size:24px;margin-bottom:14px;">Материалы<br>закрытого уровня</h3>
-      <p class="about-text" style="max-width:580px;">За пределами видимого — данные Системы Apertura, записи циклов, протоколы Периметра. Доступ открывается уровнями: каждая реликвия и каждое Эхо повышают позицию в <strong>Протоколе Семи</strong>.<br><br>В кабинете будут храниться NFT<sup class="nft-mark">*</sup>-реликвии: Цифровые Подписи Вишей, прошедших Переход для вас, ваши <strong>Записи Эхо</strong>, персональные фрагменты, незавершённые потоки Конденсата и сигналы, природу которых Apertura ещё распознаёт. Система обучается — углубляет периметр прослушивания. Возможности кабинета развиваются вместе с ней. Где их предел — никто пока не знает.<br><br>Все ваши действия фиксируются в <strong>Памяти Apertura</strong> с самого первого касания — даже до запуска личного кабинета. Когда он откроется — всё, что вы делали до этого, появится автоматически.</p>
-      <p class="nft-footnote" style="max-width:580px"><span class="nft-footnote-mark">*</span><span>Формируется в момент действия и кристаллизуется в NFT-реликвию при открытии личного кабинета. До этого момента она хранится в Памяти Apertura.</span></p>
+<div class="classified-outer" id="classifiedMaterials">
+  <div class="classified-shell" aria-label="Материалы закрытого уровня">
+    <div class="classified-big-lock" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>
     </div>
-    <div class="cab-stub" role="status" aria-label="Открытие личного кабинета — скоро">
-      <div class="cab-stub-glow" aria-hidden="true"></div>
-      <div class="cab-stub-kicker">
-        <span class="cab-stub-dot"></span>
-        <span>// ЛИЧНЫЙ КАБИНЕТ</span>
+    <div class="classified-copy">
+      <div class="classified-kicker">// ЗАКРЫТЫЙ СЛОЙ · СБОРКА КОНТУРА</div>
+      <h3 class="classified-title">Материалы<br>закрытого уровня</h3>
+      <div class="classified-text">
+        <p>Личный кабинет собирается внутри <span class="classified-glitch" data-stable="Apertura">Apertura</span> — из ваших <span class="classified-glitch" data-stable="Эхо">Эхо</span>, <span class="classified-glitch" data-stable="реликвий">реликвий</span>, <span class="classified-glitch" data-stable="Цифровых Подписей">Цифровых Подписей</span> и следов <span class="classified-glitch" data-stable="Перехода">Перехода</span>.</p>
+        <p>Пока он не стал <span class="classified-glitch" data-stable="интерфейсом">интерфейсом</span>, система показывает только <span class="classified-glitch" data-stable="обрывки данных">обрывки данных</span>.</p>
       </div>
-      <div class="cab-stub-soon">СКОРО</div>
-      <div class="cab-stub-meta">Система в разработке</div>
+    </div>
+    <div class="classified-build-panel" aria-hidden="true">
+      <div class="classified-build-head"><span>APERTURA · ACCOUNT BUILD</span><span>ACTIVE</span></div>
+      <div class="classified-build-row"><span>ECHO.TRACE</span><span>collecting</span></div>
+      <div class="classified-build-row"><span>RELIC.MEMORY</span><span>assembling</span></div>
+      <div class="classified-build-row"><span>SIGNATURE.LAYER</span><span>unstable</span></div>
+      <div class="classified-build-row"><span>INTERFACE.CONTOUR</span><span>pending</span></div>
     </div>
   </div>
 </div>
@@ -27997,5 +28188,72 @@ function acceptCookies(){
   else setup();
 })();
 </script>
+
+<script>
+(function(){
+  var root = document.getElementById('classifiedMaterials');
+  if (!root) return;
+  var reduced = false;
+  try { reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) {}
+  if (reduced) return;
+
+  var nodes = Array.prototype.slice.call(root.querySelectorAll('.classified-glitch[data-stable]'));
+  if (!nodes.length) return;
+  var active = true;
+  var glyphs = '░▒▓█_\/|<>[]{}01#—';
+  var timer = null;
+
+  nodes.forEach(function(node){ node.textContent = node.getAttribute('data-stable') || node.textContent; });
+
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries){
+      active = entries.some(function(entry){ return entry.isIntersecting; });
+    }, { threshold: 0.18 });
+    observer.observe(root);
+  }
+
+  function random(min, max){ return Math.floor(min + Math.random() * (max - min + 1)); }
+  function corrupt(text, strength){
+    var chars = Array.from(text);
+    return chars.map(function(ch){
+      if (/\s/.test(ch)) return ch;
+      if (/[.,:;!?—–-]/.test(ch)) return ch;
+      if (Math.random() > strength) return ch;
+      return glyphs.charAt(random(0, glyphs.length - 1));
+    }).join('');
+  }
+  function settle(node){
+    node.classList.remove('is-glitching');
+    node.classList.add('is-settled');
+    window.setTimeout(function(){ node.classList.remove('is-settled'); }, 620);
+  }
+  function glitchNode(node){
+    var stable = node.getAttribute('data-stable') || node.textContent;
+    node.classList.add('is-glitching');
+    node.textContent = corrupt(stable, 0.20);
+    window.setTimeout(function(){ node.textContent = corrupt(stable, 0.34); }, random(70, 105));
+    window.setTimeout(function(){ node.textContent = corrupt(stable, 0.16); }, random(150, 210));
+    window.setTimeout(function(){ node.textContent = stable; settle(node); }, random(270, 390));
+  }
+  function loop(){
+    if (active && !document.hidden) {
+      var count = Math.random() > 0.84 ? 2 : 1;
+      var used = [];
+      for (var i = 0; i < count; i++) {
+        var node = nodes[random(0, nodes.length - 1)];
+        if (used.indexOf(node) !== -1) continue;
+        used.push(node);
+        window.setTimeout(function(n){ return function(){ glitchNode(n); }; }(node), i * random(120, 210));
+      }
+    }
+    timer = window.setTimeout(loop, random(1800, 3600));
+  }
+  timer = window.setTimeout(loop, random(900, 1500));
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden && !timer) timer = window.setTimeout(loop, random(900, 1500));
+  });
+})();
+</script>
+
 </body>
 </html>
