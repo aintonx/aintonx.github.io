@@ -11171,28 +11171,27 @@ button, a, [role="button"], label,
 /* ──────────────── CLASSIFIED MATERIALS · личный интерфейс собирается ──── */
 .classified-outer {
   position: relative;
-  width: 100%;
+  width: calc(100% - 64px);
+  max-width: 1360px;
   min-height: 148px;
-  margin: 0;
-  padding: 38px max(32px, calc((100vw - 1360px) / 2 + 32px));
-  padding-right: max(292px, calc((100vw - 1360px) / 2 + 300px));
+  margin: 0 auto;
+  padding: 38px 300px 38px 32px;
   display: flex;
   align-items: center;
   overflow: hidden;
   isolation: isolate;
   z-index: 2;
   cursor: pointer;
-  border-top: 1px solid rgba(192,40,40,0.34);
-  border-bottom: 1px solid rgba(192,40,40,0.28);
+  border: 1px solid rgba(192,40,40,0.34);
+  border-radius: var(--radius-lg);
   background:
     linear-gradient(100deg, rgba(192,40,40,0.24), rgba(192,40,40,0.13) 44%, rgba(192,40,40,0.075)),
-    radial-gradient(520px 190px at calc(100% - max(120px, calc((100vw - 1360px) / 2 + 150px))) 50%, rgba(192,40,40,0.22), transparent 70%),
+    radial-gradient(520px 190px at 88% 50%, rgba(192,40,40,0.22), transparent 70%),
     rgba(20,20,42,0.52);
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.028),
     0 18px 48px rgba(0,0,0,0.34),
     0 0 34px rgba(192,40,40,0.08);
-  animation: classifiedLockState 10.5s steps(1,end) infinite;
 }
 .classified-outer::before {
   content: '';
@@ -11204,18 +11203,7 @@ button, a, [role="button"], label,
   pointer-events: none;
 }
 .classified-outer::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  z-index: 4;
-  background: linear-gradient(90deg,
-    var(--red) 0%, #d4503f 20%, #8f7f86 38%,
-    var(--cyan) 50%, #8f7f86 62%, #d4503f 80%, var(--red) 100%);
-  background-size: 220% 100%;
-  animation: shimmer 4.2s linear infinite;
-  box-shadow: 0 1px 10px -2px rgba(192,40,40,0.42), 0 2px 18px -6px rgba(0,200,200,0.32);
-  pointer-events: none;
+  content: none;
 }
 .classified-copy {
   position: relative;
@@ -11243,7 +11231,7 @@ button, a, [role="button"], label,
 .classified-big-lock {
   position: absolute;
   z-index: 1;
-  right: max(40px, calc((100vw - 1360px) / 2 + 74px));
+  right: 74px;
   top: 50%;
   width: clamp(128px, 12vw, 188px);
   height: clamp(128px, 12vw, 188px);
@@ -11253,7 +11241,6 @@ button, a, [role="button"], label,
   pointer-events: none;
   filter: drop-shadow(0 0 26px rgba(192,40,40,.32));
   mix-blend-mode: screen;
-  animation: classifiedLockGlyph 10.5s steps(1,end) infinite;
 }
 .classified-big-lock svg {
   width: 100%;
@@ -11279,12 +11266,21 @@ button, a, [role="button"], label,
   filter: blur(.15px);
   mix-blend-mode: screen;
 }
-.classified-lock-glitch-a { animation: classifiedLockLineA 8.7s steps(1,end) infinite; }
-.classified-lock-glitch-b { animation: classifiedLockLineB 11.2s steps(1,end) infinite; }
+.classified-outer.classified-denied {
+  animation: lockedCardDeny .56s steps(2, end) both;
+}
+.classified-outer.classified-denied .classified-big-lock {
+  animation: classifiedLockGlyph .56s steps(2, end) both;
+}
+.classified-outer.classified-denied .classified-lock-glitch-a {
+  animation: classifiedLockLineA .42s steps(1,end) both;
+}
+.classified-outer.classified-denied .classified-lock-glitch-b {
+  animation: classifiedLockLineB .56s steps(1,end) both;
+}
 @media (hover:hover) and (pointer:fine) {
   .classified-outer:hover {
-    border-top-color: rgba(192,40,40,0.48);
-    border-bottom-color: rgba(0,200,200,0.18);
+    border-color: rgba(192,40,40,0.48);
     box-shadow:
       inset 0 0 0 1px rgba(255,255,255,0.034),
       0 20px 54px rgba(0,0,0,0.38),
@@ -11295,60 +11291,42 @@ button, a, [role="button"], label,
   outline: 1px solid rgba(0,200,200,0.44);
   outline-offset: -6px;
 }
-@keyframes classifiedLockState {
-  0%, 83%, 87%, 100% {
-    filter: none;
-    transform: translate3d(0,0,0);
-  }
-  84% {
-    filter: brightness(1.09) saturate(1.08);
-    transform: translate3d(.4px,0,0);
-  }
-  84.6% {
-    filter: brightness(.98) saturate(1.18);
-    transform: translate3d(-.35px,0,0);
-  }
-  85.1% {
-    filter: brightness(1.05);
-    transform: translate3d(0,0,0);
-  }
-}
 @keyframes classifiedLockGlyph {
-  0%, 83%, 87%, 100% {
+  0%, 100% {
     opacity: .26;
     transform: translateY(-50%);
     filter: drop-shadow(0 0 26px rgba(192,40,40,.32));
   }
-  84% {
+  18% {
     opacity: .34;
     transform: translateY(-50%) translateX(1px);
     filter: drop-shadow(0 0 28px rgba(192,40,40,.42)) drop-shadow(0 0 10px rgba(0,200,200,.16));
   }
-  84.6% {
-    opacity: .22;
+  36% {
+    opacity: .20;
     transform: translateY(-50%) translateX(-1px);
   }
-  85.1% {
-    opacity: .29;
+  54% {
+    opacity: .30;
     transform: translateY(-50%);
   }
 }
 @keyframes classifiedLockLineA {
-  0%, 79%, 82%, 100% { opacity: 0; top: 31%; transform: translateX(-6%); }
-  80% { opacity: .65; top: 31%; transform: translateX(-2%); }
-  80.35% { opacity: .24; top: 67%; transform: translateX(4%); }
-  80.7% { opacity: 0; top: 67%; transform: translateX(4%); }
+  0%, 100% { opacity: 0; top: 31%; transform: translateX(-6%); }
+  14% { opacity: .65; top: 31%; transform: translateX(-2%); }
+  28% { opacity: .24; top: 67%; transform: translateX(4%); }
+  44% { opacity: 0; top: 67%; transform: translateX(4%); }
 }
 @keyframes classifiedLockLineB {
-  0%, 88%, 91%, 100% { opacity: 0; top: 58%; transform: translateX(7%); }
-  89% { opacity: .42; top: 58%; transform: translateX(2%); }
-  89.32% { opacity: .18; top: 43%; transform: translateX(-4%); }
-  89.7% { opacity: 0; top: 43%; transform: translateX(-4%); }
+  0%, 100% { opacity: 0; top: 58%; transform: translateX(7%); }
+  22% { opacity: .42; top: 58%; transform: translateX(2%); }
+  40% { opacity: .18; top: 43%; transform: translateX(-4%); }
+  58% { opacity: 0; top: 43%; transform: translateX(-4%); }
 }
 :root[data-theme="light"] .classified-outer {
   background:
     linear-gradient(100deg, rgba(192,40,40,0.18), rgba(192,40,40,0.095) 44%, rgba(192,40,40,0.055)),
-    radial-gradient(520px 190px at calc(100% - max(120px, calc((100vw - 1360px) / 2 + 150px))) 50%, rgba(192,40,40,0.18), transparent 70%),
+    radial-gradient(520px 190px at 88% 50%, rgba(192,40,40,0.18), transparent 70%),
     rgba(255,255,255,0.72);
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.38),
@@ -11360,10 +11338,9 @@ button, a, [role="button"], label,
   opacity: .18;
 }
 @media (prefers-reduced-motion: reduce) {
-  .classified-outer,
-  .classified-outer::after,
-  .classified-big-lock,
-  .classified-lock-glitch {
+  .classified-outer.classified-denied,
+  .classified-outer.classified-denied .classified-big-lock,
+  .classified-outer.classified-denied .classified-lock-glitch {
     animation: none !important;
   }
   .classified-lock-glitch { display: none !important; }
@@ -11371,6 +11348,7 @@ button, a, [role="button"], label,
 @media (max-width: 960px) {
   .classified-outer {
     width: calc(100% - 40px);
+    max-width: none;
     min-height: 136px;
     margin: 18px auto;
     padding: 26px 132px 26px 26px;
@@ -11392,10 +11370,10 @@ button, a, [role="button"], label,
     line-height: 1.75;
   }
   .classified-big-lock {
-    right: 14px;
+    right: 10px;
     top: 50%;
-    width: min(40vw, 150px);
-    height: min(40vw, 150px);
+    width: min(38vw, 142px);
+    height: min(38vw, 142px);
     transform: translateY(-50%);
     opacity: .18;
   }
@@ -11412,20 +11390,20 @@ button, a, [role="button"], label,
     max-width: 245px;
   }
   .classified-big-lock {
-    right: 8px;
-    width: min(43vw, 155px);
-    height: min(43vw, 155px);
+    right: 0;
+    width: min(40vw, 146px);
+    height: min(40vw, 146px);
     opacity: .16;
   }
 }
 @media (max-width: 360px) {
   .classified-outer {
-    padding-right: 100px;
+    padding-right: 102px;
   }
   .classified-big-lock {
-    width: 132px;
-    height: 132px;
-    right: 6px;
+    width: 128px;
+    height: 128px;
+    right: 0;
   }
 }
 
@@ -15986,7 +15964,7 @@ button, a, [role="button"], label,
 </div>
 
 <!-- ===== CLASSIFIED BLOCK ===== -->
-<div class="classified-outer" id="classifiedMaterials" role="button" tabindex="0" aria-label="Личный кабинет — в разработке" onclick="showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')}">
+<div class="classified-outer" id="classifiedMaterials" role="button" tabindex="0" aria-label="Личный кабинет — в разработке" onclick="triggerClassifiedLocked(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();triggerClassifiedLocked(this)}">
   <div class="classified-copy">
     <div class="classified-kicker">// Личный кабинет</div>
     <p class="classified-text">Apertura уже собирает то, что позже станет вашим интерфейсом.</p>
@@ -20486,6 +20464,19 @@ function showNotif(text, opts){
   n._autoHideTimer = setTimeout(()=>_fadeOutNotif(n), opts.duration || 6000);   // T1: плавно гаснет
 }
 /* Копирование ника (раздел «В социальных сетях») с короткой обратной связью */
+function triggerClassifiedLocked(el){
+  try{
+    var target = el || document.getElementById('classifiedMaterials');
+    if(target){
+      target.classList.remove('classified-denied');
+      void target.offsetWidth;
+      target.classList.add('classified-denied');
+      clearTimeout(target._classifiedDenyTimer);
+      target._classifiedDenyTimer = setTimeout(function(){ target.classList.remove('classified-denied'); }, 620);
+    }
+  }catch(e){}
+  showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.');
+}
 function copyNick(btn, text){
   try{
     if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text); }
