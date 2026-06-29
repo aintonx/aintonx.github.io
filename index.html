@@ -11171,8 +11171,8 @@ button, a, [role="button"], label,
 /* ──────────────── CLASSIFIED MATERIALS · личный интерфейс собирается ──── */
 .classified-outer {
   position: relative;
-  width: calc(100% - 64px);
-  max-width: 1360px;
+  width: calc(100% - 32px);
+  max-width: none;
   min-height: 148px;
   margin: 0 auto;
   padding: 38px 300px 38px 32px;
@@ -11241,6 +11241,11 @@ button, a, [role="button"], label,
   pointer-events: none;
   filter: drop-shadow(0 0 26px rgba(192,40,40,.32));
   mix-blend-mode: screen;
+  transition:
+    opacity .56s var(--ease-out),
+    color .56s var(--ease-out),
+    filter .62s var(--ease-out),
+    transform .42s var(--ease-out);
 }
 .classified-big-lock svg {
   width: 100%;
@@ -11270,7 +11275,7 @@ button, a, [role="button"], label,
   animation: lockedCardDeny .56s steps(2, end) both;
 }
 .classified-outer.classified-denied .classified-big-lock {
-  animation: classifiedLockGlyph .56s steps(2, end) both;
+  animation: classifiedLockGlyph .78s var(--ease-out) both;
 }
 .classified-outer.classified-denied .classified-lock-glitch-a {
   animation: classifiedLockLineA .42s steps(1,end) both;
@@ -11292,23 +11297,35 @@ button, a, [role="button"], label,
   outline-offset: -6px;
 }
 @keyframes classifiedLockGlyph {
-  0%, 100% {
+  0% {
     opacity: .26;
     transform: translateY(-50%);
     filter: drop-shadow(0 0 26px rgba(192,40,40,.32));
   }
-  18% {
-    opacity: .34;
+  16% {
+    opacity: .35;
     transform: translateY(-50%) translateX(1px);
     filter: drop-shadow(0 0 28px rgba(192,40,40,.42)) drop-shadow(0 0 10px rgba(0,200,200,.16));
   }
-  36% {
+  31% {
     opacity: .20;
     transform: translateY(-50%) translateX(-1px);
+    filter: drop-shadow(0 0 18px rgba(192,40,40,.24));
   }
-  54% {
-    opacity: .30;
+  48% {
+    opacity: .31;
     transform: translateY(-50%);
+    filter: drop-shadow(0 0 30px rgba(192,40,40,.38));
+  }
+  72% {
+    opacity: .28;
+    transform: translateY(-50%);
+    filter: drop-shadow(0 0 27px rgba(192,40,40,.34));
+  }
+  100% {
+    opacity: .26;
+    transform: translateY(-50%);
+    filter: drop-shadow(0 0 26px rgba(192,40,40,.32));
   }
 }
 @keyframes classifiedLockLineA {
@@ -20472,7 +20489,7 @@ function triggerClassifiedLocked(el){
       void target.offsetWidth;
       target.classList.add('classified-denied');
       clearTimeout(target._classifiedDenyTimer);
-      target._classifiedDenyTimer = setTimeout(function(){ target.classList.remove('classified-denied'); }, 620);
+      target._classifiedDenyTimer = setTimeout(function(){ target.classList.remove('classified-denied'); }, 820);
     }
   }catch(e){}
   showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.');
