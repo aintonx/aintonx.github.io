@@ -5069,6 +5069,26 @@ select:-webkit-autofill {
 /* Рёбра — отдельные линии; красятся по одной (стаггер в JS _fpColor).
    Геометрия неподвижна: только цвет, плавно. */
 .faq-fp .fp-ridge { stroke: var(--white-dim); stroke-width: 1.7; transition: stroke .35s ease; }
+.faq-fp.ew-mask-icon {
+  width: 23px;
+  height: 23px;
+  min-width: 23px;
+  min-height: 23px;
+  color: var(--white-dim);
+  transition: color .35s ease, filter .35s ease, opacity .35s ease;
+}
+.faq-fp.fp-pulse-open { animation: faqFpMaskOpen .52s cubic-bezier(.22,1,.36,1) both; }
+.faq-fp.fp-pulse-close { animation: faqFpMaskClose .46s cubic-bezier(.22,1,.36,1) both; }
+@keyframes faqFpMaskOpen {
+  0% { opacity: .54; filter: none; transform: scale(.96); }
+  42% { opacity: 1; filter: drop-shadow(0 0 10px rgba(0,200,200,.36)); transform: scale(1.035); }
+  100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(0,200,200,.18)); transform: scale(1); }
+}
+@keyframes faqFpMaskClose {
+  0% { opacity: 1; filter: drop-shadow(0 0 8px rgba(192,40,40,.25)); }
+  100% { opacity: .72; filter: none; }
+}
+
 .faq-grid { position: relative; }
 @keyframes faqItemIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -13246,6 +13266,53 @@ button, a, [role="button"], label,
 }
 .ico-fill { fill: currentColor; stroke: none; }
 
+/* ── ICON PATCH · selected EchoWorld icon set mix ─────────────────────
+   Реальные SVG остаются внешне монохромными и наследуют currentColor.
+   Используем CSS-mask: единый размер задаётся уже существующими .ico/.nav-ico/.hbtn
+   правилами, а сама библиотека хранится только в классе ниже. */
+.ew-mask-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  min-width: 1em;
+  min-height: 1em;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  vertical-align: middle;
+  line-height: 1;
+  overflow: hidden;
+  -webkit-mask: var(--ew-icon-mask) center / contain no-repeat;
+  mask: var(--ew-icon-mask) center / contain no-repeat;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.ew-icon--tdesign-chevron-down { --ew-icon-mask: url("https://api.iconify.design/tdesign/chevron-down.svg"); }
+.ew-icon--tdesign-app { --ew-icon-mask: url("https://api.iconify.design/tdesign/app.svg"); }
+.ew-icon--iconpark-sun-one { --ew-icon-mask: url("https://api.iconify.design/icon-park-outline/sun-one.svg"); }
+.ew-icon--bx-moon { --ew-icon-mask: url("https://api.iconify.design/bx/moon.svg"); }
+.ew-icon--akar-microphone { --ew-icon-mask: url("https://api.iconify.design/akar-icons/microphone.svg"); }
+.ew-icon--mingcute-mic-line { --ew-icon-mask: url("https://api.iconify.design/mingcute/mic-line.svg"); }
+.ew-icon--ri-cpu-line { --ew-icon-mask: url("https://api.iconify.design/ri/cpu-line.svg"); }
+.ew-icon--heroicons-globe-alt { --ew-icon-mask: url("https://api.iconify.design/heroicons/globe-alt.svg"); }
+.ew-icon--tabler-help-circle { --ew-icon-mask: url("https://api.iconify.design/tabler/help-circle.svg"); }
+.ew-icon--bi-envelope { --ew-icon-mask: url("https://api.iconify.design/bi/envelope.svg"); }
+.ew-icon--ri-shopping-cart-line { --ew-icon-mask: url("https://api.iconify.design/ri/shopping-cart-line.svg"); }
+.ew-icon--fluent-person-circle { --ew-icon-mask: url("https://api.iconify.design/fluent/person-circle-24-regular.svg"); }
+.ew-icon--mingcute-lock-line { --ew-icon-mask: url("https://api.iconify.design/mingcute/lock-line.svg"); }
+.ew-icon--akar-play { --ew-icon-mask: url("https://api.iconify.design/akar-icons/play.svg"); }
+.ew-icon--akar-pause { --ew-icon-mask: url("https://api.iconify.design/akar-icons/pause.svg"); }
+.ew-icon--bi-envelope-at { --ew-icon-mask: url("https://api.iconify.design/bi/envelope-at.svg"); }
+.ew-icon--bx-right-arrow-alt { --ew-icon-mask: url("https://api.iconify.design/bx/right-arrow-alt.svg"); }
+.ew-icon--bx-bxl-telegram { --ew-icon-mask: url("https://api.iconify.design/bx/bxl-telegram.svg"); }
+.ew-icon--fluent-share { --ew-icon-mask: url("https://api.iconify.design/fluent/share-24-regular.svg"); }
+.ew-icon--carbon-copy { --ew-icon-mask: url("https://api.iconify.design/carbon/copy.svg"); }
+.ew-icon--akar-infinity { --ew-icon-mask: url("https://api.iconify.design/akar-icons/infinity.svg"); }
+.ew-icon--feather-check-circle { --ew-icon-mask: url("https://api.iconify.design/feather/check-circle.svg"); }
+.ew-icon--akar-trash-can { --ew-icon-mask: url("https://api.iconify.design/akar-icons/trash-can.svg"); }
+.ew-icon--fluent-fingerprint { --ew-icon-mask: url("https://api.iconify.design/fluent/fingerprint-24-regular.svg"); }
+.ew-icon--bx-broadcast { --ew-icon-mask: url("https://api.iconify.design/bx/broadcast.svg"); }
+
+
 /* ── MODAL STATUS · Ожидает Перехода подсказка внутри поля STATUS ─
    Подсказка живёт прямо в статусном поле карточки/модалки. Всё поле
    становится точкой взаимодействия, а стрелка работает как в переключателях. */
@@ -14185,9 +14252,9 @@ button, a, [role="button"], label,
 <body>
 <div id="ewSmartCaptchaRoot" aria-hidden="true"></div>
 
-<!-- ===== ICON SPRITE · Lucide v1.17.0 (ISC) + Simple Icons (telegram) ═ единственный источник UI-иконок.
+<!-- ===== ICON SPRITE · legacy inline symbols + selected Iconify CSS-mask icons.
      Использование: <svg class="ico"><use href="#i-имя"/></svg>; цвет — currentColor, толщина — класс .ico.
-     Новые иконки добавлять ТОЛЬКО сюда, содержимое брать с https://unpkg.com/lucide-static@1.17.0/icons/имя.svg
+     Новые inline-symbol иконки добавлять сюда; выбранные внешние наборы подключены ниже через CSS-mask
      (в symbol переносить только внутренние пути, без атрибутов). -->
 <svg id="ew-icons" xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" focusable="false" aria-hidden="true">
   <symbol id="i-moon" viewBox="0 0 32 32"><path fill="currentColor" stroke="none" d="M13.503 5.414a15.076 15.076 0 0 0 11.593 18.194a11.1 11.1 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1 1 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.07 13.07 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3"/></symbol>
@@ -14261,7 +14328,7 @@ button, a, [role="button"], label,
         <div class="wdot"></div>
         <span class="wname">Marketspace</span>
         <span class="whint">/ смена</span>
-        <span class="warr"><svg class="ico" aria-hidden="true"><use href="#i-arrow-down"/></svg></span>
+        <span class="warr"><span class="ico ew-mask-icon ew-icon--tdesign-chevron-down" aria-hidden="true"></span></span>
       </div>
       <div class="wdrop" id="wdrop">
         <div class="wopt active" onclick="selectWorld(this,'Marketspace')"><div class="woptdot"></div>Marketspace</div>
@@ -14274,7 +14341,7 @@ button, a, [role="button"], label,
     <div class="wsw lsw" id="lsw">
       <div class="ws lang-ws" onclick="toggleLangDrop(event)" aria-label="Язык">
         <span class="lang-cur" id="langCur">RU</span>
-        <span class="warr"><svg class="ico" aria-hidden="true"><use href="#i-arrow-down"/></svg></span>
+        <span class="warr"><span class="ico ew-mask-icon ew-icon--tdesign-chevron-down" aria-hidden="true"></span></span>
       </div>
       <div class="wdrop" id="ldrop">
         <div class="wopt active" onclick="selectLang(this,'RU')"><div class="woptdot"></div>Русский</div>
@@ -14283,36 +14350,36 @@ button, a, [role="button"], label,
     </div>
 
     <button class="theme-switch theme-switch-hdr" type="button" onclick="toggleTheme()" role="switch" aria-pressed="false" aria-label="Светлая или тёмная тема" title="Сменить тему">
-      <svg class="ico ts-ico ts-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      <span class="ico ts-ico ts-moon ew-mask-icon ew-icon--bx-moon" aria-hidden="true"></span>
       <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
-      <svg class="ico ts-ico ts-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+      <span class="ico ts-ico ts-sun ew-mask-icon ew-icon--iconpark-sun-one" aria-hidden="true"></span>
     </button>
 
     <div class="hright">
-      <a href="#catalog" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-layout-grid"/></svg><span>Каталог</span></a>
-      <a href="#echo" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
-      <a href="#about" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-cpu"/></svg><span>Система</span></a>
-      <a href="#worlds" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-aperture"/></svg><span>Миры</span></a>
-      <a href="#faq" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
-      <a href="#collab" class="navlink"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
+      <a href="#catalog" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--tdesign-app" aria-hidden="true"></span><span>Каталог</span></a>
+      <a href="#echo" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--akar-microphone" aria-hidden="true"></span><span>Эхо</span></a>
+      <a href="#about" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--ri-cpu-line" aria-hidden="true"></span><span>Система</span></a>
+      <a href="#worlds" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--heroicons-globe-alt" aria-hidden="true"></span><span>Миры</span></a>
+      <a href="#faq" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--tabler-help-circle" aria-hidden="true"></span><span>FAQ</span></a>
+      <a href="#collab" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--bi-envelope" aria-hidden="true"></span><span>Контакт</span></a>
       <div class="desktop-menu-wrap" id="desktopMenuWrap">
         <button class="desktop-menu-btn" id="desktopMenuBtn" type="button" onclick="toggleDesktopMenu(event)" aria-label="Меню разделов" aria-expanded="false"><span></span><span></span><span></span></button>
         <div class="wdrop desktop-menu-drop" id="desktopMenuDrop">
-          <a href="#catalog" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-layout-grid"/></svg><span>Каталог</span></a>
-          <a href="#echo" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
-          <a href="#about" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-cpu"/></svg><span>Система</span></a>
-          <a href="#worlds" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-aperture"/></svg><span>Миры</span></a>
-          <a href="#faq" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
-          <a href="#collab" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
+          <a href="#catalog" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--tdesign-app" aria-hidden="true"></span><span>Каталог</span></a>
+          <a href="#echo" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--akar-microphone" aria-hidden="true"></span><span>Эхо</span></a>
+          <a href="#about" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--ri-cpu-line" aria-hidden="true"></span><span>Система</span></a>
+          <a href="#worlds" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--heroicons-globe-alt" aria-hidden="true"></span><span>Миры</span></a>
+          <a href="#faq" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--tabler-help-circle" aria-hidden="true"></span><span>FAQ</span></a>
+          <a href="#collab" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--bi-envelope" aria-hidden="true"></span><span>Контакт</span></a>
           <a href="#architect" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="nav-mark" aria-hidden="true">@</span><span>Архитектор</span></a>
         </div>
       </div>
       <button class="mob-burger" id="mobBurger" onclick="openMobNav()" aria-label="Меню"><span></span><span></span><span></span></button>
       <button class="hbtn hbtn-cart" id="cartBtn" onclick="toggleCart()" aria-label="Корзина">
-        <svg class="ico" aria-hidden="true"><use href="#i-shopping-cart"/></svg><span class="hbtn-label">КОРЗИНА</span><span class="cart-count" id="cartCount">0</span>
+        <span class="ico ew-mask-icon ew-icon--ri-shopping-cart-line" aria-hidden="true"></span><span class="hbtn-label">КОРЗИНА</span><span class="cart-count" id="cartCount">0</span>
       </button>
       <button class="hbtn hbtn-cabinet" onclick="showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')" aria-label="Кабинет — скоро" style="opacity:0.6;cursor:default">
-        <svg class="ico" aria-hidden="true"><use href="#i-user-round"/></svg><span class="hbtn-label">КАБИНЕТ</span><span class="sbadge">СКОРО</span>
+        <span class="ico ew-mask-icon ew-icon--fluent-person-circle" aria-hidden="true"></span><span class="hbtn-label">КАБИНЕТ</span><span class="sbadge">СКОРО</span>
       </button>
     </div>
   </div>
@@ -14326,30 +14393,30 @@ button, a, [role="button"], label,
     <button class="mob-nav-close" onclick="closeMobNav()" aria-label="Закрыть">✕</button>
   </div>
   <div class="mob-nav-links">
-    <a href="#catalog" class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-layout-grid"/></svg><span>Каталог</span></a>
-    <a href="#echo" class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
-    <a href="#about"   class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-cpu"/></svg><span>О системе</span></a>
-    <a href="#worlds"  class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-aperture"/></svg><span>Миры</span></a>
-    <a href="#faq"     class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
-    <a href="#collab"  class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
+    <a href="#catalog" class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--tdesign-app" aria-hidden="true"></span><span>Каталог</span></a>
+    <a href="#echo" class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--akar-microphone" aria-hidden="true"></span><span>Эхо</span></a>
+    <a href="#about"   class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--ri-cpu-line" aria-hidden="true"></span><span>О системе</span></a>
+    <a href="#worlds"  class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--heroicons-globe-alt" aria-hidden="true"></span><span>Миры</span></a>
+    <a href="#faq"     class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--tabler-help-circle" aria-hidden="true"></span><span>FAQ</span></a>
+    <a href="#collab"  class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--bi-envelope" aria-hidden="true"></span><span>Контакт</span></a>
     <a href="#architect" class="mob-nav-link mob-nav-link-arch" onclick="closeMobNav()"><span class="nav-mark" aria-hidden="true">@</span><span>Архитектор</span></a>
   </div>
   <div class="mob-nav-actions">
     <button class="mnav-tile" type="button" onclick="closeMobNav();toggleCart()" aria-label="Корзина">
-      <svg class="ico mnav-tile-ico" aria-hidden="true"><use href="#i-shopping-cart"/></svg>
+      <span class="ico mnav-tile-ico ew-mask-icon ew-icon--ri-shopping-cart-line" aria-hidden="true"></span>
       <span class="mnav-tile-label">Корзина</span>
       <span class="mnav-tile-badge" id="mobCartCount">0</span>
     </button>
     <button class="mnav-tile mnav-tile-soon" type="button" onclick="closeMobNav();showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')" aria-label="Кабинет — скоро">
-      <svg class="ico mnav-tile-ico" aria-hidden="true"><use href="#i-user-round"/></svg>
+      <span class="ico mnav-tile-ico ew-mask-icon ew-icon--fluent-person-circle" aria-hidden="true"></span>
       <span class="mnav-tile-label">Кабинет</span>
       <span class="mnav-ribbon">Скоро</span>
     </button>
     <button class="mnav-tile mnav-tile-theme theme-switch" type="button" onclick="toggleTheme()" role="switch" aria-pressed="false" aria-label="Светлая или тёмная тема">
       <span class="mnav-theme-icons" aria-hidden="true">
-        <svg class="ico mnav-theme-moon"><use href="#i-moon"/></svg>
+        <span class="ico mnav-theme-moon ew-mask-icon ew-icon--bx-moon" aria-hidden="true"></span>
         <span class="mnav-theme-sep">/</span>
-        <svg class="ico mnav-theme-sun"><use href="#i-sun"/></svg>
+        <span class="ico mnav-theme-sun ew-mask-icon ew-icon--iconpark-sun-one" aria-hidden="true"></span>
       </span>
       <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
     </button>
@@ -14397,8 +14464,8 @@ button, a, [role="button"], label,
       <div class="term-line" onclick="terminalAccessDenied('ACTIVE.WORLD',this)"><span class="term-key">ACTIVE.WORLD</span><span class="term-val">MARKETSPACE</span></div>
       <div class="term-line" onclick="terminalAccessDenied('CATALOG.ID',this)"><span class="term-key">CATALOG.ID</span><span class="term-val">01-2026</span></div>
       <div class="term-line" onclick="terminalAccessDenied('CONDENSATS.ACTIVE',this)"><span class="term-key">CONDENSATS.ACTIVE</span><span class="term-val white">11</span></div>
-      <div class="term-line term-locked" onclick="terminalAccessDenied('APERTURA.VERSION',this)"><span class="term-key">APERTURA.VERSION</span><span class="term-val-row term-lock-val"><span>v4.1.7</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-      <div class="term-line term-locked" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="term-key">PERIMETER.STATUS</span><span class="term-val-row term-lock-val"><span>STABLE</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+      <div class="term-line term-locked" onclick="terminalAccessDenied('APERTURA.VERSION',this)"><span class="term-key">APERTURA.VERSION</span><span class="term-val-row term-lock-val"><span>v4.1.7</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span></span></span></div>
+      <div class="term-line term-locked" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="term-key">PERIMETER.STATUS</span><span class="term-val-row term-lock-val"><span>STABLE</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span></span></span></div>
     </div>
   </div>
 </section>
@@ -14922,7 +14989,7 @@ button, a, [role="button"], label,
           <div class="echo-tab-pane echo-tab-pane-voice hidden" id="echoTabPaneVoice">
             <div class="echo-voice" id="echoVoiceBlock">
               <button type="button" class="echo-voice-btn" id="echoVoiceBtn" onclick="toggleEchoRecord()" aria-label="Записать голос">
-                <svg class="ico echo-voice-icon" aria-hidden="true"><use href="#i-record-voice"/></svg>
+                <span class="ico echo-voice-icon ew-mask-icon ew-icon--mingcute-mic-line" aria-hidden="true"></span>
               </button>
               <div class="echo-voice-time" id="echoVoiceTime">0.0 сек</div>
               <div class="echo-voice-status" id="echoVoiceStatus">Нажмите для записи · до 3 сек</div>
@@ -14931,8 +14998,8 @@ button, a, [role="button"], label,
                 <audio id="echoVoiceAudio" preload="auto" playsinline style="display:none"></audio>
                 <div class="echo-player" id="echoPlayer">
                   <button type="button" class="echo-player-btn" id="echoPlayBtn" onclick="_echoTogglePlay()" aria-label="Воспроизвести запись">
-                    <svg class="echo-player-ico-play" aria-hidden="true"><use href="#i-play"/></svg>
-                    <svg class="echo-player-ico-pause" aria-hidden="true"><use href="#i-pause"/></svg>
+                    <span class="echo-player-ico-play ew-mask-icon ew-icon--akar-play" aria-hidden="true"></span>
+                    <span class="echo-player-ico-pause ew-mask-icon ew-icon--akar-pause" aria-hidden="true"></span>
                   </button>
                   <div class="echo-player-track" id="echoPlayerTrack" onclick="_echoSeek(event)">
                     <div class="echo-player-scan" aria-hidden="true"></div>
@@ -15068,7 +15135,7 @@ button, a, [role="button"], label,
         <div class="aw-meta">
           <span class="aw-num">// II</span>
           <span class="aw-lock">
-            <svg aria-hidden="true"><use href="#i-lock"/></svg>
+            <span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span>
             УРОВЕНЬ I
           </span>
         </div>
@@ -15085,7 +15152,7 @@ button, a, [role="button"], label,
         <div class="aw-meta">
           <span class="aw-num">// III</span>
           <span class="aw-lock">
-            <svg aria-hidden="true"><use href="#i-lock"/></svg>
+            <span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span>
             УРОВЕНЬ I
           </span>
         </div>
@@ -15102,7 +15169,7 @@ button, a, [role="button"], label,
         <div class="aw-meta">
           <span class="aw-num">// IV</span>
           <span class="aw-lock">
-            <svg aria-hidden="true"><use href="#i-lock"/></svg>
+            <span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span>
             УРОВЕНЬ I
           </span>
         </div>
@@ -15128,19 +15195,19 @@ button, a, [role="button"], label,
     </div>
     <div class="clinks">
       <a class="clink" href="mailto:hello@echoworld.space">
-        <div class="clink-icon"><svg class="ico" aria-hidden="true"><use href="#i-email"/></svg></div>
+        <div class="clink-icon"><span class="ico ew-mask-icon ew-icon--bi-envelope-at" aria-hidden="true"></span></div>
         <div><div class="clink-name">Email</div><div class="clink-sub">hello@echoworld.space</div></div>
-        <span class="clink-arr" aria-hidden="true"><svg class="ico"><use href="#i-arrow-right"/></svg></span>
+        <span class="clink-arr" aria-hidden="true"><span class="ico ew-mask-icon ew-icon--bx-right-arrow-alt" aria-hidden="true"></span></span>
       </a>
       <a class="clink" href="https://t.me/echoworldspace" target="_blank">
-        <div class="clink-icon"><svg class="ico ico-fill" aria-hidden="true"><use href="#i-telegram"/></svg></div>
+        <div class="clink-icon"><span class="ico ico-fill ew-mask-icon ew-icon--bx-bxl-telegram" aria-hidden="true"></span></div>
         <div><div class="clink-name">Telegram</div><div class="clink-sub">@echoworldspace</div></div>
-        <span class="clink-arr" aria-hidden="true"><svg class="ico"><use href="#i-arrow-right"/></svg></span>
+        <span class="clink-arr" aria-hidden="true"><span class="ico ew-mask-icon ew-icon--bx-right-arrow-alt" aria-hidden="true"></span></span>
       </a>
       <button type="button" class="clink clink-copy" onclick="copyNick(this,'@echoworld.space')" aria-label="Скопировать ник в соцсетях">
-        <div class="clink-icon"><svg class="ico" aria-hidden="true"><use href="#i-share-2"/></svg></div>
+        <div class="clink-icon"><span class="ico ew-mask-icon ew-icon--fluent-share" aria-hidden="true"></span></div>
         <div><div class="clink-name">В социальных сетях</div><div class="clink-sub" data-copy-sub>@echoworld.space</div></div>
-        <span class="clink-arr clink-copy-ico" aria-hidden="true"><svg class="ico"><use href="#i-copy"/></svg></span>
+        <span class="clink-arr clink-copy-ico" aria-hidden="true"><span class="ico ew-mask-icon ew-icon--carbon-copy" aria-hidden="true"></span></span>
       </button>
 
     </div>
@@ -16046,7 +16113,7 @@ button, a, [role="button"], label,
     <p class="classified-text">Apertura уже собирает то, что позже станет вашим интерфейсом.</p>
   </div>
   <div class="classified-big-lock" aria-hidden="true">
-    <svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>
+    <span class="ew-mask-icon ew-icon--mingcute-lock-line" aria-hidden="true"></span>
   </div>
   <span class="classified-lock-glitch classified-lock-glitch-a" aria-hidden="true"></span>
   <span class="classified-lock-glitch classified-lock-glitch-b" aria-hidden="true"></span>
@@ -16069,14 +16136,7 @@ button, a, [role="button"], label,
              тонкая скан-линия (система ждёт касания). При раскрытии
              протокола — быстрый двойной проход и циановая подсветка:
              отпечаток принят, доступ выдан. -->
-        <svg class="faq-fp" viewBox="0 0 24 24" aria-hidden="true">
-          <path class="fp-ridge" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.7" d="M9.222 7.735A5.5 5.5 0 0 1 12 7c2.28 0 4.203 1.33 4.805 3.15"/>
-          <path class="fp-ridge" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.7" d="M7 16v-4.639c0-.51.1-.999.285-1.453"/>
-          <path class="fp-ridge" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.7" d="M14 17v-5.147C14 10.83 13.105 10 12 10s-2 .83-2 1.853v.794"/>
-          <path class="fp-ridge" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.7" d="M17 16v-3.185"/>
-          <path class="fp-ridge" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.7" d="M10 17v-2.177"/>
-          <path class="fp-frame" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M6 3H3v3m15-3h3v3M6 21H3v-3m15 3h3v-3"/>
-        </svg>
+        <span class="faq-fp ew-mask-icon ew-icon--fluent-fingerprint" aria-hidden="true"></span>
       </span>
       <span class="faq-unlock-text">
         <span class="faq-unlock-label">// ДОСТУП РАЗРЕШЁН</span>
@@ -16206,13 +16266,13 @@ button, a, [role="button"], label,
             <div class="terminal-title">ARCHITECT · REGISTRY</div>
           </div>
           <div class="architect-term-body" id="archTerminalBody">
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">DESIGNATION</span><span class="term-val-row term-lock-val"><span>ARCHITECT</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">IDENTIFIER</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">aintonx</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">ACCESS.LEVEL</span><span class="term-val-row term-lock-val"><span class="term-val" style="font-size:inherit">X</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.CREATED</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">1</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.PENDING</span><span class="term-val-row term-lock-val"><span class="term-val red" style="font-size:inherit"><svg class="ico" width="12" height="12" aria-hidden="true"><use href="#i-infinity"/></svg></span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row arch-console-row" onclick="openArchitectConsoleGate(this)"><span class="term-key">APERTURA</span><span class="term-val-row term-lock-val"><span>CONSOLE</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">STATUS</span><span class="term-val-row term-lock-val"><span>WORLD.BUILDING</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">DESIGNATION</span><span class="term-val-row term-lock-val"><span>ARCHITECT</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">IDENTIFIER</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">aintonx</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">ACCESS.LEVEL</span><span class="term-val-row term-lock-val"><span class="term-val" style="font-size:inherit">X</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.CREATED</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">1</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.PENDING</span><span class="term-val-row term-lock-val"><span class="term-val red" style="font-size:inherit"><span class="ico ew-mask-icon ew-icon--akar-infinity" width="12" height="12" aria-hidden="true"></span></span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span></span></span></div>
+            <div class="term-line arch-locked-row arch-console-row" onclick="openArchitectConsoleGate(this)"><span class="term-key">APERTURA</span><span class="term-val-row term-lock-val"><span>CONSOLE</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">STATUS</span><span class="term-val-row term-lock-val"><span>WORLD.BUILDING</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--mingcute-lock-line"></span></span></span></div>
           </div>
         </div>
       </div>
@@ -16246,18 +16306,11 @@ button, a, [role="button"], label,
           <div class="donate-radar">
             <!-- Антенна-передатчик: мачта по центру, дуги — её собственное
                  излучение (волна яркости изнутри наружу, без оверлеев). -->
-            <svg class="donate-ant" viewBox="0 0 24 24" aria-hidden="true">
-              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="9.078" r="2"/>
-                <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
-              </g>
-              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-                <path class="ant-w aw-in" d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
-                <path class="ant-w aw-in" d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
-                <path class="ant-w aw-out" d="M4.936 2A9.97 9.97 0 0 0 2 9.078a9.97 9.97 0 0 0 3 7.142"/>
-                <path class="ant-w aw-out" d="M19.141 2.078a9.97 9.97 0 0 1 2.859 7a9.97 9.97 0 0 1-2.922 7.064"/>
-              </g>
-            </svg>
+            <span class="donate-ant donate-broadcast-live" aria-hidden="true">
+              <span class="ew-mask-icon ew-icon--bx-broadcast donate-broadcast-core"></span>
+              <span class="broadcast-wave bw-in"></span>
+              <span class="broadcast-wave bw-out"></span>
+            </span>
           </div>
           <div class="donate-actions">
             <!-- СБП — заглушка под перевод по номеру; иконка валюты ₽ справа -->
@@ -18414,7 +18467,7 @@ function openModal(i){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(false);
     btns.classList.add('has-share');
-    btns.innerHTML='<button class="mbtn" type="button" data-modal-action="addToCart">В корзину</button><button class="mbtn primary" type="button" data-modal-action="buyNow">Купить сейчас</button><button class="mbtn mbtn-share" type="button" data-modal-action="shareRelic" aria-label="Поделиться реликвией" title="Поделиться"><svg class="ico" aria-hidden="true"><use href="#i-share-svgrepo"/></svg></button>';
+    btns.innerHTML='<button class="mbtn" type="button" data-modal-action="addToCart">В корзину</button><button class="mbtn primary" type="button" data-modal-action="buyNow">Купить сейчас</button><button class="mbtn mbtn-share" type="button" data-modal-action="shareRelic" aria-label="Поделиться реликвией" title="Поделиться"><span class="ico ew-mask-icon ew-icon--fluent-share" aria-hidden="true"></span></button>';
   }else{
     if(insta) insta.style.display=status==='transition_complete'?'flex':'none';
     setModalOrderFieldsDisabled(true);
@@ -18936,7 +18989,7 @@ function updateCartUI(){
         ${echoBadge}
         <div class="cart-item-price">${formatRelicPrice(lineTotal)}</div>
       </div>
-      <button class="cart-item-remove" type="button" data-cart-remove="${i}" aria-label="Удалить из корзины"><svg class="ico" aria-hidden="true"><use href="#i-trash-2"/></svg></button>
+      <button class="cart-item-remove" type="button" data-cart-remove="${i}" aria-label="Удалить из корзины"><span class="ico ew-mask-icon ew-icon--akar-trash-can" aria-hidden="true"></span></button>
     </div>`;
   });
   body.innerHTML=html;
@@ -23039,7 +23092,7 @@ function _apFirstFormStatusRow(){
       <div class="ap-status-label">Статус реликвии</div>
       <div class="ap-status-value ap-first-form-value">
         <span class="ap-first-form-text">Ожидает Перехода</span>
-        <span class="ap-first-form-arr" aria-hidden="true"><svg class="ico"><use href="#i-arrow-down"/></svg></span>
+        <span class="ap-first-form-arr" aria-hidden="true"><span class="ico ew-mask-icon ew-icon--tdesign-chevron-down" aria-hidden="true"></span></span>
       </div>
       <div class="ap-first-form-tip" id="apFirstFormTip" aria-hidden="true">
         <div class="ap-first-form-tip-title">Ожидает Перехода</div>
@@ -24692,7 +24745,7 @@ async function submitPreorder(){
     if(!body) return;
     body.innerHTML=`
       <div class="order-confirmed show">
-        <div class="order-confirmed-icon"><svg class="ico" aria-hidden="true"><use href="#i-badge-check"/></svg></div>
+        <div class="order-confirmed-icon"><span class="ico ew-mask-icon ew-icon--feather-check-circle" aria-hidden="true"></span></div>
         <div class="order-confirmed-title">// Инициирован протокол рождения Виша</div>
         <div class="order-confirmed-sub">
           Запрос принят системой Apertura.<br>
@@ -25395,10 +25448,38 @@ function toggleFaq(el){
 function _fpColor(unlock, mode){
   if(!unlock) return;
   const ridges = unlock.querySelectorAll('.fp-ridge');
+  const maskFp = unlock.querySelector('.faq-fp.ew-mask-icon');
   const cs = getComputedStyle(document.documentElement);
   const col = mode==='open' ? cs.getPropertyValue('--cyan').trim()
             : (mode==='close' ? cs.getPropertyValue('--red2').trim() : '');
   clearTimeout(unlock._fpRevert);
+
+  // Новый отпечаток Fluent: внутри нет отдельных SVG-рёбер, поэтому переносим
+  // старую логику на саму маску — цвет, мягкий glow и короткая scan-анимация.
+  if(maskFp){
+    clearTimeout(maskFp._fpPulseTimer);
+    maskFp.classList.remove('fp-pulse-open','fp-pulse-close');
+    if(mode==='rest'){
+      maskFp.style.color = '';
+      maskFp.style.filter = '';
+    } else {
+      maskFp.style.color = col;
+      maskFp.style.filter = mode==='open'
+        ? 'drop-shadow(0 0 6px rgba(0,200,200,.18))'
+        : 'drop-shadow(0 0 7px rgba(192,40,40,.22))';
+      void maskFp.offsetWidth;
+      maskFp.classList.add(mode==='open' ? 'fp-pulse-open' : 'fp-pulse-close');
+      maskFp._fpPulseTimer = setTimeout(function(){
+        maskFp.classList.remove('fp-pulse-open','fp-pulse-close');
+      }, 560);
+    }
+    if(mode==='close'){
+      unlock._fpRevert = setTimeout(function(){ _fpColor(unlock,'rest'); }, 620);
+    }
+  }
+
+  // Legacy fallback: если вернём составной SVG с .fp-ridge, старая stagger-анимация сохранится.
+  if(!ridges.length) return;
   ridges.forEach(function(r,i){
     clearTimeout(r._fpT);
     r._fpT = setTimeout(function(){ r.style.stroke = col; }, mode==='rest' ? 0 : i*65);
