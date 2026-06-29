@@ -11259,7 +11259,7 @@ button, a, [role="button"], label,
   line-height: 1;
   letter-spacing: .22em;
   text-transform: uppercase;
-  color: rgba(220,224,238,0.90);
+  color: var(--red-hi);
 }
 .classified-text {
   max-width: 650px;
@@ -11268,7 +11268,7 @@ button, a, [role="button"], label,
   font-size: 12px;
   line-height: 1.85;
   letter-spacing: .035em;
-  color: rgba(188,194,214,0.74);
+  color: rgba(232,72,72,0.92);
 }
 .classified-big-lock {
   position: absolute;
@@ -11278,10 +11278,10 @@ button, a, [role="button"], label,
   width: clamp(128px, 12vw, 188px);
   height: clamp(128px, 12vw, 188px);
   transform: translateY(-50%);
-  color: rgba(142,150,174,0.86);
-  opacity: .22;
+  color: var(--red);
+  opacity: .34;
   pointer-events: none;
-  filter: drop-shadow(0 0 18px rgba(130,138,160,.12));
+  filter: drop-shadow(0 0 18px rgba(192,40,40,.22));
   mix-blend-mode: screen;
   transition:
     opacity .68s var(--ease-out),
@@ -11367,27 +11367,27 @@ button, a, [role="button"], label,
   0%, 100% {
     opacity: .26;
     transform: translateY(-50%);
-    filter: drop-shadow(0 0 18px rgba(130,138,160,.12));
+    filter: drop-shadow(0 0 18px rgba(192,40,40,.22));
   }
   18% {
     opacity: .31;
     transform: translateY(-50%) translateX(1px);
-    filter: drop-shadow(0 0 22px rgba(140,148,170,.15));
+    filter: drop-shadow(0 0 22px rgba(192,40,40,.26));
   }
   36% {
     opacity: .24;
     transform: translateY(-50%) translateX(-1px);
-    filter: drop-shadow(0 0 15px rgba(118,126,148,.10));
+    filter: drop-shadow(0 0 15px rgba(192,40,40,.18));
   }
   62% {
     opacity: .29;
     transform: translateY(-50%);
-    filter: drop-shadow(0 0 20px rgba(132,140,162,.13));
+    filter: drop-shadow(0 0 20px rgba(192,40,40,.24));
   }
   86% {
     opacity: .27;
     transform: translateY(-50%);
-    filter: drop-shadow(0 0 18px rgba(130,138,160,.12));
+    filter: drop-shadow(0 0 18px rgba(192,40,40,.22));
   }
 }
 @keyframes classifiedLockLineA {
@@ -11411,7 +11411,7 @@ button, a, [role="button"], label,
 }
 :root[data-theme="light"] .classified-big-lock {
   mix-blend-mode: multiply;
-  opacity: .18;
+  opacity: .30;
 }
 @media (prefers-reduced-motion: reduce) {
   .classified-outer.classified-denied,
@@ -11451,7 +11451,7 @@ button, a, [role="button"], label,
     width: min(38vw, 142px);
     height: min(38vw, 142px);
     transform: translateY(-50%);
-    opacity: .18;
+    opacity: .30;
   }
 }
 @media (max-width: 520px) {
@@ -11469,7 +11469,7 @@ button, a, [role="button"], label,
     right: 0;
     width: min(40vw, 146px);
     height: min(40vw, 146px);
-    opacity: .16;
+    opacity: .28;
   }
 }
 @media (max-width: 360px) {
