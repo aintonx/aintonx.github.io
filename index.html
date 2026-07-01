@@ -14049,6 +14049,105 @@ button, a, [role="button"], label,
 }
 
 
+
+/* ── PATCH · 203.1 · mobile icon optical fit + old locks/antenna ─────────────
+   Иконки Ionicons остаются активными, но мобильная навигация/тема/Эхо получают
+   оптический размер отдельно. Корзина, кабинет, отпечаток и интерфейсные замки
+   намеренно не увеличиваются. */
+@media (max-width: 960px) {
+  .mob-nav-link .ew-mask-icon {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+  }
+  .mob-nav-link .nav-mark {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    font-size: 15px !important;
+  }
+  .mob-nav-link[href="#worlds"] .ew-mask-icon { transform: scale(1.06); }
+  .mob-nav-link[href="#collab"] .ew-mask-icon { transform: scale(1.02); }
+
+  .mnav-theme-icons .ew-mask-icon {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+  }
+  .mnav-theme-icons {
+    gap: 7px;
+  }
+
+  .echo-voice-icon.ew-mask-icon {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+  }
+}
+
+/* Большой замок личного кабинета: возвращён к старому SVG, но уменьшен
+   оптически, чтобы не давить на блок и не выглядеть как гигантская плашка. */
+.classified-big-lock {
+  width: clamp(92px, 8.4vw, 136px) !important;
+  height: clamp(92px, 8.4vw, 136px) !important;
+  right: clamp(30px, 6vw, 74px) !important;
+  opacity: .26 !important;
+  filter: drop-shadow(0 0 14px rgba(192,40,40,.18)) !important;
+}
+.classified-big-lock svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  stroke-width: 1.28 !important;
+}
+@media (max-width: 760px) {
+  .classified-big-lock {
+    width: 74px !important;
+    height: 74px !important;
+    right: 16px !important;
+    opacity: .18 !important;
+  }
+}
+
+/* Старый донатный передатчик: анимируются только собственные дуги .ant-w
+   внутри SVG. Никаких внешних pulse/wave-слоёв поверх антенны. */
+.donate-radar .donate-ant:not(.donate-ion-radio-live) {
+  width: 150px;
+  height: 150px;
+  min-width: 150px;
+  min-height: 150px;
+}
+@media (max-width: 640px) {
+  .donate-radar .donate-ant:not(.donate-ion-radio-live) {
+    width: 128px;
+    height: 128px;
+    min-width: 128px;
+    min-height: 128px;
+  }
+}
+
+/* FAQ fingerprint: убран ранний сброс цвета. Сначала мягкий красный close,
+   затем плавный возврат в спокойный цвет без скачка в середине анимации. */
+.faq-fp.ew-mask-icon {
+  transition:
+    color 1.12s cubic-bezier(.22,1,.36,1),
+    filter 1.08s cubic-bezier(.22,1,.36,1),
+    opacity .96s cubic-bezier(.22,1,.36,1),
+    transform .72s cubic-bezier(.22,1,.36,1) !important;
+}
+.faq-fp.fp-pulse-close {
+  animation: faqFpMaskCloseStable 1.12s cubic-bezier(.22,1,.36,1) both !important;
+}
+@keyframes faqFpMaskCloseStable {
+  0%   { opacity: 1;    filter: drop-shadow(0 0 8px rgba(192,40,40,.25)); transform: scale(1.01); }
+  58%  { opacity: .98;  filter: drop-shadow(0 0 6px rgba(192,40,40,.18)); transform: scale(1.002); }
+  100% { opacity: .92;  filter: drop-shadow(0 0 2px rgba(192,40,40,.08)); transform: scale(1); }
+}
+
 </style>
 <script>
   /* Тема — выставляем как можно раньше, чтобы не было вспышки при загрузке.
@@ -14470,8 +14569,8 @@ button, a, [role="button"], label,
       <div class="term-line" onclick="terminalAccessDenied('ACTIVE.WORLD',this)"><span class="term-key">ACTIVE.WORLD</span><span class="term-val">MARKETSPACE</span></div>
       <div class="term-line" onclick="terminalAccessDenied('CATALOG.ID',this)"><span class="term-key">CATALOG.ID</span><span class="term-val">01-2026</span></div>
       <div class="term-line" onclick="terminalAccessDenied('CONDENSATS.ACTIVE',this)"><span class="term-key">CONDENSATS.ACTIVE</span><span class="term-val white">11</span></div>
-      <div class="term-line term-locked" onclick="terminalAccessDenied('APERTURA.VERSION',this)"><span class="term-key">APERTURA.VERSION</span><span class="term-val-row term-lock-val"><span>v4.1.7</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span></span></span></div>
-      <div class="term-line term-locked" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="term-key">PERIMETER.STATUS</span><span class="term-val-row term-lock-val"><span>STABLE</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span></span></span></div>
+      <div class="term-line term-locked" onclick="terminalAccessDenied('APERTURA.VERSION',this)"><span class="term-key">APERTURA.VERSION</span><span class="term-val-row term-lock-val"><span>v4.1.7</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+      <div class="term-line term-locked" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="term-key">PERIMETER.STATUS</span><span class="term-val-row term-lock-val"><span>STABLE</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
     </div>
   </div>
 </section>
@@ -15141,7 +15240,7 @@ button, a, [role="button"], label,
         <div class="aw-meta">
           <span class="aw-num">// II</span>
           <span class="aw-lock">
-            <span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span>
+            <svg aria-hidden="true"><use href="#i-lock"/></svg>
             УРОВЕНЬ I
           </span>
         </div>
@@ -15158,7 +15257,7 @@ button, a, [role="button"], label,
         <div class="aw-meta">
           <span class="aw-num">// III</span>
           <span class="aw-lock">
-            <span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span>
+            <svg aria-hidden="true"><use href="#i-lock"/></svg>
             УРОВЕНЬ I
           </span>
         </div>
@@ -15175,7 +15274,7 @@ button, a, [role="button"], label,
         <div class="aw-meta">
           <span class="aw-num">// IV</span>
           <span class="aw-lock">
-            <span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span>
+            <svg aria-hidden="true"><use href="#i-lock"/></svg>
             УРОВЕНЬ I
           </span>
         </div>
@@ -16119,7 +16218,7 @@ button, a, [role="button"], label,
     <p class="classified-text">Apertura уже собирает то, что позже станет вашим интерфейсом.</p>
   </div>
   <div class="classified-big-lock" aria-hidden="true">
-    <span class="ew-mask-icon ew-icon--ion-lock-closed-outline" aria-hidden="true"></span>
+    <svg aria-hidden="true"><use href="#i-lock"/></svg>
   </div>
   <span class="classified-lock-glitch classified-lock-glitch-a" aria-hidden="true"></span>
   <span class="classified-lock-glitch classified-lock-glitch-b" aria-hidden="true"></span>
@@ -16272,13 +16371,13 @@ button, a, [role="button"], label,
             <div class="terminal-title">ARCHITECT · REGISTRY</div>
           </div>
           <div class="architect-term-body" id="archTerminalBody">
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">DESIGNATION</span><span class="term-val-row term-lock-val"><span>ARCHITECT</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">IDENTIFIER</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">aintonx</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">ACCESS.LEVEL</span><span class="term-val-row term-lock-val"><span class="term-val" style="font-size:inherit">X</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.CREATED</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">1</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.PENDING</span><span class="term-val-row term-lock-val"><span class="term-val red" style="font-size:inherit"><span class="ico ew-mask-icon ew-icon--ion-infinite-outline" width="12" height="12" aria-hidden="true"></span></span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span></span></span></div>
-            <div class="term-line arch-locked-row arch-console-row" onclick="openArchitectConsoleGate(this)"><span class="term-key">APERTURA</span><span class="term-val-row term-lock-val"><span>CONSOLE</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">STATUS</span><span class="term-val-row term-lock-val"><span>WORLD.BUILDING</span><span class="term-lock-icon"><span aria-hidden="true" class="ew-mask-icon ew-icon--ion-lock-closed-outline"></span></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">DESIGNATION</span><span class="term-val-row term-lock-val"><span>ARCHITECT</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">IDENTIFIER</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">aintonx</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">ACCESS.LEVEL</span><span class="term-val-row term-lock-val"><span class="term-val" style="font-size:inherit">X</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.CREATED</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">1</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.PENDING</span><span class="term-val-row term-lock-val"><span class="term-val red" style="font-size:inherit"><span class="ico ew-mask-icon ew-icon--ion-infinite-outline" width="12" height="12" aria-hidden="true"></span></span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+            <div class="term-line arch-locked-row arch-console-row" onclick="openArchitectConsoleGate(this)"><span class="term-key">APERTURA</span><span class="term-val-row term-lock-val"><span>CONSOLE</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">STATUS</span><span class="term-val-row term-lock-val"><span>WORLD.BUILDING</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
           </div>
         </div>
       </div>
@@ -16312,17 +16411,18 @@ button, a, [role="button"], label,
           <div class="donate-radar">
             <!-- Антенна-передатчик: мачта по центру, дуги — её собственное
                  излучение (волна яркости изнутри наружу, без оверлеев). -->
-            <span class="donate-ant donate-ion-radio-live" aria-hidden="true">
-              <svg class="donate-ion-radio" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                <circle class="donate-radio-dot" cx="256" cy="256.02" r="32"></circle>
-                <path class="donate-radio-wave donate-radio-wave-in donate-radio-wave-left" d="M184.25,192.25a96,96,0,0,0,0,127.52"></path>
-                <path class="donate-radio-wave donate-radio-wave-in donate-radio-wave-right" d="M327.77,319.77a96,96,0,0,0,0-127.52"></path>
-                <path class="donate-radio-wave donate-radio-wave-mid donate-radio-wave-left" d="M133.28,141.28a168,168,0,0,0,0,229.44"></path>
-                <path class="donate-radio-wave donate-radio-wave-mid donate-radio-wave-right" d="M378.72,370.72a168,168,0,0,0,0-229.44"></path>
-                <path class="donate-radio-wave donate-radio-wave-out donate-radio-wave-right" d="M435,416a240.34,240.34,0,0,0,0-320"></path>
-                <path class="donate-radio-wave donate-radio-wave-out donate-radio-wave-left" d="M77,96a240.34,240.34,0,0,0,0,320"></path>
-              </svg>
-            </span>
+            <svg class="donate-ant" viewBox="0 0 24 24" aria-hidden="true">
+              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="9.078" r="2"/>
+                <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
+              </g>
+              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path class="ant-w aw-in" d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
+                <path class="ant-w aw-in" d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
+                <path class="ant-w aw-out" d="M4.936 2A9.97 9.97 0 0 0 2 9.078a9.97 9.97 0 0 0 3 7.142"/>
+                <path class="ant-w aw-out" d="M19.141 2.078a9.97 9.97 0 0 1 2.859 7a9.97 9.97 0 0 1-2.922 7.064"/>
+              </g>
+            </svg>
           </div>
           <div class="donate-actions">
             <!-- СБП — заглушка под перевод по номеру; иконка валюты ₽ справа -->
@@ -25464,40 +25564,51 @@ function _fpColor(unlock, mode){
   const cs = getComputedStyle(document.documentElement);
   const col = mode==='open' ? cs.getPropertyValue('--cyan').trim()
             : (mode==='close' ? cs.getPropertyValue('--red2').trim() : '');
-  clearTimeout(unlock._fpRevert);
 
-  // Новый отпечаток Ionicons: внутри нет отдельных SVG-рёбер, поэтому переносим
-  // старую логику на саму маску — цвет, мягкий glow и короткая scan-анимация.
+  clearTimeout(unlock._fpRevert);
+  clearTimeout(unlock._fpTimer);
+
+  // Ionicons-отпечаток — единая маска без внутренних рёбер.
+  // Поэтому цвет держим до конца close-анимации и только потом мягко возвращаем в покой.
   if(maskFp){
     clearTimeout(maskFp._fpPulseTimer);
     maskFp.classList.remove('fp-pulse-open','fp-pulse-close');
+
     if(mode==='rest'){
       maskFp.style.color = '';
       maskFp.style.filter = '';
+      maskFp.style.opacity = '';
+      maskFp.style.transform = '';
     } else {
       maskFp.style.color = col;
+      maskFp.style.opacity = '1';
       maskFp.style.filter = mode==='open'
         ? 'drop-shadow(0 0 6px rgba(0,200,200,.18))'
         : 'drop-shadow(0 0 7px rgba(192,40,40,.22))';
+
       void maskFp.offsetWidth;
       maskFp.classList.add(mode==='open' ? 'fp-pulse-open' : 'fp-pulse-close');
+
+      const pulseMs = mode==='open' ? 680 : 1180;
       maskFp._fpPulseTimer = setTimeout(function(){
         maskFp.classList.remove('fp-pulse-open','fp-pulse-close');
-      }, 560);
-    }
-    if(mode==='close'){
-      unlock._fpRevert = setTimeout(function(){ _fpColor(unlock,'rest'); }, 940);
+      }, pulseMs);
+
+      if(mode==='close'){
+        unlock._fpRevert = setTimeout(function(){ _fpColor(unlock,'rest'); }, 1280);
+      }
     }
   }
 
-  // Legacy fallback: если вернём составной SVG с .fp-ridge, старая stagger-анимация сохранится.
+  // Legacy fallback: если снова вернётся составной SVG с .fp-ridge,
+  // старая stagger-анимация сохранится.
   if(!ridges.length) return;
   ridges.forEach(function(r,i){
     clearTimeout(r._fpT);
     r._fpT = setTimeout(function(){ r.style.stroke = col; }, mode==='rest' ? 0 : i*65);
   });
-  if(mode==='close'){
-    unlock._fpRevert = setTimeout(function(){ _fpColor(unlock,'rest'); }, ridges.length*65 + 480);
+  if(mode==='close' && !maskFp){
+    unlock._fpRevert = setTimeout(function(){ _fpColor(unlock,'rest'); }, ridges.length*65 + 620);
   }
 }
 function toggleFaqSection(){
@@ -25510,8 +25621,6 @@ function toggleFaqSection(){
     grid.classList.remove('expanded','expanding');
     unlock.classList.remove('opened');
     _fpColor(unlock,'close');
-    clearTimeout(unlock._fpTimer);
-    unlock._fpTimer=setTimeout(()=>_fpColor(unlock,'rest'), 940);
     grid.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
   } else {
     // Раскрыть: рёбра отпечатка прорисовываются цианом + проявление вопросов
