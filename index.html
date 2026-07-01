@@ -13266,16 +13266,13 @@ button, a, [role="button"], label,
 }
 .ico-fill { fill: currentColor; stroke: none; }
 
-/* ── ICON PATCH · selected EchoWorld icon set mix ─────────────────────
-   Реальные SVG остаются внешне монохромными и наследуют currentColor.
-   Используем CSS-mask: единый размер задаётся уже существующими .ico/.nav-ico/.hbtn
-   правилами, а сама библиотека хранится только в классе ниже. */
+/* ── ICON PATCH · Ionicons active set ───────────────────────────────
+   Ключевой принцип: маска НЕ задаёт размер сама. Размер берётся из конкретного
+   интерфейсного контекста (.nav-ico, .hbtn .ico, .echo-voice-icon и т.д.).
+   Это убирает прыжки при reload/font-load: геометрия иконки зарезервирована
+   сразу, а внешняя SVG-mask меняет только отрисовку, не layout. */
 .ew-mask-icon {
   display: inline-block;
-  width: 1em;
-  height: 1em;
-  min-width: 1em;
-  min-height: 1em;
   flex: 0 0 auto;
   background-color: currentColor;
   vertical-align: middle;
@@ -13285,6 +13282,7 @@ button, a, [role="button"], label,
   mask: var(--ew-icon-mask) center / contain no-repeat;
   transform: translateZ(0);
   backface-visibility: hidden;
+  contain: paint;
 }
 /* Ionicons outline system set · выбран единый стиль для активных UI-иконок. */
 .ew-icon--ion-chevron-down-outline { --ew-icon-mask: url("https://api.iconify.design/ion/chevron-down-outline.svg"); }
@@ -14050,103 +14048,6 @@ button, a, [role="button"], label,
 
 
 
-/* ── PATCH · 203.1 · mobile icon optical fit + old locks/antenna ─────────────
-   Иконки Ionicons остаются активными, но мобильная навигация/тема/Эхо получают
-   оптический размер отдельно. Корзина, кабинет, отпечаток и интерфейсные замки
-   намеренно не увеличиваются. */
-@media (max-width: 960px) {
-  .mob-nav-link .ew-mask-icon {
-    width: 20px !important;
-    height: 20px !important;
-    min-width: 20px !important;
-    min-height: 20px !important;
-  }
-  .mob-nav-link .nav-mark {
-    width: 20px !important;
-    height: 20px !important;
-    min-width: 20px !important;
-    min-height: 20px !important;
-    font-size: 15px !important;
-  }
-  .mob-nav-link[href="#worlds"] .ew-mask-icon { transform: scale(1.06); }
-  .mob-nav-link[href="#collab"] .ew-mask-icon { transform: scale(1.02); }
-
-  .mnav-theme-icons .ew-mask-icon {
-    width: 18px !important;
-    height: 18px !important;
-    min-width: 18px !important;
-    min-height: 18px !important;
-  }
-  .mnav-theme-icons {
-    gap: 7px;
-  }
-
-  .echo-voice-icon.ew-mask-icon {
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
-    min-height: 38px !important;
-  }
-}
-
-/* Большой замок личного кабинета: возвращён к старому SVG, но уменьшен
-   оптически, чтобы не давить на блок и не выглядеть как гигантская плашка. */
-.classified-big-lock {
-  width: clamp(92px, 8.4vw, 136px) !important;
-  height: clamp(92px, 8.4vw, 136px) !important;
-  right: clamp(30px, 6vw, 74px) !important;
-  opacity: .26 !important;
-  filter: drop-shadow(0 0 14px rgba(192,40,40,.18)) !important;
-}
-.classified-big-lock svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-  stroke-width: 1.28 !important;
-}
-@media (max-width: 760px) {
-  .classified-big-lock {
-    width: 74px !important;
-    height: 74px !important;
-    right: 16px !important;
-    opacity: .18 !important;
-  }
-}
-
-/* Старый донатный передатчик: анимируются только собственные дуги .ant-w
-   внутри SVG. Никаких внешних pulse/wave-слоёв поверх антенны. */
-.donate-radar .donate-ant:not(.donate-ion-radio-live) {
-  width: 150px;
-  height: 150px;
-  min-width: 150px;
-  min-height: 150px;
-}
-@media (max-width: 640px) {
-  .donate-radar .donate-ant:not(.donate-ion-radio-live) {
-    width: 128px;
-    height: 128px;
-    min-width: 128px;
-    min-height: 128px;
-  }
-}
-
-/* FAQ fingerprint: убран ранний сброс цвета. Сначала мягкий красный close,
-   затем плавный возврат в спокойный цвет без скачка в середине анимации. */
-.faq-fp.ew-mask-icon {
-  transition:
-    color 1.12s cubic-bezier(.22,1,.36,1),
-    filter 1.08s cubic-bezier(.22,1,.36,1),
-    opacity .96s cubic-bezier(.22,1,.36,1),
-    transform .72s cubic-bezier(.22,1,.36,1) !important;
-}
-.faq-fp.fp-pulse-close {
-  animation: faqFpMaskCloseStable 1.12s cubic-bezier(.22,1,.36,1) both !important;
-}
-@keyframes faqFpMaskCloseStable {
-  0%   { opacity: 1;    filter: drop-shadow(0 0 8px rgba(192,40,40,.25)); transform: scale(1.01); }
-  58%  { opacity: .98;  filter: drop-shadow(0 0 6px rgba(192,40,40,.18)); transform: scale(1.002); }
-  100% { opacity: .92;  filter: drop-shadow(0 0 2px rgba(192,40,40,.08)); transform: scale(1); }
-}
 
 </style>
 <script>
@@ -16218,7 +16119,7 @@ button, a, [role="button"], label,
     <p class="classified-text">Apertura уже собирает то, что позже станет вашим интерфейсом.</p>
   </div>
   <div class="classified-big-lock" aria-hidden="true">
-    <svg aria-hidden="true"><use href="#i-lock"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lock"/></svg>
   </div>
   <span class="classified-lock-glitch classified-lock-glitch-a" aria-hidden="true"></span>
   <span class="classified-lock-glitch classified-lock-glitch-b" aria-hidden="true"></span>
@@ -25569,7 +25470,8 @@ function _fpColor(unlock, mode){
   clearTimeout(unlock._fpTimer);
 
   // Ionicons-отпечаток — единая маска без внутренних рёбер.
-  // Поэтому цвет держим до конца close-анимации и только потом мягко возвращаем в покой.
+  // Цвет НЕ сбрасывается в середине close-анимации: сначала удерживается красный,
+  // затем после завершения мягко возвращается в спокойный серый.
   if(maskFp){
     clearTimeout(maskFp._fpPulseTimer);
     maskFp.classList.remove('fp-pulse-open','fp-pulse-close');
@@ -25579,35 +25481,37 @@ function _fpColor(unlock, mode){
       maskFp.style.filter = '';
       maskFp.style.opacity = '';
       maskFp.style.transform = '';
-    } else {
-      maskFp.style.color = col;
-      maskFp.style.opacity = '1';
-      maskFp.style.filter = mode==='open'
-        ? 'drop-shadow(0 0 6px rgba(0,200,200,.18))'
-        : 'drop-shadow(0 0 7px rgba(192,40,40,.22))';
-
-      void maskFp.offsetWidth;
-      maskFp.classList.add(mode==='open' ? 'fp-pulse-open' : 'fp-pulse-close');
-
-      const pulseMs = mode==='open' ? 680 : 1180;
-      maskFp._fpPulseTimer = setTimeout(function(){
-        maskFp.classList.remove('fp-pulse-open','fp-pulse-close');
-      }, pulseMs);
-
-      if(mode==='close'){
-        unlock._fpRevert = setTimeout(function(){ _fpColor(unlock,'rest'); }, 1280);
-      }
+      return;
     }
+
+    maskFp.style.color = col;
+    maskFp.style.opacity = '1';
+    maskFp.style.filter = mode==='open'
+      ? 'drop-shadow(0 0 7px rgba(0,200,200,.22))'
+      : 'drop-shadow(0 0 7px rgba(192,40,40,.22))';
+    maskFp.style.transform = 'scale(1)';
+
+    void maskFp.offsetWidth;
+    maskFp.classList.add(mode==='open' ? 'fp-pulse-open' : 'fp-pulse-close');
+
+    const pulseMs = mode==='open' ? 620 : 1040;
+    maskFp._fpPulseTimer = setTimeout(function(){
+      maskFp.classList.remove('fp-pulse-open','fp-pulse-close');
+    }, pulseMs);
+
+    if(mode==='close'){
+      unlock._fpRevert = setTimeout(function(){ _fpColor(unlock,'rest'); }, 1120);
+    }
+    return;
   }
 
-  // Legacy fallback: если снова вернётся составной SVG с .fp-ridge,
-  // старая stagger-анимация сохранится.
+  // Legacy fallback для старого составного SVG с .fp-ridge.
   if(!ridges.length) return;
   ridges.forEach(function(r,i){
     clearTimeout(r._fpT);
     r._fpT = setTimeout(function(){ r.style.stroke = col; }, mode==='rest' ? 0 : i*65);
   });
-  if(mode==='close' && !maskFp){
+  if(mode==='close'){
     unlock._fpRevert = setTimeout(function(){ _fpColor(unlock,'rest'); }, ridges.length*65 + 620);
   }
 }
@@ -28498,7 +28402,7 @@ function acceptCookies(){
   display: block;
   transform: scale(1.02);
 }
-.donate-ant.donate-ion-radio-live {
+.donate-ant {
   display: block;
   margin: 0 auto;
   overflow: visible;
@@ -28515,69 +28419,232 @@ function acceptCookies(){
   backface-visibility: hidden;
   animation: donateAntGlitch 11s steps(1,end) infinite;
 }
-.donate-ion-radio {
+/* ── PATCH · 204.2 · ТЗ replay: stable Ionicons + old locks/antenna ─────────
+   1) Размер Ionicons фиксируется контекстом, а не font-size => нет прыжков при reload.
+   2) На мобильной версии увеличены только навигация, тема и Эхо.
+      Исключения сохранены: корзина, кабинет, отпечаток, интерфейсные замки.
+   3) Замки и донатная антенна остаются старыми SVG из legacy-слоя.
+   4) Отпечаток гаснет плавно без раннего сброса цвета. */
+
+/* Геометрия масочных иконок закреплена явно: внешняя mask-картинка не влияет на layout. */
+.ico.ew-mask-icon {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  display: inline-block;
+  flex: 0 0 16px;
+}
+.warr .ico.ew-mask-icon,
+.mstatus-arr .ico.ew-mask-icon {
+  width: 11px;
+  height: 11px;
+  min-width: 11px;
+  min-height: 11px;
+  flex-basis: 11px;
+}
+.navlink .nav-ico.ew-mask-icon,
+.desktop-menu-opt .ico.ew-mask-icon {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  min-height: 14px;
+  flex-basis: 14px;
+}
+.hbtn .ico.ew-mask-icon {
+  width: 13px;
+  height: 13px;
+  min-width: 13px;
+  min-height: 13px;
+  flex-basis: 13px;
+}
+.hbtn.hbtn-cart .ico.ew-mask-icon,
+.hbtn.hbtn-cabinet .ico.ew-mask-icon {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  flex-basis: 26px;
+}
+.hbtn.hbtn-cart .ew-icon--ion-cart-outline { transform: translateY(-1px) scale(1.12); }
+.hbtn.hbtn-cabinet .ew-icon--ion-person-circle-outline { transform: scale(1.08); }
+.mnav-tile-ico.ew-mask-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  flex-basis: 42px;
+}
+.echo-voice-icon.ew-mask-icon {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  flex-basis: 28px;
+}
+.echo-player-ico-play.ew-mask-icon,
+.echo-player-ico-pause.ew-mask-icon {
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  min-height: 15px;
+  display: block;
+}
+.echo-player-ico-play.ew-icon--ion-play-outline { transform: translateX(1px) scale(1.04); }
+.clink-icon .ew-mask-icon,
+.clink-arr .ew-mask-icon,
+.clink-copy-ico .ew-mask-icon {
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  min-height: 15px;
+  display: block;
+}
+.clink-icon .ew-icon--ion-paper-plane-outline { transform: translateX(1px) rotate(-2deg); }
+.clink-arr .ew-icon--ion-arrow-forward-outline { transform: translateX(1px); }
+.order-confirmed-icon .ew-mask-icon {
   width: 100%;
   height: 100%;
+  min-width: 100%;
+  min-height: 100%;
   display: block;
-  overflow: visible;
+  filter: drop-shadow(0 0 14px var(--cyan-glow));
 }
-.donate-ion-radio .donate-radio-dot {
-  fill: currentColor;
-  opacity: .82;
-  animation: antCore 2.8s ease-in-out infinite;
+.term-val .ew-icon--ion-infinite-outline {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
+  flex-basis: 12px;
 }
-.donate-ion-radio .donate-radio-wave {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 32px;
+
+/* Мобильное увеличение — только то, что просили: навигация, тема, Эхо.
+   Корзина/Кабинет (.mnav-tile-ico), отпечаток (.faq-fp) и замки не затронуты. */
+@media (max-width: 960px) {
+  .mob-nav-link .nav-ico.ew-mask-icon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    flex-basis: 24px !important;
+  }
+  .mob-nav-link .nav-mark {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    font-size: 16px !important;
+  }
+  .mob-nav-link[href="#worlds"] .nav-ico.ew-mask-icon { transform: scale(1.05); }
+  .mob-nav-link[href="#collab"] .nav-ico.ew-mask-icon { transform: scale(1.02); }
+
+  .mnav-theme-icons {
+    gap: 9px !important;
+  }
+  .mnav-theme-icons .ew-mask-icon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    flex-basis: 24px !important;
+  }
+  .mnav-theme-sep {
+    font-size: 13px !important;
+  }
+
+  .echo-voice-icon.ew-mask-icon {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    flex-basis: 36px !important;
+  }
+}
+
+/* Большой замок личного кабинета: old #i-lock, но аккуратно посажен как фоновый знак. */
+.classified-big-lock {
+  width: clamp(68px, 6.4vw, 108px) !important;
+  height: clamp(68px, 6.4vw, 108px) !important;
+  right: clamp(22px, 5vw, 58px) !important;
+  top: 50% !important;
+  opacity: .22 !important;
+  color: var(--red) !important;
+  filter: drop-shadow(0 0 12px rgba(192,40,40,.16)) !important;
+  mix-blend-mode: screen;
+}
+.classified-big-lock svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  stroke-width: 1.16 !important;
+}
+.classified-big-lock .ew-mask-icon {
+  display: none !important;
+}
+@media (max-width: 760px) {
+  .classified-big-lock {
+    width: 54px !important;
+    height: 54px !important;
+    right: 14px !important;
+    opacity: .16 !important;
+  }
+}
+
+/* Донаты: только старая внутренняя SVG-антенна и её собственные дуги .ant-w. */
+.donate-ant {
+  width: 150px !important;
+  height: 150px !important;
+  min-width: 150px !important;
+  min-height: 150px !important;
+  display: block !important;
+  margin: 0 auto !important;
+  overflow: visible !important;
+}
+.donate-ant .ant-w {
   opacity: .24;
   animation: antWave 2.8s ease-in-out infinite;
 }
-.donate-ion-radio .donate-radio-wave-mid { animation-delay: .22s; }
-.donate-ion-radio .donate-radio-wave-out { animation-delay: .44s; }
+.donate-ant .aw-out { animation-delay: .4s; }
 @media (max-width: 640px) {
-  .donate-ant.donate-ion-radio-live {
-    width: 128px;
-    height: 128px;
-    min-width: 128px;
-    min-height: 128px;
+  .donate-ant {
+    width: 128px !important;
+    height: 128px !important;
+    min-width: 128px !important;
+    min-height: 128px !important;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .donate-ant.donate-ion-radio-live,
-  .donate-ion-radio .donate-radio-dot,
-  .donate-ion-radio .donate-radio-wave {
-    animation: none !important;
-  }
-  .donate-ion-radio .donate-radio-wave { opacity: .38; }
-}
-/* Ionicons optical corrections: не фиксированный размер, а подгонка под конкретные интерфейсы. */
-.hbtn.hbtn-cart .ew-icon--ion-cart-outline { transform: translateY(-1px) scale(1.12); }
-.hbtn.hbtn-cabinet .ew-icon--ion-person-circle-outline { transform: scale(1.08); }
-.classified-big-lock .ew-icon--ion-lock-closed-outline { transform: scale(1.08); }
-.echo-voice-icon.ew-icon--ion-mic-circle-outline { transform: scale(1.04); }
-.echo-player-ico-play.ew-icon--ion-play-outline { transform: translateX(1px) scale(1.04); }
-.term-lock-icon .ew-icon--ion-lock-closed-outline { transform: scale(1.04); }
-.clink-icon .ew-icon--ion-paper-plane-outline { transform: translateX(1px) rotate(-2deg); }
-.clink-arr .ew-icon--ion-arrow-forward-outline { transform: translateX(1px); }
-.order-confirmed-icon .ew-icon--ion-checkmark-circle-outline { transform: scale(1.02); }
 
-/* FAQ fingerprint: плавное затухание цвета при закрытии, без резкого сброса. */
+/* Отпечаток: цвет держится до конца close, затем мягко возвращается в neutral. */
 .faq-fp.ew-mask-icon {
+  width: 23px !important;
+  height: 23px !important;
+  min-width: 23px !important;
+  min-height: 23px !important;
+  flex-basis: 23px !important;
+  opacity: .92;
   transition:
-    color .86s cubic-bezier(.22,1,.36,1),
-    filter .9s cubic-bezier(.22,1,.36,1),
-    opacity .86s cubic-bezier(.22,1,.36,1),
-    transform .58s cubic-bezier(.22,1,.36,1);
+    color .72s cubic-bezier(.22,1,.36,1),
+    filter .72s cubic-bezier(.22,1,.36,1),
+    opacity .72s cubic-bezier(.22,1,.36,1),
+    transform .42s cubic-bezier(.22,1,.36,1) !important;
 }
-.faq-fp.fp-pulse-close { animation-duration: .82s; }
+.faq-fp.fp-pulse-open {
+  animation: faqFpMaskOpen 620ms cubic-bezier(.22,1,.36,1) both !important;
+}
+.faq-fp.fp-pulse-close {
+  animation: faqFpMaskClose 1040ms cubic-bezier(.22,1,.36,1) both !important;
+}
+@keyframes faqFpMaskOpen {
+  0%   { opacity: .70; filter: none; transform: scale(.97); }
+  42%  { opacity: 1;   filter: drop-shadow(0 0 10px rgba(0,200,200,.34)); transform: scale(1.035); }
+  100% { opacity: 1;   filter: drop-shadow(0 0 6px rgba(0,200,200,.18)); transform: scale(1); }
+}
 @keyframes faqFpMaskClose {
-  0% { opacity: 1; filter: drop-shadow(0 0 8px rgba(192,40,40,.25)); transform: scale(1.01); }
-  68% { opacity: .84; filter: drop-shadow(0 0 5px rgba(192,40,40,.14)); transform: scale(.995); }
-  100% { opacity: .72; filter: none; transform: scale(1); }
+  0%   { opacity: 1;   filter: drop-shadow(0 0 8px rgba(192,40,40,.25)); transform: scale(1.01); }
+  78%  { opacity: 1;   filter: drop-shadow(0 0 5px rgba(192,40,40,.16)); transform: scale(1); }
+  100% { opacity: .92; filter: drop-shadow(0 0 2px rgba(192,40,40,.06)); transform: scale(1); }
 }
+
 </style>
 
 <!-- PATCH · MOBILE VISUAL VIEWPORT SYNC FOR APERTURA PANELS -->
