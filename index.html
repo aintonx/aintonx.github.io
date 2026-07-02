@@ -5518,7 +5518,7 @@ select:-webkit-autofill {
     repeating-linear-gradient(90deg, transparent 0 23px, rgba(255,255,255,0.025) 23px 24px);
 }
 /* Старая спутниковая тарелка и наложенные волны-оверлеи демонтированы:
-   излучение теперь живёт в самих дугах антенны (.donate-antenna-live ниже). */
+   излучение теперь живёт в собственных дугах Lucide-антенны (.donate-ant .ant-w). */
 /* ── ДОНАТЫ: КРАСНАЯ КОНСОЛЬ ──────────────────────────────────────────
    Тот же «приборный» язык, что у Эхо, но в красной палитре сайта.
    Тарелка перекрашена в site-красные (fill/stroke), экран/эхоы красные.
@@ -13244,67 +13244,30 @@ button, a, [role="button"], label,
   .ap-status-title { font-size: 24px; }
 }
 
-
-
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  flex-shrink: 0;
-  display: block;
-  backface-visibility: hidden;
-}
-.ico-fill { fill: currentColor; stroke: none; }
-
-/* ── ICON PATCH · Ionicons active set ───────────────────────────────
-   Ключевой принцип: маска НЕ задаёт размер сама. Размер берётся из конкретного
-   интерфейсного контекста (.nav-ico, .hbtn .ico, .echo-voice-icon и т.д.).
-   Это убирает прыжки при reload/font-load: геометрия иконки зарезервирована
-   сразу, а внешняя SVG-mask меняет только отрисовку, не layout. */
+/* ── ICON CORE · Lucide local sprite ───────────────────────────────
+   Размер резервируется контекстом, а локальный SVG-символ рисуется stroke-линиями
+   через currentColor. Внешних mask/CDN-зависимостей у UI-иконок больше нет. */
+.ico,
 .ew-mask-icon {
   display: inline-block;
   flex: 0 0 auto;
-  background-color: currentColor;
   vertical-align: middle;
-  line-height: 1;
-  overflow: hidden;
-  -webkit-mask: var(--ew-icon-mask) center / contain no-repeat;
-  mask: var(--ew-icon-mask) center / contain no-repeat;
+  line-height: 0;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--ew-icon-stroke, 1.75);
+  stroke-linecap: round;
+  stroke-linejoin: round;
   transform: translateZ(0);
   backface-visibility: hidden;
   contain: paint;
 }
-/* Ionicons outline system set · выбран единый стиль для активных UI-иконок. */
-.ew-icon--ion-chevron-down-outline { --ew-icon-mask: url("https://api.iconify.design/ion/chevron-down-outline.svg"); }
-.ew-icon--ion-moon-outline { --ew-icon-mask: url("https://api.iconify.design/ion/moon-outline.svg"); }
-.ew-icon--ion-sunny-outline { --ew-icon-mask: url("https://api.iconify.design/ion/sunny-outline.svg"); }
-.ew-icon--ion-grid-outline { --ew-icon-mask: url("https://api.iconify.design/ion/grid-outline.svg"); }
-.ew-icon--ion-mic-outline { --ew-icon-mask: url("https://api.iconify.design/ion/mic-outline.svg"); }
-.ew-icon--ion-mic-circle-outline { --ew-icon-mask: url("https://api.iconify.design/ion/mic-circle-outline.svg"); }
-.ew-icon--ion-hardware-chip-outline { --ew-icon-mask: url("https://api.iconify.design/ion/hardware-chip-outline.svg"); }
-.ew-icon--ion-globe-outline { --ew-icon-mask: url("https://api.iconify.design/ion/globe-outline.svg"); }
-.ew-icon--ion-help-circle-outline { --ew-icon-mask: url("https://api.iconify.design/ion/help-circle-outline.svg"); }
-.ew-icon--ion-mail-outline { --ew-icon-mask: url("https://api.iconify.design/ion/mail-outline.svg"); }
-.ew-icon--ion-cart-outline { --ew-icon-mask: url("https://api.iconify.design/ion/cart-outline.svg"); }
-.ew-icon--ion-person-circle-outline { --ew-icon-mask: url("https://api.iconify.design/ion/person-circle-outline.svg"); }
-.ew-icon--ion-lock-closed-outline { --ew-icon-mask: url("https://api.iconify.design/ion/lock-closed-outline.svg"); }
-.ew-icon--ion-search-outline { --ew-icon-mask: url("https://api.iconify.design/ion/search-outline.svg"); }
-.ew-icon--ion-play-outline { --ew-icon-mask: url("https://api.iconify.design/ion/play-outline.svg"); }
-.ew-icon--ion-pause-outline { --ew-icon-mask: url("https://api.iconify.design/ion/pause-outline.svg"); }
-.ew-icon--ion-mail-open-outline { --ew-icon-mask: url("https://api.iconify.design/ion/mail-open-outline.svg"); }
-.ew-icon--ion-arrow-forward-outline { --ew-icon-mask: url("https://api.iconify.design/ion/arrow-forward-outline.svg"); }
-.ew-icon--ion-paper-plane-outline { --ew-icon-mask: url("https://api.iconify.design/ion/paper-plane-outline.svg"); }
-.ew-icon--ion-share-social-outline { --ew-icon-mask: url("https://api.iconify.design/ion/share-social-outline.svg"); }
-.ew-icon--ion-copy-outline { --ew-icon-mask: url("https://api.iconify.design/ion/copy-outline.svg"); }
-.ew-icon--ion-locate-outline { --ew-icon-mask: url("https://api.iconify.design/ion/locate-outline.svg"); }
-.ew-icon--ion-infinite-outline { --ew-icon-mask: url("https://api.iconify.design/ion/infinite-outline.svg"); }
-.ew-icon--ion-checkmark-circle-outline { --ew-icon-mask: url("https://api.iconify.design/ion/checkmark-circle-outline.svg"); }
-.ew-icon--ion-trash-outline { --ew-icon-mask: url("https://api.iconify.design/ion/trash-outline.svg"); }
-.ew-icon--ion-send-outline { --ew-icon-mask: url("https://api.iconify.design/ion/send-outline.svg"); }
-.ew-icon--ion-finger-print-outline { --ew-icon-mask: url("https://api.iconify.design/ion/finger-print-outline.svg"); }
-.ew-icon--ion-radio-outline { --ew-icon-mask: url("https://api.iconify.design/ion/radio-outline.svg"); }
-.ew-icon--ion-analytics-outline { --ew-icon-mask: url("https://api.iconify.design/ion/analytics-outline.svg"); }
+.ew-mask-icon use,
+.ew-mask-icon * {
+  vector-effect: non-scaling-stroke;
+}
+.ico-fill { fill: currentColor; stroke: none; }
 
 
 
@@ -14249,42 +14212,35 @@ button, a, [role="button"], label,
 <body>
 <div id="ewSmartCaptchaRoot" aria-hidden="true"></div>
 
-<!-- ===== ICON SPRITE · legacy inline symbols + selected Iconify CSS-mask icons.
-     Использование: <svg class="ico"><use href="#i-имя"/></svg>; цвет — currentColor, толщина — класс .ico.
-     Новые inline-symbol иконки добавлять сюда; выбранные внешние наборы подключены ниже через CSS-mask
-     (в symbol переносить только внутренние пути, без атрибутов). -->
+<!-- ===== ICON SPRITE · Lucide local symbols (ISC). Logo/favicon are separate brand assets. -->
 <svg id="ew-icons" xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" focusable="false" aria-hidden="true">
-  <symbol id="i-moon" viewBox="0 0 32 32"><path fill="currentColor" stroke="none" d="M13.503 5.414a15.076 15.076 0 0 0 11.593 18.194a11.1 11.1 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1 1 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.07 13.07 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3"/></symbol>
-  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="6"/><path stroke-linecap="round" d="M12 2v1m0 18v1m10-10h-1M3 12H2m17.07-7.07l-.392.393M5.322 18.678l-.393.393m14.141-.001l-.392-.393M5.322 5.322l-.393-.393"/></g></symbol>
-  <symbol id="i-layout-grid" viewBox="0 0 32 32"><path fill="currentColor" stroke="none" d="M12 4H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2m0 8H6V6h6Zm14-8h-6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2m0 8h-6V6h6Zm-14 6H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2m0 8H6v-6h6Zm14-8h-6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2m0 8h-6v-6h6Z"/></symbol>
-  <symbol id="i-cpu" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M8 15.4V8.6a.6.6 0 0 1 .6-.6h6.8a.6.6 0 0 1 .6.6v6.8a.6.6 0 0 1-.6.6H8.6a.6.6 0 0 1-.6-.6"/><path d="M20 4.6v14.8a.6.6 0 0 1-.6.6H4.6a.6.6 0 0 1-.6-.6V4.6a.6.6 0 0 1 .6-.6h14.8a.6.6 0 0 1 .6.6M17 4V2m-5 2V2M7 4V2m0 18v2m5-2v2m5-2v2m3-5h2m-2-5h2m-2-5h2M4 17H2m2-5H2m2-5H2"/></g></symbol>
-  <symbol id="i-aperture" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8.504 9.426l3-1.714a1 1 0 0 1 .992 0l3 1.714a1 1 0 0 1 .504.868v3.411a1 1 0 0 1-.504.868l-3 1.715a1 1 0 0 1-.992 0l-3-1.715A1 1 0 0 1 8 13.705v-3.41a1 1 0 0 1 .504-.869m7.246.538L12 12m0 0L8.25 9.964M12 12v4.071M3 7V5a2 2 0 0 1 2-2h2M3 17v2a2 2 0 0 0 2 2h2M17 3h2a2 2 0 0 1 2 2v2m-4 14h2a2 2 0 0 0 2-2v-2"/></symbol>
-  <symbol id="i-circle-help" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M15.4 7.5h-.05m3.35 0h-.05m-3.2 0a.1.1 0 1 1-.2 0a.1.1 0 0 1 .2 0m3.3 0a.1.1 0 1 1-.2 0a.1.1 0 0 1 .2 0"/><path d="M17 12.567c2.761 0 5-2.142 5-4.784S19.761 3 17 3s-5 2.142-5 4.783c0 1.27.517 2.423 1.36 3.279c.185.188.309.445.259.71a2.66 2.66 0 0 1-.543 1.175a3.25 3.25 0 0 0 2.111-.329h.001c.227-.12.34-.181.42-.193s.195.01.425.052q.479.09.967.09M10 13a3 3 0 1 1-6 0a3 3 0 0 1 6 0"/><path d="M12 21a5 5 0 0 0-10 0"/></g></symbol>
-  <symbol id="i-shopping-cart" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path fill="currentColor" d="M19.5 22a1.5 1.5 0 1 0 0-3a1.5 1.5 0 0 0 0 3m-10 0a1.5 1.5 0 1 0 0-3a1.5 1.5 0 0 0 0 3"/><path d="M5 4h17l-2 11H7zm0 0c-.167-.667-1-2-3-2m18 13H5.23c-1.784 0-2.73.781-2.73 2s.946 2 2.73 2H19.5"/></g></symbol>
-  <symbol id="i-user-round" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 3H3v3m15-3h3v3M6 21H3v-3m4 0v-1a5 5 0 0 1 5-5v0a5 5 0 0 1 5 5v1m-5-6a3 3 0 1 0 0-6a3 3 0 0 0 0 6m6 9h3v-3"/></symbol>
-  <symbol id="i-lock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 0 1 2-2h2M4 16v2a2 2 0 0 0 2 2h2m8-16h2a2 2 0 0 1 2 2v2m-4 12h2a2 2 0 0 0 2-2v-2M8 12a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1zm2-1V9a2 2 0 1 1 4 0v2"/></symbol>
-  <symbol id="i-fingerprint-scan" viewBox="0 0 24 24"><path class="fp-ridge" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M7 16v-4.639c0-.51.1-.999.285-1.453M17 16v-3.185m-7.778-5.08A5.5 5.5 0 0 1 12 7c2.28 0 4.203 1.33 4.805 3.15M10 17v-2.177M14 17v-5.147C14 10.83 13.105 10 12 10s-2 .83-2 1.853v.794"/><path class="fp-frame" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M6 3H3v3m15-3h3v3M6 21H3v-3m15 3h3v-3"/></symbol>
-  <symbol id="i-mic" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v12M9 9v6m9-4v2M6 11v2m9-6v10M6 3H3v3m15-3h3v3M6 21H3v-3m15 3h3v-3"/></symbol>
-  <symbol id="i-record-voice" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 8a5 5 0 0 1 10 0v3a5 5 0 0 1-10 0z"/><path stroke-linecap="round" d="M11 8h2m-3 3h4m6-1v1a8 8 0 1 1-16 0v-1m8 9v3"/></g></symbol>
-  <symbol id="i-play" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.906 4.537A.6.6 0 0 0 6 5.053v13.894a.6.6 0 0 0 .906.516l11.723-6.947a.6.6 0 0 0 0-1.032z"/></symbol>
-  <symbol id="i-pause" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.5" d="M6 18.4V5.6a.6.6 0 0 1 .6-.6h2.8a.6.6 0 0 1 .6.6v12.8a.6.6 0 0 1-.6.6H6.6a.6.6 0 0 1-.6-.6Zm8 0V5.6a.6.6 0 0 1 .6-.6h2.8a.6.6 0 0 1 .6.6v12.8a.6.6 0 0 1-.6.6h-2.8a.6.6 0 0 1-.6-.6Z"/></symbol>
-  <symbol id="i-mail" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m7 9l5 3.5L17 9"/><path d="M2 17V7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Z"/></g></symbol>
-  <symbol id="i-email" viewBox="0 0 32 32"><path fill="currentColor" stroke="none" d="M28 6H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h24a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2m-2.2 2L16 14.78L6.2 8ZM4 24V8.91l11.43 7.91a1 1 0 0 0 1.14 0L28 8.91V24Z"/></symbol>
-  <symbol id="i-telegram" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 5L2 12.5l7 1M21 5l-2.5 15L9 13.5M21 5L9 13.5m0 0V19l3.249-3.277"/></symbol>
-  <symbol id="i-share-2" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 22a3 3 0 1 0 0-6a3 3 0 0 0 0 6m0-14a3 3 0 1 0 0-6a3 3 0 0 0 0 6M6 15a3 3 0 1 0 0-6a3 3 0 0 0 0 6"/><path d="m15.5 6.5l-7 4m0 3l7 4"/></g></symbol>
-  <symbol id="i-share-arrow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M14 4h6v6"/><path d="M20 4L10 14"/><path d="M12 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></g></symbol>
-  <symbol id="i-share-svgrepo" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" fill-rule="nonzero" d="M15 3c0-.552.448-1 1-1c3.314 0 6 2.686 6 6v8c0 3.314-2.686 6-6 6H8c-3.314 0-6-2.686-6-6c0-.552.448-1 1-1s1 .448 1 1c0 2.209 1.791 4 4 4h8c2.209 0 4-1.791 4-4V8c0-2.209-1.791-4-4-4c-.552 0-1-.448-1-1Z"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" d="M3.707 12.784c.391-.418.916-.958 1.464-1.457c.558-.508 1.098-.937 1.525-1.167c.367-.198 1.054-.32 1.704-.312c.225.003.414.021.556.047c.004.655-.002 1.852-.005 2.368c-.004.747.888 1.135 1.432.625l4.556-4.272c.345-.323.36-.867.032-1.208L10.413 2.66c-.53-.552-1.463-.177-1.463.589v1.919c-.407-.031-.924-.054-1.471-.038c-.948.027-2.17.173-3.007.754c-.104.072-.204.151-.298.234c-1.681 1.463-2.058 3.79-2.282 5.65l-.02.167c-.124 1.037 1.153 1.578 1.835.849Z"/></symbol>
-  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12h18m0 0l-8.5-8.5M21 12l-8.5 8.5"/></symbol>
-  <symbol id="i-arrow-down" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m6 9l6 6l6-6"/></symbol>
-  <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M16.964 8.982c-.003-2.95-.047-4.478-.906-5.524a4 4 0 0 0-.553-.554C14.4 2 12.76 2 9.48 2s-4.92 0-6.024.905a4 4 0 0 0-.553.554C1.998 4.56 1.998 6.2 1.998 9.48s0 4.92.906 6.023q.25.304.553.553c1.046.86 2.575.904 5.525.906"/><path d="m14.028 9.025l2.966-.043m-2.98 13.02l2.966-.043m4.992-7.937l-.028 2.96M9.01 14.036l-.028 2.96m2.505-7.971c-.832.149-2.17.302-2.477 2.024m10.485 10.91c.835-.137 2.174-.27 2.508-1.986M19.495 9.025c.832.149 2.17.302 2.477 2.024M11.5 21.957c-.833-.148-2.17-.301-2.478-2.023"/></g></symbol>
-  <symbol id="i-locate-fixed" viewBox="0 0 32 32"><path fill="currentColor" stroke="none" d="M22 24H10a2 2 0 0 1-2-2v-3h2v3h12v-3h2v3a2 2 0 0 1-2 2M2 15h28v2H2zm22-2h-2v-3H10v3H8v-3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Zm6-3h-2V4h-6V2h8zM4 10H2V2h8v2H4zm6 20H2v-8h2v6h6zm20 0h-8v-2h6v-6h2z"/></symbol>
-  <symbol id="i-trash-2" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M9.17 4a3.001 3.001 0 0 1 5.66 0m5.67 2h-17m15.333 2.5l-.46 6.9c-.177 2.654-.265 3.981-1.13 4.79s-2.196.81-4.856.81h-.774c-2.66 0-3.991 0-4.856-.81c-.865-.809-.954-2.136-1.13-4.79l-.46-6.9M9.5 11l.5 5m4.5-5l-.5 5"/></symbol>
-  <symbol id="i-infinity" viewBox="0 0 32 32"><path fill="currentColor" stroke="none" d="M23 23c-5.656 0-7.858-6.41-7.949-6.684C15.034 16.265 13.208 11 9 11c-2.757 0-5 2.243-5 5s2.243 5 5 5c1.588 0 3.013-.732 4.237-2.176l1.526 1.293C13.164 22.003 11.172 23 9 23c-3.86 0-7-3.14-7-7s3.14-7 7-7c5.656 0 7.858 6.41 7.949 6.684C16.966 15.735 18.792 21 23 21c2.757 0 5-2.243 5-5s-2.243-5-5-5c-1.588 0-3.013.732-4.237 2.176l-1.526-1.293C18.836 9.997 20.828 9 23 9c3.86 0 7 3.14 7 7s-3.14 7-7 7"/></symbol>
-  <symbol id="i-search" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m17 17l4 4M3 11a8 8 0 1 0 16 0a8 8 0 0 0-16 0"/></symbol>
-  <symbol id="i-donate-antenna" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.141 2.078a9.97 9.97 0 0 1 2.859 7a9.97 9.97 0 0 1-2.922 7.064M5 16.22a9.97 9.97 0 0 1-3-7.142A9.97 9.97 0 0 1 4.936 2m11.349 3.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974m-8.447.044C6.69 12.057 6 10.634 6 9.06c0-1.555.673-2.963 1.762-3.982"/><circle cx="12" cy="9.078" r="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/></g></symbol>
-  <symbol id="i-russian-ruble" viewBox="0 0 24 24"><path d="M6 11h8a4 4 0 0 0 0-8H9v18"/><path d="M6 15h8"/></symbol>
-  <symbol id="i-badge-dollar-sign" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></symbol>
-  <symbol id="i-badge-check" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></symbol>
+  <symbol id="i-grid-3x3" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M3 15h18" /><path d="M9 3v18" /><path d="M15 3v18" /></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 19v3" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><rect x="9" y="2" width="6" height="13" rx="3" /></symbol>
+  <symbol id="i-mic-vocal" viewBox="0 0 24 24"><path d="m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12" /><path d="M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5" /><circle cx="16" cy="7" r="5" /></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="3" width="5" height="18" rx="1" /><rect x="5" y="3" width="5" height="18" rx="1" /></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><path d="M12 20v2" /><path d="M12 2v2" /><path d="M17 20v2" /><path d="M17 2v2" /><path d="M2 12h2" /><path d="M2 17h2" /><path d="M2 7h2" /><path d="M20 12h2" /><path d="M20 17h2" /><path d="M20 7h2" /><path d="M7 20v2" /><path d="M7 2v2" /><rect x="4" y="4" width="16" height="16" rx="2" /><rect x="8" y="8" width="8" height="8" rx="1" /></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></symbol>
+  <symbol id="i-circle-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /><rect x="2" y="4" width="20" height="16" rx="2" /></symbol>
+  <symbol id="i-shopping-cart" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1" /><circle cx="19" cy="21" r="1" /><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" /></symbol>
+  <symbol id="i-user-round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" /></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><circle cx="12" cy="16" r="1" /><rect x="3" y="10" width="18" height="12" rx="2" /><path d="M7 10V7a5 5 0 0 1 10 0v3" /></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></symbol>
+  <symbol id="i-mail-open" viewBox="0 0 24 24"><path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0l8 6Z" /><path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10" /></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" /><path d="m21.854 2.147-10.94 10.939" /></symbol>
+  <symbol id="i-share-2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" x2="15.42" y1="13.51" y2="17.49" /><line x1="15.41" x2="8.59" y1="6.51" y2="10.49" /></symbol>
+  <symbol id="i-share-svgrepo" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" x2="15.42" y1="13.51" y2="17.49" /><line x1="15.41" x2="8.59" y1="6.51" y2="10.49" /></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol>
+  <symbol id="i-locate-fixed" viewBox="0 0 24 24"><line x1="2" x2="5" y1="12" y2="12" /><line x1="19" x2="22" y1="12" y2="12" /><line x1="12" x2="12" y1="2" y2="5" /><line x1="12" x2="12" y1="19" y2="22" /><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="3" /></symbol>
+  <symbol id="i-infinity" viewBox="0 0 24 24"><path d="M6 16c5 0 7-8 12-8a4 4 0 0 1 0 8c-5 0-7-8-12-8a4 4 0 1 0 0 8" /></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></symbol>
+  <symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M10 11v6" /><path d="M14 11v6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol>
+  <symbol id="i-fingerprint" viewBox="0 0 24 24"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" /><path d="M14 13.12c0 2.38 0 6.38-1 8.88" /><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02" /><path d="M2 12a10 10 0 0 1 18-6" /><path d="M2 16h.01" /><path d="M21.8 16c.2-2 .131-5.354 0-6" /><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2" /><path d="M8.65 22c.21-.66.45-1.32.57-2" /><path d="M9 6.8a6 6 0 0 1 9 5.2v2" /></symbol>
 </svg>
 
 <div class="safari-tint-probe safari-tint-probe-top" id="safariTintProbeTop" aria-hidden="true"></div>
@@ -14325,7 +14281,7 @@ button, a, [role="button"], label,
         <div class="wdot"></div>
         <span class="wname">Marketspace</span>
         <span class="whint">/ смена</span>
-        <span class="warr"><span class="ico ew-mask-icon ew-icon--ion-chevron-down-outline" aria-hidden="true"></span></span>
+        <span class="warr"><svg class="ico ew-mask-icon ew-icon--chevron-down" aria-hidden="true"><use href="#i-chevron-down"/></svg></span>
       </div>
       <div class="wdrop" id="wdrop">
         <div class="wopt active" onclick="selectWorld(this,'Marketspace')"><div class="woptdot"></div>Marketspace</div>
@@ -14338,7 +14294,7 @@ button, a, [role="button"], label,
     <div class="wsw lsw" id="lsw">
       <div class="ws lang-ws" onclick="toggleLangDrop(event)" aria-label="Язык">
         <span class="lang-cur" id="langCur">RU</span>
-        <span class="warr"><span class="ico ew-mask-icon ew-icon--ion-chevron-down-outline" aria-hidden="true"></span></span>
+        <span class="warr"><svg class="ico ew-mask-icon ew-icon--chevron-down" aria-hidden="true"><use href="#i-chevron-down"/></svg></span>
       </div>
       <div class="wdrop" id="ldrop">
         <div class="wopt active" onclick="selectLang(this,'RU')"><div class="woptdot"></div>Русский</div>
@@ -14347,36 +14303,36 @@ button, a, [role="button"], label,
     </div>
 
     <button class="theme-switch theme-switch-hdr" type="button" onclick="toggleTheme()" role="switch" aria-pressed="false" aria-label="Светлая или тёмная тема" title="Сменить тему">
-      <span class="ico ts-ico ts-moon ew-mask-icon ew-icon--ion-moon-outline" aria-hidden="true"></span>
+      <svg class="ico ts-ico ts-moon ew-mask-icon ew-icon--moon" aria-hidden="true"><use href="#i-moon"/></svg>
       <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
-      <span class="ico ts-ico ts-sun ew-mask-icon ew-icon--ion-sunny-outline" aria-hidden="true"></span>
+      <svg class="ico ts-ico ts-sun ew-mask-icon ew-icon--sun" aria-hidden="true"><use href="#i-sun"/></svg>
     </button>
 
     <div class="hright">
-      <a href="#catalog" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--ion-grid-outline" aria-hidden="true"></span><span>Каталог</span></a>
-      <a href="#echo" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--ion-mic-outline" aria-hidden="true"></span><span>Эхо</span></a>
-      <a href="#about" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--ion-hardware-chip-outline" aria-hidden="true"></span><span>Система</span></a>
-      <a href="#worlds" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--ion-globe-outline" aria-hidden="true"></span><span>Миры</span></a>
-      <a href="#faq" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--ion-help-circle-outline" aria-hidden="true"></span><span>FAQ</span></a>
-      <a href="#collab" class="navlink"><span class="ico nav-ico ew-mask-icon ew-icon--ion-mail-outline" aria-hidden="true"></span><span>Контакт</span></a>
+      <a href="#catalog" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--grid" aria-hidden="true"><use href="#i-grid-3x3"/></svg><span>Каталог</span></a>
+      <a href="#echo" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
+      <a href="#about" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--cpu" aria-hidden="true"><use href="#i-cpu"/></svg><span>Система</span></a>
+      <a href="#worlds" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--globe" aria-hidden="true"><use href="#i-globe"/></svg><span>Миры</span></a>
+      <a href="#faq" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--circle-help" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
+      <a href="#collab" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--mail" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
       <div class="desktop-menu-wrap" id="desktopMenuWrap">
         <button class="desktop-menu-btn" id="desktopMenuBtn" type="button" onclick="toggleDesktopMenu(event)" aria-label="Меню разделов" aria-expanded="false"><span></span><span></span><span></span></button>
         <div class="wdrop desktop-menu-drop" id="desktopMenuDrop">
-          <a href="#catalog" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--ion-grid-outline" aria-hidden="true"></span><span>Каталог</span></a>
-          <a href="#echo" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--ion-mic-outline" aria-hidden="true"></span><span>Эхо</span></a>
-          <a href="#about" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--ion-hardware-chip-outline" aria-hidden="true"></span><span>Система</span></a>
-          <a href="#worlds" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--ion-globe-outline" aria-hidden="true"></span><span>Миры</span></a>
-          <a href="#faq" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--ion-help-circle-outline" aria-hidden="true"></span><span>FAQ</span></a>
-          <a href="#collab" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="ico ew-mask-icon ew-icon--ion-mail-outline" aria-hidden="true"></span><span>Контакт</span></a>
+          <a href="#catalog" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--grid" aria-hidden="true"><use href="#i-grid-3x3"/></svg><span>Каталог</span></a>
+          <a href="#echo" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
+          <a href="#about" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--cpu" aria-hidden="true"><use href="#i-cpu"/></svg><span>Система</span></a>
+          <a href="#worlds" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--globe" aria-hidden="true"><use href="#i-globe"/></svg><span>Миры</span></a>
+          <a href="#faq" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--circle-help" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
+          <a href="#collab" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--mail" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
           <a href="#architect" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="nav-mark" aria-hidden="true">@</span><span>Архитектор</span></a>
         </div>
       </div>
       <button class="mob-burger" id="mobBurger" onclick="openMobNav()" aria-label="Меню"><span></span><span></span><span></span></button>
       <button class="hbtn hbtn-cart" id="cartBtn" onclick="toggleCart()" aria-label="Корзина">
-        <span class="ico ew-mask-icon ew-icon--ion-cart-outline" aria-hidden="true"></span><span class="hbtn-label">КОРЗИНА</span><span class="cart-count" id="cartCount">0</span>
+        <svg class="ico ew-mask-icon ew-icon--shopping-cart" aria-hidden="true"><use href="#i-shopping-cart"/></svg><span class="hbtn-label">КОРЗИНА</span><span class="cart-count" id="cartCount">0</span>
       </button>
       <button class="hbtn hbtn-cabinet" onclick="showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')" aria-label="Кабинет — скоро" style="opacity:0.6;cursor:default">
-        <span class="ico ew-mask-icon ew-icon--ion-person-circle-outline" aria-hidden="true"></span><span class="hbtn-label">КАБИНЕТ</span><span class="sbadge">СКОРО</span>
+        <svg class="ico ew-mask-icon ew-icon--user-round" aria-hidden="true"><use href="#i-user-round"/></svg><span class="hbtn-label">КАБИНЕТ</span><span class="sbadge">СКОРО</span>
       </button>
     </div>
   </div>
@@ -14390,30 +14346,30 @@ button, a, [role="button"], label,
     <button class="mob-nav-close" onclick="closeMobNav()" aria-label="Закрыть">✕</button>
   </div>
   <div class="mob-nav-links">
-    <a href="#catalog" class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--ion-grid-outline" aria-hidden="true"></span><span>Каталог</span></a>
-    <a href="#echo" class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--ion-mic-outline" aria-hidden="true"></span><span>Эхо</span></a>
-    <a href="#about"   class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--ion-hardware-chip-outline" aria-hidden="true"></span><span>О системе</span></a>
-    <a href="#worlds"  class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--ion-globe-outline" aria-hidden="true"></span><span>Миры</span></a>
-    <a href="#faq"     class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--ion-help-circle-outline" aria-hidden="true"></span><span>FAQ</span></a>
-    <a href="#collab"  class="mob-nav-link" onclick="closeMobNav()"><span class="ico nav-ico ew-mask-icon ew-icon--ion-mail-outline" aria-hidden="true"></span><span>Контакт</span></a>
+    <a href="#catalog" class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico ew-mask-icon ew-icon--grid" aria-hidden="true"><use href="#i-grid-3x3"/></svg><span>Каталог</span></a>
+    <a href="#echo" class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
+    <a href="#about"   class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico ew-mask-icon ew-icon--cpu" aria-hidden="true"><use href="#i-cpu"/></svg><span>О системе</span></a>
+    <a href="#worlds"  class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico ew-mask-icon ew-icon--globe" aria-hidden="true"><use href="#i-globe"/></svg><span>Миры</span></a>
+    <a href="#faq"     class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico ew-mask-icon ew-icon--circle-help" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
+    <a href="#collab"  class="mob-nav-link" onclick="closeMobNav()"><svg class="ico nav-ico ew-mask-icon ew-icon--mail" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
     <a href="#architect" class="mob-nav-link mob-nav-link-arch" onclick="closeMobNav()"><span class="nav-mark" aria-hidden="true">@</span><span>Архитектор</span></a>
   </div>
   <div class="mob-nav-actions">
     <button class="mnav-tile" type="button" onclick="closeMobNav();toggleCart()" aria-label="Корзина">
-      <span class="ico mnav-tile-ico ew-mask-icon ew-icon--ion-cart-outline" aria-hidden="true"></span>
+      <svg class="ico mnav-tile-ico ew-mask-icon ew-icon--shopping-cart" aria-hidden="true"><use href="#i-shopping-cart"/></svg>
       <span class="mnav-tile-label">Корзина</span>
       <span class="mnav-tile-badge" id="mobCartCount">0</span>
     </button>
     <button class="mnav-tile mnav-tile-soon" type="button" onclick="closeMobNav();showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')" aria-label="Кабинет — скоро">
-      <span class="ico mnav-tile-ico ew-mask-icon ew-icon--ion-person-circle-outline" aria-hidden="true"></span>
+      <svg class="ico mnav-tile-ico ew-mask-icon ew-icon--user-round" aria-hidden="true"><use href="#i-user-round"/></svg>
       <span class="mnav-tile-label">Кабинет</span>
       <span class="mnav-ribbon">Скоро</span>
     </button>
     <button class="mnav-tile mnav-tile-theme theme-switch" type="button" onclick="toggleTheme()" role="switch" aria-pressed="false" aria-label="Светлая или тёмная тема">
       <span class="mnav-theme-icons" aria-hidden="true">
-        <span class="ico mnav-theme-moon ew-mask-icon ew-icon--ion-moon-outline" aria-hidden="true"></span>
+        <svg class="ico mnav-theme-moon ew-mask-icon ew-icon--moon" aria-hidden="true"><use href="#i-moon"/></svg>
         <span class="mnav-theme-sep">/</span>
-        <span class="ico mnav-theme-sun ew-mask-icon ew-icon--ion-sunny-outline" aria-hidden="true"></span>
+        <svg class="ico mnav-theme-sun ew-mask-icon ew-icon--sun" aria-hidden="true"><use href="#i-sun"/></svg>
       </span>
       <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
     </button>
@@ -14558,7 +14514,7 @@ button, a, [role="button"], label,
     <div class="cat-control-row">
       <div class="cat-search">
         <input type="text" id="searchInput" placeholder="артикул или имя" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="searchCards()">
-        <span class="cat-search-icon" aria-hidden="true"><span class="ico ew-mask-icon ew-icon--ion-search-outline" aria-hidden="true"></span></span>
+        <span class="cat-search-icon" aria-hidden="true"><svg class="ico ew-mask-icon ew-icon--search" aria-hidden="true"><use href="#i-search"/></svg></span>
       </div>
     </div>
     <div class="cat-cats" aria-label="Мощь Реликвии">
@@ -14986,7 +14942,7 @@ button, a, [role="button"], label,
           <div class="echo-tab-pane echo-tab-pane-voice hidden" id="echoTabPaneVoice">
             <div class="echo-voice" id="echoVoiceBlock">
               <button type="button" class="echo-voice-btn" id="echoVoiceBtn" onclick="toggleEchoRecord()" aria-label="Записать голос">
-                <span class="ico echo-voice-icon ew-mask-icon ew-icon--ion-mic-circle-outline" aria-hidden="true"></span>
+                <svg class="ico echo-voice-icon ew-mask-icon ew-icon--mic-vocal" aria-hidden="true"><use href="#i-mic-vocal"/></svg>
               </button>
               <div class="echo-voice-time" id="echoVoiceTime">0.0 сек</div>
               <div class="echo-voice-status" id="echoVoiceStatus">Нажмите для записи · до 3 сек</div>
@@ -14995,8 +14951,8 @@ button, a, [role="button"], label,
                 <audio id="echoVoiceAudio" preload="auto" playsinline style="display:none"></audio>
                 <div class="echo-player" id="echoPlayer">
                   <button type="button" class="echo-player-btn" id="echoPlayBtn" onclick="_echoTogglePlay()" aria-label="Воспроизвести запись">
-                    <span class="echo-player-ico-play ew-mask-icon ew-icon--ion-play-outline" aria-hidden="true"></span>
-                    <span class="echo-player-ico-pause ew-mask-icon ew-icon--ion-pause-outline" aria-hidden="true"></span>
+                    <svg class="echo-player-ico-play ew-mask-icon ew-icon--play" aria-hidden="true"><use href="#i-play"/></svg>
+                    <svg class="echo-player-ico-pause ew-mask-icon ew-icon--pause" aria-hidden="true"><use href="#i-pause"/></svg>
                   </button>
                   <div class="echo-player-track" id="echoPlayerTrack" onclick="_echoSeek(event)">
                     <div class="echo-player-scan" aria-hidden="true"></div>
@@ -15192,19 +15148,19 @@ button, a, [role="button"], label,
     </div>
     <div class="clinks">
       <a class="clink" href="mailto:hello@echoworld.space">
-        <div class="clink-icon"><span class="ico ew-mask-icon ew-icon--ion-mail-open-outline" aria-hidden="true"></span></div>
+        <div class="clink-icon"><svg class="ico ew-mask-icon ew-icon--mail-open" aria-hidden="true"><use href="#i-mail-open"/></svg></div>
         <div><div class="clink-name">Email</div><div class="clink-sub">hello@echoworld.space</div></div>
-        <span class="clink-arr" aria-hidden="true"><span class="ico ew-mask-icon ew-icon--ion-arrow-forward-outline" aria-hidden="true"></span></span>
+        <span class="clink-arr" aria-hidden="true"><svg class="ico ew-mask-icon ew-icon--arrow-right" aria-hidden="true"><use href="#i-arrow-right"/></svg></span>
       </a>
       <a class="clink" href="https://t.me/echoworldspace" target="_blank">
-        <div class="clink-icon"><span class="ico ico-fill ew-mask-icon ew-icon--ion-paper-plane-outline" aria-hidden="true"></span></div>
+        <div class="clink-icon"><svg class="ico ew-mask-icon ew-icon--send" aria-hidden="true"><use href="#i-send"/></svg></div>
         <div><div class="clink-name">Telegram</div><div class="clink-sub">@echoworldspace</div></div>
-        <span class="clink-arr" aria-hidden="true"><span class="ico ew-mask-icon ew-icon--ion-arrow-forward-outline" aria-hidden="true"></span></span>
+        <span class="clink-arr" aria-hidden="true"><svg class="ico ew-mask-icon ew-icon--arrow-right" aria-hidden="true"><use href="#i-arrow-right"/></svg></span>
       </a>
       <button type="button" class="clink clink-copy" onclick="copyNick(this,'@echoworld.space')" aria-label="Скопировать ник в соцсетях">
-        <div class="clink-icon"><span class="ico ew-mask-icon ew-icon--ion-share-social-outline" aria-hidden="true"></span></div>
+        <div class="clink-icon"><svg class="ico ew-mask-icon ew-icon--share-2" aria-hidden="true"><use href="#i-share-2"/></svg></div>
         <div><div class="clink-name">В социальных сетях</div><div class="clink-sub" data-copy-sub>@echoworld.space</div></div>
-        <span class="clink-arr clink-copy-ico" aria-hidden="true"><span class="ico ew-mask-icon ew-icon--ion-copy-outline" aria-hidden="true"></span></span>
+        <span class="clink-arr clink-copy-ico" aria-hidden="true"><svg class="ico ew-mask-icon ew-icon--copy" aria-hidden="true"><use href="#i-copy"/></svg></span>
       </button>
 
     </div>
@@ -16038,7 +15994,7 @@ button, a, [role="button"], label,
         <div class="cond-screen-head">
           <div class="cond-screen-dot"></div>
           <span>APERTURA · CONDENSATE FORMING</span>
-          <span class="cond-screen-ico"><span class="ico ew-mask-icon ew-icon--ion-locate-outline" aria-hidden="true"></span></span>
+          <span class="cond-screen-ico"><svg class="ico ew-mask-icon ew-icon--locate-fixed" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
         </div>
         <div class="cond-screen-body">
           <div class="cond-console" id="condConsole">
@@ -16133,7 +16089,7 @@ button, a, [role="button"], label,
              тонкая скан-линия (система ждёт касания). При раскрытии
              протокола — быстрый двойной проход и циановая подсветка:
              отпечаток принят, доступ выдан. -->
-        <span class="faq-fp ew-mask-icon ew-icon--ion-finger-print-outline" aria-hidden="true"></span>
+        <svg class="faq-fp ew-mask-icon ew-icon--fingerprint" aria-hidden="true"><use href="#i-fingerprint"/></svg>
       </span>
       <span class="faq-unlock-text">
         <span class="faq-unlock-label">// ДОСТУП РАЗРЕШЁН</span>
@@ -16267,7 +16223,7 @@ button, a, [role="button"], label,
             <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">IDENTIFIER</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">aintonx</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
             <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">ACCESS.LEVEL</span><span class="term-val-row term-lock-val"><span class="term-val" style="font-size:inherit">X</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
             <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.CREATED</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">1</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.PENDING</span><span class="term-val-row term-lock-val"><span class="term-val red" style="font-size:inherit"><span class="ico ew-mask-icon ew-icon--ion-infinite-outline" width="12" height="12" aria-hidden="true"></span></span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.PENDING</span><span class="term-val-row term-lock-val"><span class="term-val red" style="font-size:inherit"><svg class="ico ew-mask-icon ew-icon--infinity" aria-hidden="true"><use href="#i-infinity"/></svg></span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
             <div class="term-line arch-locked-row arch-console-row" onclick="openArchitectConsoleGate(this)"><span class="term-key">APERTURA</span><span class="term-val-row term-lock-val"><span>CONSOLE</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
             <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">STATUS</span><span class="term-val-row term-lock-val"><span>WORLD.BUILDING</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
           </div>
@@ -16304,15 +16260,14 @@ button, a, [role="button"], label,
             <!-- Антенна-передатчик: мачта по центру, дуги — её собственное
                  излучение (волна яркости изнутри наружу, без оверлеев). -->
             <svg class="donate-ant" viewBox="0 0 24 24" aria-hidden="true">
-              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="9.078" r="2"/>
-                <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
-              </g>
-              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-                <path class="ant-w aw-in" d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
-                <path class="ant-w aw-in" d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
-                <path class="ant-w aw-out" d="M4.936 2A9.97 9.97 0 0 0 2 9.078a9.97 9.97 0 0 0 3 7.142"/>
-                <path class="ant-w aw-out" d="M19.141 2.078a9.97 9.97 0 0 1 2.859 7a9.97 9.97 0 0 1-2.922 7.064"/>
+              <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path class="ant-w aw-out" d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9"/>
+                <path class="ant-w aw-in" d="M7.8 4.7a6.14 6.14 0 0 0-.8 7.5"/>
+                <circle cx="12" cy="9" r="2"/>
+                <path class="ant-w aw-in" d="M16.2 4.8c2 2 2.26 5.11.8 7.47"/>
+                <path class="ant-w aw-out" d="M19.1 1.9a9.96 9.96 0 0 1 0 14.1"/>
+                <path d="M9.5 18h5"/>
+                <path d="m8 22 4-11 4 11"/>
               </g>
             </svg>
           </div>
@@ -18471,7 +18426,7 @@ function openModal(i){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(false);
     btns.classList.add('has-share');
-    btns.innerHTML='<button class="mbtn" type="button" data-modal-action="addToCart">В корзину</button><button class="mbtn primary" type="button" data-modal-action="buyNow">Купить сейчас</button><button class="mbtn mbtn-share" type="button" data-modal-action="shareRelic" aria-label="Поделиться реликвией" title="Поделиться"><span class="ico ew-mask-icon ew-icon--ion-share-social-outline" aria-hidden="true"></span></button>';
+    btns.innerHTML='<button class="mbtn" type="button" data-modal-action="addToCart">В корзину</button><button class="mbtn primary" type="button" data-modal-action="buyNow">Купить сейчас</button><button class="mbtn mbtn-share" type="button" data-modal-action="shareRelic" aria-label="Поделиться реликвией" title="Поделиться"><svg class="ico ew-mask-icon ew-icon--share-2" aria-hidden="true"><use href="#i-share-2"/></svg></button>';
   }else{
     if(insta) insta.style.display=status==='transition_complete'?'flex':'none';
     setModalOrderFieldsDisabled(true);
@@ -18993,7 +18948,7 @@ function updateCartUI(){
         ${echoBadge}
         <div class="cart-item-price">${formatRelicPrice(lineTotal)}</div>
       </div>
-      <button class="cart-item-remove" type="button" data-cart-remove="${i}" aria-label="Удалить из корзины"><span class="ico ew-mask-icon ew-icon--ion-trash-outline" aria-hidden="true"></span></button>
+      <button class="cart-item-remove" type="button" data-cart-remove="${i}" aria-label="Удалить из корзины"><svg class="ico ew-mask-icon ew-icon--trash-2" aria-hidden="true"><use href="#i-trash-2"/></svg></button>
     </div>`;
   });
   body.innerHTML=html;
@@ -23096,7 +23051,7 @@ function _apFirstFormStatusRow(){
       <div class="ap-status-label">Статус реликвии</div>
       <div class="ap-status-value ap-first-form-value">
         <span class="ap-first-form-text">Ожидает Перехода</span>
-        <span class="ap-first-form-arr" aria-hidden="true"><span class="ico ew-mask-icon ew-icon--ion-chevron-down-outline" aria-hidden="true"></span></span>
+        <span class="ap-first-form-arr" aria-hidden="true"><svg class="ico ew-mask-icon ew-icon--chevron-down" aria-hidden="true"><use href="#i-chevron-down"/></svg></span>
       </div>
       <div class="ap-first-form-tip" id="apFirstFormTip" aria-hidden="true">
         <div class="ap-first-form-tip-title">Ожидает Перехода</div>
@@ -24749,7 +24704,7 @@ async function submitPreorder(){
     if(!body) return;
     body.innerHTML=`
       <div class="order-confirmed show">
-        <div class="order-confirmed-icon"><span class="ico ew-mask-icon ew-icon--ion-checkmark-circle-outline" aria-hidden="true"></span></div>
+        <div class="order-confirmed-icon"><svg class="ico ew-mask-icon ew-icon--check-circle" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
         <div class="order-confirmed-title">// Инициирован протокол рождения Виша</div>
         <div class="order-confirmed-sub">
           Запрос принят системой Apertura.<br>
@@ -25460,7 +25415,7 @@ function _fpColor(unlock, mode){
   clearTimeout(unlock._fpRevert);
   clearTimeout(unlock._fpTimer);
 
-  // Ionicons-отпечаток — единая маска без внутренних рёбер.
+  // Lucide-отпечаток — единый stroke-символ без внутренних fp-ridge-классов.
   // Цвет НЕ сбрасывается в середине close-анимации: сначала удерживается красный,
   // затем после завершения мягко возвращается в спокойный серый.
   if(maskFp){
@@ -28277,12 +28232,13 @@ function acceptCookies(){
 }
 
 
-/* ── ICON SYSTEM · context-stable final layer ──────────────────────────
-   Маска/inline-SVG не задаёт layout сама: каждый контекст получает свой
-   зарезервированный бокс, а оптическая подгонка идёт через mask-size. */
-.ico.ew-mask-icon {
+/* ── ICON SYSTEM · Lucide local context-stable final layer ─────────────
+   SVG не задаёт layout сам: каждый интерфейсный контекст получает
+   зарезервированный бокс, а Lucide-символ рисуется stroke-линиями. */
+.ico.ew-mask-icon,
+svg.ew-mask-icon {
   --ew-icon-size: 16px;
-  --ew-icon-fit: contain;
+  --ew-icon-stroke: 1.75;
   width: var(--ew-icon-size) !important;
   height: var(--ew-icon-size) !important;
   min-width: var(--ew-icon-size) !important;
@@ -28292,27 +28248,37 @@ function acceptCookies(){
   box-sizing: border-box;
   line-height: 0;
   vertical-align: middle;
-  background-color: currentColor;
-  -webkit-mask: var(--ew-icon-mask) center / var(--ew-icon-fit) no-repeat;
-  mask: var(--ew-icon-mask) center / var(--ew-icon-fit) no-repeat;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: var(--ew-icon-stroke) !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
   transform: translate3d(0,0,0);
   transform-origin: 50% 50%;
   backface-visibility: hidden;
   contain: layout paint;
+}
+.ico.ew-mask-icon use,
+svg.ew-mask-icon use,
+.term-lock-icon svg use,
+.classified-big-lock svg use,
+.donate-ant * {
+  vector-effect: non-scaling-stroke;
 }
 
 .warr .ico.ew-mask-icon,
 .mstatus-arr .ico.ew-mask-icon,
 .ap-first-form-arr .ico.ew-mask-icon {
   --ew-icon-size: 11px;
-  --ew-icon-fit: 92%;
+  --ew-icon-stroke: 2;
   display: block !important;
   transform: none !important;
 }
 
 .theme-switch-hdr .ts-ico.ew-mask-icon {
   --ew-icon-size: 13px;
-  --ew-icon-fit: 94%;
+  --ew-icon-stroke: 1.75;
   transform: none !important;
 }
 .theme-switch-hdr { gap: 7px; }
@@ -28324,14 +28290,16 @@ function acceptCookies(){
 .navlink .nav-ico.ew-mask-icon,
 .desktop-menu-opt .ico.ew-mask-icon {
   --ew-icon-size: 15px;
-  --ew-icon-fit: 94%;
+  --ew-icon-stroke: 1.75;
   display: block !important;
   transform: none !important;
 }
-.navlink .ew-icon--ion-globe-outline,
-.desktop-menu-opt .ew-icon--ion-globe-outline { --ew-icon-fit: 100%; }
-.navlink .ew-icon--ion-mail-outline,
-.desktop-menu-opt .ew-icon--ion-mail-outline { --ew-icon-fit: 90%; }
+.navlink .ew-icon--globe,
+.desktop-menu-opt .ew-icon--globe,
+.navlink .ew-icon--mail,
+.desktop-menu-opt .ew-icon--mail {
+  --ew-icon-stroke: 1.65;
+}
 .navlink .nav-mark,
 .desktop-menu-opt .nav-mark {
   width: 15px !important;
@@ -28344,16 +28312,15 @@ function acceptCookies(){
 
 .hbtn .ico.ew-mask-icon {
   --ew-icon-size: 13px;
-  --ew-icon-fit: 94%;
+  --ew-icon-stroke: 1.8;
 }
 .hbtn.hbtn-cart .ico.ew-mask-icon,
 .hbtn.hbtn-cabinet .ico.ew-mask-icon {
   --ew-icon-size: 23px;
+  --ew-icon-stroke: 1.75;
   display: block !important;
   transform: none !important;
 }
-.hbtn.hbtn-cart .ew-icon--ion-cart-outline { --ew-icon-fit: 96%; }
-.hbtn.hbtn-cabinet .ew-icon--ion-person-circle-outline { --ew-icon-fit: 100%; }
 
 .mob-nav-link {
   gap: 14px;
@@ -28361,12 +28328,10 @@ function acceptCookies(){
 }
 .mob-nav-link .nav-ico.ew-mask-icon {
   --ew-icon-size: 24px;
-  --ew-icon-fit: 94%;
+  --ew-icon-stroke: 1.7;
   display: block !important;
   transform: translate3d(0,0,0) !important;
 }
-.mob-nav-link .ew-icon--ion-globe-outline { --ew-icon-fit: 100%; }
-.mob-nav-link .ew-icon--ion-mail-outline { --ew-icon-fit: 90%; }
 .mob-nav-link .nav-mark {
   width: 24px !important;
   height: 24px !important;
@@ -28379,11 +28344,9 @@ function acceptCookies(){
 
 .mnav-tile-ico.ew-mask-icon {
   --ew-icon-size: 38px;
-  --ew-icon-fit: 96%;
+  --ew-icon-stroke: 1.55;
   display: block !important;
 }
-.mnav-tile .ew-icon--ion-cart-outline { --ew-icon-fit: 94%; }
-.mnav-tile .ew-icon--ion-person-circle-outline { --ew-icon-fit: 100%; }
 .mnav-theme-icons {
   align-items: center !important;
   gap: 7px !important;
@@ -28391,7 +28354,7 @@ function acceptCookies(){
 }
 .mnav-theme-icons .ico.ew-mask-icon {
   --ew-icon-size: 19px;
-  --ew-icon-fit: 92%;
+  --ew-icon-stroke: 1.75;
   transform: none !important;
 }
 .mnav-theme-sep {
@@ -28400,12 +28363,12 @@ function acceptCookies(){
 
 .cat-search-icon .ico.ew-mask-icon {
   --ew-icon-size: 16px;
-  --ew-icon-fit: 92%;
+  --ew-icon-stroke: 1.85;
   display: block !important;
 }
 .cond-screen-ico .ico.ew-mask-icon {
   --ew-icon-size: 15px;
-  --ew-icon-fit: 92%;
+  --ew-icon-stroke: 1.9;
   display: block !important;
 }
 
@@ -28423,22 +28386,27 @@ function acceptCookies(){
   width: 12.5px !important;
   height: 12.5px !important;
   display: block !important;
+  fill: none !important;
+  stroke: var(--white-dim) !important;
   stroke-width: 2.05 !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
-.term-val .ew-icon--ion-infinite-outline {
+.term-val .ew-icon--infinity {
   --ew-icon-size: 12px;
-  --ew-icon-fit: 96%;
+  --ew-icon-stroke: 1.9;
+  display: inline-block !important;
   transform: none !important;
 }
 
 .mbtn-share .ico.ew-mask-icon {
   --ew-icon-size: 18px;
-  --ew-icon-fit: 92%;
+  --ew-icon-stroke: 1.8;
   display: block !important;
 }
 .cart-item-remove .ico.ew-mask-icon {
   --ew-icon-size: 14px;
-  --ew-icon-fit: 92%;
+  --ew-icon-stroke: 1.9;
   display: block !important;
   transform: none !important;
 }
@@ -28446,34 +28414,34 @@ function acceptCookies(){
 .clink-arr .ico.ew-mask-icon,
 .clink-copy-ico .ico.ew-mask-icon {
   --ew-icon-size: 15px;
-  --ew-icon-fit: 92%;
+  --ew-icon-stroke: 1.8;
   display: block !important;
   transform: none !important;
 }
-.clink-icon .ew-icon--ion-paper-plane-outline,
-.clink-arr .ew-icon--ion-arrow-forward-outline {
-  --ew-icon-fit: 90%;
-}
 .order-confirmed-icon .ico.ew-mask-icon {
   --ew-icon-size: 52px;
-  --ew-icon-fit: 96%;
+  --ew-icon-stroke: 1.45;
   display: block !important;
   filter: drop-shadow(0 0 14px var(--cyan-glow));
 }
 
 .echo-voice-icon.ew-mask-icon {
   --ew-icon-size: 32px;
-  --ew-icon-fit: 92%;
+  --ew-icon-stroke: 1.6;
   display: block !important;
   pointer-events: none;
   transform: none !important;
 }
 .echo-player-btn .ew-mask-icon {
   --ew-icon-size: 15px;
-  --ew-icon-fit: 90%;
+  --ew-icon-stroke: 1.8;
   display: block !important;
   pointer-events: none;
   transform: none !important;
+}
+.echo-player-btn svg.ew-mask-icon {
+  fill: none !important;
+  stroke: currentColor !important;
 }
 .echo-player-ico-play.ew-mask-icon {
   margin-left: 1px;
@@ -28501,10 +28469,11 @@ function acceptCookies(){
   width: 100% !important;
   height: 100% !important;
   display: block !important;
+  fill: none !important;
+  stroke: currentColor !important;
   stroke-width: 1.16 !important;
-}
-.classified-big-lock .ew-mask-icon {
-  display: none !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 @media (max-width: 760px) {
   .classified-outer {
@@ -28526,8 +28495,14 @@ function acceptCookies(){
   display: block !important;
   margin: 0 auto !important;
   overflow: visible !important;
+  fill: none !important;
+  stroke: currentColor !important;
   color: var(--red2) !important;
   filter: drop-shadow(0 0 12px rgba(192,40,40,.24)) !important;
+  animation: none !important;
+}
+.donate-ant path:not(.ant-w),
+.donate-ant circle {
   animation: none !important;
 }
 .donate-ant .ant-w {
@@ -28546,7 +28521,8 @@ function acceptCookies(){
 
 .faq-fp.ew-mask-icon {
   --ew-icon-size: 23px;
-  --ew-icon-fit: 92%;
+  --ew-icon-stroke: 1.72;
+  color: var(--white-dim);
   opacity: .92;
   transition:
     color .72s cubic-bezier(.22,1,.36,1),
