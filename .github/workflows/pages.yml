@@ -32,13 +32,18 @@ jobs:
           cp .nojekyll _site/
           cp CNAME _site/
           cp -R logo share img Character _site/
-          cp logo/apple-touch-icon-r20260703a.png _site/apple-touch-icon.png
-          cp logo/apple-touch-icon-r20260703a.png _site/apple-touch-icon-precomposed.png
-          cp logo/apple-touch-icon-r20260703a.png _site/apple-touch-icon-180x180.png
-          cp logo/favicon-dark-r20260703a.ico _site/favicon.ico
-          cp logo/favicon-dark-r20260703a.svg _site/favicon.svg
-          cp logo/favicon-32x32-r20260703a.png _site/favicon-32x32.png
-          cp logo/favicon-16x16-r20260703a.png _site/favicon-16x16.png
+          cp logo/apple-touch-icon-r20260703b.png _site/apple-touch-icon.png
+          cp logo/apple-touch-icon-r20260703b.png _site/apple-touch-icon-precomposed.png
+          cp logo/apple-touch-icon-r20260703b.png _site/apple-touch-icon-180x180.png
+          cp logo/apple-touch-icon-r20260703b.png _site/apple-touch-icon-r20260703b.png
+          cp logo/favicon-dark-r20260703b.ico _site/favicon.ico
+          cp logo/favicon-dark-r20260703b.ico _site/favicon-r20260703b.ico
+          cp logo/favicon-dark-r20260703b.svg _site/favicon.svg
+          cp logo/favicon-dark-r20260703b.svg _site/favicon-r20260703b.svg
+          cp logo/favicon-32x32-r20260703b.png _site/favicon-32x32.png
+          cp logo/favicon-32x32-r20260703b.png _site/favicon-32x32-r20260703b.png
+          cp logo/favicon-16x16-r20260703b.png _site/favicon-16x16.png
+          cp logo/favicon-16x16-r20260703b.png _site/favicon-16x16-r20260703b.png
           find _site -name .DS_Store -delete
 
       - name: Upload artifact

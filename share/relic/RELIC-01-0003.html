@@ -37,9 +37,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0003/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260703a UTC=2026-07-02T23:11:34Z MSK=2026-07-03T02:11:34+0300 -->
-<meta name="echoworld-deploy-version" content="r20260703a">
-<meta name="echoworld-deploy-built-at" content="2026-07-02T23:11:34Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260703b UTC=2026-07-02T23:36:45Z MSK=2026-07-03T02:36:45+0300 -->
+<meta name="echoworld-deploy-version" content="r20260703b">
+<meta name="echoworld-deploy-built-at" content="2026-07-02T23:36:45Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -60,16 +60,18 @@
 <meta name="twitter:image" content="https://www.echoworld.space/img/akula.webp">
 
 <!-- Brand icons · EchoWorld barcode logo -->
-<link rel="icon" type="image/svg+xml" sizes="any" href="/logo/favicon-dark-r20260703a.svg">
-<link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="/logo/favicon-dark-r20260703a.ico">
-<link rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32-r20260703a.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16-r20260703a.png">
-<link rel="apple-touch-icon" href="/logo/apple-touch-icon-r20260703a.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/logo/apple-touch-icon-120x120-r20260703a.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/logo/apple-touch-icon-152x152-r20260703a.png">
-<link rel="apple-touch-icon" sizes="167x167" href="/logo/apple-touch-icon-167x167-r20260703a.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon-180x180-r20260703a.png">
-<link rel="manifest" href="/logo/site-r20260703a.webmanifest">
+<link rel="icon" type="image/svg+xml" sizes="any" href="/logo/favicon-dark-r20260703b.svg">
+<link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="/logo/favicon-dark-r20260703b.ico">
+<link rel="shortcut icon" type="image/x-icon" href="/favicon-r20260703b.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32-r20260703b.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16-r20260703b.png">
+<link rel="apple-touch-icon" href="/logo/apple-touch-icon-r20260703b.png">
+<link rel="apple-touch-icon-precomposed" href="/apple-touch-icon-r20260703b.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/logo/apple-touch-icon-120x120-r20260703b.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/logo/apple-touch-icon-152x152-r20260703b.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/logo/apple-touch-icon-167x167-r20260703b.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon-180x180-r20260703b.png">
+<link rel="manifest" href="/logo/site-r20260703b.webmanifest">
 
 <!-- Performance: предсоединение к шрифтам и картинкам -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11579,20 +11581,30 @@ button, a, [role="button"], label,
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 960px) and (pointer: coarse) {
   @supports (-webkit-touch-callout: none) {
-    :root { --ew-header-h: 56px; }
-    body { padding-top: var(--ew-header-h); }
+    :root {
+      --ew-header-h: 56px;
+      --ew-safe-top: env(safe-area-inset-top, 0px);
+      --ew-safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    body { padding-top: calc(var(--ew-header-h) + var(--ew-safe-top)); }
     header {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       width: 100%;
+      padding-top: var(--ew-safe-top);
       transform: none;
       -webkit-transform: none;
       will-change: auto;
       isolation: isolate;
     }
     header .header-inner { height: var(--ew-header-h); }
+    .mob-nav {
+      padding-top: var(--ew-safe-top);
+      padding-bottom: var(--ew-safe-bottom);
+    }
+    .mob-nav-links { min-height: 0; }
   }
 }
 
@@ -16606,7 +16618,7 @@ function getRelicShareMeta(product){
   return {
     title,
     description,
-    image: _absoluteAssetUrl(p && p.img ? p.img : '/logo/og-image-r20260703a.png'),
+    image: _absoluteAssetUrl(p && p.img ? p.img : '/logo/og-image-r20260703b.png'),
     url: p ? getRelicShareUrl(p) : getRelicShareBaseUrl().toString(),
     deepLinkUrl: p ? getRelicDeepLinkUrl(p) : getRelicShareBaseUrl().toString(),
     code,
