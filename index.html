@@ -14003,6 +14003,89 @@ button, a, [role="button"], label,
 
 
 
+
+
+/* PATCH · DONATE ANTENNA REFINEMENT · 207
+   Goal: match the reference visual more closely — thicker premium antenna,
+   four calm broadcast arcs, red palette, no thin generic icon look. */
+.donate-radar {
+  min-height: 230px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 0 6px !important;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(192,40,40,0.10), transparent 42%) !important,
+    linear-gradient(180deg, rgba(255,255,255,0.022), transparent 32%) !important,
+    repeating-linear-gradient(0deg, transparent 0 23px, rgba(192,40,40,0.06) 23px 24px) !important,
+    repeating-linear-gradient(90deg, transparent 0 23px, rgba(192,40,40,0.06) 23px 24px) !important;
+}
+.donate-radar::before {
+  inset: 12px 14px !important;
+  border: 1px solid rgba(192,40,40,0.14) !important;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1px), rgba(192,40,40,0.14) 50%, transparent calc(50% + 1px)),
+    linear-gradient(0deg, transparent calc(50% - 1px), rgba(192,40,40,0.14) 50%, transparent calc(50% + 1px)),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 7px) !important;
+  opacity: .58 !important;
+}
+.donate-radar::after {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), transparent 18%, transparent 80%, rgba(0,0,0,0.22)),
+    repeating-linear-gradient(0deg, transparent 0 5px, rgba(192,40,40,0.04) 5px 6px) !important;
+  opacity: .58 !important;
+  animation: donateScreenTrace 12s linear infinite !important;
+}
+.donate-ant.donate-ant--refined {
+  width: 174px !important;
+  height: 174px !important;
+  min-width: 174px !important;
+  min-height: 174px !important;
+  display: block !important;
+  margin: 0 auto !important;
+  color: var(--red2) !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 2 !important;
+  transform: translate3d(0,0,0) !important;
+  transform-origin: 50% 50% !important;
+  backface-visibility: hidden !important;
+  filter: drop-shadow(0 0 16px rgba(192,40,40,.22)) !important;
+  animation: none !important;
+}
+.donate-ant.donate-ant--refined .ant-core-shape {
+  opacity: 1 !important;
+}
+.donate-ant.donate-ant--refined .ant-wave {
+  opacity: .20;
+  filter: drop-shadow(0 0 8px rgba(192,40,40,.18));
+  animation: donateRefAntennaWave 2.6s cubic-bezier(.22,1,.36,1) infinite !important;
+}
+.donate-ant.donate-ant--refined .ant-wave-out {
+  animation-delay: .36s !important;
+}
+@keyframes donateRefAntennaWave {
+  0%, 48%, 100% { opacity: .18; }
+  14% { opacity: .96; }
+  32% { opacity: .36; }
+}
+@media (max-width: 640px) {
+  .donate-radar { min-height: 204px !important; }
+  .donate-ant.donate-ant--refined {
+    width: 148px !important;
+    height: 148px !important;
+    min-width: 148px !important;
+    min-height: 148px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .donate-ant.donate-ant--refined .ant-wave,
+  .donate-radar::after {
+    animation: none !important;
+  }
+}
+
 </style>
 <script>
   /* Тема — выставляем как можно раньше, чтобы не было вспышки при загрузке.
@@ -16259,16 +16342,20 @@ button, a, [role="button"], label,
           <div class="donate-radar">
             <!-- Антенна-передатчик: мачта по центру, дуги — её собственное
                  излучение (волна яркости изнутри наружу, без оверлеев). -->
-            <svg class="donate-ant" viewBox="0 0 24 24" aria-hidden="true">
-              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="9.078" r="2"/>
-                <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
+            <svg class="donate-ant donate-ant--refined" viewBox="0 0 260 220" aria-hidden="true" role="img" focusable="false">
+              <g class="ant-waves" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="16">
+                <path class="ant-wave ant-wave-in ant-wave-left" d="M109 60 C 87 81, 87 118, 109 139"/>
+                <path class="ant-wave ant-wave-in ant-wave-right" d="M151 60 C 173 81, 173 118, 151 139"/>
+                <path class="ant-wave ant-wave-out ant-wave-left" d="M80 28 C 49 62, 49 138, 80 172"/>
+                <path class="ant-wave ant-wave-out ant-wave-right" d="M180 28 C 211 62, 211 138, 180 172"/>
               </g>
-              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-                <path class="ant-w aw-in" d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
-                <path class="ant-w aw-in" d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
-                <path class="ant-w aw-out" d="M4.936 2A9.97 9.97 0 0 0 2 9.078a9.97 9.97 0 0 0 3 7.142"/>
-                <path class="ant-w aw-out" d="M19.141 2.078a9.97 9.97 0 0 1 2.859 7a9.97 9.97 0 0 1-2.922 7.064"/>
+              <g class="ant-core-shape" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16">
+                <circle cx="130" cy="93" r="21"/>
+                <path d="M130 116 L97 191"/>
+                <path d="M130 116 L163 191"/>
+                <path d="M118 152 L130 138 L142 152"/>
+                <path d="M112 167 L101 184"/>
+                <path d="M148 167 L159 184"/>
               </g>
             </svg>
           </div>
