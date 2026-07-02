@@ -14005,41 +14005,48 @@ button, a, [role="button"], label,
 
 
 
-/* PATCH · DONATE ANTENNA REFINEMENT · 207
-   Goal: match the reference visual more closely — thicker premium antenna,
-   four calm broadcast arcs, red palette, no thin generic icon look. */
+
+
+
+/* PATCH · EXACT REFERENCE DONATE ANTENNA TRANSFER · 208
+   ВАЖНО: SVG антенны взят напрямую из `index — копия(2).html`.
+   Здесь только снимаются конфликтующие харды прошлых патчей и красится
+   старая антенна в красный. Геометрия, viewBox и path'ы не перерисованы. */
 .donate-radar {
-  min-height: 230px !important;
+  min-height: 190px !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 10px 0 6px !important;
+  padding-bottom: 0 !important;
   background:
-    radial-gradient(circle at 50% 45%, rgba(192,40,40,0.10), transparent 42%) !important,
-    linear-gradient(180deg, rgba(255,255,255,0.022), transparent 32%) !important,
-    repeating-linear-gradient(0deg, transparent 0 23px, rgba(192,40,40,0.06) 23px 24px) !important,
+    radial-gradient(circle at 50% 50%, rgba(192,40,40,0.12), transparent 48%),
+    linear-gradient(180deg, rgba(255,255,255,0.025), transparent 35%),
+    repeating-linear-gradient(0deg, transparent 0 23px, rgba(192,40,40,0.06) 23px 24px),
     repeating-linear-gradient(90deg, transparent 0 23px, rgba(192,40,40,0.06) 23px 24px) !important;
 }
 .donate-radar::before {
   inset: 12px 14px !important;
-  border: 1px solid rgba(192,40,40,0.14) !important;
+  border: 1px solid rgba(192,40,40,0.16) !important;
   background:
-    linear-gradient(90deg, transparent calc(50% - 1px), rgba(192,40,40,0.14) 50%, transparent calc(50% + 1px)),
+    linear-gradient(90deg, transparent calc(50% - 1px), rgba(192,40,40,0.18) 50%, transparent calc(50% + 1px)),
     linear-gradient(0deg, transparent calc(50% - 1px), rgba(192,40,40,0.14) 50%, transparent calc(50% + 1px)),
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 7px) !important;
-  opacity: .58 !important;
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 7px) !important;
+  opacity: .68 !important;
+  z-index: 3 !important;
+  mix-blend-mode: screen !important;
 }
 .donate-radar::after {
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.05), transparent 18%, transparent 80%, rgba(0,0,0,0.22)),
-    repeating-linear-gradient(0deg, transparent 0 5px, rgba(192,40,40,0.04) 5px 6px) !important;
-  opacity: .58 !important;
-  animation: donateScreenTrace 12s linear infinite !important;
+    linear-gradient(180deg, rgba(255,255,255,0.06), transparent 18%, transparent 78%, rgba(0,0,0,0.26)),
+    repeating-linear-gradient(0deg, transparent 0 5px, rgba(192,40,40,0.045) 5px 6px) !important;
+  opacity: .72 !important;
+  z-index: 4 !important;
+  animation: donateScreenTrace 9s linear infinite !important;
 }
-.donate-ant.donate-ant--refined {
-  width: 174px !important;
-  height: 174px !important;
-  min-width: 174px !important;
-  min-height: 174px !important;
+.donate-ant {
+  width: 150px !important;
+  height: 150px !important;
+  min-width: 150px !important;
+  min-height: 150px !important;
   display: block !important;
   margin: 0 auto !important;
   color: var(--red2) !important;
@@ -14049,39 +14056,75 @@ button, a, [role="button"], label,
   position: relative !important;
   z-index: 2 !important;
   transform: translate3d(0,0,0) !important;
-  transform-origin: 50% 50% !important;
+  transform-origin: 50% 56% !important;
   backface-visibility: hidden !important;
-  filter: drop-shadow(0 0 16px rgba(192,40,40,.22)) !important;
+  filter: drop-shadow(0 0 12px rgba(192,40,40,0.28)) !important;
+  animation: donateAntGlitchRefRed 11s steps(1,end) infinite !important;
+}
+/* Ключевой фикс: прошлые патчи навесили vector-effect: non-scaling-stroke,
+   из-за этого SVG из референса становился тонкой линией. Возвращаем масштабируемый
+   stroke — ровно так, как старая антенна выглядела в копии. */
+.donate-ant,
+.donate-ant *,
+.donate-ant path,
+.donate-ant circle,
+.donate-ant g {
+  vector-effect: none !important;
+}
+.donate-ant g,
+.donate-ant path,
+.donate-ant circle {
+  fill: none !important;
+  stroke: currentColor !important;
+}
+.donate-ant path:not(.ant-w),
+.donate-ant circle {
   animation: none !important;
 }
-.donate-ant.donate-ant--refined .ant-core-shape {
-  opacity: 1 !important;
+.donate-ant .ant-w {
+  opacity: .24;
+  animation: antWaveRefRed 2.8s ease-in-out infinite !important;
 }
-.donate-ant.donate-ant--refined .ant-wave {
-  opacity: .20;
-  filter: drop-shadow(0 0 8px rgba(192,40,40,.18));
-  animation: donateRefAntennaWave 2.6s cubic-bezier(.22,1,.36,1) infinite !important;
+.donate-ant .aw-out { animation-delay: .4s !important; }
+@keyframes antWaveRefRed {
+  0%, 52%, 100% { opacity: .24; }
+  14% { opacity: 1; }
+  34% { opacity: .44; }
 }
-.donate-ant.donate-ant--refined .ant-wave-out {
-  animation-delay: .36s !important;
-}
-@keyframes donateRefAntennaWave {
-  0%, 48%, 100% { opacity: .18; }
-  14% { opacity: .96; }
-  32% { opacity: .36; }
+@keyframes donateAntGlitchRefRed {
+  0%, 86%, 90%, 100% {
+    opacity: 1;
+    transform: translate3d(0,0,0);
+    filter: drop-shadow(0 0 12px rgba(192,40,40,0.28));
+  }
+  86.7% {
+    opacity: .92;
+    transform: translate3d(.7px,-.4px,0) skewX(.45deg);
+    filter: drop-shadow(0 0 14px rgba(192,40,40,0.34));
+  }
+  87.3% {
+    opacity: 1;
+    transform: translate3d(-.6px,.3px,0) skewX(-.35deg);
+    filter: drop-shadow(0 0 12px rgba(192,40,40,0.32));
+  }
+  88.1% {
+    opacity: .86;
+    transform: translate3d(.4px,0,0);
+    filter: drop-shadow(0 0 16px rgba(255,255,255,0.16));
+  }
 }
 @media (max-width: 640px) {
-  .donate-radar { min-height: 204px !important; }
-  .donate-ant.donate-ant--refined {
-    width: 148px !important;
-    height: 148px !important;
-    min-width: 148px !important;
-    min-height: 148px !important;
+  .donate-ant {
+    width: 126px !important;
+    height: 126px !important;
+    min-width: 126px !important;
+    min-height: 126px !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .donate-ant.donate-ant--refined .ant-wave,
-  .donate-radar::after {
+  .donate-radar::after,
+  .donate-ant,
+  .donate-ant .ant-w {
     animation: none !important;
   }
 }
@@ -16342,20 +16385,16 @@ button, a, [role="button"], label,
           <div class="donate-radar">
             <!-- Антенна-передатчик: мачта по центру, дуги — её собственное
                  излучение (волна яркости изнутри наружу, без оверлеев). -->
-            <svg class="donate-ant donate-ant--refined" viewBox="0 0 260 220" aria-hidden="true" role="img" focusable="false">
-              <g class="ant-waves" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="16">
-                <path class="ant-wave ant-wave-in ant-wave-left" d="M109 60 C 87 81, 87 118, 109 139"/>
-                <path class="ant-wave ant-wave-in ant-wave-right" d="M151 60 C 173 81, 173 118, 151 139"/>
-                <path class="ant-wave ant-wave-out ant-wave-left" d="M80 28 C 49 62, 49 138, 80 172"/>
-                <path class="ant-wave ant-wave-out ant-wave-right" d="M180 28 C 211 62, 211 138, 180 172"/>
+            <svg class="donate-ant" viewBox="0 0 24 24" aria-hidden="true">
+              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="9.078" r="2"/>
+                <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
               </g>
-              <g class="ant-core-shape" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16">
-                <circle cx="130" cy="93" r="21"/>
-                <path d="M130 116 L97 191"/>
-                <path d="M130 116 L163 191"/>
-                <path d="M118 152 L130 138 L142 152"/>
-                <path d="M112 167 L101 184"/>
-                <path d="M148 167 L159 184"/>
+              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path class="ant-w aw-in" d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
+                <path class="ant-w aw-in" d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
+                <path class="ant-w aw-out" d="M4.936 2A9.97 9.97 0 0 0 2 9.078a9.97 9.97 0 0 0 3 7.142"/>
+                <path class="ant-w aw-out" d="M19.141 2.078a9.97 9.97 0 0 1 2.859 7a9.97 9.97 0 0 1-2.922 7.064"/>
               </g>
             </svg>
           </div>
