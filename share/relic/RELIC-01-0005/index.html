@@ -56,9 +56,17 @@
 <meta name="twitter:description" content="Внимания ему было нужно постоянно и сразу — чтобы заметили, накормили, не уходили далеко. Просил он это в открытую, без капли стеснения, и обижался искренне, если о нём забывали х…">
 <meta name="twitter:image" content="https://www.echoworld.space/img/tamagochi.webp">
 
-<!-- Favicon: inline SVG = быстро, без отдельного файла -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%2304040a'/><g fill='%23f0f0f8'><rect x='10' y='14' width='6' height='36'/><rect x='20' y='14' width='3' height='36'/><rect x='27' y='14' width='4' height='36'/><rect x='35' y='14' width='2' height='36'/><rect x='41' y='14' width='5' height='36'/><rect x='50' y='14' width='4' height='36'/></g><rect x='10' y='52' width='44' height='2' fill='%23c02828'/></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' fill='%2304040a'/><g fill='%23f0f0f8'><rect x='28' y='40' width='18' height='100'/><rect x='56' y='40' width='10' height='100'/><rect x='76' y='40' width='12' height='100'/><rect x='98' y='40' width='6' height='100'/><rect x='114' y='40' width='14' height='100'/><rect x='138' y='40' width='12' height='100'/></g><rect x='28' y='148' width='122' height='4' fill='%23c02828'/></svg>">
+<!-- Brand icons · EchoWorld barcode logo -->
+<link rel="icon" type="image/svg+xml" sizes="any" href="/logo/favicon-dark-r20260702i.svg">
+<link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="/logo/favicon-dark-r20260702i.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32-r20260702i.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16-r20260702i.png">
+<link rel="apple-touch-icon" href="/logo/apple-touch-icon-r20260702i.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/logo/apple-touch-icon-120x120-r20260702i.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/logo/apple-touch-icon-152x152-r20260702i.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/logo/apple-touch-icon-167x167-r20260702i.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon-180x180-r20260702i.png">
+<link rel="manifest" href="/logo/site-r20260702i.webmanifest">
 
 <!-- Performance: предсоединение к шрифтам и картинкам -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16595,7 +16603,7 @@ function getRelicShareMeta(product){
   return {
     title,
     description,
-    image: _absoluteAssetUrl(p && p.img ? p.img : 'og-cover.jpg'),
+    image: _absoluteAssetUrl(p && p.img ? p.img : '/logo/og-image-r20260702i.png'),
     url: p ? getRelicShareUrl(p) : getRelicShareBaseUrl().toString(),
     deepLinkUrl: p ? getRelicDeepLinkUrl(p) : getRelicShareBaseUrl().toString(),
     code,
