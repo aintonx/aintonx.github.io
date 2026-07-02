@@ -32,6 +32,8 @@ jobs:
           cp .nojekyll _site/
           cp CNAME _site/
           cp -R logo share img Character _site/
+          cp logo/apple-touch-icon-r20260702l.png _site/apple-touch-icon.png
+          cp logo/apple-touch-icon-r20260702l.png _site/apple-touch-icon-precomposed.png
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
