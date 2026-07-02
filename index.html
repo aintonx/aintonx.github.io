@@ -28680,6 +28680,242 @@ svg.ew-mask-icon use,
   transform: translateY(-1px);
 }
 
+
+
+/* PATCH · FINAL MICRO-VISUAL FIXES · 206
+   Scope: Echo record centering/no shake, smooth player icon crossfade,
+   old donate antenna visual in red, equal mobile nav rows, contact links without red strips. */
+
+/* 1) ECHO RECORD: icon fixed exactly in the center of the circular button.
+   No container pulse/shake while recording. */
+.echo-voice-btn {
+  display: grid !important;
+  place-items: center !important;
+  position: relative !important;
+  overflow: visible;
+}
+.echo-voice-btn .echo-voice-icon.ew-mask-icon,
+.echo-voice-icon.ew-mask-icon {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  transform: translate(-50%, -50%) !important;
+  transform-origin: 50% 50% !important;
+  margin: 0 !important;
+  display: block !important;
+  line-height: 0 !important;
+  pointer-events: none !important;
+  animation: none !important;
+  will-change: auto !important;
+  backface-visibility: hidden;
+}
+.echo-section.recording .echo-voice,
+.echo-voice.recording,
+.echo-voice-btn.recording,
+.echo-voice-btn.recording .echo-voice-icon.ew-mask-icon,
+.echo-section.recording .echo-voice-btn,
+.echo-section.recording .echo-voice-icon.ew-mask-icon {
+  animation: none !important;
+  transform: none !important;
+}
+.echo-section.recording .echo-voice-btn .echo-voice-icon.ew-mask-icon,
+.echo-voice-btn.recording .echo-voice-icon.ew-mask-icon {
+  transform: translate(-50%, -50%) !important;
+}
+.echo-section.recording .echo-voice {
+  border-color: var(--red2) !important;
+  box-shadow: 0 0 0 1px rgba(192,40,40,.42), 0 0 18px rgba(192,40,40,.16) !important;
+}
+
+/* 2) ECHO PLAYER: play/pause crossfade instead of abrupt display swap. */
+.echo-player-btn {
+  position: relative !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden;
+}
+.echo-player-btn .echo-player-ico-play.ew-mask-icon,
+.echo-player-btn .echo-player-ico-pause.ew-mask-icon {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px !important;
+  min-height: 15px !important;
+  margin: 0 !important;
+  display: block !important;
+  transform: translate(-50%, -50%) scale(.92) !important;
+  transform-origin: 50% 50% !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition:
+    opacity .24s cubic-bezier(.22,1,.36,1),
+    visibility .24s step-end,
+    transform .24s cubic-bezier(.22,1,.36,1) !important;
+}
+.echo-player:not(.playing) .echo-player-btn .echo-player-ico-play.ew-mask-icon {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translate(calc(-50% + 1px), -50%) scale(1) !important;
+  transition:
+    opacity .24s cubic-bezier(.22,1,.36,1),
+    visibility 0s step-start,
+    transform .24s cubic-bezier(.22,1,.36,1) !important;
+}
+.echo-player.playing .echo-player-btn .echo-player-ico-pause.ew-mask-icon {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+  transition:
+    opacity .24s cubic-bezier(.22,1,.36,1),
+    visibility 0s step-start,
+    transform .24s cubic-bezier(.22,1,.36,1) !important;
+}
+
+/* 3) DONATE ANTENNA: exact old antenna geometry/behavior, recolored to red.
+   SVG remains the old one from index-copy: only its own .ant-w arcs animate. */
+.donate-radar {
+  align-items: center !important;
+  justify-content: center !important;
+  padding-bottom: 0 !important;
+}
+.donate-ant {
+  width: 150px !important;
+  height: 150px !important;
+  min-width: 150px !important;
+  min-height: 150px !important;
+  display: block !important;
+  margin: 0 auto !important;
+  color: var(--red2) !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 2 !important;
+  transform: translate3d(0,0,0) !important;
+  transform-origin: 50% 56% !important;
+  backface-visibility: hidden !important;
+  filter: drop-shadow(0 0 12px rgba(192,40,40,.28)) !important;
+  animation: donateAntGlitchRed 11s steps(1,end) infinite !important;
+}
+.donate-ant *,
+.donate-ant path,
+.donate-ant circle {
+  vector-effect: non-scaling-stroke;
+}
+.donate-ant path:not(.ant-w),
+.donate-ant circle {
+  animation: none !important;
+}
+.donate-ant .ant-w {
+  opacity: .24;
+  animation: antWaveRed 2.8s ease-in-out infinite !important;
+}
+.donate-ant .aw-out { animation-delay: .4s !important; }
+@keyframes antWaveRed {
+  0%, 52%, 100% { opacity: .24; }
+  14% { opacity: 1; }
+  34% { opacity: .44; }
+}
+@keyframes donateAntGlitchRed {
+  0%, 86%, 90%, 100% {
+    opacity: 1;
+    transform: translate3d(0,0,0);
+    filter: drop-shadow(0 0 12px rgba(192,40,40,.28));
+  }
+  86.7% {
+    opacity: .92;
+    transform: translate3d(.7px,-.4px,0) skewX(.45deg);
+    filter: drop-shadow(0 0 14px rgba(224,48,48,.34));
+  }
+  87.3% {
+    opacity: 1;
+    transform: translate3d(-.6px,.3px,0) skewX(-.35deg);
+    filter: drop-shadow(0 0 12px rgba(192,40,40,.32));
+  }
+  88.1% {
+    opacity: .86;
+    transform: translate3d(.4px,0,0);
+    filter: drop-shadow(0 0 16px rgba(255,255,255,.12));
+  }
+}
+@media (max-width: 640px) {
+  .donate-ant {
+    width: 126px !important;
+    height: 126px !important;
+    min-width: 126px !important;
+    min-height: 126px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .donate-ant,
+  .donate-ant .ant-w {
+    animation: none !important;
+  }
+}
+
+/* 4) MOBILE NAV: all rows have one stable button height/box.
+   Desktop navigation is intentionally not touched. */
+@media (max-width: 960px) {
+  .mob-nav-links {
+    gap: 0 !important;
+  }
+  .mob-nav-link,
+  .mob-nav-link.mob-nav-link-arch {
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+    padding: 0 24px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 14px !important;
+    line-height: 1 !important;
+    margin-top: 0 !important;
+  }
+  .mob-nav-link > span:not(.nav-mark) {
+    display: inline-flex !important;
+    align-items: center !important;
+    min-height: 22px !important;
+    line-height: 1 !important;
+  }
+  .mob-nav-link .nav-ico,
+  .mob-nav-link .nav-mark {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+    flex: 0 0 22px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 22px !important;
+    margin: 0 !important;
+  }
+  .mob-nav-link .nav-mark {
+    font-size: 22px !important;
+    transform: none !important;
+  }
+}
+
+/* 5) CONTACTS: no red side strips on hover or touch/scroll state. */
+.clink::before {
+  display: none !important;
+  content: none !important;
+  transform: none !important;
+}
+@media (hover:hover) and (pointer:fine) {
+  .clink:hover::before { transform: none !important; }
+}
+.clink:active::before { transform: none !important; }
+
 </style>
 
 <!-- PATCH · MOBILE VISUAL VIEWPORT SYNC FOR APERTURA PANELS -->
