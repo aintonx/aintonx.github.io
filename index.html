@@ -43,17 +43,21 @@
 <meta name="twitter:description" content="Параллельный мир. Реальные реликвии. Каждая — кто-то, кто был.">
 <meta name="twitter:image" content="https://echoworld.space/og-cover.jpg">
 
+
 <!-- Brand icons · EchoWorld barcode logo.
-     В корне проекта остаётся только index.html; все служебные иконки лежат в /logo/.
-     Favicon вкладки меняется вместе с темой сайта. Apple/закладки/manifest оставлены
-     статичными: так Safari/iOS меньше цепляют старый кэш и не мигают между версиями. -->
-<link id="ew-favicon-svg" rel="icon" type="image/svg+xml" href="/logo/favicon-dark.svg?v=20260702-clean-1">
-<link id="ew-favicon-ico" rel="icon" sizes="any" href="/logo/favicon-dark.ico?v=20260702-clean-1">
-<link id="ew-shortcut-icon" rel="shortcut icon" href="/logo/favicon-dark.ico?v=20260702-clean-1">
-<link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon.png?v=20260702-clean-1">
-<link rel="apple-touch-icon-precomposed" sizes="180x180" href="/logo/apple-touch-icon.png?v=20260702-clean-1">
-<link rel="manifest" href="/logo/site.webmanifest?v=20260702-clean-1">
-<link rel="mask-icon" href="/logo/mask-icon.svg?v=20260702-clean-1" color="#c02828">
+     Чистая структура: в корне проекта только index.html, все служебные иконки лежат в /logo/.
+     Вкладка браузера переключает favicon вместе с темой сайта. Apple/iOS/Favorites получают
+     один статичный непрозрачный PNG: так Safari не заливает иконку цветом темы и меньше цепляет старый кэш. -->
+<link id="ew-favicon-svg" rel="icon" type="image/svg+xml" href="/logo/favicon-dark-r20260702a.svg">
+<link id="ew-favicon-ico" rel="icon" sizes="any" href="/logo/favicon-dark-r20260702a.ico">
+<link id="ew-shortcut-icon" rel="shortcut icon" href="/logo/favicon-dark-r20260702a.ico">
+<link id="ew-favicon-png-32" rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32-r20260702a.png">
+<link id="ew-favicon-png-16" rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16-r20260702a.png">
+<link rel="apple-touch-icon" href="/logo/apple-touch-icon-r20260702a.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon-r20260702a.png">
+<link rel="apple-touch-icon-precomposed" href="/logo/apple-touch-icon-r20260702a.png">
+<link rel="manifest" href="/logo/site-r20260702a.webmanifest">
+<link rel="mask-icon" href="/logo/mask-icon-r20260702a.svg" color="#c02828">
 <meta name="application-name" content="EchoWorld">
 <meta name="apple-mobile-web-app-title" content="EchoWorld">
 <meta name="mobile-web-app-capable" content="yes">
@@ -61,13 +65,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script>
   /* EchoWorld brand icons: меняем только favicon вкладки. Apple Touch Icon и manifest
-     специально не переключаются JS-ом — Safari/iOS кэшируют их агрессивно и из-за
-     динамической подмены могут показывать то старую, то новую иконку. */
+     НЕ переключаются JS-ом: iOS/Safari агрессивно кэшируют их и могут показывать старые/пустые состояния. */
   (function(){ try{
-    var V='?v=20260702-clean-1';
     var ICONS={
-      dark:{svg:'/logo/favicon-dark.svg'+V, ico:'/logo/favicon-dark.ico'+V},
-      light:{svg:'/logo/favicon-light.svg'+V, ico:'/logo/favicon-light.ico'+V}
+      dark:{svg:'/logo/favicon-dark-r20260702a.svg', ico:'/logo/favicon-dark-r20260702a.ico', png32:'/logo/favicon-32x32-r20260702a.png', png16:'/logo/favicon-16x16-r20260702a.png'},
+      light:{svg:'/logo/favicon-light-r20260702a.svg', ico:'/logo/favicon-light-r20260702a.ico', png32:'/logo/favicon-32x32-light-r20260702a.png', png16:'/logo/favicon-16x16-light-r20260702a.png'}
     };
     function wantedTheme(){
       var attr=document.documentElement.getAttribute('data-theme');
@@ -83,6 +85,8 @@
       setHref('ew-favicon-svg', set.svg);
       setHref('ew-favicon-ico', set.ico);
       setHref('ew-shortcut-icon', set.ico);
+      setHref('ew-favicon-png-32', set.png32);
+      setHref('ew-favicon-png-16', set.png16);
     }
     applyBrandIcons();
     if(window.MutationObserver){ new MutationObserver(applyBrandIcons).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']}); }
