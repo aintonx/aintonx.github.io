@@ -32,46 +32,48 @@
 <meta property="og:description" content="Каждая реликвия — кто-то, кто был. Кто верил. Кто шёл к этому. Не товар — физический след из MARKETSPACE.">
 <meta property="og:url" content="https://echoworld.space/">
 <meta property="og:locale" content="ru_RU">
-<meta property="og:image" content="https://echoworld.space/og-cover.jpg">
+<meta property="og:image" content="https://echoworld.space/logo/og-image-r20260702f.png">
+<meta property="og:image:secure_url" content="https://echoworld.space/logo/og-image-r20260702f.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="EchoWorld · Marketspace">
+<meta property="og:image:alt" content="EchoWorld · Реликвии из MARKETSPACE">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="EchoWorld — Реликвии из MARKETSPACE">
 <meta name="twitter:description" content="Параллельный мир. Реальные реликвии. Каждая — кто-то, кто был.">
-<meta name="twitter:image" content="https://echoworld.space/og-cover.jpg">
+<meta name="twitter:image" content="https://echoworld.space/logo/og-image-r20260702f.png">
+<meta name="twitter:image:alt" content="EchoWorld · Реликвии из MARKETSPACE">
+<link rel="image_src" href="https://echoworld.space/logo/og-image-r20260702f.png">
 
 <!-- Brand icons · EchoWorld barcode logo.
-     Чистая структура: в корне проекта только index.html, все служебные иконки лежат в /logo/.
-     ВАЖНО: знак не перерисован по смыслу — сохранён штрихкод из приложенного логотипа,
-     без красной нижней полосы и без mask-icon. Все версии центрированы в своём квадрате. -->
-<link id="ew-favicon-svg" rel="icon" type="image/svg+xml" href="/logo/favicon-dark-r20260702c.svg">
-<link id="ew-favicon-ico" rel="icon" sizes="any" href="/logo/favicon-dark-r20260702c.ico">
-<link id="ew-shortcut-icon" rel="shortcut icon" href="/logo/favicon-dark-r20260702c.ico">
-<link id="ew-favicon-png-32" rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32-r20260702c.png">
-<link id="ew-favicon-png-16" rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16-r20260702c.png">
-<link rel="apple-touch-icon" href="/logo/apple-touch-icon-r20260702c.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/logo/apple-touch-icon-120x120-r20260702c.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/logo/apple-touch-icon-152x152-r20260702c.png">
-<link rel="apple-touch-icon" sizes="167x167" href="/logo/apple-touch-icon-167x167-r20260702c.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon-180x180-r20260702c.png">
-<link rel="apple-touch-icon-precomposed" href="/logo/apple-touch-icon-r20260702c.png">
-<link rel="manifest" href="/logo/site-r20260702c.webmanifest">
+     Setup checked against Apple/MDN/favicon practice: real PNG apple-touch-icons,
+     SVG/ICO/PNG favicons, no mask-icon, no query strings. All files live in /logo/.
+     The symbol is the supplied barcode logo, centered, without red stripe. -->
+<link id="ew-favicon-svg" rel="icon" type="image/svg+xml" href="/logo/favicon-dark-r20260702f.svg">
+<link id="ew-favicon-ico" rel="icon" sizes="any" href="/logo/favicon-dark-r20260702f.ico">
+<link id="ew-shortcut-icon" rel="shortcut icon" href="/logo/favicon-dark-r20260702f.ico">
+<link id="ew-favicon-png-32" rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32-r20260702f.png">
+<link id="ew-favicon-png-16" rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16-r20260702f.png">
+<link rel="apple-touch-icon" href="/logo/apple-touch-icon-r20260702f.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/logo/apple-touch-icon-120x120-r20260702f.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/logo/apple-touch-icon-152x152-r20260702f.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/logo/apple-touch-icon-167x167-r20260702f.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon-180x180-r20260702f.png">
+<link rel="manifest" href="/logo/site-r20260702f.webmanifest">
 <meta name="application-name" content="EchoWorld">
 <meta name="apple-mobile-web-app-title" content="EchoWorld">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script>
-  /* EchoWorld brand icons: меняем только favicon вкладки. Apple Touch Icon и manifest
-     НЕ переключаются JS-ом: iOS/Safari агрессивно кэшируют их. mask-icon не подключаем,
-     чтобы Safari Favorites не превращал знак в однотонный квадрат. */
+  /* EchoWorld brand icons: only browser-tab favicon follows the site theme.
+     Apple Touch Icon and manifest stay static because iOS/Safari cache them aggressively. */
   (function(){ try{
     var ICONS={
-      dark:{svg:'/logo/favicon-dark-r20260702c.svg', ico:'/logo/favicon-dark-r20260702c.ico', png32:'/logo/favicon-32x32-r20260702c.png', png16:'/logo/favicon-16x16-r20260702c.png'},
-      light:{svg:'/logo/favicon-light-r20260702c.svg', ico:'/logo/favicon-light-r20260702c.ico', png32:'/logo/favicon-32x32-light-r20260702c.png', png16:'/logo/favicon-16x16-light-r20260702c.png'}
+      dark:{svg:'/logo/favicon-dark-r20260702f.svg', ico:'/logo/favicon-dark-r20260702f.ico', png32:'/logo/favicon-32x32-r20260702f.png', png16:'/logo/favicon-16x16-r20260702f.png'},
+      light:{svg:'/logo/favicon-light-r20260702f.svg', ico:'/logo/favicon-light-r20260702f.ico', png32:'/logo/favicon-32x32-light-r20260702f.png', png16:'/logo/favicon-16x16-light-r20260702f.png'}
     };
     function wantedTheme(){
       var attr=document.documentElement.getAttribute('data-theme');
