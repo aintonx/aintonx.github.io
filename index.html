@@ -14942,7 +14942,7 @@ button, a, [role="button"], label,
           <div class="echo-tab-pane echo-tab-pane-voice hidden" id="echoTabPaneVoice">
             <div class="echo-voice" id="echoVoiceBlock">
               <button type="button" class="echo-voice-btn" id="echoVoiceBtn" onclick="toggleEchoRecord()" aria-label="Записать голос">
-                <svg class="ico echo-voice-icon ew-mask-icon ew-icon--mic-vocal" aria-hidden="true"><use href="#i-mic-vocal"/></svg>
+                <svg class="ico echo-voice-icon ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg>
               </button>
               <div class="echo-voice-time" id="echoVoiceTime">0.0 сек</div>
               <div class="echo-voice-status" id="echoVoiceStatus">Нажмите для записи · до 3 сек</div>
@@ -16260,14 +16260,15 @@ button, a, [role="button"], label,
             <!-- Антенна-передатчик: мачта по центру, дуги — её собственное
                  излучение (волна яркости изнутри наружу, без оверлеев). -->
             <svg class="donate-ant" viewBox="0 0 24 24" aria-hidden="true">
-              <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path class="ant-w aw-out" d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9"/>
-                <path class="ant-w aw-in" d="M7.8 4.7a6.14 6.14 0 0 0-.8 7.5"/>
-                <circle cx="12" cy="9" r="2"/>
-                <path class="ant-w aw-in" d="M16.2 4.8c2 2 2.26 5.11.8 7.47"/>
-                <path class="ant-w aw-out" d="M19.1 1.9a9.96 9.96 0 0 1 0 14.1"/>
-                <path d="M9.5 18h5"/>
-                <path d="m8 22 4-11 4 11"/>
+              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="9.078" r="2"/>
+                <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
+              </g>
+              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path class="ant-w aw-in" d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
+                <path class="ant-w aw-in" d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
+                <path class="ant-w aw-out" d="M4.936 2A9.97 9.97 0 0 0 2 9.078a9.97 9.97 0 0 0 3 7.142"/>
+                <path class="ant-w aw-out" d="M19.141 2.078a9.97 9.97 0 0 1 2.859 7a9.97 9.97 0 0 1-2.922 7.064"/>
               </g>
             </svg>
           </div>
@@ -28545,6 +28546,138 @@ svg.ew-mask-icon use,
   0%   { opacity: 1;   filter: drop-shadow(0 0 8px rgba(192,40,40,.25)); transform: scale(1.01); }
   78%  { opacity: 1;   filter: drop-shadow(0 0 5px rgba(192,40,40,.16)); transform: scale(1); }
   100% { opacity: .92; filter: drop-shadow(0 0 2px rgba(192,40,40,.06)); transform: scale(1); }
+}
+
+
+
+/* PATCH · ECHO ICON MICRO-FIXES · 205
+   Точечно: запись Эхо, play/stop, старая донатная антенна из index-копии,
+   и оптический размер @ в навигации. */
+
+/* 1) Эхо-запись: тот же микрофон, что в навигации, без тряски контейнера. */
+.echo-voice-btn,
+.echo-voice-btn.recording,
+.echo-section.recording .echo-voice,
+.echo-voice-icon.ew-mask-icon {
+  transform: translate3d(0,0,0) !important;
+  backface-visibility: hidden;
+}
+.echo-section.recording .echo-voice {
+  animation: none !important;
+  border-color: var(--red2) !important;
+  box-shadow:
+    0 0 0 1px rgba(192,40,40,.45),
+    0 0 18px rgba(192,40,40,.18) !important;
+}
+.echo-voice-btn.recording {
+  animation: none !important;
+  box-shadow:
+    0 0 0 1px rgba(192,40,40,.30),
+    0 0 18px rgba(192,40,40,.24) !important;
+}
+.echo-voice-btn.recording::before {
+  opacity: 0 !important;
+  animation: none !important;
+}
+.echo-voice-icon.ew-mask-icon {
+  --ew-icon-size: 32px;
+  --ew-icon-stroke: 1.75;
+  display: block !important;
+  pointer-events: none;
+}
+@media (max-width: 960px) {
+  .echo-voice-icon.ew-mask-icon { --ew-icon-size: 34px; }
+}
+
+/* 2) Эхо-плеер: play и stop/pause не могут быть видимы одновременно.
+   Базовый .ew-mask-icon имеет display:block!important, поэтому состояние
+   плеера должно перебивать его более точным правилом. */
+.echo-player-btn .echo-player-ico-play.ew-mask-icon {
+  display: block !important;
+  margin-left: 1px;
+}
+.echo-player-btn .echo-player-ico-pause.ew-mask-icon {
+  display: none !important;
+}
+.echo-player.playing .echo-player-btn .echo-player-ico-play.ew-mask-icon {
+  display: none !important;
+}
+.echo-player.playing .echo-player-btn .echo-player-ico-pause.ew-mask-icon {
+  display: block !important;
+}
+
+/* 3) Донатная антенна: возвращена старая антенна и её собственная анимация
+   из index-копии. Без внешних волн поверх: живут только дуги .ant-w. */
+.donate-ant {
+  width: 150px !important;
+  height: 150px !important;
+  min-width: 150px !important;
+  min-height: 150px !important;
+  display: block !important;
+  margin: 0 auto !important;
+  overflow: visible !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  color: var(--cyan) !important;
+  filter: drop-shadow(0 0 12px rgba(0,200,200,0.28)) !important;
+  position: relative;
+  z-index: 2;
+  transform: translate3d(0,0,0);
+  transform-origin: 50% 56%;
+  backface-visibility: hidden;
+  animation: donateAntGlitch 11s steps(1,end) infinite !important;
+}
+.donate-ant path:not(.ant-w),
+.donate-ant circle {
+  animation: none !important;
+}
+.donate-ant .ant-w {
+  opacity: .24;
+  animation: antWave 2.8s ease-in-out infinite !important;
+}
+.donate-ant .aw-out { animation-delay: .4s !important; }
+@media (max-width: 640px) {
+  .donate-ant {
+    width: 126px !important;
+    height: 126px !important;
+    min-width: 126px !important;
+    min-height: 126px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .donate-ant,
+  .donate-ant .ant-w {
+    animation: none !important;
+  }
+}
+
+/* 4) @ в навигации: оптически выравниваем с иконками того же контекста. */
+.navlink .nav-mark,
+.desktop-menu-opt .nav-mark {
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px !important;
+  min-height: 15px !important;
+  flex: 0 0 15px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 15px !important;
+  line-height: 15px !important;
+  transform: translateY(-.5px);
+}
+.mob-nav-link .nav-mark {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  flex: 0 0 24px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 22px !important;
+  line-height: 24px !important;
+  transform: translateY(-1px);
 }
 
 </style>
