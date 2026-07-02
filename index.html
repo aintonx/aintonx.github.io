@@ -43,24 +43,22 @@
 <meta name="twitter:description" content="Параллельный мир. Реальные реликвии. Каждая — кто-то, кто был.">
 <meta name="twitter:image" content="https://echoworld.space/og-cover.jpg">
 
-
-
 <!-- Brand icons · EchoWorld barcode logo.
      Чистая структура: в корне проекта только index.html, все служебные иконки лежат в /logo/.
-     Favicon вкладки переключается вместе с темой сайта. Для iOS/Safari Favorites используется
-     отдельная статичная PNG-иконка без mask-icon: так Safari не превращает знак в однотонный квадрат. -->
-<link id="ew-favicon-svg" rel="icon" type="image/svg+xml" href="/logo/favicon-dark-r20260702b.svg">
-<link id="ew-favicon-ico" rel="icon" sizes="any" href="/logo/favicon-dark-r20260702b.ico">
-<link id="ew-shortcut-icon" rel="shortcut icon" href="/logo/favicon-dark-r20260702b.ico">
-<link id="ew-favicon-png-32" rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32-r20260702b.png">
-<link id="ew-favicon-png-16" rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16-r20260702b.png">
-<link rel="apple-touch-icon" href="/logo/apple-touch-icon-r20260702b.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/logo/apple-touch-icon-120x120-r20260702b.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/logo/apple-touch-icon-152x152-r20260702b.png">
-<link rel="apple-touch-icon" sizes="167x167" href="/logo/apple-touch-icon-167x167-r20260702b.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon-180x180-r20260702b.png">
-<link rel="apple-touch-icon-precomposed" href="/logo/apple-touch-icon-r20260702b.png">
-<link rel="manifest" href="/logo/site-r20260702b.webmanifest">
+     ВАЖНО: знак не перерисован по смыслу — сохранён штрихкод из приложенного логотипа,
+     без красной нижней полосы и без mask-icon. Все версии центрированы в своём квадрате. -->
+<link id="ew-favicon-svg" rel="icon" type="image/svg+xml" href="/logo/favicon-dark-r20260702c.svg">
+<link id="ew-favicon-ico" rel="icon" sizes="any" href="/logo/favicon-dark-r20260702c.ico">
+<link id="ew-shortcut-icon" rel="shortcut icon" href="/logo/favicon-dark-r20260702c.ico">
+<link id="ew-favicon-png-32" rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32-r20260702c.png">
+<link id="ew-favicon-png-16" rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16-r20260702c.png">
+<link rel="apple-touch-icon" href="/logo/apple-touch-icon-r20260702c.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/logo/apple-touch-icon-120x120-r20260702c.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/logo/apple-touch-icon-152x152-r20260702c.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/logo/apple-touch-icon-167x167-r20260702c.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon-180x180-r20260702c.png">
+<link rel="apple-touch-icon-precomposed" href="/logo/apple-touch-icon-r20260702c.png">
+<link rel="manifest" href="/logo/site-r20260702c.webmanifest">
 <meta name="application-name" content="EchoWorld">
 <meta name="apple-mobile-web-app-title" content="EchoWorld">
 <meta name="mobile-web-app-capable" content="yes">
@@ -68,12 +66,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script>
   /* EchoWorld brand icons: меняем только favicon вкладки. Apple Touch Icon и manifest
-     НЕ переключаются JS-ом: iOS/Safari агрессивно кэшируют их и могут показывать старые состояния.
-     Важно: mask-icon намеренно не подключён — он давал однотонный чёрный квадрат в Safari Favorites. */
+     НЕ переключаются JS-ом: iOS/Safari агрессивно кэшируют их. mask-icon не подключаем,
+     чтобы Safari Favorites не превращал знак в однотонный квадрат. */
   (function(){ try{
     var ICONS={
-      dark:{svg:'/logo/favicon-dark-r20260702b.svg', ico:'/logo/favicon-dark-r20260702b.ico', png32:'/logo/favicon-32x32-r20260702b.png', png16:'/logo/favicon-16x16-r20260702b.png'},
-      light:{svg:'/logo/favicon-light-r20260702b.svg', ico:'/logo/favicon-light-r20260702b.ico', png32:'/logo/favicon-32x32-light-r20260702b.png', png16:'/logo/favicon-16x16-light-r20260702b.png'}
+      dark:{svg:'/logo/favicon-dark-r20260702c.svg', ico:'/logo/favicon-dark-r20260702c.ico', png32:'/logo/favicon-32x32-r20260702c.png', png16:'/logo/favicon-16x16-r20260702c.png'},
+      light:{svg:'/logo/favicon-light-r20260702c.svg', ico:'/logo/favicon-light-r20260702c.ico', png32:'/logo/favicon-32x32-light-r20260702c.png', png16:'/logo/favicon-16x16-light-r20260702c.png'}
     };
     function wantedTheme(){
       var attr=document.documentElement.getAttribute('data-theme');
