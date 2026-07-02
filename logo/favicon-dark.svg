@@ -1,16 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="EchoWorld barcode logo">
-  <rect width="512" height="512" fill="#04040a"/>
-
-  <g fill="#f0f0f8" stroke="none" class="ew-mark" transform="translate(64 136) scale(0.831) translate(-280.889 -239.960798)">
-    <rect x="280.889" y="239.960798" width="58.111" height="288.078"/>
-    <path d="M368,239.960798L368,528.038798L396,528.038798L397,239.960798L368,239.960798Z"/>
-    <rect x="426" y="239.960798" width="29" height="288.078"/>
-    <path d="M484,239.960798L484,528.038798L497,528.038798L498,239.960798L484,239.960798Z"/>
-    <rect x="512" y="239.960798" width="29" height="288.078"/>
-    <rect x="570" y="239.960798" width="14" height="288.078"/>
-    <path d="M628,239.960798L627,528.038798L656,528.038798L657,239.960798L628,239.960798Z"/>
-    <path d="M671,239.960798L672,528.038798L686,528.038798L686,239.960798L671,239.960798Z"/>
-    <path d="M715,239.960798L714,528.038798L743.111,528.038798L743.111,239.960798L715,239.960798Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180" aria-label="EchoWorld">
+  <rect width="180" height="180" rx="0" fill="#04040a"/>
+  <g fill="#f0f0f8">
+    <rect x="32.400" y="54.101" width="14.483" height="71.798"/> <rect x="54.111" y="54.101" width="7.228" height="71.798"/> <rect x="68.566" y="54.101" width="7.228" height="71.798"/> <rect x="83.022" y="54.101" width="3.489" height="71.798"/> <rect x="90.000" y="54.101" width="7.228" height="71.798"/> <rect x="104.455" y="54.101" width="3.489" height="71.798"/> <rect x="118.911" y="54.101" width="7.228" height="71.798"/> <rect x="129.628" y="54.101" width="3.738" height="71.798"/> <rect x="140.594" y="54.101" width="7.006" height="71.798"/>
   </g>
 </svg>

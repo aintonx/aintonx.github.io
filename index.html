@@ -44,24 +44,30 @@
 <meta name="twitter:image" content="https://echoworld.space/og-cover.jpg">
 
 <!-- Brand icons · EchoWorld barcode logo.
-     Все служебные файлы лежат в /logo/, чтобы не захламлять корень репозитория.
-     Вкладка браузера переключается вместе с темой сайта: dark ↔ light. -->
-<link id="ew-favicon-svg" rel="icon" type="image/svg+xml" href="/logo/favicon-dark.svg">
-<link id="ew-favicon-ico" rel="alternate icon" href="/logo/favicon-dark.ico">
-<link id="ew-apple-touch-icon" rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon-dark.png">
-<link id="ew-webmanifest" rel="manifest" href="/logo/site.webmanifest">
-<link rel="mask-icon" href="/logo/mask-icon.svg" color="#c02828">
+     В корне проекта остаётся только index.html; все служебные иконки лежат в /logo/.
+     Favicon вкладки меняется вместе с темой сайта. Apple/закладки/manifest оставлены
+     статичными: так Safari/iOS меньше цепляют старый кэш и не мигают между версиями. -->
+<link id="ew-favicon-svg" rel="icon" type="image/svg+xml" href="/logo/favicon-dark.svg?v=20260702-clean-1">
+<link id="ew-favicon-ico" rel="icon" sizes="any" href="/logo/favicon-dark.ico?v=20260702-clean-1">
+<link id="ew-shortcut-icon" rel="shortcut icon" href="/logo/favicon-dark.ico?v=20260702-clean-1">
+<link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon.png?v=20260702-clean-1">
+<link rel="apple-touch-icon-precomposed" sizes="180x180" href="/logo/apple-touch-icon.png?v=20260702-clean-1">
+<link rel="manifest" href="/logo/site.webmanifest?v=20260702-clean-1">
+<link rel="mask-icon" href="/logo/mask-icon.svg?v=20260702-clean-1" color="#c02828">
 <meta name="application-name" content="EchoWorld">
 <meta name="apple-mobile-web-app-title" content="EchoWorld">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script>
-  /* EchoWorld brand icons: синхронизация favicon/bookmark assets с темой сайта. */
+  /* EchoWorld brand icons: меняем только favicon вкладки. Apple Touch Icon и manifest
+     специально не переключаются JS-ом — Safari/iOS кэшируют их агрессивно и из-за
+     динамической подмены могут показывать то старую, то новую иконку. */
   (function(){ try{
+    var V='?v=20260702-clean-1';
     var ICONS={
-      dark:{svg:'/logo/favicon-dark.svg', ico:'/logo/favicon-dark.ico', apple:'/logo/apple-touch-icon-dark.png', manifest:'/logo/site.webmanifest', status:'black-translucent'},
-      light:{svg:'/logo/favicon-light.svg', ico:'/logo/favicon-light.ico', apple:'/logo/apple-touch-icon-light.png', manifest:'/logo/site-light.webmanifest', status:'default'}
+      dark:{svg:'/logo/favicon-dark.svg'+V, ico:'/logo/favicon-dark.ico'+V},
+      light:{svg:'/logo/favicon-light.svg'+V, ico:'/logo/favicon-light.ico'+V}
     };
     function wantedTheme(){
       var attr=document.documentElement.getAttribute('data-theme');
@@ -72,14 +78,11 @@
       return 'dark';
     }
     function setHref(id, href){ var el=document.getElementById(id); if(el && el.getAttribute('href')!==href) el.setAttribute('href', href); }
-    function setContent(sel, content){ var el=document.querySelector(sel); if(el && el.getAttribute('content')!==content) el.setAttribute('content', content); }
     function applyBrandIcons(){
       var set=ICONS[wantedTheme()]||ICONS.dark;
       setHref('ew-favicon-svg', set.svg);
       setHref('ew-favicon-ico', set.ico);
-      setHref('ew-apple-touch-icon', set.apple);
-      setHref('ew-webmanifest', set.manifest);
-      setContent('meta[name="apple-mobile-web-app-status-bar-style"]', set.status);
+      setHref('ew-shortcut-icon', set.ico);
     }
     applyBrandIcons();
     if(window.MutationObserver){ new MutationObserver(applyBrandIcons).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']}); }
@@ -91,7 +94,6 @@
     window.EchoWorldUpdateBrandIcons=applyBrandIcons;
   }catch(e){} })();
 </script>
-
 <!-- Performance: предсоединение к шрифтам и картинкам -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
