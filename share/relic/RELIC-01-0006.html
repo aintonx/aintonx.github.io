@@ -37,9 +37,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0006/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260703g UTC=2026-07-03T15:25:13Z MSK=2026-07-03T18:25:13+0300 -->
-<meta name="echoworld-deploy-version" content="r20260703g">
-<meta name="echoworld-deploy-built-at" content="2026-07-03T15:25:13Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260703h UTC=2026-07-03T15:44:28Z MSK=2026-07-03T18:44:28+0300 -->
+<meta name="echoworld-deploy-version" content="r20260703h">
+<meta name="echoworld-deploy-built-at" content="2026-07-03T15:44:28Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -10725,6 +10725,12 @@ input, select, textarea {
 }
 @media(max-width:365px) {
   .donate-swipe-pane .donate-right { min-height: 342px; }
+}
+@supports (-webkit-touch-callout: none) {
+  @media(max-width:960px) {
+    .arch-swipe-pane > .pre-pane-cta { top: 4.2px; }
+    .arch-donate .pre-pane-cta { top: 26px; }
+  }
 }
 @media(min-width: 961px) {
   /* На десктопе свайп-навигация скрыта */
