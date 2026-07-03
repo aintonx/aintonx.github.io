@@ -37,9 +37,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0009/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260703b UTC=2026-07-02T23:36:45Z MSK=2026-07-03T02:36:45+0300 -->
-<meta name="echoworld-deploy-version" content="r20260703b">
-<meta name="echoworld-deploy-built-at" content="2026-07-02T23:36:45Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260703c UTC=2026-07-03T00:13:38Z MSK=2026-07-03T03:13:38+0300 -->
+<meta name="echoworld-deploy-version" content="r20260703c">
+<meta name="echoworld-deploy-built-at" content="2026-07-03T00:13:38Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -7686,26 +7686,36 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
      повторяет структуру echo-pane-cta «Открыть канал», только в красном
      спектре. Единый язык кнопок-переходов между слайдами на мобиле. */
   /* Точное соответствие echo-pane-cta «Открыть канал»:
-     padding 16/18, width 100%, gap 14, font-size 9. Цвета — красные.
+     height 54px, padding 14/20, width 100%, gap 14, font-size 9. Цвета — красные.
      Фиксированный отступ 32px от контента — иначе на свайпах кнопка
      прижималась к тексту вплотную. */
   .pre-pane-cta {
     margin-top: 22px;
     width: 100%;
-    display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+    min-height: 54px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 14px;
     background: transparent;
     border: 1px solid var(--red2);
     border-radius: var(--radius);   /* скруглённая, как остальные кнопки сайта */
     color: var(--red2);
     font-family: var(--font-code);
-    font-size: 8.5px;
+    font-size: 9px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    padding: 12px 16px;          /* чуть меньше, не давит на соседний слайд */
+    padding: 14px 20px;
     cursor: pointer;
-    transition: background .25s ease, box-shadow .25s ease, color .25s ease;
+    transition:
+      background .2s ease,
+      border-color .2s ease,
+      color .2s ease,
+      box-shadow .2s ease,
+      transform .1s cubic-bezier(.22,1,.36,1),
+      filter .1s ease;
     position: relative;
     overflow: hidden;
+    box-sizing: border-box;
+    transform: translate3d(0,0,0) scale(1);
+    will-change: transform, filter;
   }
   @media (hover:hover) and (pointer:fine) {
     .pre-pane-cta:hover {
@@ -7721,9 +7731,8 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   }
   .pre-pane-cta-label {
     color: inherit;
-    font-family: var(--font-code);
-    font-size: 9px;
-    letter-spacing: 0.22em;
+    font: inherit;
+    letter-spacing: inherit;
     text-transform: uppercase;
   }
   .pre-pane-cta-arrow {
@@ -10097,7 +10106,8 @@ input, select, textarea {
 .echo-pane-cta {
   margin-top: auto;
   align-self: flex-start;
-  display: inline-flex; align-items: center; gap: 14px;
+  min-height: 54px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 14px;
   background: transparent;
   border: 1px solid var(--cyan);
   color: var(--cyan);
@@ -10105,9 +10115,15 @@ input, select, textarea {
   font-size: 9px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  padding: 14px 18px;
+  padding: 14px 20px;
   cursor: pointer;
-  transition: all .25s ease;
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    box-shadow .2s ease,
+    transform .1s cubic-bezier(.22,1,.36,1),
+    filter .1s ease;
   position: relative;
   overflow: hidden;
 }
@@ -10652,7 +10668,7 @@ input, select, textarea {
      левому/правому краю радара. Доп. отступы не нужны. */
   .echo-mode-pill { padding: 10px 4px; font-size: 8px; letter-spacing: 0.1em; }
   .echo-mode-pill-price { font-size: 11px; }
-  .echo-pane-cta { width: 100%; justify-content: center; padding: 16px 18px; }
+  .echo-pane-cta { width: 100%; justify-content: center; min-height: 54px; padding: 14px 20px; }
 
   /* Полоска навигации между пейнами */
   .echo-swipe-nav {
@@ -11087,6 +11103,7 @@ input, select, textarea {
 button, a, [role="button"], label,
 .ftag, .cat-chip, .relic-card, .faq-item,
 .cta-primary, .cta-secondary, .cta-echo,
+.echo-pane-cta, .pre-pane-cta,
 .pbtn, .hbtn, .mbtn, .wopt, .pcard,
 .chk-consent, .return-consent,
 .swipe-confirm, .tech-card {
@@ -11270,7 +11287,7 @@ button, a, [role="button"], label,
 
 /* Кнопки и CTA */
 .cta-primary, .cta-secondary, .cta-echo,
-.pbtn, .hbtn, .echo-submit, .echo-pane-cta, .echo-mode-pill,
+.pbtn, .hbtn, .echo-submit, .echo-pane-cta, .pre-pane-cta, .echo-mode-pill,
 .cart-checkout-btn, .mob-nav-action-btn, .panel-close, .mhead-close,
 .echo-voice-btn, .echo-voice-retry, .swipe-confirm,
 .faq-unlock-action, .donate-method, .donate-cta, .arch-cta,
@@ -13827,6 +13844,15 @@ button, a, [role="button"], label,
   .echo-pane-cta:active {
     background: rgba(0,200,200,0.08);
     box-shadow: 0 0 18px rgba(0,200,200,0.2), inset 0 0 0 1px rgba(0,200,200,0.16);
+    transform: translate3d(0,1px,0) scale(.992);
+  }
+
+  .pre-pane-cta:active {
+    background: var(--red2);
+    border-color: var(--red2);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(192,40,40,0.4);
+    transform: translate3d(0,1px,0) scale(.992);
   }
 
   .echo-voice-retry:active {
@@ -14555,7 +14581,7 @@ button, a, [role="button"], label,
         <div class="echo-kicker-dot"></div>
         <span>// ЭХО · СИСТЕМА АПЕРТУРА</span>
       </div>
-      <h2 class="echo-title">Отправить <span>ЭХО</span><br>в&nbsp;MARKETSPACE</h2>
+      <h2 class="echo-title">Эхо</h2>
       <p class="echo-lead">
         7 слов или 3 секунды голоса. Виш произнесёт их в одном из будущих
         фрагментов — анимированных потоков данных <strong>MARKETSPACE</strong>, в нашем
@@ -16777,7 +16803,7 @@ function inspectPatch6CopyStates(){
     echoSlotFilledCaption: html.includes("has ? 'Эхо' : 'пусто'") || bodyText.includes('Эхо'),
     echoEmptyGrammar: html.includes('Эхо пусто.'),
     echoSlotHint: html.includes('Чем выше Мощь Реликвии, тем больше фрагментов Эхо может пройти вместе с ней.'),
-    echoCtaCaps: html.includes('Отправить <span>ЭХО</span><br>в&nbsp;MARKETSPACE'),
+    echoCtaCaps: html.includes('<h2 class="echo-title">Эхо</h2>'),
     consentNoCaps: !html.includes('ПОДТВЕР' + 'ДИТЕ ОБРАБОТКУ ДАННЫХ')
   };
   Object.keys(requiredCopy).forEach(key => { if(!requiredCopy[key]) issues.push('missing-copy-' + key); });
