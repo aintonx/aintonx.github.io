@@ -24,9 +24,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260703d UTC=2026-07-03T14:05:02Z MSK=2026-07-03T17:05:02+0300 -->
-<meta name="echoworld-deploy-version" content="r20260703d">
-<meta name="echoworld-deploy-built-at" content="2026-07-03T14:05:02Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260703f UTC=2026-07-03T14:47:03Z MSK=2026-07-03T17:47:03+0300 -->
+<meta name="echoworld-deploy-version" content="r20260703f">
+<meta name="echoworld-deploy-built-at" content="2026-07-03T14:47:03Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -5463,7 +5463,7 @@ select:-webkit-autofill {
   /* T7: убираем «квадратную подложку» — тяжёлый box-shadow-нимб, который
      на светлом фоне читался как отдельная подложка позади карточки.
      Соседние интерфейсы (cond-screen, радар Эхо) тени не имеют. */
-  .architect-terminal { box-shadow: none; }
+  .architect-terminal { box-shadow: none; min-height: 300px; }
 }
 
 /* ─── ДОНАТ-БЛОК: УСИЛЕНИЕ СИГНАЛА АНТЕННЫ ──────────────────────────
@@ -5843,6 +5843,7 @@ select:-webkit-autofill {
   }
   /* T7: убираем «квадратную подложку» (тяжёлый box-shadow-нимб на светлом фоне) */
   .donate-right { box-shadow: none; }
+  .arch-donate .pre-pane-cta { top: 19px; }
   .donate-row-addr { max-width: 150px; font-size: 9px; }
   .donate-row-key { font-size: 8.5px; }
 }
@@ -10774,6 +10775,7 @@ input, select, textarea {
     flex: 0 0 calc(100% - 40px);
     width: calc(100% - 40px);
     min-width: calc(100% - 40px);
+    min-height: 536px;
     margin: 26px 20px 30px;
     align-self: center;
     justify-content: flex-start;
@@ -10794,7 +10796,7 @@ input, select, textarea {
      левому/правому краю радара. Доп. отступы не нужны. */
   .echo-mode-pill { padding: 10px 4px; font-size: 8px; letter-spacing: 0.1em; }
   .echo-mode-pill-price { font-size: 11px; }
-  .echo-pane-cta { width: 100%; justify-content: center; min-height: 54px; padding: 14px 20px; }
+  .echo-pane-cta { width: 100%; justify-content: center; min-height: 54px; padding: 14px 20px; top: 0; }
 
   /* Полоска навигации между пейнами */
   .echo-swipe-nav {
@@ -10835,6 +10837,19 @@ input, select, textarea {
     line-height: 1.1;
     letter-spacing: -0.052em;
   }
+}
+@media(max-width:400px) {
+  .echo-right { min-height: 558px; }
+}
+/* Narrow mobile alignment: keep first-pane CTA bottoms level with the
+   neighboring interface bottoms after text wraps. */
+@media(max-width:380px) {
+  .echo-pane-cta { top: 0; }
+  .arch-swipe-pane .architect-terminal { min-height: 321px; }
+  .donate-swipe-pane .donate-right { min-height: 321px; }
+}
+@media(max-width:365px) {
+  .donate-swipe-pane .donate-right { min-height: 342px; }
 }
 @media(min-width: 961px) {
   /* На десктопе свайп-навигация скрыта */
@@ -15091,7 +15106,7 @@ button, a, [role="button"], label,
         <div class="echo-kicker-dot"></div>
         <span>// ЭХО · СИСТЕМА АПЕРТУРА</span>
       </div>
-      <h2 class="echo-title">Эхо</h2>
+      <h2 class="echo-title">Отправить <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>
       <p class="echo-lead">
         7 слов или 3 секунды голоса. Эхо можно отправить отдельно —
         не покупая реликвию. Виш произнесёт ваши слова в одном из будущих
@@ -17336,7 +17351,7 @@ function inspectPatch6CopyStates(){
     echoSlotFilledCaption: html.includes("has ? 'Эхо' : 'пусто'") || bodyText.includes('Эхо'),
     echoEmptyGrammar: html.includes('Эхо пусто.'),
     echoSlotHint: html.includes('Чем выше Мощь, тем больше слотов Эхо откроется для ваших слов.'),
-    echoCtaCaps: html.includes('<h2 class="echo-title">Эхо</h2>'),
+    echoCtaCaps: html.includes('<h2 class="echo-title">Отправить <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>'),
     consentNoCaps: !html.includes('ПОДТВЕР' + 'ДИТЕ ОБРАБОТКУ ДАННЫХ')
   };
   Object.keys(requiredCopy).forEach(key => { if(!requiredCopy[key]) issues.push('missing-copy-' + key); });
