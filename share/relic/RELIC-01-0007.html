@@ -37,9 +37,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0007/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260704j UTC=2026-07-04T11:57:55Z MSK=2026-07-04T14:57:56+0300 -->
-<meta name="echoworld-deploy-version" content="r20260704j">
-<meta name="echoworld-deploy-built-at" content="2026-07-04T11:57:55Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260704k UTC=2026-07-04T20:34:11Z MSK=2026-07-04T23:34:11+0300 -->
+<meta name="echoworld-deploy-version" content="r20260704k">
+<meta name="echoworld-deploy-built-at" content="2026-07-04T20:34:11Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -19537,6 +19537,9 @@ function submitOrder(){
     const payload = buildCheckoutOrderPayload({source:'submitOrder-preview'});
     window.__APERTURA_LAST_ORDER_PAYLOAD = payload;
     try{ sessionStorage.setItem('ew:last-order-payload-preview', JSON.stringify(payload)); }catch(_){ }
+    if(typeof stageAperturaBusinessSubmission === 'function'){
+      stageAperturaBusinessSubmission('checkout', payload, {source:'submitOrder-preview'});
+    }
     console.log('%cAPERTURA · ORDER PAYLOAD PREVIEW','color:#00c8c8', payload);
   }catch(e){
     console.warn('order payload preview failed:', e);
@@ -22291,6 +22294,318 @@ async function aperturaFetch(routeKey, payload, opts){
     throw normalizeAperturaError(err, {routeKey:routeKey, retryable: err && (err.name === 'AbortError' || err.ewTimedOut)});
   }
 }
+
+const APERTURA_BUSINESS_SUBMISSION_BRIDGE_VERSION = 'r20260704k';
+const APERTURA_BUSINESS_FLOW_REGISTRY = {
+  checkout: {
+    routes: ['reservationCreate','paymentCreate'],
+    primaryRoute: 'paymentCreate',
+    payloadKind: 'checkout.order',
+    userPendingStatus: 'payment-check',
+    userErrorStatus: 'checkout-timeout'
+  },
+  echoText: {
+    routes: ['echoCreate','paymentCreate'],
+    primaryRoute: 'echoCreate',
+    payloadKind: 'echo.text',
+    userPendingStatus: 'payment-check',
+    userErrorStatus: 'voice-payment-failed'
+  },
+  echoVoice: {
+    routes: ['echoUploadInit','echoUploadCommit','echoCreate','paymentCreate'],
+    primaryRoute: 'echoCreate',
+    payloadKind: 'echo.voice',
+    userPendingStatus: 'payment-check',
+    userErrorStatus: 'voice-upload-missing'
+  },
+  condensation: {
+    routes: ['condensationCreate'],
+    primaryRoute: 'condensationCreate',
+    payloadKind: 'condensation.request',
+    userPendingStatus: 'site-event-check',
+    userErrorStatus: 'checkout-timeout'
+  },
+  return: {
+    routes: ['returnCreate'],
+    primaryRoute: 'returnCreate',
+    payloadKind: 'return.request',
+    userPendingStatus: 'site-event-check',
+    userErrorStatus: 'checkout-timeout'
+  }
+};
+
+function _apBusinessNowIso(){
+  try{ return new Date().toISOString(); }catch(_){ return ''; }
+}
+function _apBusinessOnline(){
+  try{ return navigator.onLine !== false; }catch(_){ return true; }
+}
+function _apBusinessFlowPlan(flow){
+  const cfg = APERTURA_BUSINESS_FLOW_REGISTRY[flow] || null;
+  if(!cfg) return null;
+  const routes = (cfg.routes || []).map(routeKey => {
+    const route = APERTURA_ROUTE_REGISTRY[routeKey] || null;
+    const plan = typeof _apRoutePlan === 'function' ? _apRoutePlan(routeKey) : null;
+    return {
+      routeKey,
+      exists: !!route,
+      feature: route && route.feature,
+      kind: route && route.kind,
+      enabled: !!(plan && plan.enabled),
+      status: route && route.status
+    };
+  });
+  return {
+    flow,
+    payloadKind: cfg.payloadKind,
+    primaryRoute: cfg.primaryRoute,
+    routes,
+    allRoutesAvailable: routes.every(r => r.exists),
+    enabledRoutes: routes.filter(r => r.enabled).map(r => r.routeKey),
+    requiredRoutes: (cfg.routes || []).slice()
+  };
+}
+function _apBusinessResult(flow, payload, status, extra){
+  const cfg = APERTURA_BUSINESS_FLOW_REGISTRY[flow] || {};
+  extra = extra || {};
+  const result = {
+    ok: status === 'accepted',
+    status,
+    flow,
+    bridgeVersion: APERTURA_BUSINESS_SUBMISSION_BRIDGE_VERSION,
+    at: _apBusinessNowIso(),
+    mode: typeof _apGetApiMode === 'function' ? _apGetApiMode() : 'preview',
+    online: _apBusinessOnline(),
+    businessApiAllowed: typeof _apBusinessApiAllowed === 'function' ? _apBusinessApiAllowed() : false,
+    commit: !!extra.commit,
+    preview: !extra.commit,
+    canShowSuccess: status === 'accepted',
+    keepUserData: status !== 'accepted',
+    retryable: status === 'offline' || status === 'timeout' || status === 'api_error',
+    userPendingStatus: cfg.userPendingStatus || 'payment-check',
+    userErrorStatus: cfg.userErrorStatus || 'checkout-timeout',
+    payloadShape: {
+      schema: payload && payload.schema || '',
+      mode: payload && payload.mode || '',
+      keys: payload && typeof payload === 'object' ? Object.keys(payload).slice(0, 16) : [],
+      bytes: (() => { try{ return JSON.stringify(payload || {}).length; }catch(_){ return 0; } })()
+    }
+  };
+  Object.keys(extra).forEach(k => {
+    if(k !== 'payload' && k !== 'commit') result[k] = extra[k];
+  });
+  return result;
+}
+function _apRecordBusinessSubmission(result){
+  window.__APERTURA_LAST_BUSINESS_SUBMISSION = result;
+  window.__APERTURA_BUSINESS_SUBMISSION_LOG = window.__APERTURA_BUSINESS_SUBMISSION_LOG || [];
+  window.__APERTURA_BUSINESS_SUBMISSION_LOG.push(result);
+  if(window.__APERTURA_BUSINESS_SUBMISSION_LOG.length > 20){
+    window.__APERTURA_BUSINESS_SUBMISSION_LOG.shift();
+  }
+  try{
+    sessionStorage.setItem('ew:last-business-submission-status', JSON.stringify({
+      flow: result.flow,
+      status: result.status,
+      mode: result.mode,
+      online: result.online,
+      at: result.at,
+      bridgeVersion: result.bridgeVersion
+    }));
+  }catch(_){}
+  return result;
+}
+async function prepareAperturaBusinessSubmission(flow, payload, opts){
+  opts = opts || {};
+  const cfg = APERTURA_BUSINESS_FLOW_REGISTRY[flow];
+  const commit = opts.commit === true;
+  const plan = _apBusinessFlowPlan(flow);
+  if(!cfg || !plan){
+    return _apRecordBusinessSubmission(_apBusinessResult(flow, payload, 'config_error', {
+      commit,
+      source: opts.source || '',
+      error: normalizeAperturaError({code:'UNKNOWN_BUSINESS_FLOW', message:'Business flow is not registered.'})
+    }));
+  }
+  if(!_apBusinessOnline()){
+    return _apRecordBusinessSubmission(_apBusinessResult(flow, payload, 'offline', {
+      commit,
+      source: opts.source || '',
+      plan,
+      error: normalizeAperturaError({code:'OFFLINE', message:'Нет соединения. Сервер не сможет подтвердить отправку.'}, {retryable:true})
+    }));
+  }
+  if(!commit){
+    return _apRecordBusinessSubmission(_apBusinessResult(flow, payload, 'disabled_preview', {
+      commit,
+      source: opts.source || '',
+      plan,
+      note: 'Dry-run: current UI remains preview-only; no business request is sent.'
+    }));
+  }
+  if(!plan.allRoutesAvailable){
+    return _apRecordBusinessSubmission(_apBusinessResult(flow, payload, 'config_error', {
+      commit,
+      source: opts.source || '',
+      plan,
+      error: normalizeAperturaError({code:'ROUTE_PLAN_INCOMPLETE', message:'Не все маршруты бизнес-отправки описаны.'})
+    }));
+  }
+  if(!_apBusinessApiAllowed()){
+    return _apRecordBusinessSubmission(_apBusinessResult(flow, payload, 'disabled_preview', {
+      commit,
+      source: opts.source || '',
+      plan,
+      error: normalizeAperturaError({code:'BUSINESS_API_DISABLED', message:'Business API выключен текущим флагом.'})
+    }));
+  }
+  const routeKey = opts.routeKey || cfg.primaryRoute;
+  try{
+    const data = await aperturaFetch(routeKey, payload, {timeoutMs: opts.timeoutMs || APERTURA_API_TIMEOUT_MS});
+    return _apRecordBusinessSubmission(_apBusinessResult(flow, payload, 'accepted', {
+      commit,
+      source: opts.source || '',
+      routeKey,
+      plan,
+      response: data
+    }));
+  }catch(err){
+    const normalized = normalizeAperturaError(err, {routeKey, retryable:true});
+    const status = normalized.code === 'ABORTERROR' || normalized.retryable ? 'timeout' : 'api_error';
+    return _apRecordBusinessSubmission(_apBusinessResult(flow, payload, status, {
+      commit,
+      source: opts.source || '',
+      routeKey,
+      plan,
+      error: normalized
+    }));
+  }
+}
+function stageAperturaBusinessSubmission(flow, payload, opts){
+  return prepareAperturaBusinessSubmission(flow, payload, Object.assign({commit:false}, opts || {}))
+    .catch(err => _apRecordBusinessSubmission(_apBusinessResult(flow, payload, 'config_error', {
+      commit:false,
+      source: opts && opts.source || '',
+      error: normalizeAperturaError(err)
+    })));
+}
+function buildCondensationPayload(extra){
+  const item = safeText((document.getElementById('preorderItem') || {}).value || '', {maxLength:160});
+  const email = safeText((document.getElementById('preorderContact') || {}).value || '', {maxLength:160});
+  const consent = !!(document.getElementById('preorderConsent') || {}).checked;
+  return {
+    schema: 'echoworld.condensation.request.v1',
+    mode: 'frontend-preview-no-api',
+    clientSessionId: typeof getAperturaClientSessionId === 'function' ? getAperturaClientSessionId() : '',
+    requestDraftId: 'cond_' + Date.now().toString(36),
+    createdAtClient: _apBusinessNowIso(),
+    item,
+    email,
+    consent,
+    source: 'site',
+    apiReadiness: {
+      canSendToApiShape: !!(item && email && consent),
+      requiresBackendWrite: true
+    },
+    debug: extra || {}
+  };
+}
+function buildEchoOrderPayload(extra){
+  extra = extra || {};
+  const type = _echoMode === 'voice' ? 'voice' : 'text';
+  const text = safeText((document.getElementById('echoTextInput') || {}).value || '', {maxLength:220});
+  const aura = extra.aura || (typeof _getCurrentEchoAura === 'function' ? _getCurrentEchoAura() : null);
+  const reveal = !!(document.getElementById('echoOrderReveal') || {}).checked;
+  const marker = safeText((document.getElementById('echoOrderMarker') || {}).value || '', {maxLength:40});
+  return {
+    schema: 'echoworld.echo.order.v1',
+    mode: 'frontend-preview-no-api',
+    clientSessionId: typeof getAperturaClientSessionId === 'function' ? getAperturaClientSessionId() : '',
+    echoDraftId: 'echo_' + Date.now().toString(36),
+    createdAtClient: _apBusinessNowIso(),
+    type,
+    amount: type === 'voice' ? 1499 : 599,
+    currency: 'RUB',
+    text_or_audio_ref: type === 'voice' ? {
+      localOnly: true,
+      hasBlob: !!(_echoMedia && _echoMedia.blob),
+      durationMs: _echoMedia && _echoMedia.durationMs || null
+    } : {
+      text,
+      wordCount: text ? text.split(/\s+/).filter(Boolean).length : 0
+    },
+    customer: {
+      name: safeText((document.getElementById('echoOrderName') || {}).value || '', {maxLength:120}),
+      email: safeText((document.getElementById('echoOrderEmail') || {}).value || '', {maxLength:160}),
+      phone: safeText((document.getElementById('echoOrderPhone') || {}).value || '', {maxLength:80}),
+      telegram: safeText((document.getElementById('echoOrderTelegram') || {}).value || '', {maxLength:80})
+    },
+    aura: aura ? {name: safeText(aura.name, {maxLength:80}), desc: safeText(aura.desc, {maxLength:180})} : null,
+    reveal,
+    marker: reveal ? marker : '',
+    consent: !!(document.getElementById('echoOrderConsent') || {}).checked,
+    apiReadiness: {
+      canSendToApiShape: true,
+      requiresBackendPayment: true,
+      requiresBackendPersistence: true,
+      requiresUploadForVoice: type === 'voice'
+    },
+    debug: extra.debug || {}
+  };
+}
+function buildReturnRequestPayload(extra){
+  const email = safeText((document.getElementById('returnEmail') || {}).value || '', {maxLength:160});
+  const telegram = safeText((document.getElementById('returnTelegram') || {}).value || '', {maxLength:80});
+  return {
+    schema: 'echoworld.return.request.v1',
+    mode: 'frontend-preview-no-api',
+    clientSessionId: typeof getAperturaClientSessionId === 'function' ? getAperturaClientSessionId() : '',
+    returnDraftId: 'ret_' + Date.now().toString(36),
+    createdAtClient: _apBusinessNowIso(),
+    name: safeText((document.getElementById('returnName') || {}).value || '', {maxLength:120}),
+    contact: {email, telegram},
+    artifact_id: safeText((document.getElementById('returnArtifactId') || {}).value || '', {maxLength:40}),
+    order_id: safeText((document.getElementById('returnOrderId') || {}).value || '', {maxLength:60}),
+    description: safeText((document.getElementById('returnReason') || {}).value || '', {maxLength:900}),
+    consent: !!(document.getElementById('returnConsent') || {}).checked,
+    apiReadiness: {
+      canSendToApiShape: true,
+      requiresBackendWrite: true
+    },
+    debug: extra || {}
+  };
+}
+function inspectAperturaBusinessBridge(){
+  const flowKeys = Object.keys(APERTURA_BUSINESS_FLOW_REGISTRY);
+  const flows = {};
+  flowKeys.forEach(flow => { flows[flow] = _apBusinessFlowPlan(flow); });
+  const missingRoutes = [];
+  flowKeys.forEach(flow => {
+    const plan = flows[flow];
+    (plan && plan.routes || []).forEach(r => { if(!r.exists) missingRoutes.push(flow + ':' + r.routeKey); });
+  });
+  const currentPreviewLocked = !_apBusinessApiAllowed() && flowKeys.every(flow => {
+    const plan = flows[flow];
+    return plan && plan.routes.every(r => r.enabled === false);
+  });
+  return {
+    ok: !missingRoutes.length && typeof stageAperturaBusinessSubmission === 'function',
+    bridgeVersion: APERTURA_BUSINESS_SUBMISSION_BRIDGE_VERSION,
+    mode: typeof _apGetApiMode === 'function' ? _apGetApiMode() : 'preview',
+    online: _apBusinessOnline(),
+    businessApiAllowed: typeof _apBusinessApiAllowed === 'function' ? _apBusinessApiAllowed() : false,
+    currentPreviewLocked,
+    missingRoutes,
+    flows,
+    builders: {
+      checkout: typeof buildCheckoutOrderPayload === 'function',
+      condensation: typeof buildCondensationPayload === 'function',
+      echo: typeof buildEchoOrderPayload === 'function',
+      return: typeof buildReturnRequestPayload === 'function'
+    },
+    last: window.__APERTURA_LAST_BUSINESS_SUBMISSION || null
+  };
+}
 function inspectAperturaSafetyRails(){
   const paymentOk = validatePaymentUrl('https://yookassa.ru/checkout/payments/v2/safe-test');
   const paymentBlocked = validatePaymentUrl('https://evil.example/checkout/payments/v2/fake');
@@ -22299,9 +22614,11 @@ function inspectAperturaSafetyRails(){
   const htmlPath = _apFindUnsafeHtmlPayload({ok:true, message:('<scr'+'ipt>alert(1)</scr'+'ipt>')});
   const normalized = normalizeAperturaError({code:('<scr'+'ipt>x</scr'+'ipt>'), message:'<b>backend html</b>', stack:'secret'});
   const blueprint = typeof inspectAperturaApiBlueprint === 'function' ? inspectAperturaApiBlueprint() : {ok:false};
+  const businessBridge = typeof inspectAperturaBusinessBridge === 'function' ? inspectAperturaBusinessBridge() : {ok:false};
   return {
-    ok: !!(blueprint.ok && paymentOk.ok && !paymentBlocked.ok && !jsBlocked && apiBaseOk && htmlPath && normalized.ok === false && !('stack' in normalized)),
+    ok: !!(blueprint.ok && businessBridge.ok && paymentOk.ok && !paymentBlocked.ok && !jsBlocked && apiBaseOk && htmlPath && normalized.ok === false && !('stack' in normalized)),
     patch2BlueprintOk: !!blueprint.ok,
+    businessBridgeOk: !!businessBridge.ok,
     mode: _apGetApiMode(),
     businessApiAllowed: _apBusinessApiAllowed(),
     functions: {
@@ -22309,6 +22626,7 @@ function inspectAperturaSafetyRails(){
       safeText: typeof safeText === 'function',
       safeUrl: typeof safeUrl === 'function',
       normalizeAperturaError: typeof normalizeAperturaError === 'function',
+      stageAperturaBusinessSubmission: typeof stageAperturaBusinessSubmission === 'function',
       validatePaymentUrl: typeof validatePaymentUrl === 'function'
     },
     paymentAllowlist: {allowed: paymentOk.ok, blocked: !paymentBlocked.ok},
@@ -23875,6 +24193,11 @@ function selectGender(el, g){
       btn.disabled = true;
       _ewCaptchaSetButtonText(btn, 'Переход к оплате...');
     }
+    try{
+      if(typeof stageAperturaBusinessSubmission === 'function'){
+        stageAperturaBusinessSubmission('checkout', buildCheckoutOrderPayload({source:'payment-stub'}), {source:'payment-stub'});
+      }
+    }catch(e){ console.warn('checkout bridge preview failed:', e); }
     // Сейчас это заглушка до подключения YooKassa. Когда появится реальная
     // оплата, редирект/платёжная модалка должна запускаться именно здесь.
     showNotif('// Apertura: заказ зафиксирован. Архитектор свяжется с вами для подтверждения.', {contextual:true});
@@ -24055,6 +24378,11 @@ async function submitPreorder(){
     keepBusyOnSuccess: true
   });
   if(!captchaOk) return;
+  try{
+    if(typeof stageAperturaBusinessSubmission === 'function'){
+      stageAperturaBusinessSubmission('condensation', buildCondensationPayload({source:'submitPreorder-preview'}), {source:'submitPreorder-preview'});
+    }
+  }catch(e){ console.warn('condensation bridge preview failed:', e); }
   startCondensateInterfaceGlitch(item, contact);
 
   // На мобиле убедимся, что пользователь на втором пейне (с формой/терминалом)
@@ -24223,7 +24551,28 @@ async function submitPreorder(){
         if(typingEl) typingEl.style.display='none';
         if(linesEl){
           linesEl.classList.add('show');
-          linesEl.innerHTML=resultRows.map(r=>`<div class="pt-row"><span class="pt-key">${r.k}</span><span class="pt-val ${r.cls}" title="${String(r.v).replace(/"/g,'&quot;')}">${r.v}</span></div>`).join('');
+          // SECURITY: результат Конденсации строится через DOM/textContent.
+          // Пользовательские item/contact не должны попадать в innerHTML.
+          linesEl.textContent='';
+          const safeValueClasses=new Set(['dim','cyan','red','white']);
+          resultRows.forEach(r=>{
+            const row=document.createElement('div');
+            row.className='pt-row';
+
+            const key=document.createElement('span');
+            key.className='pt-key';
+            key.textContent=String(r.k||'');
+
+            const val=document.createElement('span');
+            const cls=safeValueClasses.has(r.cls)?r.cls:'';
+            val.className=cls?'pt-val '+cls:'pt-val';
+            val.setAttribute('title',String(r.v||''));
+            val.textContent=String(r.v||'');
+
+            row.appendChild(key);
+            row.appendChild(val);
+            linesEl.appendChild(row);
+          });
         }
         if(itemEl) itemEl.value='';
         if(contactEl) contactEl.value='';
@@ -26307,6 +26656,12 @@ async function submitEchoOrder(){
       return;
     }
     const aura = _getCurrentEchoAura();
+    try{
+      if(typeof stageAperturaBusinessSubmission === 'function'){
+        const flow = _echoMode === 'voice' ? 'echoVoice' : 'echoText';
+        stageAperturaBusinessSubmission(flow, buildEchoOrderPayload({aura, debug:{source:'submitEchoOrder-preview'}}), {source:'submitEchoOrder-preview'});
+      }
+    }catch(e){ console.warn('echo bridge preview failed:', e); }
     const reveal = (document.getElementById('echoOrderReveal')||{}).checked;
     const marker = ((document.getElementById('echoOrderMarker')||{}).value||'').trim();
     const revealStr = reveal && marker ? ` от Маркера «${marker}»` : ' анонимно';
@@ -27111,6 +27466,11 @@ async function submitReturnForm(ev){
     _updateReturnSubmit();
     return false;
   }
+  try{
+    if(typeof stageAperturaBusinessSubmission === 'function'){
+      stageAperturaBusinessSubmission('return', buildReturnRequestPayload({source:'submitReturnForm-preview'}), {source:'submitReturnForm-preview'});
+    }
+  }catch(e){ console.warn('return bridge preview failed:', e); }
   btn.disabled = true;
   btn.textContent = 'Сигнал фиксируется...';
   // Закрываем модал сразу: на iOS задержка + открытая клавиатура могла
