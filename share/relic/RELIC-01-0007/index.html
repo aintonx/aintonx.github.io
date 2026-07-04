@@ -37,9 +37,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0007/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260703h UTC=2026-07-03T15:44:28Z MSK=2026-07-03T18:44:28+0300 -->
-<meta name="echoworld-deploy-version" content="r20260703h">
-<meta name="echoworld-deploy-built-at" content="2026-07-03T15:44:28Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260704a UTC=2026-07-04T00:00:30Z MSK=2026-07-04T03:00:30+0300 -->
+<meta name="echoworld-deploy-version" content="r20260704a">
+<meta name="echoworld-deploy-built-at" content="2026-07-04T00:00:30Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -3976,22 +3976,26 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
 @media(max-width:520px){
   .chk-echo-body { padding: 12px; }
   .chk-echo-slots {
-    gap: 8px;
+    gap: 10px;
     justify-content: flex-start;
-    min-height: 58px;
+    min-height: 66px;
+  }
+  .chk-echo-slots[data-slot-count="4"] {
+    justify-content: space-between;
+    gap: 0;
   }
   .chk-echo-slot {
-    width: clamp(52px, 18vw, 60px);
-    height: clamp(52px, 18vw, 60px);
-    flex-basis: clamp(52px, 18vw, 60px);
-    border-radius: 14px;
+    width: 66px;
+    height: 66px;
+    flex-basis: 66px;
+    border-radius: 15px;
   }
   .chk-echo-slot-icon {
-    transform: translate(-50%, -44%) scale(.88);
+    transform: translate(-50%, -46%);
   }
   .chk-echo-slot-caption {
-    font-size: 5.8px;
-    bottom: 6px;
+    font-size: 6.5px;
+    bottom: 7px;
   }
   .chk-echo-editor-space.is-open {
     margin-top: 12px;
@@ -4012,11 +4016,15 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   }
 }
 @media(max-width:360px){
-  .chk-echo-slots { gap: 6px; }
+  .chk-echo-slots { gap: 10px; }
+  .chk-echo-slots[data-slot-count="4"] {
+    justify-content: space-between;
+    gap: 0;
+  }
   .chk-echo-slot {
-    width: clamp(46px, 17vw, 52px);
-    height: clamp(46px, 17vw, 52px);
-    flex-basis: clamp(46px, 17vw, 52px);
+    width: 66px;
+    height: 66px;
+    flex-basis: 66px;
   }
 }
 
@@ -10650,7 +10658,7 @@ input, select, textarea {
     flex: 0 0 calc(100% - 40px);
     width: calc(100% - 40px);
     min-width: calc(100% - 40px);
-    min-height: 536px;
+    min-height: 530px;
     margin: 26px 20px 30px;
     align-self: center;
     justify-content: flex-start;
@@ -10713,17 +10721,25 @@ input, select, textarea {
     letter-spacing: -0.052em;
   }
 }
+@media(max-width:420px) {
+  .echo-right { min-height: 528px; }
+}
+@media(max-width:405px) {
+  .echo-right { min-height: 526px; }
+}
 @media(max-width:400px) {
-  .echo-right { min-height: 558px; }
+  .echo-right { min-height: 569px; }
 }
 /* Narrow mobile alignment: keep first-pane CTA bottoms level with the
    neighboring interface bottoms after text wraps. */
 @media(max-width:380px) {
   .echo-pane-cta { top: 0; }
+  .echo-right { min-height: 564px; }
   .arch-swipe-pane .architect-terminal { min-height: 321px; }
   .donate-swipe-pane .donate-right { min-height: 321px; }
 }
 @media(max-width:365px) {
+  .echo-right { min-height: 562px; }
   .donate-swipe-pane .donate-right { min-height: 342px; }
 }
 @supports (-webkit-touch-callout: none) {
@@ -14179,7 +14195,7 @@ button, a, [role="button"], label,
       <div class="term-line" onclick="terminalAccessDenied('ACTIVE.WORLD',this)"><span class="term-key">ACTIVE.WORLD</span><span class="term-val">MARKETSPACE</span></div>
       <div class="term-line" onclick="terminalAccessDenied('CATALOG.ID',this)"><span class="term-key">CATALOG.ID</span><span class="term-val">01-2026</span></div>
       <div class="term-line" onclick="terminalAccessDenied('CONDENSATS.ACTIVE',this)"><span class="term-key">CONDENSATS.ACTIVE</span><span class="term-val white">11</span></div>
-      <div class="term-line term-locked" onclick="terminalAccessDenied('APERTURA.VERSION',this)"><span class="term-key">APERTURA.VERSION</span><span class="term-val-row term-lock-val"><span>v4.1.7</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+      <div class="term-line term-locked" onclick="terminalAccessDenied('APERTURA.VERSION',this)"><span class="term-key">APERTURA.VERSION</span><span class="term-val-row term-lock-val"><span>1.1.7</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
       <div class="term-line term-locked" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="term-key">PERIMETER.STATUS</span><span class="term-val-row term-lock-val"><span>STABLE</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
     </div>
   </div>
@@ -15807,7 +15823,7 @@ button, a, [role="button"], label,
           <div id="ptIdle" class="pt-idle">
             <div style="color:var(--cyan);margin-bottom:4px;">// СИСТЕМА ГОТОВА</div>
             <div>&gt; ожидание запроса конденсации<span class="pt-idle-cursor"></span></div>
-            <div style="margin-top:6px;opacity:.5;">&gt; Apertura v4.1.7 · онлайн</div>
+            <div style="margin-top:6px;opacity:.5;">&gt; Apertura 1.1.7 · онлайн</div>
             <div style="opacity:.5;">&gt; MARKETSPACE · прослушивается</div>
             <div style="opacity:.5;">&gt; конденсат · в норме</div>
           </div>
@@ -18797,7 +18813,7 @@ function renderCheckoutEchoControls(){
         <div class="chk-echo-price">Без доплаты</div>
       </div>
       <div class="chk-echo-body">
-        <div class="chk-echo-slots" data-chk-echo-slots>`;
+        <div class="chk-echo-slots" data-chk-echo-slots data-slot-count="${slots}">`;
     for(let slotIdx=0; slotIdx<slots; slotIdx++){
       const raw=echoes[slotIdx] || '';
       const has=!!raw.trim();
@@ -24148,7 +24164,7 @@ async function submitPreorder(){
     {k:'ЗАПРОС',v:briefItem,cls:''},
     {k:'КОНТАКТ',v:maskContact,cls:'dim'},
     {k:'СТАТУС',v:'Поиск конденсата активен',cls:'cyan'},
-    {k:'СИСТЕМА',v:'Apertura v4.1.7 · Онлайн',cls:''},
+    {k:'СИСТЕМА',v:'Apertura 1.1.7 · Онлайн',cls:''},
     {k:'МАРКЕТСПЕЙС',v:'Прослушивается',cls:''},
     {k:'ЧАСТОТА ПОТОКА',v:freq+' Hz',cls:'dim'},
     {k:'УРОВЕНЬ СИГНАЛА',v:lvl+'%',cls:'dim'},
