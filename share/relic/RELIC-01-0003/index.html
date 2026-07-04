@@ -37,9 +37,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0003/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260704i UTC=2026-07-04T11:11:23Z MSK=2026-07-04T14:11:23+0300 -->
-<meta name="echoworld-deploy-version" content="r20260704i">
-<meta name="echoworld-deploy-built-at" content="2026-07-04T11:11:23Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260704j UTC=2026-07-04T11:57:55Z MSK=2026-07-04T14:57:56+0300 -->
+<meta name="echoworld-deploy-version" content="r20260704j">
+<meta name="echoworld-deploy-built-at" content="2026-07-04T11:57:55Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -19797,11 +19797,12 @@ function relicToCatalog(cls){
   const headerH = (window.innerWidth <= 960) ? 96 : 88;
   const cur = document.documentElement.scrollTop || window.pageYOffset || 0;
   const targetY = Math.max(catalog.getBoundingClientRect().top + cur - headerH, 0);
-  // T1: быстро, но плавно — короткий скролл, затем ровно тот же путь,
-  // что у пользовательского клика по чипу категории.
-  _smoothScrollTo(targetY, 420, function(){
-    setCatalogCategory(cls, chip);
-  });
+  // Карточка «Мощи» не имеет отдельной логики выбора категории:
+  // сначала запускаем ровно тот же state-change, что у клика по чипу,
+  // затем едем к уже переключающемуся каталогу. Так нет второй рамки,
+  // паузы после скролла и расслоения горизонтального свайпа с фильтром.
+  setCatalogCategory(cls, chip);
+  _smoothScrollTo(targetY, 420);
 }
 function filterCards(type,btn){
   catalogState.status=type;
