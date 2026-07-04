@@ -32,6 +32,7 @@ jobs:
           cp .nojekyll _site/
           cp CNAME _site/
           cp robots.txt sitemap.xml _site/
+          cp google2b2d6009cdd50ffc.html yandex_60dacd027860a3c7.html _site/
           cp -R logo share img Character _site/
           cp logo/apple-touch-icon-r20260703b.png _site/apple-touch-icon.png
           cp logo/apple-touch-icon-r20260703b.png _site/apple-touch-icon-precomposed.png
