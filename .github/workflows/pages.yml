@@ -38,14 +38,18 @@ jobs:
           cp logo/apple-touch-icon-r20260703b.png _site/apple-touch-icon-precomposed.png
           cp logo/apple-touch-icon-r20260703b.png _site/apple-touch-icon-180x180.png
           cp logo/apple-touch-icon-r20260703b.png _site/apple-touch-icon-r20260703b.png
-          cp logo/favicon-dark-r20260703b.ico _site/favicon.ico
-          cp logo/favicon-dark-r20260703b.ico _site/favicon-r20260703b.ico
-          cp logo/favicon-dark-r20260703b.svg _site/favicon.svg
-          cp logo/favicon-dark-r20260703b.svg _site/favicon-r20260703b.svg
-          cp logo/favicon-32x32-r20260703b.png _site/favicon-32x32.png
-          cp logo/favicon-32x32-r20260703b.png _site/favicon-32x32-r20260703b.png
-          cp logo/favicon-16x16-r20260703b.png _site/favicon-16x16.png
-          cp logo/favicon-16x16-r20260703b.png _site/favicon-16x16-r20260703b.png
+          cp logo/favicon-r20260705a.ico _site/favicon.ico
+          cp logo/favicon-r20260705a.ico _site/favicon-r20260705a.ico
+          cp logo/favicon-r20260705a.svg _site/favicon.svg
+          cp logo/favicon-r20260705a.svg _site/favicon-r20260705a.svg
+          cp logo/favicon-32x32-r20260705a.png _site/favicon-32x32.png
+          cp logo/favicon-32x32-r20260705a.png _site/favicon-32x32-r20260705a.png
+          cp logo/favicon-16x16-r20260705a.png _site/favicon-16x16.png
+          cp logo/favicon-16x16-r20260705a.png _site/favicon-16x16-r20260705a.png
+          cp logo/favicon-48x48-r20260705a.png _site/favicon-48x48.png
+          cp logo/favicon-48x48-r20260705a.png _site/favicon-48x48-r20260705a.png
+          cp logo/favicon-96x96-r20260705a.png _site/favicon-96x96.png
+          cp logo/favicon-96x96-r20260705a.png _site/favicon-96x96-r20260705a.png
           find _site -name .DS_Store -delete
 
       - name: Upload artifact
