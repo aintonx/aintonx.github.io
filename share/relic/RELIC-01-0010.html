@@ -37,9 +37,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0010/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260704c UTC=2026-07-04T00:50:58Z MSK=2026-07-04T03:50:58+0300 -->
-<meta name="echoworld-deploy-version" content="r20260704c">
-<meta name="echoworld-deploy-built-at" content="2026-07-04T00:50:58Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260704d UTC=2026-07-04T09:03:17Z MSK=2026-07-04T12:03:17+0300 -->
+<meta name="echoworld-deploy-version" content="r20260704d">
+<meta name="echoworld-deploy-built-at" content="2026-07-04T09:03:17Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -766,7 +766,6 @@ header.scrolled {
 .ws.wopen,
 .ws:active {
   border-color: var(--border-hot);
-  background: rgba(192,40,40,0.055);
   box-shadow: var(--shadow-red);
 }
 .wdot {
@@ -19572,11 +19571,12 @@ function getVisibleCatalogCards(){
   // always reflect the final visible count even during filter transitions
   return getCatalogCards().filter(c=>!c.classList.contains('catalog-hidden')&&!c.classList.contains('catalog-hiding'));
 }
-function setCatalogCategory(cat,btn){
+function setCatalogCategory(cat,btn,opts){
+  opts = opts || {};
   catalogState.category=cat;
   document.querySelectorAll('.cat-chip').forEach(t=>{
     t.classList.toggle('active',t===btn);
-    if(t===btn && btn){
+    if(t===btn && btn && !opts.skipChipMotion){
       // Технологичная анимация активации — «апертура открывается» на чипе
       t.classList.remove('chip-activating');
       void t.offsetWidth; // force reflow to restart animation
@@ -19588,7 +19588,7 @@ function setCatalogCategory(cat,btn){
      докатываем его к центру (та же механика, что у автопика
      relicToCatalog). Соседние категории «обнажаются», лента не дёргается
      при кликах по полностью видимым чипам. */
-  if(btn && window.innerWidth<=960){
+  if(btn && window.innerWidth<=960 && !opts.skipRowScroll){
     const row=btn.closest('.cat-cats');
     if(row && row.scrollWidth>row.clientWidth+1){
       const pad=18;
@@ -19601,7 +19601,7 @@ function setCatalogCategory(cat,btn){
       const vL=row.scrollLeft, vR=vL+row.clientWidth;
       if(bL<vL+pad || bR>vR-pad){
         const left=Math.max(0, Math.min(bL-(row.clientWidth-bRect.width)/2, row.scrollWidth-row.clientWidth));
-        try{ row.scrollTo({left, behavior:'smooth'}); }catch(e){ row.scrollLeft=left; }
+        _smoothRowScrollTo(row, left, 320);
       }
     }
   }
@@ -19630,6 +19630,35 @@ function _smoothScrollTo(to, dur, done){
     se.scrollTop = start + diff * e;
     if(p < 1){ requestAnimationFrame(step); }
     else { se.style.scrollBehavior = prevBehavior; if(done) done(); }
+  }
+  requestAnimationFrame(step);
+}
+function _smoothRowScrollTo(row, to, dur){
+  if(!row) return;
+  const max = Math.max(0, row.scrollWidth - row.clientWidth);
+  const target = Math.max(0, Math.min(to, max));
+  const start = row.scrollLeft || 0;
+  const diff = target - start;
+  if(Math.abs(diff) < 1){
+    row.scrollLeft = target;
+    return;
+  }
+  const prevBehavior = row.style.scrollBehavior;
+  const prevSnap = row.style.scrollSnapType;
+  row.style.scrollBehavior = 'auto';
+  row.style.scrollSnapType = 'none';
+  const t0 = performance.now();
+  function step(now){
+    const p = Math.min((now - t0)/dur, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    row.scrollLeft = start + diff * e;
+    if(p < 1){
+      requestAnimationFrame(step);
+    } else {
+      row.scrollLeft = target;
+      row.style.scrollBehavior = prevBehavior;
+      row.style.scrollSnapType = prevSnap;
+    }
   }
   requestAnimationFrame(step);
 }
@@ -19758,19 +19787,24 @@ function relicToCatalog(cls){
   const targetY = Math.max(catalog.getBoundingClientRect().top + cur - headerH, 0);
   // T1: быстро, но плавно — короткий скролл, затем сразу «свайп» к чипу и клик.
   _smoothScrollTo(targetY, 420, function(){
-    // 1) горизонтальный «свайп» строки категорий к нужному чипу
+    // 1) автопереход из карточки не должен «прожимать» чип: палец нажимал
+    //    карточку, а не категорию. Ставим тот же финальный active-state,
+    //    но без reflow/activation-анимации и без второго автоскролла строки.
+    setCatalogCategory(cls, chip, { skipChipMotion:true, skipRowScroll:true });
+    // 2) горизонтальный «свайп» строки категорий к нужному чипу.
+    //    Координаты считаем через rect'ы, как при ручном клике: offsetLeft
+    //    здесь может считаться от внешнего контейнера и давать резкий скачок.
     const row = document.querySelector('.cat-cats');
     if(row){
-      const left = chip.offsetLeft - (row.clientWidth - chip.offsetWidth)/2;
-      try { row.scrollTo({ left: Math.max(left, 0), behavior: 'smooth' }); }
-      catch(e){ row.scrollLeft = Math.max(left, 0); }
+      const rowRect = row.getBoundingClientRect();
+      const bRect = chip.getBoundingClientRect();
+      const bL = bRect.left - rowRect.left + row.scrollLeft;
+      const left = Math.max(0, Math.min(
+        bL - (row.clientWidth - bRect.width)/2,
+        Math.max(0, row.scrollWidth - row.clientWidth)
+      ));
+      _smoothRowScrollTo(row, left, 360);
     }
-    // 2) «невидимый клик» после свайпа — тот же путь, что и при ручном
-    //    выборе чипа в каталоге. Так рамка/цвет/фильтр не расходятся между
-    //    автопереходом из «Мощи» и обычным пользовательским нажатием.
-    setTimeout(function(){
-      setCatalogCategory(cls, chip);
-    }, 200);
   });
 }
 function filterCards(type,btn){
