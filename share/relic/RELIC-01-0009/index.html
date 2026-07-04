@@ -37,9 +37,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0009/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260704g UTC=2026-07-04T10:22:25Z MSK=2026-07-04T13:22:26+0300 -->
-<meta name="echoworld-deploy-version" content="r20260704g">
-<meta name="echoworld-deploy-built-at" content="2026-07-04T10:22:25Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260704h UTC=2026-07-04T10:52:53Z MSK=2026-07-04T13:52:54+0300 -->
+<meta name="echoworld-deploy-version" content="r20260704h">
+<meta name="echoworld-deploy-built-at" content="2026-07-04T10:52:53Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -4005,13 +4005,12 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
 @media(max-width:520px){
   .chk-echo-body { padding: 12px; }
   .chk-echo-slots {
-    gap: 10px;
-    justify-content: flex-start;
-    min-height: 66px;
-  }
-  .chk-echo-slots[data-slot-count="4"] {
+    display: grid;
+    grid-template-columns: repeat(4, 66px);
     justify-content: space-between;
-    gap: 0;
+    column-gap: 0;
+    row-gap: 0;
+    min-height: 66px;
   }
   .chk-echo-slot {
     width: 66px;
@@ -4045,11 +4044,7 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   }
 }
 @media(max-width:360px){
-  .chk-echo-slots { gap: 10px; }
-  .chk-echo-slots[data-slot-count="4"] {
-    justify-content: space-between;
-    gap: 0;
-  }
+  .chk-echo-slots { grid-template-columns: repeat(4, 66px); }
   .chk-echo-slot {
     width: 66px;
     height: 66px;
@@ -19805,18 +19800,23 @@ function relicToCatalog(cls){
         bL - (row.clientWidth - bRect.width)/2,
         Math.max(0, row.scrollWidth - row.clientWidth)
       ));
-      try{
-        row.scrollTo({left:left,behavior:'smooth'});
-      }catch(e){
-        row.scrollLeft=left;
+      if(cls === 'S'){
+        _smoothRowScrollTo(row, left, 360);
+      } else {
+        try{
+          row.scrollTo({left:left,behavior:'smooth'});
+        }catch(e){
+          row.scrollLeft=left;
+        }
       }
     }
+    const applyDelay = cls === 'S' ? 380 : 240;
     setTimeout(function(){
       // Автопереход из карточки не должен «прожимать» чип: палец нажимал
       // карточку, а не категорию. Финальный active-state тот же, но без
       // reflow/activation-анимации и без второго автоскролла строки.
       setCatalogCategory(cls, chip, { skipChipMotion:true, skipRowScroll:true });
-    }, 240);
+    }, applyDelay);
   });
 }
 function filterCards(type,btn){
