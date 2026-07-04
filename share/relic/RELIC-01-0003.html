@@ -37,9 +37,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0003/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260704d UTC=2026-07-04T09:03:17Z MSK=2026-07-04T12:03:17+0300 -->
-<meta name="echoworld-deploy-version" content="r20260704d">
-<meta name="echoworld-deploy-built-at" content="2026-07-04T09:03:17Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260704e UTC=2026-07-04T09:48:46Z MSK=2026-07-04T12:48:46+0300 -->
+<meta name="echoworld-deploy-version" content="r20260704e">
+<meta name="echoworld-deploy-built-at" content="2026-07-04T09:48:46Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -751,7 +751,10 @@ header.scrolled {
   padding: 10px 18px;
   cursor: pointer;
   user-select: none;
-  transition: border-color .2s, box-shadow .2s;
+  transition:
+    border-color .28s cubic-bezier(.22,1,.36,1),
+    box-shadow .34s cubic-bezier(.22,1,.36,1),
+    background-color .28s cubic-bezier(.22,1,.36,1);
   white-space: nowrap;
   flex-shrink: 0;
   min-width: 0;
@@ -763,8 +766,7 @@ header.scrolled {
   box-shadow: var(--shadow-red);
 }
 }
-.ws.wopen,
-.ws:active {
+.ws.wopen {
   border-color: var(--border-hot);
   box-shadow: var(--shadow-red);
 }
@@ -807,7 +809,10 @@ header.scrolled {
   overflow: hidden;
   display: none;
   min-width: 220px;
-  box-shadow: var(--shadow-panel), 0 0 30px rgba(192,40,40,0.08);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.025);
+  filter:
+    drop-shadow(0 18px 28px rgba(8,10,20,.18))
+    drop-shadow(0 6px 18px rgba(192,40,40,.07));
   z-index: 9000;
 }
 .wdrop.wsopen { display: block; animation: dropIn .2s cubic-bezier(.16,1,.3,1); }
@@ -9332,33 +9337,31 @@ input, select, textarea {
 }
 
 /* ── WORLD SWITCHER DROP-IN ── */
-@keyframes wdropScan {
-  0%   { opacity:0; transform:translateY(-8px) scaleY(0.88); clip-path: inset(0 0 100% 0); }
-  40%  { opacity:1; transform:translateY(-2px) scaleY(0.96); clip-path: inset(0 0 60% 0); }
-  100% { opacity:1; transform:none; clip-path: inset(0 0 0% 0); }
+@keyframes wdropSoftIn {
+  0%   { opacity:0; transform: translate3d(0,-6px,0) scale(.985); }
+  100% { opacity:1; transform: translate3d(0,0,0) scale(1); }
 }
-@keyframes wdropScanLine {
-  0%   { transform: translateY(0); opacity: 1; }
-  100% { transform: translateY(200px); opacity: 0; }
+@keyframes wdropSoftOut {
+  0%   { opacity:1; transform: translate3d(0,0,0) scale(1); }
+  100% { opacity:0; transform: translate3d(0,-5px,0) scale(.985); }
 }
 /* position:absolute already set in primary .wdrop block above */
 .wdrop {
   transform-origin: top center;
+  will-change: opacity, transform;
 }
+.wdrop::before { content: none; display: none; }
 .wdrop.wsopen {
   display: block;
-  animation: wdropScan 0.28s cubic-bezier(0.16,1,0.3,1) both;
+  animation: wdropSoftIn .24s cubic-bezier(.22,1,.36,1) both;
 }
-.wdrop.wsopen::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--red2), var(--cyan), transparent);
-  animation: wdropScanLine 0.45s ease 0.05s both;
-  z-index: 10;
+.wdrop.wsclosing {
+  display: block;
+  animation: wdropSoftOut .18s cubic-bezier(.55,0,.7,.2) forwards;
   pointer-events: none;
 }
+.wdrop.wsopen::before,
+.wdrop.wsclosing::before { content: none; display: none; }
 /* Поворот стрелки дропдауна задан ТОЛЬКО в базовом .warr: inline-flex,
    transform-origin по центру, один cubic-bezier. Прежний override здесь
    (display:inline-block + второй transition) ломал вертикальное
@@ -25151,6 +25154,7 @@ function _closeWorldDrop(){
 }
 function toggleWorldDrop(e){
   e.stopPropagation();
+  _closeLangDrop();
   _closeDesktopMenu();
   const drop=document.getElementById('wdrop');
   const wsBtn=e.currentTarget||e.target.closest('.ws');
@@ -25176,7 +25180,11 @@ function selectWorld(el,name){
 /* ── ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА (заглушка: RU активен, EN — скоро) ── */
 function _closeLangDrop(){
   const drop=document.getElementById('ldrop');
-  if(drop) drop.classList.remove('wsopen');
+  if(drop && drop.classList.contains('wsopen')){
+    drop.classList.add('wsclosing');
+    drop.classList.remove('wsopen');
+    setTimeout(()=>drop.classList.remove('wsclosing'), 200);
+  }
   const btn=document.querySelector('.lang-ws');
   if(btn) btn.classList.remove('wopen');
 }
@@ -25187,7 +25195,7 @@ function toggleLangDrop(e){
   const drop=document.getElementById('ldrop');
   const lsBtn=e.currentTarget||e.target.closest('.ws');
   const willOpen=!drop.classList.contains('wsopen');
-  if(willOpen){ _hideAllNotifs(); drop.classList.add('wsopen'); if(lsBtn) lsBtn.classList.add('wopen'); }
+  if(willOpen){ _hideAllNotifs(); drop.classList.remove('wsclosing'); drop.classList.add('wsopen'); if(lsBtn) lsBtn.classList.add('wopen'); }
   else { _closeLangDrop(); }
 }
 function selectLang(el,code){
