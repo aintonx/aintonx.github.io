@@ -13,9 +13,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260705c UTC=2026-07-05T00:39:27Z MSK=2026-07-05T03:39:27+0300 -->
-<meta name="echoworld-deploy-version" content="r20260705c">
-<meta name="echoworld-deploy-built-at" content="2026-07-05T00:39:27Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260705d UTC=2026-07-05T18:39:45Z MSK=2026-07-05T21:39:45+0300 -->
+<meta name="echoworld-deploy-version" content="r20260705d">
+<meta name="echoworld-deploy-built-at" content="2026-07-05T18:39:45Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -24,8 +24,8 @@
 <meta property="og:description" content="Физические реликвии из параллельного мира, рождённого из человеческих желаний. У каждой — происхождение, история и единственный экземпляр.">
 <meta property="og:url" content="https://www.echoworld.space/">
 <meta property="og:locale" content="ru_RU">
-<meta property="og:updated_time" content="2026-07-05T00:39:27Z">
-<meta property="article:modified_time" content="2026-07-05T00:39:27Z">
+<meta property="og:updated_time" content="2026-07-05T18:39:45Z">
+<meta property="article:modified_time" content="2026-07-05T18:39:45Z">
 <meta property="og:image" content="https://www.echoworld.space/logo/og-image-r20260703b.png">
 <meta property="og:image:url" content="https://www.echoworld.space/logo/og-image-r20260703b.png">
 <meta property="og:image:secure_url" content="https://www.echoworld.space/logo/og-image-r20260703b.png">
@@ -5869,17 +5869,8 @@ select:-webkit-autofill {
   text-transform: uppercase;
   font-size: 9px;
 }
-.donate-row-addr {
-  color: var(--white);
-  font-size: 9.5px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
-}
-/* Маркер валюты — чистый моно-текст (RUB / USDT) без рамки и заливки.
-   Прежний «приборный» бокс с глифом ₽/$ убран намеренно: вычурно. */
+/* Маркер валюты — чистый моно-текст (RUB) без рамки и заливки.
+   Прежний «приборный» бокс с глифом убран намеренно: вычурно. */
 .donate-row-icon {
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0;
@@ -5965,7 +5956,6 @@ select:-webkit-autofill {
   /* T7: убираем «квадратную подложку» (тяжёлый box-shadow-нимб на светлом фоне) */
   .donate-right { box-shadow: none; }
   .arch-donate .pre-pane-cta { top: 18.9px; }
-  .donate-row-addr { max-width: 150px; font-size: 9px; }
   .donate-row-key { font-size: 8.5px; }
 }
 
@@ -16553,7 +16543,7 @@ button, a, [role="button"], label,
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Нужно ли мне разбираться в NFT?<span class="faq-q-toggle">+</span></div>
-        <div class="faq-a">Нет. Чтобы заказать физическую реликвию или отправить Эхо, вам не нужно подключать кошелёк, покупать криптовалюту или разбираться в NFT.<br><br>NFT-реликвия — это будущая цифровая форма предмета. Она не заменяет физическую версию, а дополняет её: помогает подтвердить происхождение, связь с владельцем и место в коллекции EchoWorld.</div>
+        <div class="faq-a">Нет. Чтобы заказать физическую реликвию или отправить Эхо, вам не нужно разбираться в технической стороне NFT.<br><br>NFT-реликвия — это будущая цифровая форма предмета. Она не заменяет физическую версию, а дополняет её: помогает подтвердить происхождение, связь с владельцем и место в коллекции EchoWorld.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
@@ -16611,7 +16601,7 @@ button, a, [role="button"], label,
     <!-- ═══════════════════════════════════════════════════════════════
          УСИЛЕНИЕ СИГНАЛА АНТЕННЫ — двухколонный блок:
          слева kicker+desc, справа интерфейс с антенной (SVG + radar)
-         и кнопками поддержки (СБП-заглушка + USDT TRC20 копирование).
+         и кнопкой рублёвой поддержки (СБП-заглушка).
          На мобиле через initDonateSwipe превращается в swipe-track
          по подобию блока Архитектора (pane1 → текст+CTA, pane2 → интерфейс).
          ═══════════════════════════════════════════════════════════ -->
@@ -16655,15 +16645,6 @@ button, a, [role="button"], label,
               <span class="donate-row-key">СБП · ПЕРЕВОД</span>
               <span class="donate-row-val">
                 <span class="donate-row-icon" aria-hidden="true">RUB</span>
-              </span>
-            </button>
-            <!-- USDT TRC20 — клик копирует адрес; иконка $ справа.
-                 id="archDonateAddress" сохранён ради JS-fallback на selection. -->
-            <button class="donate-row" type="button" onclick="archDonateCopy(this)" aria-label="Скопировать USDT-адрес">
-              <span class="donate-row-key">USDT · TRC20</span>
-              <span class="donate-row-val">
-                <span class="donate-row-addr" id="archDonateAddress" title="TQDTh26LxTNfmm3SfDKWauFsRt65ind7Gq">TQDTh26LxTNfmm3SfDKWauFsRt65ind7Gq</span>
-                <span class="donate-row-icon" aria-hidden="true">USDT</span>
               </span>
             </button>
             <p class="donate-legal-note">Добровольная поддержка проекта. Не является оплатой заказа, авансом, инвестицией или обещанием встречной услуги.</p>
@@ -24311,47 +24292,6 @@ function _apFillReturnForm(valid){
 function archDonateSBP(){
   showNotif('// СБП — канал добровольной поддержки в разработке. Это не оплата заказа.');
 }
-function archDonateCopy(btn){
-  const addr = 'TQDTh26LxTNfmm3SfDKWauFsRt65ind7Gq';
-  const reset = () => { if(btn) btn.classList.remove('copied'); };
-  const onSuccess = () => {
-    if(btn) btn.classList.add('copied');
-    showNotif('// Адрес скопирован. USDT — только добровольная поддержка, не оплата заказа.');
-    setTimeout(reset, 2400);
-  };
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(addr).then(onSuccess).catch(() => _archDonateFallback(addr, btn));
-    return;
-  }
-  _archDonateFallback(addr, btn);
-}
-function _archDonateFallback(addr, btn){
-  const ta = document.createElement('textarea');
-  ta.value = addr;
-  ta.style.position = 'fixed';
-  ta.style.opacity = '0';
-  ta.style.top = '0'; ta.style.left = '0';
-  document.body.appendChild(ta);
-  ta.focus(); ta.select();
-  let ok = false;
-  try { ok = document.execCommand('copy'); } catch(e){}
-  document.body.removeChild(ta);
-  if(ok){
-    if(btn) btn.classList.add('copied');
-    showNotif('// Адрес скопирован. Сигнал будет зафиксирован после поступления средств на кошелёк.');
-    setTimeout(() => { if(btn) btn.classList.remove('copied'); }, 2400);
-  } else {
-    const span = document.getElementById('archDonateAddress');
-    if(span){
-      const range = document.createRange();
-      range.selectNodeContents(span);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-    showNotif('// Адрес выделен. Скопируйте вручную и переведите.');
-  }
-}
 
 /* ── APERTURA WORLD CARD — клик по закрытой вселенной ── */
 function awCardLocked(cardEl) {
@@ -27645,7 +27585,7 @@ function _spinEchoAuraDrum(onDone){
         <p>3.1. Стоимость Основной услуги и микро-услуги «Эхо» указывается на сайте https://echoworld.space/ в соответствующей карточке или форме.</p>
         <p>3.2. Оплата заказа производится в рублях Российской Федерации в полном объёме до начала оказания услуги посредством доступных на сайте платёжных способов.</p>
         <p>3.3. Исполнитель вправе не приступать к оказанию услуги до подтверждения оплаты. Если платёж не прошёл или был отменён платёжным провайдером, заказ считается неоформленным.</p>
-        <p>3.4. Цифровая валюта, включая USDT, не принимается на сайте в качестве оплаты товаров, работ, услуг, аванса, задатка или депозита. Каналы поддержки в разделе «Усилить сигнал» регулируются разделом 6 настоящей оферты и не связаны с оформлением заказов.</p>
+        <p>3.4. Каналы поддержки в разделе «Усилить сигнал» не связаны с оформлением заказов и регулируются разделом 6 настоящей оферты.</p>
       </div>
 
       <div class="offer-section">
@@ -27686,9 +27626,7 @@ function _spinEchoAuraDrum(onDone){
         <p>6.1. Раздел «Усилить сигнал» предназначен для добровольной безвозмездной поддержки развития EchoWorld. Такая поддержка не является оплатой заказа, авансом, задатком, депозитом, пожертвованием в благотворительную организацию, инвестицией или покупкой права на получение товара/услуги.</p>
         <p>6.2. Добровольная поддержка не создаёт у отправителя преимуществ в очереди заказов, права требовать реликвию, «Эхо», публикацию, отчётность, доход, возврат, обмен или иное встречное предоставление.</p>
         <p>6.3. Рублёвые переводы поддержки, если такой канал включён на сайте, рассматриваются отдельно от оплаты заказов. Назначение платежа должно соответствовать добровольной поддержке проекта.</p>
-        <p>6.4. USDT/TRC20 и иные цифровые активы, если адрес отображается на сайте, принимаются только как добровольная поддержка без встречного предоставления. Они не являются способом оплаты товаров, работ или услуг EchoWorld.</p>
-        <p>6.5. Отправитель цифровых активов самостоятельно проверяет сеть, адрес, комиссии, правовой статус операции и риски необратимости перевода. Ошибочный перевод в неподдерживаемой сети, на неверный адрес или с нарушением правил площадки отправителя может быть технически невозвратным.</p>
-        <p>6.6. Если отправитель считает перевод ошибочным, он может написать на hello@echoworld.space. Исполнитель рассмотрит обращение индивидуально, но не гарантирует возврат, если он технически невозможен, противоречит закону или требует несоразмерных расходов.</p>
+        <p>6.4. Если отправитель считает перевод ошибочным, он может написать на hello@echoworld.space. Исполнитель рассмотрит обращение индивидуально с учётом фактических обстоятельств, платёжных правил и требований законодательства РФ.</p>
       </div>
 
       <div class="offer-section">
@@ -27790,7 +27728,6 @@ function _spinEchoAuraDrum(onDone){
           <li>данные заявок на возврат и обращений в поддержку;</li>
           <li>технические и обезличенные данные о посещении Сайта: cookies, IP-адрес, тип устройства и браузера, источник перехода, события интерфейса, сведения о проверке безопасности форм.</li>
         </ul>
-        <p>2.2. Если Пользователь добровольно отправляет поддержку проекта через цифровую сеть, технические сведения о такой операции могут быть публично доступны в соответствующей блокчейн-сети и не контролируются Оператором.</p>
       </div>
 
       <div class="offer-section">
