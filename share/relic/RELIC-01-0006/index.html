@@ -22,9 +22,7 @@
      ECHOWORLD · BUILD R6 · «МОДАЛКИ ФУТЕРА + ФОРМЫ + СВЯЗНОСТЬ»
      Проверка деплоя: откройте окно «Реквизиты» в футере — справа в
      шапке должна быть кнопка «✕ ЗАКРЫТЬ» (как в карточке товара).
-     Или: F12 → Console → строка «APERTURA · BUILD R6».
      ═══════════════════════════════════════════════════════════════ -->
-<script>try{console.log('%cAPERTURA · BUILD R6','color:#00c8c8');}catch(e){}</script>
 <script>/* Возврат позиции после reload: браузер сам не скроллит (manual), движок
    в конце файла после загрузки ПЛАВНО привозит пользователя туда, где он был
    (якорь-секция + смещение). Ключ позиции — БЕЗ hash: застрявший фрагмент
@@ -86,10 +84,9 @@
 <!-- Шрифты — display:swap уже в URL, защита от FOUT -->
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Syne+Mono&family=Oxanium:wght@500;600;700&display=swap" rel="stylesheet">
 
-<!-- Безопасность: запрет встраивания сайта в iframe (clickjacking),
-     CSP ограничивает источники скриптов и стилей.
+<!-- Безопасность: CSP ограничивает источники скриптов и стилей.
      'unsafe-inline' для script и style необходим — много inline-стилей. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://smartcaptcha.cloud.yandex.ru https://mc.yandex.ru https://yastatic.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://suggestions.dadata.ru https://functions.yandexcloud.net https://smartcaptcha.cloud.yandex.ru https://mc.yandex.ru https://mc.yandex.com https://yandex.ru; frame-src https://smartcaptcha.cloud.yandex.ru https://mc.yandex.ru; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://smartcaptcha.cloud.yandex.ru https://mc.yandex.ru https://yastatic.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://suggestions.dadata.ru https://functions.yandexcloud.net https://smartcaptcha.cloud.yandex.ru https://mc.yandex.ru https://mc.yandex.com wss://mc.yandex.ru wss://mc.yandex.com https://yandex.ru; frame-src https://smartcaptcha.cloud.yandex.ru https://mc.yandex.ru; base-uri 'self'; form-action 'self';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="format-detection" content="telephone=no">
