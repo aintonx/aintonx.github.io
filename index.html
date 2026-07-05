@@ -8,14 +8,16 @@
 
 <title>EchoWorld — реликвии из MARKETSPACE</title>
 <meta name="title" content="EchoWorld — реликвии из MARKETSPACE">
+<meta itemprop="name" content="EchoWorld — реликвии из MARKETSPACE">
 <meta name="description" content="EchoWorld — каталог физических реликвий из MARKETSPACE, параллельного мира, рождённого из человеческих желаний. Каждая реликвия существует в единственном экземпляре и хранит происхождение, историю и след Перехода.">
+<meta itemprop="description" content="Физические реликвии из параллельного мира, рождённого из человеческих желаний. У каждой — происхождение, история и единственный экземпляр.">
 <meta name="keywords" content="EchoWorld, MARKETSPACE, реликвии MARKETSPACE, реликвии из MARKETSPACE, реликвии из параллельного мира, физические реликвии, уникальные реликвии, коллекционные реликвии, авторские артефакты, арт-маркетплейс, цифровая вселенная, narrative artifacts, fictional universe artifacts, physical relics, collectible relics, worldbuilding marketplace">
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260705d UTC=2026-07-05T18:39:45Z MSK=2026-07-05T21:39:45+0300 -->
-<meta name="echoworld-deploy-version" content="r20260705d">
-<meta name="echoworld-deploy-built-at" content="2026-07-05T18:39:45Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260705e UTC=2026-07-05T19:14:11Z MSK=2026-07-05T22:14:11+0300 -->
+<meta name="echoworld-deploy-version" content="r20260705e">
+<meta name="echoworld-deploy-built-at" content="2026-07-05T19:14:11Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -24,8 +26,8 @@
 <meta property="og:description" content="Физические реликвии из параллельного мира, рождённого из человеческих желаний. У каждой — происхождение, история и единственный экземпляр.">
 <meta property="og:url" content="https://www.echoworld.space/">
 <meta property="og:locale" content="ru_RU">
-<meta property="og:updated_time" content="2026-07-05T18:39:45Z">
-<meta property="article:modified_time" content="2026-07-05T18:39:45Z">
+<meta property="og:updated_time" content="2026-07-05T19:14:11Z">
+<meta property="article:modified_time" content="2026-07-05T19:14:11Z">
 <meta property="og:image" content="https://www.echoworld.space/logo/og-image-r20260703b.png">
 <meta property="og:image:url" content="https://www.echoworld.space/logo/og-image-r20260703b.png">
 <meta property="og:image:secure_url" content="https://www.echoworld.space/logo/og-image-r20260703b.png">
@@ -5793,73 +5795,82 @@ select:-webkit-autofill {
     animation: none !important;
   }
 }
-/* Кнопки-строки в стиле term-line из блока Архитектора:
-   слева — назначение (term-key), справа — значение + иконка валюты
-   (вместо замочка). Hover-анимация идентична term-line:
-   горизонтальная красная заливка слева направо. */
+/* Поддержка сигнала: после удаления крипто-канала единственный СБП-вход
+   должен читаться как явная кнопка, а не как строка терминальных данных. */
 .donate-actions {
-  display: flex; flex-direction: column; gap: 0;
+  display: flex; flex-direction: column; gap: 10px;
   border-top: 1px solid var(--border);
-  padding: 8px 0;
+  padding: 16px;
 }
 .donate-row {
   font-family: var(--font-code);
   font-size: 9px;
-  color: var(--white-dim);
-  line-height: 2;
-  letter-spacing: 0.04em;
+  color: var(--red2);
+  line-height: 1.25;
+  letter-spacing: 0.2em;
   display: flex; align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-  padding: 5px 16px;
+  justify-content: center;
+  gap: 14px;
+  border: 1px solid var(--red2);
+  border-radius: var(--radius);
+  padding: 14px 18px;
   background: transparent;
-  border-left: none;
-  border-right: none;
-  border-top: none;
   cursor: pointer;
-  text-align: left;
-  transition: background .15s, color .15s;
+  text-align: center;
+  text-transform: uppercase;
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    box-shadow .2s ease,
+    transform .1s cubic-bezier(.22,1,.36,1),
+    filter .1s ease;
   position: relative;
   overflow: hidden;
   width: 100%;
+  min-height: 54px;
   min-width: 0;
+  box-sizing: border-box;
+  transform: translate3d(0,0,0) scale(1);
+  will-change: transform, filter;
 }
-.donate-row:last-child { border-bottom: none; }
 .donate-row::before {
   content: '';
   position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 0;
+  inset: 0;
   background: rgba(192,40,40,0.08);
-  transition: width .2s ease;
+  opacity: 0;
+  transition: opacity .2s ease;
 }
 @media (hover:hover) and (pointer:fine) {
 
-.donate-row:hover { background: rgba(255,255,255,0.03); }
+.donate-row:hover {
+  background: rgba(192,40,40,0.08);
+  box-shadow: 0 0 18px rgba(192,40,40,0.2), inset 0 0 0 1px rgba(192,40,40,0.16);
+}
 }
 @media (hover:hover) and (pointer:fine) {
 
-.donate-row:hover::before { width: 100%; }
+.donate-row:hover::before { opacity: 1; }
 }
 .donate-row-key {
-  letter-spacing: 0.2em;
-  color: var(--white-dim);
-  text-transform: uppercase;
+  color: inherit;
   flex-shrink: 0;
   position: relative;
   z-index: 1;
+  white-space: normal;
 }
 @media (hover:hover) and (pointer:fine) {
 
-.donate-row:hover .donate-row-key { color: var(--white-mid); }
+.donate-row:hover .donate-row-key { color: #fff; }
 }
 .donate-row-val {
-  margin-left: auto;
+  margin-left: 0;
   display: inline-flex; align-items: center; gap: 10px;
   min-width: 0;
-  color: var(--white-dim);
+  color: inherit;
   font-size: 10px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.14em;
   position: relative;
   z-index: 1;
 }
@@ -5874,7 +5885,7 @@ select:-webkit-autofill {
 .donate-row-icon {
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  color: var(--cyan);
+  color: inherit;
   font-family: var(--font-code);
   font-weight: 700;
   font-size: 10px;
@@ -5883,14 +5894,21 @@ select:-webkit-autofill {
 }
 @media (hover:hover) and (pointer:fine) {
 
-.donate-row:hover .donate-row-icon { text-shadow: 0 0 10px rgba(0,200,200,0.45); }
+.donate-row:hover .donate-row-icon { text-shadow: 0 0 10px rgba(192,40,40,0.45); }
 }
 .donate-row-icon svg { display: none; }
 .donate-row.copied { background: rgba(192,40,40,0.08); }
-.donate-row.copied::before { width: 100%; }
+.donate-row.copied::before { opacity: 1; }
 .donate-row.copied .donate-row-icon { color: var(--red2); text-shadow: 0 0 10px rgba(192,40,40,0.4); }
+.donate-row:active {
+  background: var(--red2);
+  border-color: var(--red2);
+  color: #fff;
+  box-shadow: 0 0 30px rgba(192,40,40,0.4);
+  transform: translate3d(0,1px,0) scale(.992);
+}
 .donate-legal-note {
-  margin: 10px 2px 0;
+  margin: 0 2px;
   color: var(--white-dim);
   font-family: var(--font-code);
   font-size: 9px;
@@ -5923,6 +5941,8 @@ select:-webkit-autofill {
     padding: 0 16px 28px;   /* M7: боковой зазор между свайп-пейнами */
     touch-action: auto;
     overflow-y: visible;
+    display: flex;
+    flex-direction: column;
   }
   /* На мобиле текстовый блок без своей рамки — она бы дублировала pane */
   .donate-swipe-pane .donate-left {
@@ -5955,7 +5975,7 @@ select:-webkit-autofill {
   }
   /* T7: убираем «квадратную подложку» (тяжёлый box-shadow-нимб на светлом фоне) */
   .donate-right { box-shadow: none; }
-  .arch-donate .pre-pane-cta { top: 18.9px; }
+  .arch-donate .pre-pane-cta { margin-top: auto; top: 0; }
   .donate-row-key { font-size: 8.5px; }
 }
 
@@ -10973,7 +10993,7 @@ input, select, textarea {
   @media(max-width:960px) {
     .echo-pane-cta { top: 6px; }
     .arch-swipe-pane > .pre-pane-cta { top: 4.2px; }
-    .arch-donate .pre-pane-cta { top: 26px; }
+    .arch-donate .pre-pane-cta { top: 0; }
   }
 }
 @media(min-width: 961px) {
@@ -16640,11 +16660,11 @@ button, a, [role="button"], label,
             </svg>
           </div>
           <div class="donate-actions">
-            <!-- СБП — заглушка под перевод по номеру; иконка валюты ₽ справа -->
+            <!-- СБП — единственный публичный канал добровольной поддержки. -->
             <button class="donate-row" type="button" onclick="archDonateSBP()">
-              <span class="donate-row-key">СБП · ПЕРЕВОД</span>
+              <span class="donate-row-key">Поддержать через СБП</span>
               <span class="donate-row-val">
-                <span class="donate-row-icon" aria-hidden="true">RUB</span>
+                <span class="donate-row-icon" aria-hidden="true">₽</span>
               </span>
             </button>
             <p class="donate-legal-note">Добровольная поддержка проекта. Не является оплатой заказа, авансом, инвестицией или обещанием встречной услуги.</p>
