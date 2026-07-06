@@ -1,0 +1,26 @@
+-- EchoWorld / MARKETSPACE catalog table.
+-- Phase 1B: read-only catalog foundation for Cloud Functions.
+-- Run this in YDB before deploying the catalog-enabled function.
+
+CREATE TABLE IF NOT EXISTS products (
+  id Utf8 NOT NULL,
+  relic_code Utf8,
+  collection Utf8,
+  position Uint32,
+  sort_order Uint32,
+  title Utf8,
+  description Utf8,
+  price_rub Uint32,
+  currency Utf8,
+  power_code Utf8,
+  power_name Utf8,
+  echo_slots Uint32,
+  status Utf8,
+  status_label Utf8,
+  orderable Bool,
+  image_path Utf8,
+  is_visible Bool,
+  created_at_ms Uint64,
+  updated_at_ms Uint64,
+  PRIMARY KEY (id)
+);
