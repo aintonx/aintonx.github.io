@@ -15,9 +15,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260706e UTC=2026-07-06T12:10:07Z MSK=2026-07-06T15:10:07+0300 -->
-<meta name="echoworld-deploy-version" content="r20260706e">
-<meta name="echoworld-deploy-built-at" content="2026-07-06T12:10:07Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260706f UTC=2026-07-06T14:41:33Z MSK=2026-07-06T17:41:33+0300 -->
+<meta name="echoworld-deploy-version" content="r20260706f">
+<meta name="echoworld-deploy-built-at" content="2026-07-06T14:41:33Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -29808,36 +29808,36 @@ svg.ew-mask-icon use,
   }
 }
 
-/* PATCH · ECHO MOBILE COMPACT ALIGNMENT + SHARE VERSION · 210
-   Эхо больше не выравнивается раздутой высотой интерфейса: на мобиле
-   текстовый pane компактнее, а правая консоль возвращена к органичной
-   высоте. Кнопка "Открыть канал" всё так же живёт внизу своего pane. */
+/* PATCH · ECHO MOBILE BALANCED CTA ALIGNMENT + SHARE VERSION · 210
+   Правый интерфейс Эхо оставлен в органичной высоте. Левый pane не
+   ужимает текст до пустоты: вертикальная масса текста возвращена, а
+   расстояние до "Открыть канал" держится как у блока конденсации. */
 @media (max-width: 960px) {
   .echo-left {
-    gap: 11px !important;
-    padding: 30px 16px 28px !important;
+    gap: 14px !important;
+    padding: 36px 16px 30px !important;
     justify-content: center !important;
   }
   .echo-lead {
-    font-size: 11px !important;
-    line-height: 1.64 !important;
-    letter-spacing: 0.018em !important;
+    font-size: 12px !important;
+    line-height: 1.72 !important;
+    letter-spacing: 0.026em !important;
   }
   .echo-lead-sub {
-    font-size: 9.2px !important;
-    line-height: 1.52 !important;
-    letter-spacing: 0.018em !important;
+    font-size: 10.2px !important;
+    line-height: 1.5 !important;
+    letter-spacing: 0.045em !important;
   }
   .echo-left .nft-footnote {
-    margin-top: 4px !important;
-    padding-top: 8px !important;
-    font-size: 7.8px !important;
-    line-height: 1.42 !important;
-    letter-spacing: 0.01em !important;
-    gap: 6px !important;
+    margin-top: 0 !important;
+    padding-top: 10px !important;
+    font-size: 8.6px !important;
+    line-height: 1.48 !important;
+    letter-spacing: 0.018em !important;
+    gap: 7px !important;
   }
   .echo-left .nft-footnote-mark {
-    font-size: 9px !important;
+    font-size: 10px !important;
   }
   .echo-pane-cta {
     margin-top: auto !important;
@@ -29852,6 +29852,17 @@ svg.ew-mask-icon use,
     min-height: 508px !important;
   }
 }
+@media (min-width: 421px) and (max-width: 640px) {
+  .echo-lead {
+    line-height: 1.9 !important;
+  }
+  .echo-lead-sub {
+    line-height: 1.7 !important;
+  }
+  .echo-left .nft-footnote {
+    line-height: 1.58 !important;
+  }
+}
 @media (max-width: 400px) {
   .echo-right {
     min-height: 514px !important;
@@ -29859,16 +29870,20 @@ svg.ew-mask-icon use,
 }
 @media (max-width: 380px) {
   .echo-left {
-    padding-top: 28px !important;
-    padding-bottom: 26px !important;
+    padding-top: 34px !important;
+    padding-bottom: 30px !important;
+    gap: 13px !important;
   }
   .echo-lead {
-    font-size: 10.6px !important;
-    line-height: 1.58 !important;
+    font-size: 12px !important;
+    line-height: 1.79 !important;
   }
   .echo-lead-sub {
-    font-size: 8.9px !important;
-    line-height: 1.48 !important;
+    font-size: 10.2px !important;
+    line-height: 1.58 !important;
+  }
+  .echo-left .nft-footnote {
+    line-height: 1.62 !important;
   }
   .echo-right {
     min-height: 518px !important;
