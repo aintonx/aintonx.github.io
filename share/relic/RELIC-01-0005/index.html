@@ -28,9 +28,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0005/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260706a UTC=2026-07-05T22:09:54Z MSK=2026-07-06T01:09:54+0300 -->
-<meta name="echoworld-deploy-version" content="r20260706a">
-<meta name="echoworld-deploy-built-at" content="2026-07-05T22:09:54Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260706b UTC=2026-07-06T09:39:17Z MSK=2026-07-06T12:39:17+0300 -->
+<meta name="echoworld-deploy-version" content="r20260706b">
+<meta name="echoworld-deploy-built-at" content="2026-07-06T09:39:17Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -39,7 +39,7 @@
 <meta property="og:description" content="Внимания ему было нужно постоянно и сразу — чтобы заметили, накормили, не уходили далеко. Просил он это в открытую, без капли стеснения, и обижался искренне, если о нём забывали х…">
 <meta property="og:url" content="https://www.echoworld.space/share/relic/RELIC-01-0005/">
 <meta property="og:locale" content="ru_RU">
-<meta property="og:updated_time" content="2026-07-05T22:09:54Z">
+<meta property="og:updated_time" content="2026-07-06T09:39:17Z">
 <meta property="og:image" content="https://www.echoworld.space/img/tamagochi.webp">
 <meta property="og:image:url" content="https://www.echoworld.space/img/tamagochi.webp">
 <meta property="og:image:secure_url" content="https://www.echoworld.space/img/tamagochi.webp">
@@ -29569,6 +29569,40 @@ svg.ew-mask-icon use,
 @media (max-width: 380px) {
   .donate-radar {
     min-height: 158px !important;
+  }
+  .donate-ant {
+    width: 112px !important;
+    height: 112px !important;
+    min-width: 112px !important;
+    min-height: 112px !important;
+  }
+}
+
+/* PATCH · ARCHITECT/SIGNAL MOBILE ALIGNMENT · 208
+   Сохраняем нижнее выравнивание CTA с интерфейсами, но убираем ощущение
+   пустой "лишней строки" в терминале Архитектора и лишний воздух над
+   кнопкой усиления сигнала на обычных мобильных ширинах. */
+@media (max-width: 960px) {
+  .arch-swipe-pane .architect-terminal {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .arch-swipe-pane .architect-term-body {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: stretch !important;
+  }
+  .arch-swipe-pane .architect-term-body .term-line {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+}
+@media (min-width: 381px) and (max-width: 960px) {
+  .donate-radar {
+    min-height: 151px !important;
   }
   .donate-ant {
     width: 112px !important;
