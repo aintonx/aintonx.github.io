@@ -28,9 +28,9 @@
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="noindex, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.echoworld.space/share/relic/RELIC-01-0008/">
-<!-- ECHOWORLD_DEPLOY_MARKER r20260706d UTC=2026-07-06T11:13:27Z MSK=2026-07-06T14:13:27+0300 -->
-<meta name="echoworld-deploy-version" content="r20260706d">
-<meta name="echoworld-deploy-built-at" content="2026-07-06T11:13:27Z">
+<!-- ECHOWORLD_DEPLOY_MARKER r20260706e UTC=2026-07-06T12:10:07Z MSK=2026-07-06T15:10:07+0300 -->
+<meta name="echoworld-deploy-version" content="r20260706e">
+<meta name="echoworld-deploy-built-at" content="2026-07-06T12:10:07Z">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -17214,6 +17214,21 @@ function getRelicShareBaseUrl(){
   return url;
 }
 const RELIC_SHARE_PATH_PREFIX = '/share/relic/';
+function getEchoWorldShareVersion(){
+  try{
+    const meta = document.querySelector('meta[name="echoworld-deploy-version"]');
+    const raw = meta && meta.getAttribute('content') ? meta.getAttribute('content').trim() : '';
+    return /^[a-z0-9._-]{4,32}$/i.test(raw) ? raw : '';
+  }catch(_){
+    return '';
+  }
+}
+function addEchoWorldShareVersion(url){
+  const u = url instanceof URL ? url : new URL(String(url), getRelicShareBaseUrl());
+  const version = getEchoWorldShareVersion();
+  if(version) u.searchParams.set('v', version);
+  return u;
+}
 
 function getRelicDeepLinkUrl(product){
   const code = getRelicCode(product);
@@ -17230,7 +17245,7 @@ function getRelicShareUrl(product){
   if(code){
     url.pathname = RELIC_SHARE_PATH_PREFIX + encodeURIComponent(code) + '/';
   }
-  return url.toString();
+  return addEchoWorldShareVersion(url).toString();
 }
 
 /* P4.2 · STATIC RELIC SHARE PAGES
@@ -29726,6 +29741,80 @@ svg.ew-mask-icon use,
 @media (prefers-reduced-motion: reduce) {
   .donate-ant {
     animation: none !important;
+  }
+}
+
+/* PATCH · ECHO MOBILE COMPACT ALIGNMENT + SHARE VERSION · 210
+   Эхо больше не выравнивается раздутой высотой интерфейса: на мобиле
+   текстовый pane компактнее, а правая консоль возвращена к органичной
+   высоте. Кнопка "Открыть канал" всё так же живёт внизу своего pane. */
+@media (max-width: 960px) {
+  .echo-left {
+    gap: 11px !important;
+    padding: 30px 16px 28px !important;
+    justify-content: center !important;
+  }
+  .echo-lead {
+    font-size: 11px !important;
+    line-height: 1.64 !important;
+    letter-spacing: 0.018em !important;
+  }
+  .echo-lead-sub {
+    font-size: 9.2px !important;
+    line-height: 1.52 !important;
+    letter-spacing: 0.018em !important;
+  }
+  .echo-left .nft-footnote {
+    margin-top: 4px !important;
+    padding-top: 8px !important;
+    font-size: 7.8px !important;
+    line-height: 1.42 !important;
+    letter-spacing: 0.01em !important;
+    gap: 6px !important;
+  }
+  .echo-left .nft-footnote-mark {
+    font-size: 9px !important;
+  }
+  .echo-pane-cta {
+    margin-top: auto !important;
+    top: 0 !important;
+  }
+  .echo-right {
+    min-height: 510px !important;
+  }
+}
+@media (max-width: 420px) {
+  .echo-right {
+    min-height: 508px !important;
+  }
+}
+@media (max-width: 400px) {
+  .echo-right {
+    min-height: 514px !important;
+  }
+}
+@media (max-width: 380px) {
+  .echo-left {
+    padding-top: 28px !important;
+    padding-bottom: 26px !important;
+  }
+  .echo-lead {
+    font-size: 10.6px !important;
+    line-height: 1.58 !important;
+  }
+  .echo-lead-sub {
+    font-size: 8.9px !important;
+    line-height: 1.48 !important;
+  }
+  .echo-right {
+    min-height: 518px !important;
+  }
+}
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 960px) {
+    .echo-pane-cta {
+      top: 0 !important;
+    }
   }
 }
 
