@@ -1,8 +1,8 @@
 # EchoWorld Apertura API
 
-Phase 1B backend source for the Yandex Cloud Function `echoworld-apertura-api`.
+Phase 1B/1C backend source for the Yandex Cloud Function `echoworld-apertura-api`.
 
-This package prepares read-only catalog routes for YDB:
+This package provides read-only catalog routes for YDB:
 
 - `GET ?route=catalog/list`
 - `GET ?route=catalog/product-status&product_id=01-0001`
@@ -30,7 +30,8 @@ audio uploads, or donation/support writes. Those are later phases.
    `api/echoworld-apertura-api/schema/products.add-missing-columns.yql`.
 4. Run `data/products.upsert.yql` in YDB.
 5. Deploy this folder to the Cloud Function.
-6. Keep frontend catalog feature flags disabled until the API is tested manually.
+6. Keep business/write feature flags disabled. The frontend may use read-only
+   catalog data, but must not create orders, reservations, payments or uploads.
 7. Test:
    - `https://functions.yandexcloud.net/d4e5vcvae4csacbacs2i?route=catalog/list`
    - `https://functions.yandexcloud.net/d4e5vcvae4csacbacs2i?route=catalog/product-status&product_id=01-0006`

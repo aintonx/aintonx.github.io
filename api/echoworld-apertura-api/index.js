@@ -524,10 +524,37 @@ function mapProductRow(row) {
   const statusDefaults = PRODUCT_STATUS_MODEL[status] || PRODUCT_STATUS_MODEL.available;
   const powerCode = normalizePowerCode(textValue(items[9]));
   const powerDefaults = POWER_MODEL[powerCode] || POWER_MODEL.K;
+  const priceRub = intValue(items[7]);
+  const currency = textValue(items[8]) || "RUB";
+  const powerLabel = textValue(items[10]) || powerDefaults.name;
+  const echoSlots = intValue(items[11]) || powerDefaults.echoSlots;
+  const catalogStatusLabel = textValue(items[13]) || statusDefaults.label;
   const orderableFromDb = boolValue(items[14]);
   const isVisible = boolValue(items[16]);
+  const imageUrl = textValue(items[15]);
+  const updatedAtMs = numberValue(items[17]);
 
   return {
+    product_id: id,
+    relic_code: relicCode,
+    title,
+    subtitle: "",
+    description: textValue(items[6]),
+    price_rub: priceRub,
+    currency,
+    power_code: powerCode,
+    power_label: powerLabel,
+    echo_slots: echoSlots,
+    status,
+    orderable: statusDefaults.orderable && orderableFromDb,
+    visible: isVisible,
+    image_url: imageUrl,
+    category_code: "relic",
+    category_label: "Реликвии",
+    catalog_status_label: catalogStatusLabel,
+    sort_order: intValue(items[4]),
+    updated_at: updatedAtMs ? new Date(updatedAtMs).toISOString() : "",
+
     id,
     relicCode,
     collection: textValue(items[2]),
@@ -537,28 +564,25 @@ function mapProductRow(row) {
     name: title,
     description: textValue(items[6]),
     price: {
-      amount: intValue(items[7]),
-      currency: textValue(items[8]) || "RUB"
+      amount: priceRub,
+      currency
     },
-    price_rub: intValue(items[7]),
     status,
-    statusLabel: textValue(items[13]) || statusDefaults.label,
+    statusLabel: catalogStatusLabel,
     orderable: statusDefaults.orderable && orderableFromDb,
     available: status === "available" && orderableFromDb,
     power: {
       code: powerCode,
-      name: textValue(items[10]) || powerDefaults.name,
-      echoSlots: intValue(items[11]) || powerDefaults.echoSlots
+      name: powerLabel,
+      echoSlots
     },
-    power_code: powerCode,
-    power_name: textValue(items[10]) || powerDefaults.name,
-    echo_slots: intValue(items[11]) || powerDefaults.echoSlots,
+    power_name: powerLabel,
     image: {
-      path: textValue(items[15])
+      path: imageUrl
     },
-    img: textValue(items[15]),
+    img: imageUrl,
     is_visible: isVisible,
-    updated_at_ms: numberValue(items[17])
+    updated_at_ms: updatedAtMs
   };
 }
 
@@ -676,11 +700,23 @@ async function handleProductStatus(event, body) {
     schema: PRODUCT_STATUS_SCHEMA,
     product_id: product.id,
     relic_code: product.relicCode,
+    title: product.title,
     status: product.status,
     status_label: product.statusLabel,
+    catalog_status_label: product.catalog_status_label,
     orderable: product.orderable,
     available: product.available,
+    visible: product.visible,
+    price_rub: product.price_rub,
+    power_code: product.power_code,
+    power_label: product.power_label,
+    echo_slots: product.echo_slots,
     power: product.power,
+    image_url: product.image_url,
+    category_code: product.category_code,
+    category_label: product.category_label,
+    sort_order: product.sort_order,
+    updated_at: product.updated_at,
     updated_at_ms: product.updated_at_ms
   });
 }

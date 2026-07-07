@@ -1,6 +1,6 @@
 {
-  "schema": "echoworld.products.seed.v1",
-  "generatedAt": "2026-07-06T16:45:47.382Z",
+  "schema": "echoworld.products.seed.v2",
+  "generatedAt": "2026-07-07T10:55:38.974Z",
   "source": {
     "file": "index.html",
     "selector": "const products[]"
@@ -12,399 +12,328 @@
   ],
   "powerModel": {
     "K": {
-      "name": "ИЗЛОМ",
+      "name": "Излом",
       "echoSlots": 1,
       "basePriceRub": 9999
     },
     "C": {
-      "name": "СКОПЛЕНИЕ",
+      "name": "Скопление",
       "echoSlots": 2,
       "basePriceRub": 25999
     },
     "R": {
-      "name": "РЕЗОНАНС",
+      "name": "Резонанс",
       "echoSlots": 3,
       "basePriceRub": 49999
     },
     "S": {
-      "name": "СИНГУЛЯРНОСТЬ",
+      "name": "Сингулярность",
       "echoSlots": 4,
       "basePriceRub": 99999
     }
   },
   "notes": [
     "Canonical term is Echo/Эхо. Do not introduce old signal-order entities in new DB work.",
-    "Product orderability is derived from status. Legacy soldFlag is kept only for local fallback compatibility.",
+    "Phase 1C seed follows the read-only YDB catalog API model used by the frontend overlay.",
+    "Product orderability is derived from status and explicit orderable=false from the catalog.",
     "This file is a seed source for YDB/API preparation and does not change the live site by itself."
   ],
   "products": [
     {
-      "id": "01-0012",
-      "relicCode": "RELIC-01-0012",
-      "collection": "01",
-      "position": 12,
-      "sortOrder": 1,
-      "name": "Колючий страж",
+      "product_id": "01-0012",
+      "relic_code": "RELIC-01-0012",
+      "title": "Колючий страж",
+      "subtitle": "",
       "description": "Самую грязную работу он делал молча — не делая из этого подвига, не жалуясь: кто-то ведь должен, а он умел и не морщился. Скоро он снова возьмётся за то, от чего вы отводите глаза, — только спасибо ему не скажут: кто же благодарит вещь, да он того и не ждал никогда.",
-      "price": {
-        "amount": 9999,
-        "currency": "RUB"
-      },
+      "price_rub": 9999,
+      "currency": "RUB",
+      "power_code": "K",
+      "power_label": "Излом",
+      "echo_slots": 1,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "K",
-        "name": "ИЗЛОМ",
-        "echoSlots": 1
-      },
-      "image": {
-        "path": "img/rash.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/rash.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 1,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 1
       }
     },
     {
-      "id": "01-0001",
-      "relicCode": "RELIC-01-0001",
-      "collection": "01",
-      "position": 1,
-      "sortOrder": 2,
-      "name": "Редкая лягушка",
+      "product_id": "01-0001",
+      "relic_code": "RELIC-01-0001",
+      "title": "Редкая лягушка",
+      "subtitle": "",
       "description": "Дело было не в красоте — лицо у него было такое открытое, что мимо было не пройти: оно не умело ничего скрывать. В звёзды он не рвался — просто на этом лице каждый читал что-то своё: свою тоску, свою тихую радость, свою усталость без слов, — и оттого его скоро знал каждый. Слава вышла странная: знали его все, а близко он не подпустил никого — и грустил о своём в стороне от тех, кто звал его своим. Такие не повторяются: один на всех — и каждый втайне хотел, чтобы достался именно ему. Достанется он одному — и, снова поняв вас без единого слова, сам так и останется непонятым, теперь навсегда и теперь вашим.",
-      "price": {
-        "amount": 99999,
-        "currency": "RUB"
-      },
+      "price_rub": 99999,
+      "currency": "RUB",
+      "power_code": "S",
+      "power_label": "Сингулярность",
+      "echo_slots": 4,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "S",
-        "name": "СИНГУЛЯРНОСТЬ",
-        "echoSlots": 4
-      },
-      "image": {
-        "path": "img/pepe.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/pepe.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 2,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 2
       }
     },
     {
-      "id": "01-0002",
-      "relicCode": "RELIC-01-0002",
-      "collection": "01",
-      "position": 2,
-      "sortOrder": 3,
-      "name": "Зубастый спутник",
+      "product_id": "01-0002",
+      "relic_code": "RELIC-01-0002",
+      "title": "Зубастый спутник",
+      "subtitle": "",
       "description": "Улыбка у него была чуть зубастее, чем нужно, чтобы ей сразу поверить, — и всё равно ей верили все. Он умел получить своё, проскользнуть там, где другим говорили «нет», и обаять так, что злиться на него выходило недолго. Хитёр был, не отнять, — но без злого умысла, скорее как ребёнок, уверенный, что ему всё простят. Рядом с ним было весело и самую малость тревожно, и эта смесь не отпускала. Однажды вы пристегнёте его к сумке и не снимете уже никогда — а поймав на себе ту самую улыбку, нет-нет да задумаетесь: кто кого здесь выбрал.",
-      "price": {
-        "amount": 99999,
-        "currency": "RUB"
-      },
+      "price_rub": 99999,
+      "currency": "RUB",
+      "power_code": "S",
+      "power_label": "Сингулярность",
+      "echo_slots": 4,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "S",
-        "name": "СИНГУЛЯРНОСТЬ",
-        "echoSlots": 4
-      },
-      "image": {
-        "path": "img/labubu.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/labubu.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 3,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 3
       }
     },
     {
-      "id": "01-0003",
-      "relicCode": "RELIC-01-0003",
-      "collection": "01",
-      "position": 3,
-      "sortOrder": 4,
-      "name": "Сухопутная акула",
+      "product_id": "01-0003",
+      "relic_code": "RELIC-01-0003",
+      "title": "Сухопутная акула",
+      "subtitle": "",
       "description": "Он нёс полную чушь — но с таким серьёзным лицом, будто говорит что-то важное, и оттого ему верили. Спорить с ним было без толку: в любой своей глупости он был уверен крепче, чем иные в правде. Смысла в его словах искать было бесполезно, а вот повторяли их потом все, сами не понимая зачем. Однажды он окажется у вас на полке — в тех же кроссовках, с той же невозмутимой мордой, готовый убеждать в своей ерунде уже лично вас.",
-      "price": {
-        "amount": 49999,
-        "currency": "RUB"
-      },
+      "price_rub": 49999,
+      "currency": "RUB",
+      "power_code": "R",
+      "power_label": "Резонанс",
+      "echo_slots": 3,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "R",
-        "name": "РЕЗОНАНС",
-        "echoSlots": 3
-      },
-      "image": {
-        "path": "img/akula.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/akula.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 4,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 4
       }
     },
     {
-      "id": "01-0004",
-      "relicCode": "RELIC-01-0004",
-      "collection": "01",
-      "position": 4,
-      "sortOrder": 5,
-      "name": "Лесной гость",
+      "product_id": "01-0004",
+      "relic_code": "RELIC-01-0004",
+      "title": "Лесной гость",
+      "subtitle": "",
       "description": "Ворчал он без передышки — на погоду, на чужую безалаберность, на вещь, которая сломалась не у него и его вообще не касалась. Но пока другие охали, он молча закатывал рукава и приводил в порядок что угодно — от заевшего замка до чьей-то развалившейся затеи. Спасибо ему говорить было бесполезно: отмахнётся и заворчит, что не за что. Однажды он окажется у вас дома — хмурый, надёжный, из тех, кто молча чинит то, что вы уже отчаялись починить, и не спросит, почему вы не взялись сами.",
-      "price": {
-        "amount": 49999,
-        "currency": "RUB"
-      },
+      "price_rub": 49999,
+      "currency": "RUB",
+      "power_code": "R",
+      "power_label": "Резонанс",
+      "echo_slots": 3,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "R",
-        "name": "РЕЗОНАНС",
-        "echoSlots": 3
-      },
-      "image": {
-        "path": "img/bobr.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/bobr.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 5,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 5
       }
     },
     {
-      "id": "01-0005",
-      "relicCode": "RELIC-01-0005",
-      "collection": "01",
-      "position": 5,
-      "sortOrder": 6,
-      "name": "Карманное существо",
+      "product_id": "01-0005",
+      "relic_code": "RELIC-01-0005",
+      "title": "Карманное существо",
+      "subtitle": "",
       "description": "Внимания ему было нужно постоянно и сразу — чтобы заметили, накормили, не уходили далеко. Просил он это в открытую, без капли стеснения, и обижался искренне, если о нём забывали хоть на час. Сердиться на него получалось ровно до первого взгляда в глаза — а там уже сам нёс ему всё, что он просил. Скоро он уместится у вас на ладони и снова потребует своего — покормить, побыть рядом, не забывать; и вы уступите, как уступали все, ведь забыть его хоть на день — значит однажды найти погасшим насовсем.",
-      "price": {
-        "amount": 49999,
-        "currency": "RUB"
-      },
+      "price_rub": 49999,
+      "currency": "RUB",
+      "power_code": "R",
+      "power_label": "Резонанс",
+      "echo_slots": 3,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "R",
-        "name": "РЕЗОНАНС",
-        "echoSlots": 3
-      },
-      "image": {
-        "path": "img/tamagochi.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/tamagochi.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 6,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 6
       }
     },
     {
-      "id": "01-0006",
-      "relicCode": "RELIC-01-0006",
-      "collection": "01",
-      "position": 6,
-      "sortOrder": 7,
-      "name": "Тёмный оракул",
+      "product_id": "01-0006",
+      "relic_code": "RELIC-01-0006",
+      "title": "Тёмный оракул",
+      "subtitle": "",
       "description": "Он отвечал раньше, чем ты успевал договорить, — спокойно, без тени сомнения, будто всё давно знал. Сбывалось не каждый раз, но достаточно часто, чтобы во второй раз к нему уже боялись подходить. Встряхните, спросите о своём — и он ответит так же ровно, как отвечал всем, кто потом жалел, что спросил.",
-      "price": {
-        "amount": 25999,
-        "currency": "RUB"
-      },
+      "price_rub": 25999,
+      "currency": "RUB",
+      "power_code": "C",
+      "power_label": "Скопление",
+      "echo_slots": 2,
       "status": "first_form",
-      "statusLabel": "Ожидает Перехода",
       "orderable": false,
-      "power": {
-        "code": "C",
-        "name": "СКОПЛЕНИЕ",
-        "echoSlots": 2
-      },
-      "image": {
-        "path": "img/ball.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/ball.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Первая Форма",
+      "sort_order": 7,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 7
       }
     },
     {
-      "id": "01-0007",
-      "relicCode": "RELIC-01-0007",
-      "collection": "01",
-      "position": 7,
-      "sortOrder": 8,
-      "name": "Карманный вихрь",
+      "product_id": "01-0007",
+      "relic_code": "RELIC-01-0007",
+      "title": "Карманный вихрь",
+      "subtitle": "",
       "description": "На месте он не сидел ни минуты: стучал, ёрзал, крутил всё, что попадалось под руку, и заводил окружающих своей суетой. Но стоило понаблюдать за ним со стороны — и собственные мысли отчего-то унимались. Закрутите его в пальцах, когда внутри неспокойно: он закружит вашу тревогу вместе с собой, как кружил чужую всегда, — только сам остановиться так и не научится, даже теперь.",
-      "price": {
-        "amount": 25999,
-        "currency": "RUB"
-      },
+      "price_rub": 25999,
+      "currency": "RUB",
+      "power_code": "C",
+      "power_label": "Скопление",
+      "echo_slots": 2,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "C",
-        "name": "СКОПЛЕНИЕ",
-        "echoSlots": 2
-      },
-      "image": {
-        "path": "img/spinner.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/spinner.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 8,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 8
       }
     },
     {
-      "id": "01-0008",
-      "relicCode": "RELIC-01-0008",
-      "collection": "01",
-      "position": 8,
-      "sortOrder": 9,
-      "name": "Зеркальный идол",
+      "product_id": "01-0008",
+      "relic_code": "RELIC-01-0008",
+      "title": "Зеркальный идол",
+      "subtitle": "",
       "description": "Скромностью он не страдал и был уверен, что любой стоящий вечер начинается ровно в тот миг, когда появляется он. Бесило, что он каждый раз оказывался прав — без него и правда всё как-то не клеилось. Поднимите его повыше, дайте луч — и он вспыхнет сотней огней, в которых вы утонете; вот только без вашего луча он, как выясняется, не светит вовсе.",
-      "price": {
-        "amount": 25999,
-        "currency": "RUB"
-      },
+      "price_rub": 25999,
+      "currency": "RUB",
+      "power_code": "C",
+      "power_label": "Скопление",
+      "echo_slots": 2,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "C",
-        "name": "СКОПЛЕНИЕ",
-        "echoSlots": 2
-      },
-      "image": {
-        "path": "img/disco-ball.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/disco-ball.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 9,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 9
       }
     },
     {
-      "id": "01-0009",
-      "relicCode": "RELIC-01-0009",
-      "collection": "01",
-      "position": 9,
-      "sortOrder": 10,
-      "name": "Жёлтая горлица",
+      "product_id": "01-0009",
+      "relic_code": "RELIC-01-0009",
+      "title": "Жёлтая горлица",
+      "subtitle": "",
       "description": "Между тем, что он думал, и тем, что говорил, не было ровно никакой паузы: он выпаливал вслух то, о чём все молчали. Сожмите его, когда не хватит слов, — крикнет за вас; того, кого при жизни нельзя было унять, теперь слышно, только если нажать.",
-      "price": {
-        "amount": 9999,
-        "currency": "RUB"
-      },
+      "price_rub": 9999,
+      "currency": "RUB",
+      "power_code": "K",
+      "power_label": "Излом",
+      "echo_slots": 1,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "K",
-        "name": "ИЗЛОМ",
-        "echoSlots": 1
-      },
-      "image": {
-        "path": "img/utka.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/utka.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 10,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 10
       }
     },
     {
-      "id": "01-0010",
-      "relicCode": "RELIC-01-0010",
-      "collection": "01",
-      "position": 10,
-      "sortOrder": 11,
-      "name": "Карманные соты",
+      "product_id": "01-0010",
+      "relic_code": "RELIC-01-0010",
+      "title": "Карманные соты",
+      "subtitle": "",
       "description": "Простой он был до невозможности и ничуть этого не стеснялся — а нравился людям больше тех, кто из кожи лез казаться сложным и глубоким. Нажмите на него, устав от запутанного: щёлк — и станет проще, как умел он один; большего он не обещал ни тогда, ни теперь.",
-      "price": {
-        "amount": 9999,
-        "currency": "RUB"
-      },
+      "price_rub": 9999,
+      "currency": "RUB",
+      "power_code": "K",
+      "power_label": "Излом",
+      "echo_slots": 1,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "K",
-        "name": "ИЗЛОМ",
-        "echoSlots": 1
-      },
-      "image": {
-        "path": "img/simple-dimple.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/simple-dimple.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 11,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 11
       }
     },
     {
-      "id": "01-0011",
-      "relicCode": "RELIC-01-0011",
-      "collection": "01",
-      "position": 11,
-      "sortOrder": 12,
-      "name": "Ночной мухомор",
+      "product_id": "01-0011",
+      "relic_code": "RELIC-01-0011",
+      "title": "Ночной мухомор",
+      "subtitle": "",
       "description": "Выглядел он пугающе и нарочно набивал себе славу опасного — а если кто всерьёз пугался, сам первый и смеялся. Поставьте его у изголовья: пугать умеет, но светит по-настоящему, и темноты вашей боится меньше, чем вы.",
-      "price": {
-        "amount": 9999,
-        "currency": "RUB"
-      },
+      "price_rub": 9999,
+      "currency": "RUB",
+      "power_code": "K",
+      "power_label": "Излом",
+      "echo_slots": 1,
       "status": "available",
-      "statusLabel": "Доступен",
       "orderable": true,
-      "power": {
-        "code": "K",
-        "name": "ИЗЛОМ",
-        "echoSlots": 1
-      },
-      "image": {
-        "path": "img/grib.webp"
-      },
-      "legacy": {
-        "soldFlag": false
-      },
+      "visible": true,
+      "image_url": "img/grib.webp",
+      "category_code": "relic",
+      "category_label": "Реликвии",
+      "catalog_status_label": "Готов к конденсации",
+      "sort_order": 12,
+      "updated_at": "2026-07-07T10:55:38.974Z",
       "source": {
         "file": "index.html",
         "collectionOrder": 12

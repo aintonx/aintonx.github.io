@@ -42,18 +42,23 @@ function readSeed() {
 
 function validateSeed(seed) {
   const issues = [];
-  if (!seed || seed.schema !== 'echoworld.products.seed.v1') issues.push('Unexpected seed schema');
+  if (!seed || !['echoworld.products.seed.v1', 'echoworld.products.seed.v2'].includes(seed.schema)) issues.push('Unexpected seed schema');
   if (!Array.isArray(seed.products) || seed.products.length !== 12) issues.push('Expected 12 products');
   (seed.products || []).forEach((product) => {
-    if (!/^\d{2}-\d{4}$/.test(product.id || '')) issues.push('Bad id: ' + product.id);
-    if (!/^RELIC-\d{2}-\d{4}$/.test(product.relicCode || '')) issues.push('Bad relicCode: ' + product.relicCode);
+    const id = product.product_id || product.id || '';
+    const relicCode = product.relic_code || product.relicCode || '';
+    const status = product.status || '';
+    const powerCode = product.power_code || product.power && product.power.code || '';
+    const imageUrl = product.image_url || product.image && product.image.path || '';
+    if (!/^\d{2}-\d{4}$/.test(id)) issues.push('Bad product id: ' + id);
+    if (!/^RELIC-\d{2}-\d{4}$/.test(relicCode)) issues.push('Bad relic code: ' + relicCode);
     if (!['available', 'first_form', 'transition_complete'].includes(product.status)) {
-      issues.push(product.relicCode + ': bad status ' + product.status);
+      issues.push(relicCode + ': bad status ' + status);
     }
-    if (!['K', 'C', 'R', 'S'].includes(product.power && product.power.code)) {
-      issues.push(product.relicCode + ': bad power ' + (product.power && product.power.code));
+    if (!['K', 'C', 'R', 'S'].includes(powerCode)) {
+      issues.push(relicCode + ': bad power ' + powerCode);
     }
-    if (!product.image || !product.image.path) issues.push(product.relicCode + ': missing image path');
+    if (!imageUrl) issues.push(relicCode + ': missing image_url');
   });
   return issues;
 }
@@ -61,27 +66,37 @@ function validateSeed(seed) {
 function buildUpsert(seed) {
   const generatedAtMs = Date.parse(seed.generatedAt || '') || Date.now();
   const rows = seed.products.map((product) => {
-    const power = product.power || {};
-    const price = product.price || {};
-    const image = product.image || {};
+    const id = product.product_id || product.id || '';
+    const [collection, position] = String(id).split('-');
+    const relicCode = product.relic_code || product.relicCode || '';
+    const title = product.title || product.name || '';
+    const description = product.description || '';
+    const priceRub = product.price_rub != null ? product.price_rub : product.price && product.price.amount;
+    const currency = product.currency || product.price && product.price.currency || 'RUB';
+    const powerCode = product.power_code || product.power && product.power.code || 'K';
+    const powerLabel = product.power_label || product.power && product.power.name || '';
+    const echoSlots = product.echo_slots != null ? product.echo_slots : product.power && product.power.echoSlots;
+    const catalogStatusLabel = product.catalog_status_label || product.statusLabel || '';
+    const imageUrl = product.image_url || product.image && product.image.path || '';
+    const visible = product.visible !== false && product.is_visible !== false;
     return [
-      sqlString(product.id),
-      sqlString(product.relicCode),
-      sqlString(product.collection),
-      sqlUint(product.position),
-      sqlUint(product.sortOrder),
-      sqlString(product.name),
-      sqlString(product.description),
-      sqlUint(price.amount),
-      sqlString(price.currency || 'RUB'),
-      sqlString(power.code),
-      sqlString(power.name),
-      sqlUint(power.echoSlots),
+      sqlString(id),
+      sqlString(relicCode),
+      sqlString(product.collection || collection || ''),
+      sqlUint(product.position || position || 0),
+      sqlUint(product.sort_order || product.sortOrder),
+      sqlString(title),
+      sqlString(description),
+      sqlUint(priceRub),
+      sqlString(currency),
+      sqlString(powerCode),
+      sqlString(powerLabel),
+      sqlUint(echoSlots),
       sqlString(product.status),
-      sqlString(product.statusLabel),
+      sqlString(catalogStatusLabel),
       sqlBool(product.orderable),
-      sqlString(image.path),
-      'TRUE',
+      sqlString(imageUrl),
+      sqlBool(visible),
       sqlUint(generatedAtMs),
       sqlUint(generatedAtMs)
     ].join(', ');

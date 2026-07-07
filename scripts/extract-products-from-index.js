@@ -11,37 +11,37 @@ const defaultOutputPath = path.join(repoRoot, 'data', 'products.seed.json');
 
 const statusModel = {
   available: {
-    label: 'Доступен',
+    label: 'Готов к конденсации',
     orderable: true
   },
   first_form: {
-    label: 'Ожидает Перехода',
+    label: 'Первая Форма',
     orderable: false
   },
   transition_complete: {
-    label: 'Прошёл Переход',
+    label: 'Переход завершён',
     orderable: false
   }
 };
 
 const powerModel = {
   K: {
-    name: 'ИЗЛОМ',
+    name: 'Излом',
     echoSlots: 1,
     basePriceRub: 9999
   },
   C: {
-    name: 'СКОПЛЕНИЕ',
+    name: 'Скопление',
     echoSlots: 2,
     basePriceRub: 25999
   },
   R: {
-    name: 'РЕЗОНАНС',
+    name: 'Резонанс',
     echoSlots: 3,
     basePriceRub: 49999
   },
   S: {
-    name: 'СИНГУЛЯРНОСТЬ',
+    name: 'Сингулярность',
     echoSlots: 4,
     basePriceRub: 99999
   }
@@ -168,34 +168,29 @@ function buildSeed(products) {
     const status = normalizeStatus(product.status) || 'available';
     const power = normalizePower(product.power) || 'K';
     const code = relicCodeFromId(product.id);
-    const [collection, position] = String(product.id || '').split('-');
 
     return {
-      id: String(product.id || ''),
-      relicCode: code,
-      collection: collection || '',
-      position: Number(position || 0),
-      sortOrder: index + 1,
-      name: String(product.name || ''),
+      product_id: String(product.id || ''),
+      relic_code: code,
+      title: String(product.name || ''),
+      subtitle: '',
       description: String(product.desc || ''),
-      price: {
-        amount: Number(product.price || 0),
-        currency: 'RUB'
-      },
+      price_rub: Number(product.price || 0),
+      currency: 'RUB',
+      power_code: power,
+      power_label: String(product.power_label || product.powerName || powerModel[power].name).toLowerCase() === String(product.powerName || '').toLowerCase()
+        ? powerModel[power].name
+        : String(product.power_label || powerModel[power].name),
+      echo_slots: powerModel[power].echoSlots,
       status,
-      statusLabel: statusModel[status].label,
       orderable: statusModel[status].orderable,
-      power: {
-        code: power,
-        name: String(product.powerName || powerModel[power].name),
-        echoSlots: powerModel[power].echoSlots
-      },
-      image: {
-        path: String(product.img || '')
-      },
-      legacy: {
-        soldFlag: product.sold === true
-      },
+      visible: product.visible === false ? false : true,
+      image_url: String(product.img || ''),
+      category_code: 'relic',
+      category_label: 'Реликвии',
+      catalog_status_label: statusModel[status].label,
+      sort_order: index + 1,
+      updated_at: now,
       source: {
         file: 'index.html',
         collectionOrder: index + 1
@@ -204,7 +199,7 @@ function buildSeed(products) {
   });
 
   return {
-    schema: 'echoworld.products.seed.v1',
+    schema: 'echoworld.products.seed.v2',
     generatedAt: now,
     source: {
       file: 'index.html',
@@ -214,7 +209,8 @@ function buildSeed(products) {
     powerModel,
     notes: [
       'Canonical term is Echo/Эхо. Do not introduce old signal-order entities in new DB work.',
-      'Product orderability is derived from status. Legacy soldFlag is kept only for local fallback compatibility.',
+      'Phase 1C seed follows the read-only YDB catalog API model used by the frontend overlay.',
+      'Product orderability is derived from status and explicit orderable=false from the catalog.',
       'This file is a seed source for YDB/API preparation and does not change the live site by itself.'
     ],
     products: seedProducts
@@ -231,28 +227,28 @@ function validateSeed(seed) {
   }
 
   seed.products.forEach((product) => {
-    if (!/^\d{2}-\d{4}$/.test(product.id)) issues.push('Bad product id: ' + product.id);
-    if (!/^RELIC-\d{2}-\d{4}$/.test(product.relicCode)) issues.push('Bad relicCode: ' + product.relicCode);
-    if (ids.has(product.id)) issues.push('Duplicate id: ' + product.id);
-    if (codes.has(product.relicCode)) issues.push('Duplicate relicCode: ' + product.relicCode);
-    ids.add(product.id);
-    codes.add(product.relicCode);
+    if (!/^\d{2}-\d{4}$/.test(product.product_id)) issues.push('Bad product_id: ' + product.product_id);
+    if (!/^RELIC-\d{2}-\d{4}$/.test(product.relic_code)) issues.push('Bad relic_code: ' + product.relic_code);
+    if (ids.has(product.product_id)) issues.push('Duplicate product_id: ' + product.product_id);
+    if (codes.has(product.relic_code)) issues.push('Duplicate relic_code: ' + product.relic_code);
+    ids.add(product.product_id);
+    codes.add(product.relic_code);
 
-    if (!statusModel[product.status]) issues.push(product.relicCode + ': unknown status ' + product.status);
+    if (!statusModel[product.status]) issues.push(product.relic_code + ': unknown status ' + product.status);
     if (product.orderable !== statusModel[product.status].orderable) {
-      issues.push(product.relicCode + ': orderable mismatch for status ' + product.status);
+      issues.push(product.relic_code + ': orderable mismatch for status ' + product.status);
     }
 
-    if (!powerModel[product.power.code]) issues.push(product.relicCode + ': unknown power ' + product.power.code);
-    if (product.power.echoSlots !== powerModel[product.power.code].echoSlots) {
-      issues.push(product.relicCode + ': echoSlots mismatch for power ' + product.power.code);
+    if (!powerModel[product.power_code]) issues.push(product.relic_code + ': unknown power ' + product.power_code);
+    if (product.echo_slots !== powerModel[product.power_code].echoSlots) {
+      issues.push(product.relic_code + ': echo_slots mismatch for power ' + product.power_code);
     }
-    if (product.price.amount !== powerModel[product.power.code].basePriceRub) {
-      issues.push(product.relicCode + ': price does not match power base price');
+    if (product.price_rub !== powerModel[product.power_code].basePriceRub) {
+      issues.push(product.relic_code + ': price_rub does not match power base price');
     }
 
-    const imagePath = path.join(repoRoot, product.image.path);
-    if (!fs.existsSync(imagePath)) issues.push(product.relicCode + ': missing image ' + product.image.path);
+    const imagePath = path.join(repoRoot, product.image_url);
+    if (!fs.existsSync(imagePath)) issues.push(product.relic_code + ': missing image ' + product.image_url);
   });
 
   const text = JSON.stringify(seed).toLowerCase();
@@ -302,7 +298,7 @@ function main() {
       return acc;
     }, {}),
     powers: seed.products.reduce((acc, product) => {
-      acc[product.power.code] = (acc[product.power.code] || 0) + 1;
+      acc[product.power_code] = (acc[product.power_code] || 0) + 1;
       return acc;
     }, {})
   }, null, 2));

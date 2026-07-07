@@ -17250,7 +17250,8 @@ const products=[
    URL-параметр ?relic=... открывает карточку, но не создаёт заказ/резерв. */
 const RELIC_DEEP_LINK_PARAM = 'relic';
 function getRelicCode(product){
-  const raw = product && product.id ? String(product.id).trim().toUpperCase().replace(/^RELIC-?/,'') : '';
+  const rawSource = product && (product.relic_code || product.relicCode || product.product_id || product.productId || product.id);
+  const raw = rawSource ? String(rawSource).trim().toUpperCase().replace(/^RELIC-?/,'') : '';
   return raw ? 'RELIC-' + raw : '';
 }
 function normalizeRelicCode(value){
@@ -17668,7 +17669,7 @@ function createCartItemFromProduct(product){
   };
 }
 function normalizeCartForApiPreparation(){
-  const result = { changed:false, removedDuplicates:0, normalizedItems:0 };
+  const result = { changed:false, removedDuplicates:0, removedUnavailable:0, normalizedItems:0 };
   if(!Array.isArray(cart)){ cart=[]; result.changed=true; return result; }
   const seen = new Set();
   const next = [];
@@ -17679,12 +17680,18 @@ function normalizeCartForApiPreparation(){
     if(seen.has(key)){ result.changed=true; result.removedDuplicates++; return; }
     seen.add(key);
     const canonical = products.find(p => getCartProductKey(p) === key);
-    const normalized = { ...(canonical || {}), ...item };
+    if(canonical && !isProductOrderable(canonical)){
+      result.changed=true;
+      result.removedUnavailable++;
+      return;
+    }
+    const itemEchoes = Array.isArray(item.echoes) ? item.echoes.slice() : (item.echoText ? [item.echoText] : []);
+    const normalized = { ...item, ...(canonical || {}) };
     normalized.productId = key;
     normalized.cartKey = key;
     normalized.quantity = 1;
     normalized.price = getRelicBasePrice(normalized);
-    normalized.echoes = _normalizeEchoArrayForItem(normalized);
+    normalized.echoes = _normalizeEchoArrayForItem(Object.assign({}, normalized, {echoes:itemEchoes}));
     const filled = normalized.echoes.filter(t => t && String(t).trim().length > 0).length;
     normalized.echoCost = 0;
     normalized.withEcho = filled > 0;
@@ -17702,6 +17709,9 @@ function normalizeCartForApiPreparation(){
 }
 function addProductToCart(product){
   normalizeCartForApiPreparation();
+  if(!isProductOrderable(product)){
+    return { added:false, duplicate:false, blocked:true, index:-1, item:null };
+  }
   const existingIndex = findCartIndexByProduct(product);
   if(existingIndex >= 0){
     return { added:false, duplicate:true, index:existingIndex, item:cart[existingIndex] };
@@ -18271,7 +18281,25 @@ const PRODUCT_STATUS_MODEL = {
 };
 const FIRST_FORM_HINT_TEXT = 'Apertura обнаружила сигнал этой реликвии в MARKETSPACE, но сама реликвия ещё не появилась в нашем мире. Сейчас её нельзя заказать: система ожидает завершения Перехода.';
 
+const EW_CATALOG_READONLY_SYNC = {
+  enabled: true,
+  route: 'catalog/list',
+  timeoutMs: 4200,
+  allowedFields: ['status','orderable','price_rub','power_code','power_label','echo_slots','catalog_status_label','visible','updated_at']
+};
+const EW_CATALOG_SYNC_STATE = {
+  attempted: false,
+  ok: false,
+  stale: true,
+  orderingLimited: false,
+  lastError: '',
+  lastUpdatedAt: '',
+  lastApplied: 0
+};
+
 function getEchoSlotCount(product){
+  const explicit = Number(product && (product.echoSlots || product.echo_slots));
+  if(Number.isFinite(explicit) && explicit >= 1) return Math.max(1, Math.min(4, Math.round(explicit)));
   const power=String((product&&product.power)||'K').trim().toUpperCase();
   const map={K:1,C:2,R:3,S:4};
   return map[power] || 1;
@@ -18625,6 +18653,9 @@ function getProductStatus(p){
   return normalizeProductStatus(p);
 }
 function getProductStatusLabel(p){
+  if(p && (p.catalogStatusLabel || p.catalog_status_label)){
+    return String(p.catalogStatusLabel || p.catalog_status_label).trim();
+  }
   const status=normalizeProductStatus(p);
   return (PRODUCT_STATUS_MODEL[status] || PRODUCT_STATUS_MODEL.available).label;
 }
@@ -18633,11 +18664,17 @@ function getProductStatusClass(p){
   return (PRODUCT_STATUS_MODEL[status] || PRODUCT_STATUS_MODEL.available).className;
 }
 function isProductOrderable(p){
+  if(!p) return false;
+  if(EW_CATALOG_SYNC_STATE && EW_CATALOG_SYNC_STATE.orderingLimited) return false;
+  if(p.visible===false || p.is_visible===false) return false;
+  if(p.orderable===false || p.available===false) return false;
   return normalizeProductStatus(p)==='available';
 }
 const RELIC_BASE_PRICES={K:9999,C:25999,R:49999,S:99999};
 function getRelicBasePrice(product){
   if(!product) return 0;
+  const explicit=Number(product.price_rub != null ? product.price_rub : product.price);
+  if(Number.isFinite(explicit) && explicit > 0) return explicit;
   const power=String(product.power||product.rank||'').trim().toUpperCase();
   if(Object.prototype.hasOwnProperty.call(RELIC_BASE_PRICES, power)) return RELIC_BASE_PRICES[power];
   const fallback=Number(product.price);
@@ -18713,6 +18750,197 @@ function setModalOrderFieldsDisabled(disabled){
     else el.removeAttribute('aria-disabled');
   });
 }
+function getProductOrderBlockLabel(p){
+  if(EW_CATALOG_SYNC_STATE && EW_CATALOG_SYNC_STATE.orderingLimited && normalizeProductStatus(p)==='available'){
+    return 'Связь нестабильна';
+  }
+  return getProductStatusLabel(p);
+}
+function normalizeCatalogApiId(value){
+  const raw=String(value||'').trim().toUpperCase().replace(/^RELIC-?/,'');
+  return /^\d{2}-\d{4}$/.test(raw) ? raw : '';
+}
+function catalogApiProductKey(record){
+  if(!record) return '';
+  const productId=normalizeCatalogApiId(record.product_id || record.productId || record.id);
+  if(productId) return 'RELIC-' + productId;
+  return normalizeRelicCode(record.relic_code || record.relicCode || '');
+}
+function findLocalProductForCatalogRecord(record){
+  const key=catalogApiProductKey(record);
+  if(!key) return null;
+  return products.find(p => getRelicCode(p) === key) || null;
+}
+function normalizeCatalogApiBool(value, fallback){
+  if(value === true || value === false) return value;
+  if(value == null || value === '') return fallback;
+  const raw=String(value).trim().toLowerCase();
+  if(['true','1','yes','y','да'].includes(raw)) return true;
+  if(['false','0','no','n','нет'].includes(raw)) return false;
+  return fallback;
+}
+function normalizeCatalogApiPower(value, fallback){
+  const power=String(value||fallback||'').trim().toUpperCase();
+  return ['K','C','R','S'].includes(power) ? power : (fallback || 'K');
+}
+function applyCatalogApiRecord(product, record){
+  if(!product || !record) return false;
+  let changed=false;
+  const status=normalizeProductStatusValue(record.status);
+  if(status && normalizeProductStatus(product)!==status){
+    setProductLifecycleStatus(product,status);
+    changed=true;
+  }
+  const orderable=normalizeCatalogApiBool(record.orderable, product.orderable !== false);
+  if(product.orderable !== orderable){ product.orderable=orderable; changed=true; }
+  product.available = normalizeProductStatus(product)==='available' && orderable;
+  const visible=normalizeCatalogApiBool(record.visible != null ? record.visible : record.is_visible, product.visible !== false && product.is_visible !== false);
+  if(product.visible !== visible){ product.visible=visible; changed=true; }
+  product.is_visible=visible;
+  const price=Number(record.price_rub != null ? record.price_rub : (record.price && record.price.amount));
+  if(Number.isFinite(price) && price > 0 && product.price !== price){
+    product.price=price;
+    product.price_rub=price;
+    changed=true;
+  }else if(Number.isFinite(price) && price > 0){
+    product.price_rub=price;
+  }
+  const power=normalizeCatalogApiPower(record.power_code || (record.power && record.power.code), product.power);
+  if(power && product.power!==power){ product.power=power; changed=true; }
+  const powerLabel=String(record.power_label || record.power_name || (record.power && record.power.name) || product.power_label || product.powerName || '').trim();
+  if(powerLabel){
+    product.power_label=powerLabel;
+    const upper=powerLabel.toUpperCase();
+    if(product.powerName!==upper){ product.powerName=upper; changed=true; }
+  }
+  const slots=Number(record.echo_slots != null ? record.echo_slots : (record.power && record.power.echoSlots));
+  if(Number.isFinite(slots) && slots >= 1){
+    const safeSlots=Math.max(1, Math.min(4, Math.round(slots)));
+    if(product.echoSlots!==safeSlots || product.echo_slots!==safeSlots){
+      product.echoSlots=safeSlots;
+      product.echo_slots=safeSlots;
+      changed=true;
+    }
+  }
+  const catalogLabel=String(record.catalog_status_label || record.status_label || record.statusLabel || '').trim();
+  if(catalogLabel && product.catalogStatusLabel!==catalogLabel){
+    product.catalogStatusLabel=catalogLabel;
+    product.catalog_status_label=catalogLabel;
+    changed=true;
+  }
+  const updatedAt=String(record.updated_at || record.updatedAt || record.updated_at_ms || '').trim();
+  if(updatedAt && product.catalogUpdatedAt!==updatedAt){
+    product.catalogUpdatedAt=updatedAt;
+    product.updated_at=updatedAt;
+    changed=true;
+  }
+  return changed;
+}
+function applyCatalogApiProducts(records){
+  const result={matched:0, changed:0, unmatched:0};
+  if(!Array.isArray(records)) return result;
+  records.forEach(record=>{
+    const product=findLocalProductForCatalogRecord(record);
+    if(!product){ result.unmatched++; return; }
+    result.matched++;
+    if(applyCatalogApiRecord(product, record)) result.changed++;
+  });
+  return result;
+}
+function refreshCurrentModalFromProduct(){
+  if(!cur) return;
+  const ov=document.getElementById('moverlay');
+  if(!ov || !ov.classList.contains('open')) return;
+  const idx=products.indexOf(cur);
+  if(idx < 0) return;
+  const status=normalizeProductStatus(cur);
+  const statusLabel=getProductStatusLabel(cur);
+  const blockLabel=getProductOrderBlockLabel(cur);
+  const orderable=isProductOrderable(cur);
+  const statusEl=document.getElementById('mfstatus');
+  if(statusEl) statusEl.textContent=statusLabel;
+  setupModalFirstFormStatusHint(status);
+  renderProductStatusDetails(status);
+  updateModalPrice();
+  const btns=document.getElementById('mfooterBtns');
+  const insta=document.getElementById('minsta');
+  if(!btns) return;
+  if(orderable){
+    if(insta) insta.style.display='none';
+    setModalOrderFieldsDisabled(false);
+    btns.classList.add('has-share');
+    btns.innerHTML='<button class="mbtn" type="button" data-modal-action="addToCart">В корзину</button><button class="mbtn primary" type="button" data-modal-action="buyNow">Купить сейчас</button><button class="mbtn mbtn-share" type="button" data-modal-action="shareRelic" aria-label="Поделиться реликвией" title="Поделиться"><svg class="ico ew-mask-icon ew-icon--share-2" aria-hidden="true"><use href="#i-share-2"/></svg></button>';
+  }else{
+    if(insta) insta.style.display=status==='transition_complete'?'flex':'none';
+    setModalOrderFieldsDisabled(true);
+    btns.classList.remove('has-share');
+    btns.innerHTML='<button class="mbtn dis" disabled>'+blockLabel+'</button>';
+    const priceEcho=document.getElementById('mpriceecho');
+    if(priceEcho) priceEcho.textContent=blockLabel;
+  }
+}
+async function refreshEchoWorldCatalog(opts){
+  opts = opts || {};
+  if(!EW_CATALOG_READONLY_SYNC.enabled || typeof fetch !== 'function'){
+    return {ok:false, status:'disabled'};
+  }
+  EW_CATALOG_SYNC_STATE.attempted=true;
+  const url = typeof _ewAperturaRouteUrl === 'function'
+    ? _ewAperturaRouteUrl(EW_CATALOG_READONLY_SYNC.route)
+    : (EW_APERTURA_API_URL + '?route=' + encodeURIComponent(EW_CATALOG_READONLY_SYNC.route));
+  try{
+    const result = typeof _ewFetchJsonWithTimeout === 'function'
+      ? await _ewFetchJsonWithTimeout(url, {method:'GET', headers:{'Accept':'application/json'}, credentials:'omit'}, EW_CATALOG_READONLY_SYNC.timeoutMs)
+      : {res: await fetch(url, {method:'GET', headers:{'Accept':'application/json'}, credentials:'omit'}), data:null};
+    const data = result.data || (result.res && typeof result.res.json === 'function' ? await result.res.json() : null);
+    if(!result.res || !result.res.ok || !data || data.ok !== true || !Array.isArray(data.products)){
+      throw new Error('catalog_response_invalid');
+    }
+    const applied=applyCatalogApiProducts(data.products);
+    EW_CATALOG_SYNC_STATE.ok=true;
+    EW_CATALOG_SYNC_STATE.stale=!!data.stale;
+    EW_CATALOG_SYNC_STATE.orderingLimited=false;
+    EW_CATALOG_SYNC_STATE.lastError='';
+    EW_CATALOG_SYNC_STATE.lastUpdatedAt=String(data.server_time || new Date().toISOString());
+    EW_CATALOG_SYNC_STATE.lastApplied=applied.matched;
+    syncCatalogLockStates();
+    normalizeCartForApiPreparation();
+    if(typeof updateCartUI === 'function') updateCartUI();
+    refreshCurrentModalFromProduct();
+    if(opts.manual){
+      closeAperturaStatus();
+      if(typeof showNotif === 'function') showNotif('// Каталог обновлён.', {contextual:true});
+    }
+    return {ok:true, applied};
+  }catch(err){
+    EW_CATALOG_SYNC_STATE.ok=false;
+    EW_CATALOG_SYNC_STATE.stale=true;
+    EW_CATALOG_SYNC_STATE.orderingLimited=true;
+    EW_CATALOG_SYNC_STATE.lastError=err && err.message ? err.message : String(err || 'catalog_error');
+    syncCatalogLockStates();
+    normalizeCartForApiPreparation();
+    if(typeof updateCartUI === 'function') updateCartUI();
+    refreshCurrentModalFromProduct();
+    if(opts.manual && typeof _renderAperturaStatus === 'function'){
+      _renderAperturaStatus(Object.assign({key:'catalog-unstable', source:'catalog-sync'}, APERTURA_STATUS_STATES['catalog-unstable']));
+    }
+    return {ok:false, status:'catalog_unstable', error:EW_CATALOG_SYNC_STATE.lastError};
+  }
+}
+function inspectEchoWorldCatalogSync(){
+  return {
+    ok: !!EW_CATALOG_SYNC_STATE.ok,
+    readOnlyEnabled: !!EW_CATALOG_READONLY_SYNC.enabled,
+    orderingLimited: !!EW_CATALOG_SYNC_STATE.orderingLimited,
+    attempted: !!EW_CATALOG_SYNC_STATE.attempted,
+    lastApplied: EW_CATALOG_SYNC_STATE.lastApplied,
+    lastUpdatedAt: EW_CATALOG_SYNC_STATE.lastUpdatedAt,
+    lastError: EW_CATALOG_SYNC_STATE.lastError,
+    endpoint: typeof _ewAperturaRouteUrl === 'function' ? _ewAperturaRouteUrl(EW_CATALOG_READONLY_SYNC.route) : ''
+  };
+}
+window.inspectEchoWorldCatalogSync = inspectEchoWorldCatalogSync;
+window.refreshEchoWorldCatalog = refreshEchoWorldCatalog;
 function syncCatalogLockStates(){
   try{
     document.querySelectorAll('#pgrid .pcard').forEach(card => {
@@ -18721,9 +18949,13 @@ function syncCatalogLockStates(){
       if(!p) return;
       const status = normalizeProductStatus(p);
       const statusLabel = getProductStatusLabel(p);
+      const blockLabel = getProductOrderBlockLabel(p);
       const statusClass = getProductStatusClass(p);
       const orderable = isProductOrderable(p);
       const locked = isProductLocked(p);
+      const visible = p.visible !== false && p.is_visible !== false;
+      card.hidden = !visible;
+      card.dataset.visible = visible ? 'true' : 'false';
       card.classList.toggle('locked', locked);
       card.classList.remove('sold','reserved');
       card.dataset.status = status;
@@ -18751,7 +18983,7 @@ function syncCatalogLockStates(){
       if(beaconTxt) beaconTxt.textContent = statusLabel;
       const btn = card.querySelector('.pbtn');
       if(orderable) restoreOpenButton(btn);
-      else renderStatusButton(btn, statusLabel);
+      else renderStatusButton(btn, blockLabel);
     });
     if(typeof syncAperturaFeed === 'function') syncAperturaFeed();
     if(typeof updateCategoryCounts === 'function') updateCategoryCounts();
@@ -18779,6 +19011,7 @@ function openModal(i){
   }
   const status=normalizeProductStatus(p);
   const statusLabel=getProductStatusLabel(p);
+  const blockLabel=getProductOrderBlockLabel(p);
   const orderable=isProductOrderable(p);
   cur=p;echoChecked=false;
   try { updateRelicShareMeta(p); } catch(e){ console.warn('shareMeta:', e); }
@@ -18835,8 +19068,8 @@ function openModal(i){
     if(insta) insta.style.display=status==='transition_complete'?'flex':'none';
     setModalOrderFieldsDisabled(true);
     btns.classList.remove('has-share');
-    btns.innerHTML='<button class="mbtn dis" disabled>'+statusLabel+'</button>';
-    document.getElementById('mpriceecho').textContent=statusLabel;
+    btns.innerHTML='<button class="mbtn dis" disabled>'+blockLabel+'</button>';
+    document.getElementById('mpriceecho').textContent=blockLabel;
   }
   document.getElementById('moverlay').classList.add('open');
   lockScroll();
@@ -18996,7 +19229,12 @@ function addToCart(ev){
     showNotif('// Реликвия не определена. Откройте карточку заново.', {contextual:true});
     return;
   }
-  if(!isProductOrderable(cur)) return;
+  if(!isProductOrderable(cur)){
+    if(EW_CATALOG_SYNC_STATE && EW_CATALOG_SYNC_STATE.orderingLimited && typeof _renderAperturaStatus === 'function'){
+      _renderAperturaStatus(Object.assign({key:'catalog-unstable', source:'cart-add'}, APERTURA_STATUS_STATES['catalog-unstable']));
+    }
+    return;
+  }
   const result = addProductToCart(cur);
   try { updateCartUI(); } catch(e){ console.error('updateCartUI failed:', e); }
   if(result.duplicate){
@@ -19014,7 +19252,12 @@ function addToCart(ev){
 function buyNow(ev){
   if(ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
   if(ev && typeof ev.preventDefault === 'function') ev.preventDefault();
-  if(!cur || !isProductOrderable(cur)) return;
+  if(!cur || !isProductOrderable(cur)){
+    if(cur && EW_CATALOG_SYNC_STATE && EW_CATALOG_SYNC_STATE.orderingLimited && typeof _renderAperturaStatus === 'function'){
+      _renderAperturaStatus(Object.assign({key:'catalog-unstable', source:'buy-now'}, APERTURA_STATUS_STATES['catalog-unstable']));
+    }
+    return;
+  }
   const result = addProductToCart(cur);
   try { updateCartUI(); } catch(e){ console.error('updateCartUI failed:', e); }
   if(result.duplicate && typeof showNotif === 'function'){
@@ -19700,6 +19943,8 @@ function buildCheckoutOrderPayload(extra){
       title: safeText(item.name || 'Реликвия', {maxLength:120}),
       powerClass: item.power || null,
       powerName: item.powerName || null,
+      catalogStatus: normalizeProductStatus(item),
+      orderable: isProductOrderable(item),
       quantity: 1,
       unitPrice,
       total: unitPrice,
@@ -19752,6 +19997,7 @@ function buildCheckoutOrderPayload(extra){
 function validateCheckoutOrderPayload(payload){
   const issues=[];
   if(!payload || !Array.isArray(payload.items)) issues.push('payload-missing-items');
+  if(payload && Array.isArray(payload.items) && !payload.items.length) issues.push('payload-empty-items');
   if(payload && (!payload.customer.name || !payload.customer.phone || !payload.customer.email)) issues.push('customer-required-fields-missing');
   if(payload && !payload.delivery.address) issues.push('delivery-address-missing');
   if(payload && (!payload.consent.privacyAccepted || !payload.consent.offerAccepted)) issues.push('consent-not-accepted');
@@ -19759,6 +20005,7 @@ function validateCheckoutOrderPayload(payload){
   if(new Set(ids).size !== ids.length) issues.push('duplicate-products-in-payload');
   (payload.items || []).forEach((item, idx)=>{
     if(item.quantity !== 1) issues.push('bad-quantity-'+idx);
+    if(item.orderable !== true) issues.push('product-not-orderable-'+idx);
     if(!/^RELIC-\d{2}-\d{4}$/.test(item.productId || '')) issues.push('bad-product-id-'+idx);
     if(!Array.isArray(item.echoSlots)) issues.push('bad-echo-slots-'+idx);
     (item.echoSlots || []).forEach(slot=>{
@@ -22085,6 +22332,11 @@ if(document.readyState==='loading'){
 } else {
   syncCatalogLockStates();
 }
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(()=>refreshEchoWorldCatalog({manual:false}), 80); });
+} else {
+  setTimeout(()=>refreshEchoWorldCatalog({manual:false}), 80);
+}
 
 function terminalAccessDenied(key, rowEl) {
   const row = termRows[key];
@@ -22393,15 +22645,15 @@ const APERTURA_FEATURE_FLAGS = {
   businessApi: {
     enabled: false,
     modes: ['production','api-test'],
-    note: 'Master switch for orders, payments, uploads, catalog writes/reads. Keep false until Patch 7.'
+    note: 'Master switch for orders, payments, uploads and catalog writes. Keep false until write integrations are ready.'
   },
   apiTestHarness: {
     enabled: false,
     modes: ['api-test'],
     note: 'Future explicit test harness. Console preview actions must not use it silently.'
   },
-  catalogList: {enabled:false, modes:['production','api-test'], note:'Future live catalog list / refresh.'},
-  productStatus: {enabled:false, modes:['production','api-test'], note:'Future product status / unavailable checks.'},
+  catalogList: {enabled:true, modes:['production','preview','api-test'], kind:'readonly', note:'Phase 1C read-only YDB catalog overlay. No orders, reserves or payments.'},
+  productStatus: {enabled:true, modes:['production','preview','api-test'], kind:'readonly', note:'Phase 1C read-only product status check. No writes.'},
   reservationCreate: {enabled:false, modes:['production','api-test'], note:'Future YDB reservation creation.'},
   reservationStatus: {enabled:false, modes:['production','api-test'], note:'Future reservation TTL/status checks.'},
   paymentCreate: {enabled:false, modes:['production','api-test'], note:'Future YooKassa payment creation.'},
@@ -22456,18 +22708,20 @@ const APERTURA_ROUTE_REGISTRY = {
   },
   catalogList: {
     feature: 'catalogList',
-    kind: 'business',
-    status: 'planned',
+    kind: 'readonly',
+    status: 'live',
     method: 'GET',
     route: 'catalog/list',
+    base: 'EW_APERTURA_API_URL',
     contract: 'catalogList'
   },
   productStatus: {
     feature: 'productStatus',
-    kind: 'business',
-    status: 'planned',
+    kind: 'readonly',
+    status: 'live',
     method: 'GET',
     route: 'catalog/product-status',
+    base: 'EW_APERTURA_API_URL',
     contract: 'productStatus'
   },
   reservationCreate: {
@@ -22602,7 +22856,7 @@ function _apRoutePlan(routeKey){
     feature: route.feature,
     kind: route.kind,
     status: route.status,
-    enabled: route.kind === 'safety' ? _apFeatureEnabled(route.feature) : (_apBusinessApiAllowed() && _apFeatureEnabled(route.feature))
+    enabled: (route.kind === 'safety' || route.kind === 'readonly') ? _apFeatureEnabled(route.feature) : (_apBusinessApiAllowed() && _apFeatureEnabled(route.feature))
   };
 }
 
@@ -24132,10 +24386,8 @@ function handleAperturaStatusAction(action, key){
     return;
   }
   if(action==='reconnect-catalog'){
-    /* APERTURA_TODO_API: reconnect-catalog
-       Connect to catalog/list when live catalog API becomes primary. Do not
-       re-enable checkout until backend confirms fresh statuses. */
-    apConsoleReport('Проверка подключения к каталогу показана без внешнего запроса.');
+    refreshEchoWorldCatalog({manual:true});
+    apConsoleReport('Проверка подключения к каталогу запущена в режиме read-only.');
     return;
   }
   if(action==='catalog-subscribe'){
