@@ -666,6 +666,583 @@ async function reservationCreate(event) {
   }
 }
 
+
+function normalizeBackendProductId(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/\d{2}-\d{4}/);
+  if (match) return match[0];
+  return safeProductId(text).replace(/^-+/, "");
+}
+
+function yqlInt32(value) {
+  const n = Math.max(0, Math.min(2147483647, Math.floor(Number(value) || 0)));
+  return `CAST(${n} AS Int32)`;
+}
+
+function yqlNullableUtf8(value, maxLength = 2000) {
+  const text = cleanScalar(value, maxLength);
+  return text ? yqlUtf8(text) : "NULL";
+}
+
+function makeHashId(prefix, parts, length = 24) {
+  const hash = crypto
+    .createHash("sha256")
+    .update(parts.filter(Boolean).join("|"))
+    .digest("hex")
+    .slice(0, length);
+
+  return `${prefix}_${hash}`;
+}
+
+function makeCustomerId(customer) {
+  return makeHashId("cust", [
+    String(customer.email || "").trim().toLowerCase(),
+    String(customer.phone || "").replace(/\D+/g, ""),
+    String(customer.name || "").trim().toLowerCase()
+  ], 24);
+}
+
+function makeOrderId(reservationId) {
+  return makeHashId("ord", [reservationId], 26);
+}
+
+function makeOrderItemId(orderId, productId) {
+  return makeHashId("oi", [orderId, productId], 26);
+}
+
+function makeOrderNumber(reservationId) {
+  const d = new Date();
+  const date = [
+    d.getUTCFullYear(),
+    String(d.getUTCMonth() + 1).padStart(2, "0"),
+    String(d.getUTCDate()).padStart(2, "0")
+  ].join("");
+  const tail = crypto.createHash("sha256").update(String(reservationId || "")).digest("hex").slice(0, 6).toUpperCase();
+  return `EWO-${date}-${tail}`;
+}
+
+function checkoutCreatePayload(event) {
+  const body = parseBody(event);
+  const query = getQuery(event);
+  const orderPayload = body.orderPayload || body.order_payload || body.order || body.payload || body;
+  const reservation = body.reservation || orderPayload.reservation || body.checkoutReservation || orderPayload.checkoutReservation || {};
+  const items = Array.isArray(orderPayload.items) ? orderPayload.items : (Array.isArray(body.items) ? body.items : []);
+  const item = items[0] || body.item || {};
+  const customerRaw = orderPayload.customer || body.customer || {};
+  const deliveryRaw = orderPayload.delivery || body.delivery || {};
+  const totalsRaw = orderPayload.totals || body.totals || {};
+
+  const reservationId = cleanScalar(
+    body.reservation_id ||
+    body.reservationId ||
+    reservation.reservation_id ||
+    reservation.reservationId ||
+    query.reservation_id ||
+    "",
+    160
+  );
+
+  const reservationCode = cleanScalar(
+    body.reservation_code ||
+    body.reservationCode ||
+    reservation.reservation_code ||
+    reservation.reservationCode ||
+    "",
+    80
+  );
+
+  const productId = normalizeBackendProductId(
+    body.product_id ||
+    body.productId ||
+    reservation.product_id ||
+    reservation.productId ||
+    item.relicId ||
+    item.product_id ||
+    item.productId ||
+    item.id ||
+    query.product_id ||
+    ""
+  );
+
+  const customer = {
+    name: cleanScalar(customerRaw.name || body.customer_name || body.name || "", 120),
+    email: cleanScalar(customerRaw.email || body.customer_email || body.email || "", 160),
+    phone: cleanScalar(customerRaw.phone || body.customer_phone || body.phone || "", 80),
+    telegram: cleanScalar(customerRaw.telegram || body.telegram || "", 80)
+  };
+
+  const delivery = {
+    method: cleanScalar(deliveryRaw.method || body.delivery_method || "post_ru", 80),
+    address: cleanScalar(deliveryRaw.address || body.delivery_address || body.address || "", 600),
+    price: toNumber(deliveryRaw.price || body.delivery_price_rub || 0)
+  };
+
+  const echoSlots = Array.isArray(item.echoSlots) ? item.echoSlots : [];
+  const clientSessionId = cleanScalar(orderPayload.clientSessionId || body.client_session_id || body.clientSessionId || "", 160);
+  const checkoutDraftId = cleanScalar(orderPayload.checkoutDraftId || body.checkout_draft_id || body.checkoutDraftId || "", 160);
+  const idempotencyKey = cleanScalar(orderPayload.idempotencyKey || body.idempotency_key || checkoutDraftId || reservationId, 180);
+
+  const debugComment = JSON.stringify({
+    phase: "phase2c_order_without_payment",
+    clientSessionId,
+    checkoutDraftId,
+    idempotencyKey,
+    reservationCode,
+    echoSlots,
+    frontendTotal: toNumber(totalsRaw.total || body.total_rub || 0)
+  });
+
+  return {
+    reservationId,
+    reservationCode,
+    productId,
+    customer,
+    delivery,
+    item,
+    clientSessionId,
+    checkoutDraftId,
+    idempotencyKey,
+    customerComment: cleanScalar(body.customer_comment || orderPayload.customerComment || debugComment, 1800)
+  };
+}
+
+async function readCheckoutReservationLock(productId, reservationId) {
+  let query;
+
+  if (productId) {
+    query = `
+      SELECT
+        product_id,
+        reservation_id,
+        reservation_code,
+        status,
+        customer_id,
+        CAST(reserved_until AS Utf8) AS reserved_until_text,
+        converted_order_id
+      FROM product_reservation_locks
+      WHERE product_id = ${yqlUtf8(productId)}
+      LIMIT 1;
+    `;
+  } else {
+    query = `
+      SELECT
+        product_id,
+        reservation_id,
+        reservation_code,
+        status,
+        customer_id,
+        CAST(reserved_until AS Utf8) AS reserved_until_text,
+        converted_order_id
+      FROM product_reservation_locks
+      WHERE reservation_id = ${yqlUtf8(reservationId)}
+      LIMIT 1;
+    `;
+  }
+
+  const resultSets = await ydbQuery(query);
+  const rows = resultSetToObjects(resultSets[0]);
+  const lock = rows[0] || null;
+
+  if (!lock) return null;
+  if (reservationId && lock.reservation_id !== reservationId) return null;
+
+  return lock;
+}
+
+async function readCheckoutOrderByReservation(reservationId) {
+  if (!reservationId) return null;
+
+  const query = `
+    SELECT
+      id,
+      order_number,
+      customer_id,
+      reservation_id,
+      status,
+      delivery_method,
+      delivery_address,
+      customer_comment,
+      CAST(subtotal_rub AS Utf8) AS subtotal_rub_text,
+      CAST(delivery_price_rub AS Utf8) AS delivery_price_rub_text,
+      CAST(total_rub AS Utf8) AS total_rub_text,
+      payment_status,
+      payment_provider,
+      payment_id,
+      CAST(created_at AS Utf8) AS created_at_text,
+      CAST(updated_at AS Utf8) AS updated_at_text
+    FROM product_orders
+    WHERE reservation_id = ${yqlUtf8(reservationId)}
+    ORDER BY created_at DESC
+    LIMIT 1;
+  `;
+
+  const resultSets = await ydbQuery(query);
+  const rows = resultSetToObjects(resultSets[0]);
+  return rows[0] || null;
+}
+
+async function readCheckoutOrderItem(orderId) {
+  if (!orderId) return null;
+
+  const query = `
+    SELECT
+      id,
+      order_id,
+      product_id,
+      title_snapshot,
+      CAST(price_rub_snapshot AS Utf8) AS price_rub_snapshot_text,
+      power_code_snapshot,
+      power_name_snapshot,
+      gender_signature,
+      attr_clothing,
+      attr_hair,
+      attr_accessory,
+      CAST(item_total_rub AS Utf8) AS item_total_rub_text,
+      CAST(created_at AS Utf8) AS created_at_text
+    FROM product_order_items
+    WHERE order_id = ${yqlUtf8(orderId)}
+    LIMIT 1;
+  `;
+
+  const resultSets = await ydbQuery(query);
+  const rows = resultSetToObjects(resultSets[0]);
+  return rows[0] || null;
+}
+
+function checkoutOrderResponse(order, item, product, lock, options = {}) {
+  return {
+    ok: true,
+    route: "POST /checkout/create",
+    schema: "echoworld.checkout.create.v1",
+    mode: "order_created_no_payment",
+    reused: Boolean(options.reused),
+    order: {
+      id: order.id,
+      order_number: order.order_number,
+      status: order.status || "new",
+      reservation_id: order.reservation_id,
+      customer_id: order.customer_id,
+      subtotal_rub: toNumber(order.subtotal_rub_text),
+      delivery_price_rub: toNumber(order.delivery_price_rub_text),
+      total_rub: toNumber(order.total_rub_text),
+      payment_status: order.payment_status || "not_started",
+      payment_provider: order.payment_provider || "",
+      payment_id: order.payment_id || "",
+      created_at: order.created_at_text || "",
+      updated_at: order.updated_at_text || ""
+    },
+    item: item ? {
+      id: item.id,
+      order_id: item.order_id,
+      product_id: item.product_id,
+      title: item.title_snapshot,
+      price_rub: toNumber(item.price_rub_snapshot_text),
+      power_code: item.power_code_snapshot || "",
+      power_label: item.power_name_snapshot || "",
+      item_total_rub: toNumber(item.item_total_rub_text)
+    } : null,
+    product: product ? {
+      product_id: product.product_id,
+      relic_code: product.relic_code,
+      title: product.title,
+      status: product.status,
+      price_rub: toNumber(product.price_rub_text),
+      power_code: product.power_code,
+      power_label: product.power_label,
+      echo_slots: toNumber(product.echo_slots_text),
+      catalog_status_label: product.catalog_status_label || ""
+    } : null,
+    reservation: lock ? {
+      product_id: lock.product_id,
+      reservation_id: lock.reservation_id,
+      reservation_code: lock.reservation_code || "",
+      status: lock.status || "",
+      reserved_until: lock.reserved_until_text || "",
+      converted_order_id: lock.converted_order_id || ""
+    } : null,
+    payment: {
+      status: "not_started",
+      provider: null,
+      payment_id: null
+    },
+    ts: nowIso()
+  };
+}
+
+async function checkoutCreate(event) {
+  const payload = checkoutCreatePayload(event);
+
+  if (!payload.reservationId) {
+    return json(400, {
+      ok: false,
+      route: "POST /checkout/create",
+      schema: "echoworld.checkout.create.v1",
+      error: "missing_reservation_id",
+      ts: nowIso()
+    });
+  }
+
+  if (!payload.productId) {
+    return json(400, {
+      ok: false,
+      route: "POST /checkout/create",
+      schema: "echoworld.checkout.create.v1",
+      error: "missing_product_id",
+      ts: nowIso()
+    });
+  }
+
+  if (!payload.customer.name || !payload.customer.email || !payload.customer.phone) {
+    return json(400, {
+      ok: false,
+      route: "POST /checkout/create",
+      schema: "echoworld.checkout.create.v1",
+      error: "missing_customer_fields",
+      required: ["customer.name", "customer.email", "customer.phone"],
+      ts: nowIso()
+    });
+  }
+
+  if (!payload.delivery.address) {
+    return json(400, {
+      ok: false,
+      route: "POST /checkout/create",
+      schema: "echoworld.checkout.create.v1",
+      error: "missing_delivery_address",
+      ts: nowIso()
+    });
+  }
+
+  const existingOrder = await readCheckoutOrderByReservation(payload.reservationId);
+  if (existingOrder) {
+    const existingItem = await readCheckoutOrderItem(existingOrder.id);
+    const product = payload.productId ? await readReservationProduct(payload.productId) : null;
+    const lock = await readCheckoutReservationLock(payload.productId, payload.reservationId);
+    return json(200, checkoutOrderResponse(existingOrder, existingItem, product, lock, { reused: true }));
+  }
+
+  await expireReservationLockForProduct(payload.productId);
+
+  const lock = await readCheckoutReservationLock(payload.productId, payload.reservationId);
+
+  if (!lock) {
+    return json(409, {
+      ok: false,
+      route: "POST /checkout/create",
+      schema: "echoworld.checkout.create.v1",
+      product_id: payload.productId,
+      reservation_id: payload.reservationId,
+      error: "reservation_not_found_or_expired",
+      ts: nowIso()
+    });
+  }
+
+  if (String(lock.status || "") !== "active") {
+    return json(409, {
+      ok: false,
+      route: "POST /checkout/create",
+      schema: "echoworld.checkout.create.v1",
+      product_id: payload.productId,
+      reservation_id: payload.reservationId,
+      reservation_status: lock.status || "",
+      converted_order_id: lock.converted_order_id || "",
+      error: "reservation_not_active",
+      ts: nowIso()
+    });
+  }
+
+  const product = await readReservationProduct(payload.productId);
+
+  if (!product) {
+    return json(404, {
+      ok: false,
+      route: "POST /checkout/create",
+      schema: "echoworld.checkout.create.v1",
+      product_id: payload.productId,
+      error: "product_not_found",
+      ts: nowIso()
+    });
+  }
+
+  const status = String(product.status || "").trim();
+  const dbOrderable = isTrueFlag(product.orderable) || isTrueFlag(product.orderable_text);
+  const dbVisible = isTrueFlag(product.visible) || isTrueFlag(product.visible_text);
+
+  if (!(dbOrderable && dbVisible && isOrderableByStatus(status))) {
+    return json(409, {
+      ok: false,
+      route: "POST /checkout/create",
+      schema: "echoworld.checkout.create.v1",
+      product_id: payload.productId,
+      status,
+      error: "product_not_orderable",
+      ts: nowIso()
+    });
+  }
+
+  const customerId = makeCustomerId(payload.customer);
+  const orderId = makeOrderId(payload.reservationId);
+  const itemId = makeOrderItemId(orderId, payload.productId);
+  const orderNumber = makeOrderNumber(payload.reservationId);
+  const priceRub = toNumber(product.price_rub_text);
+  const deliveryPriceRub = 0;
+  const totalRub = priceRub + deliveryPriceRub;
+  const titleSnapshot = cleanScalar(payload.item.title || product.title || "Реликвия", 160);
+  const powerCodeSnapshot = cleanScalar(payload.item.powerClass || product.power_code || "", 20);
+  const powerNameSnapshot = cleanScalar(payload.item.powerName || product.power_label || "", 80);
+
+  const customerQuery = `
+    UPSERT INTO customers (
+      id,
+      customer_name,
+      customer_email,
+      customer_phone,
+      telegram,
+      created_at,
+      updated_at
+    )
+    VALUES (
+      ${yqlUtf8(customerId)},
+      ${yqlUtf8(payload.customer.name)},
+      ${yqlUtf8(payload.customer.email)},
+      ${yqlUtf8(payload.customer.phone)},
+      ${yqlNullableUtf8(payload.customer.telegram, 80)},
+      CurrentUtcTimestamp(),
+      CurrentUtcTimestamp()
+    );
+  `;
+
+  const orderQuery = `
+    INSERT INTO product_orders (
+      id,
+      order_number,
+      customer_id,
+      reservation_id,
+      status,
+      delivery_method,
+      delivery_address,
+      customer_comment,
+      subtotal_rub,
+      delivery_price_rub,
+      total_rub,
+      payment_status,
+      payment_provider,
+      payment_id,
+      created_at,
+      updated_at
+    )
+    VALUES (
+      ${yqlUtf8(orderId)},
+      ${yqlUtf8(orderNumber)},
+      ${yqlUtf8(customerId)},
+      ${yqlUtf8(payload.reservationId)},
+      "new",
+      ${yqlUtf8(payload.delivery.method)},
+      ${yqlUtf8(payload.delivery.address)},
+      ${yqlUtf8(payload.customerComment)},
+      ${yqlInt32(priceRub)},
+      ${yqlInt32(deliveryPriceRub)},
+      ${yqlInt32(totalRub)},
+      "not_started",
+      "",
+      "",
+      CurrentUtcTimestamp(),
+      CurrentUtcTimestamp()
+    );
+  `;
+
+  const itemQuery = `
+    INSERT INTO product_order_items (
+      id,
+      order_id,
+      product_id,
+      title_snapshot,
+      price_rub_snapshot,
+      power_code_snapshot,
+      power_name_snapshot,
+      gender_signature,
+      attr_clothing,
+      attr_hair,
+      attr_accessory,
+      item_total_rub,
+      created_at
+    )
+    VALUES (
+      ${yqlUtf8(itemId)},
+      ${yqlUtf8(orderId)},
+      ${yqlUtf8(payload.productId)},
+      ${yqlUtf8(titleSnapshot)},
+      ${yqlInt32(priceRub)},
+      ${yqlUtf8(powerCodeSnapshot)},
+      ${yqlUtf8(powerNameSnapshot)},
+      ${yqlUtf8(cleanScalar(payload.item.genderSignature || payload.item.gender_signature || "", 80))},
+      ${yqlUtf8(cleanScalar(payload.item.attrClothing || payload.item.attr_clothing || "", 160))},
+      ${yqlUtf8(cleanScalar(payload.item.attrHair || payload.item.attr_hair || "", 160))},
+      ${yqlUtf8(cleanScalar(payload.item.attrAccessory || payload.item.attr_accessory || "", 160))},
+      ${yqlInt32(priceRub)},
+      CurrentUtcTimestamp()
+    );
+  `;
+
+  const markLockQuery = `
+    UPDATE product_reservation_locks
+    SET
+      status = "converted",
+      converted_order_id = ${yqlUtf8(orderId)},
+      updated_at = CurrentUtcTimestamp()
+    WHERE
+      product_id = ${yqlUtf8(payload.productId)}
+      AND reservation_id = ${yqlUtf8(payload.reservationId)};
+  `;
+
+  const markJournalQuery = `
+    UPDATE product_reservations
+    SET
+      status = "converted",
+      converted_order_id = ${yqlUtf8(orderId)},
+      updated_at = CurrentUtcTimestamp()
+    WHERE id = ${yqlUtf8(payload.reservationId)};
+  `;
+
+  let orderCreated = false;
+  let itemCreated = false;
+
+  try {
+    await ydbQuery(customerQuery);
+    await ydbQuery(orderQuery);
+    orderCreated = true;
+    await ydbQuery(itemQuery);
+    itemCreated = true;
+    await ydbQuery(markLockQuery);
+    await ydbQuery(markJournalQuery);
+  } catch (error) {
+    if (isDuplicatePrimaryKeyError(error)) {
+      const duplicateOrder = await readCheckoutOrderByReservation(payload.reservationId);
+      if (duplicateOrder) {
+        const duplicateItem = await readCheckoutOrderItem(duplicateOrder.id);
+        const duplicateLock = await readCheckoutReservationLock(payload.productId, payload.reservationId);
+        return json(200, checkoutOrderResponse(duplicateOrder, duplicateItem, product, duplicateLock, { reused: true }));
+      }
+    }
+
+    if (itemCreated) {
+      try { await ydbQuery(`DELETE FROM product_order_items WHERE id = ${yqlUtf8(itemId)};`); } catch (_) {}
+    }
+
+    if (orderCreated) {
+      try { await ydbQuery(`DELETE FROM product_orders WHERE id = ${yqlUtf8(orderId)};`); } catch (_) {}
+    }
+
+    throw error;
+  }
+
+  const order = await readCheckoutOrderByReservation(payload.reservationId);
+  const item = order ? await readCheckoutOrderItem(order.id) : null;
+  const updatedLock = await readCheckoutReservationLock(payload.productId, payload.reservationId);
+
+  return json(201, checkoutOrderResponse(order, item, product, updatedLock));
+}
+
 function hashClientKey(parts) {
   return crypto
     .createHash("sha256")
@@ -821,6 +1398,10 @@ exports.handler = async function handler(event) {
       return await reservationCreate(event);
     }
 
+    if (method === "POST" && (route === "checkout/create" || route === "order/create")) {
+      return await checkoutCreate(event);
+    }
+
     return json(404, {
       ok: false,
       error: "route_not_found",
@@ -833,7 +1414,8 @@ exports.handler = async function handler(event) {
         "POST ?route=antiabuse/check",
         "POST ?route=smartcaptcha/verify",
         "POST ?route=reservations/create",
-        "POST ?route=reservation/create"
+        "POST ?route=reservation/create",
+        "POST ?route=checkout/create"
       ],
       ts: nowIso()
     });
