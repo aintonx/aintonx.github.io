@@ -1,0 +1,22 @@
+-- EchoWorld / MARKETSPACE reservation lock table.
+-- Phase 2A: server-side protection against double reservation of one unique relic.
+-- Run once in YDB. This table is intentionally separate from products and product_reservations.
+-- product_id is the primary key: one relic can have only one active lock slot.
+
+CREATE TABLE IF NOT EXISTS `product_reservation_locks` (
+    `product_id` Utf8 NOT NULL,
+    `reservation_id` Utf8,
+    `reservation_code` Utf8,
+    `status` Utf8,
+    `customer_id` Utf8,
+    `reserved_until` Timestamp,
+    `created_at` Timestamp,
+    `updated_at` Timestamp,
+    `expired_at` Timestamp,
+    `converted_order_id` Utf8,
+    PRIMARY KEY (`product_id`)
+)
+WITH (
+    AUTO_PARTITIONING_BY_SIZE = ENABLED,
+    AUTO_PARTITIONING_PARTITION_SIZE_MB = 2048
+);
