@@ -20083,6 +20083,10 @@ async function createCheckoutReservation(opts){
   if(!productId){
     throw checkoutReservationError('missing_reservation_product_id', 'Не удалось определить код реликвии для резерва.', {item});
   }
+  if(typeof readStoredCheckoutReservationForProduct === 'function'){
+    const storedReservation = readStoredCheckoutReservationForProduct(productId);
+    if(storedReservation) return storedReservation;
+  }
   const url = checkoutReservationRouteUrl();
   if(!url){
     throw checkoutReservationError('missing_reservation_route', 'Маршрут reservation/create не настроен.', {product_id:productId});
@@ -20140,6 +20144,192 @@ async function createCheckoutReservation(opts){
     at: new Date().toISOString()
   });
 }
+
+/* Phase 2C.1 · CHECKOUT ORDER BRIDGE
+   После реального reservation-lock фронт создаёт backend-заказ:
+   checkout/create → customers + product_orders + product_order_items.
+   YooKassa пока не подключена, поэтому здесь не рисуем фейковую оплату
+   и не очищаем корзину до настоящего платежного цикла. */
+const EW_CHECKOUT_ORDER_STORAGE_KEY = 'ew:checkout-order:v1';
+function checkoutCreateRouteUrl(){
+  if(typeof _ewAperturaRouteUrl === 'function') return _ewAperturaRouteUrl('checkout/create');
+  const base = String(typeof EW_APERTURA_API_URL === 'string' ? EW_APERTURA_API_URL : '').trim();
+  if(!base) return '';
+  const sep = base.indexOf('?') === -1 ? '?' : '&';
+  return base + sep + 'route=' + encodeURIComponent('checkout/create');
+}
+function checkoutOrderError(code, message, extra){
+  const err = new Error(message || code || 'checkout_order_error');
+  err.code = code || 'checkout_order_error';
+  if(extra && typeof extra === 'object') Object.assign(err, extra);
+  return err;
+}
+function readStoredCheckoutReservationForProduct(productId){
+  try{
+    const raw = sessionStorage.getItem(EW_CHECKOUT_RESERVATION_STORAGE_KEY);
+    if(!raw) return null;
+    const rec = JSON.parse(raw);
+    if(!rec || !rec.reservation_id) return null;
+    if(productId && rec.product_id && rec.product_id !== productId) return null;
+    if(String(rec.status || '').toLowerCase() !== 'active') return null;
+    const until = Date.parse(rec.reserved_until || '');
+    if(Number.isFinite(until) && until < Date.now() + 15000) return null;
+    return rec;
+  }catch(_){ return null; }
+}
+function updateStoredCheckoutReservationStatus(status, orderId){
+  try{
+    const raw = sessionStorage.getItem(EW_CHECKOUT_RESERVATION_STORAGE_KEY);
+    if(!raw) return;
+    const rec = JSON.parse(raw);
+    if(!rec) return;
+    rec.status = status || rec.status || '';
+    if(orderId) rec.converted_order_id = orderId;
+    rec.updatedAt = new Date().toISOString();
+    sessionStorage.setItem(EW_CHECKOUT_RESERVATION_STORAGE_KEY, JSON.stringify(rec));
+  }catch(_){}
+}
+function checkoutAttrText(id, max){
+  const el = document.getElementById(id);
+  const raw = el ? (el.textContent || el.innerText || '') : '';
+  return (typeof safeText === 'function')
+    ? safeText(raw, {maxLength:max || 160})
+    : String(raw || '').trim().slice(0, max || 160);
+}
+function checkoutGenderSignature(){
+  const raw = checkoutAttrText('resGender', 80);
+  const m = raw.match(/сигнатура\s*([MF])/i) || raw.match(/\b([MF])\b/i);
+  return m ? m[1].toUpperCase() : raw;
+}
+function checkoutItemForCreate(orderPayload){
+  const item = orderPayload && Array.isArray(orderPayload.items) ? (orderPayload.items[0] || {}) : {};
+  return Object.assign({}, item, {
+    product_id: checkoutRelicBackendProductId(item.relicId || item.product_id || item.productId || item.id),
+    title: item.title || 'Реликвия',
+    powerClass: item.powerClass || item.power_code || '',
+    powerName: item.powerName || item.power_label || '',
+    genderSignature: checkoutGenderSignature(),
+    attrClothing: checkoutAttrText('resObolochka', 160),
+    attrHair: checkoutAttrText('resNit', 160),
+    attrAccessory: checkoutAttrText('resSled', 160)
+  });
+}
+function storeCheckoutOrder(record){
+  window.__EW_LAST_CHECKOUT_ORDER__ = record;
+  try{
+    sessionStorage.setItem(EW_CHECKOUT_ORDER_STORAGE_KEY, JSON.stringify({
+      order_id: record.order_id || '',
+      order_number: record.order_number || '',
+      reservation_id: record.reservation_id || '',
+      product_id: record.product_id || '',
+      payment_status: record.payment_status || '',
+      status: record.status || '',
+      at: record.at || new Date().toISOString()
+    }));
+  }catch(_){}
+  return record;
+}
+async function createCheckoutOrderFromReservation(opts){
+  opts = opts || {};
+  const reservation = opts.reservation || {};
+  const orderPayload = opts.orderPayload || buildCheckoutOrderPayload({source:'checkout-create'});
+  const issues = typeof validateCheckoutOrderPayload === 'function' ? validateCheckoutOrderPayload(orderPayload) : [];
+  if(issues.length){
+    throw checkoutOrderError('checkout_payload_invalid', 'Форма оформления не прошла локальную проверку.', {issues, orderPayload});
+  }
+  const apiItem = checkoutItemForCreate(orderPayload);
+  const productId = checkoutRelicBackendProductId(apiItem.product_id || apiItem.relicId || apiItem.productId || apiItem.id);
+  const reservationId = reservation.reservation_id || reservation.reservationId || '';
+  if(!reservationId){
+    throw checkoutOrderError('missing_reservation_id', 'Apertura не получила код резерва для создания заказа.', {reservation, orderPayload});
+  }
+  if(!productId){
+    throw checkoutOrderError('missing_order_product_id', 'Apertura не смогла определить реликвию для заказа.', {apiItem, reservation});
+  }
+  const url = checkoutCreateRouteUrl();
+  if(!url){
+    throw checkoutOrderError('missing_checkout_route', 'Маршрут checkout/create не настроен.', {product_id:productId, reservation_id:reservationId});
+  }
+
+  const apiOrderPayload = Object.assign({}, orderPayload, {
+    mode: 'frontend-checkout-create',
+    items: [apiItem],
+    debug: Object.assign({}, orderPayload.debug || {}, {
+      source: opts.source || 'checkout-create',
+      phase: 'phase2c_frontend_order_create'
+    })
+  });
+
+  const bodyPayload = {
+    reservation_id: reservationId,
+    reservation_code: reservation.reservation_code || reservation.reservationCode || '',
+    product_id: productId,
+    reservation: reservation,
+    orderPayload: apiOrderPayload,
+    customer: apiOrderPayload.customer,
+    delivery: apiOrderPayload.delivery,
+    totals: apiOrderPayload.totals,
+    items: apiOrderPayload.items,
+    item: apiItem,
+    client_session_id: apiOrderPayload.clientSessionId || '',
+    checkout_draft_id: apiOrderPayload.checkoutDraftId || '',
+    customer_comment: 'EchoWorld checkout/create · frontend Phase 2C.1'
+  };
+
+  const timeoutMs = Math.max(3000, Number(typeof APERTURA_API_TIMEOUT_MS !== 'undefined' ? APERTURA_API_TIMEOUT_MS : 12000) || 12000);
+  let controller = null;
+  let timer = null;
+  const fetchOpts = {
+    method: 'POST',
+    headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+    cache: 'no-store',
+    body: JSON.stringify(bodyPayload)
+  };
+  if(typeof AbortController !== 'undefined'){
+    controller = new AbortController();
+    fetchOpts.signal = controller.signal;
+    timer = setTimeout(function(){ try{ controller.abort(); }catch(_){ } }, timeoutMs);
+  }
+
+  let res, body;
+  try{
+    res = await fetch(url, fetchOpts);
+    if(timer) clearTimeout(timer);
+    body = await res.json().catch(function(){ return null; });
+  }catch(error){
+    if(timer) clearTimeout(timer);
+    throw checkoutOrderError(error && error.name === 'AbortError' ? 'checkout_create_timeout' : 'checkout_create_network_error', 'Apertura не получила ответ от checkout/create.', {product_id:productId, reservation_id:reservationId, cause:error});
+  }
+
+  if(!(res && (res.status === 201 || res.status === 200) && body && body.ok === true && body.order)){
+    throw checkoutOrderError((body && body.error) || ('checkout_create_http_' + (res && res.status || 0)), 'Apertura не смогла создать заказ.', {
+      product_id: productId,
+      reservation_id: reservationId,
+      httpStatus: res && res.status,
+      body,
+      request: bodyPayload
+    });
+  }
+
+  const order = body.order || {};
+  const record = storeCheckoutOrder({
+    ok: true,
+    product_id: productId,
+    reservation_id: order.reservation_id || reservationId,
+    order_id: order.id || '',
+    order_number: order.order_number || '',
+    status: order.status || 'new',
+    payment_status: order.payment_status || 'not_started',
+    item: body.item || null,
+    response: body,
+    at: new Date().toISOString()
+  });
+  if(body.reservation && body.reservation.status){
+    updateStoredCheckoutReservationStatus(body.reservation.status, order.id || '');
+  }
+  return record;
+}
+
 
 /* Делегированный обработчик удаления из корзины. Привязка к cartBody
    один раз — гарантирует, что click срабатывает поверх любых
@@ -23729,7 +23919,7 @@ function _apWithConsolePreview(fn){
 const APERTURA_STATUS_STATES = {
   'product-unavailable': {
     title: 'Реликвия покинула поток.',
-    text: 'Цикл запущен без вашего участия. Кто-то успел раньше. Реликвия ушла из каталога. Рядом есть другие — они пока доступны.',
+    text: 'Цикл запущен без вашего участия. Кто-то успел раньше. Если сигнал не подтвердится, она вернётся в каталог. Рядом есть другие — они пока доступны.',
     actions: [{label:'Показать другие реликвии', action:'catalog', primary:true}]
   },
   'relic-not-found': {
@@ -24420,14 +24610,68 @@ function _apFollowHeroAnchor(href){
     if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
   }
 }
+
+function _apCommerceLayerCloseDelay(){
+  let delay = 0;
+  const chk = document.getElementById('chkOverlay');
+  const mov = document.getElementById('moverlay');
+  const cart = document.getElementById('cartPanel');
+  try{
+    if(chk && chk.classList.contains('open') && typeof closeCheckout === 'function'){
+      closeCheckout();
+      delay = Math.max(delay, 360);
+    }
+  }catch(e){}
+  try{
+    if(mov && mov.classList.contains('open') && typeof closeModal === 'function'){
+      closeModal();
+      delay = Math.max(delay, 360);
+    }
+  }catch(e){}
+  try{
+    if(cart && cart.classList.contains('open') && typeof toggleCart === 'function'){
+      toggleCart();
+      delay = Math.max(delay, 460);
+    }
+  }catch(e){}
+  try{
+    const nav = document.getElementById('mobNav');
+    if(nav && nav.classList.contains('open') && typeof closeMobNav === 'function'){
+      closeMobNav();
+      delay = Math.max(delay, 520);
+    }
+  }catch(e){}
+  return delay;
+}
+function _apScrollCatalogDirect(){
+  const target = document.getElementById('catalog');
+  if(target){
+    try{ history.replaceState(history.state, '', location.pathname + location.search + '#catalog'); }catch(e){}
+    try{ target.scrollIntoView({behavior:'smooth', block:'start'}); }
+    catch(e){ target.scrollIntoView(true); }
+    return;
+  }
+  _apFollowHeroAnchor('#catalog');
+}
+function _apNavigateToCatalogFromStatus(){
+  closeAperturaStatus();
+  closeArchitectConsole();
+  const layerDelay = _apCommerceLayerCloseDelay();
+  const statusDelay = (typeof APERTURA_CONSOLE_CLOSE_MS !== 'undefined' ? APERTURA_CONSOLE_CLOSE_MS : 420) + 120;
+  setTimeout(function(){
+    try{
+      if(typeof refreshEchoWorldCatalog === 'function') refreshEchoWorldCatalog({manual:false});
+    }catch(e){}
+    _apScrollCatalogDirect();
+  }, Math.max(statusDelay, layerDelay + 120));
+}
 function handleAperturaStatusAction(action, key){
   const source=_apStatusSource();
   if(action==='close'){ closeAperturaStatus(); return; }
   if(action==='copy-relic-code'){ _apCopyCode('Код реликвии'); return; }
   if(action==='copy-echo-code'){ _apCopyCode('Частотный код'); return; }
   if(action==='catalog'){
-    closeAperturaStatus(); closeArchitectConsole();
-    setTimeout(()=>_apFollowHeroAnchor('#catalog'), APERTURA_CONSOLE_CLOSE_MS + 120);
+    _apNavigateToCatalogFromStatus();
     return;
   }
   if(action==='echo'){
@@ -25279,14 +25523,17 @@ function selectGender(el, g){
     try{
       const reservation = await createCheckoutReservation({orderPayload, source:'payment-stub'});
       console.log('%cAPERTURA · CHECKOUT RESERVATION CREATED','color:#00c8c8', reservation);
+      if(btn) _ewCaptchaSetButtonText(btn, 'Фиксация заказа...');
+      const checkoutOrder = await createCheckoutOrderFromReservation({orderPayload, reservation, source:'payment-stub'});
+      console.log('%cAPERTURA · CHECKOUT ORDER CREATED','color:#00c8c8', checkoutOrder);
       if(btn){
         _ewSmartCaptchaSetBusy({button: btn, restoreDisabled: false}, false);
         btn.disabled = true;
-        _ewCaptchaSetButtonText(btn, 'Резерв зафиксирован');
+        _ewCaptchaSetButtonText(btn, 'Заказ зафиксирован');
       }
-      // Phase 2B.1: реальный lock уже создан, но YooKassa пока не подключена.
-      // Следующий backend-шаг — payment/create; frontend не рисует фейковый success.
-      showNotif('// Apertura: резерв реликвии зафиксирован. Оплата будет подключена следующим циклом.', {contextual:true});
+      // Phase 2C.1: заказ уже создан в YDB, но YooKassa пока не подключена.
+      // Не рисуем фейковую оплату и не очищаем корзину до реального payment/create.
+      showNotif('// Apertura: заказ зафиксирован. Оплата будет подключена следующим циклом.', {contextual:true});
     }catch(error){
       console.warn('checkout reservation failed:', error);
       if(btn){
