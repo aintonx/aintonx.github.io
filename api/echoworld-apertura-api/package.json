@@ -1,8 +1,12 @@
 {
   "name": "echoworld-apertura-api",
-  "version": "0.1.0",
+  "version": "1.0.1",
+  "private": true,
   "main": "index.js",
+  "type": "commonjs",
   "dependencies": {
-    "ydb-sdk": "^3.0.0"
+    "ydb-sdk": "^5.9.0",
+    "@yandex-cloud/nodejs-sdk": "^2.6.0",
+    "querystring": "^0.2.1"
   }
 }
