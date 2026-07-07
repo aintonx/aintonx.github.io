@@ -50,6 +50,19 @@
 - `/Users/naboy/Documents/Codex/2026-07-02/files-mentioned-by-the-user-index-2/work/aintonx.github.io-cleanpush/scripts/build-products-upsert-yql.js`
 - `/Users/naboy/Documents/Codex/2026-07-02/files-mentioned-by-the-user-index-2/work/aintonx.github.io-cleanpush/share/relic/`
 
+
+## Текущий словарь публичных плашек статуса
+
+Короткие публичные подписи `catalog_status_label`:
+
+```text
+available → Доступна
+first_form → В MARKETSPACE
+transition_complete → В нашем мире
+```
+
+Важно: это только короткие плашки. Длинные описания статусов в карточке товара не меняются этим словарём.
+
 ## Проверки в браузере
 
 В консоли сайта:
@@ -92,7 +105,7 @@ inspectCheckoutOrderPayload()
   "power_code": "C",
   "power_label": "Скопление",
   "echo_slots": 2,
-  "catalog_status_label": "Первая Форма"
+  "catalog_status_label": "В MARKETSPACE"
 }
 ```
 

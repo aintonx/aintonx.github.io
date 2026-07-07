@@ -16,15 +16,15 @@ const HEADERS = {
 
 const PRODUCT_STATUS_MODEL = {
   available: {
-    label: "Доступен",
+    label: "Доступна",
     orderable: true
   },
   first_form: {
-    label: "Ожидает Перехода",
+    label: "В MARKETSPACE",
     orderable: false
   },
   transition_complete: {
-    label: "Прошёл Переход",
+    label: "В нашем мире",
     orderable: false
   }
 };

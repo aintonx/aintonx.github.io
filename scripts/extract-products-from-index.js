@@ -11,15 +11,15 @@ const defaultOutputPath = path.join(repoRoot, 'data', 'products.seed.json');
 
 const statusModel = {
   available: {
-    label: 'Готов к конденсации',
+    label: 'Доступна',
     orderable: true
   },
   first_form: {
-    label: 'Первая Форма',
+    label: 'В MARKETSPACE',
     orderable: false
   },
   transition_complete: {
-    label: 'Переход завершён',
+    label: 'В нашем мире',
     orderable: false
   }
 };
