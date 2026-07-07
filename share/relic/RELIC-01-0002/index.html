@@ -18,6 +18,7 @@
 <!-- ECHOWORLD_DEPLOY_MARKER r20260706f UTC=2026-07-06T14:41:33Z MSK=2026-07-06T17:41:33+0300 -->
 <meta name="echoworld-deploy-version" content="r20260706f">
 <meta name="echoworld-deploy-built-at" content="2026-07-06T14:41:33Z">
+<meta name="echoworld-share-version" content="r20260707sharehtml1">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -17295,13 +17296,14 @@ function getRelicShareBaseUrl(){
   return url;
 }
 const RELIC_SHARE_PATH_PREFIX = '/share/relic/';
+const RELIC_SHARE_URL_VERSION = 'r20260707sharehtml1';
 function getEchoWorldShareVersion(){
   try{
-    const meta = document.querySelector('meta[name="echoworld-deploy-version"]');
-    const raw = meta && meta.getAttribute('content') ? meta.getAttribute('content').trim() : '';
-    return /^[a-z0-9._-]{4,32}$/i.test(raw) ? raw : '';
+    const meta = document.querySelector('meta[name="echoworld-share-version"]');
+    const raw = meta && meta.getAttribute('content') ? meta.getAttribute('content').trim() : RELIC_SHARE_URL_VERSION;
+    return /^[a-z0-9._-]{4,48}$/i.test(raw) ? raw : RELIC_SHARE_URL_VERSION;
   }catch(_){
-    return '';
+    return RELIC_SHARE_URL_VERSION;
   }
 }
 function addEchoWorldShareVersion(url){
@@ -17324,14 +17326,14 @@ function getRelicShareUrl(product){
   url.search = '';
   url.hash = '';
   if(code){
-    url.pathname = RELIC_SHARE_PATH_PREFIX + encodeURIComponent(code) + '/';
+    url.pathname = RELIC_SHARE_PATH_PREFIX + encodeURIComponent(code) + '.html';
   }
   return addEchoWorldShareVersion(url).toString();
 }
 
 /* P4.2 · STATIC RELIC SHARE PAGES
    Основной deep-link ?relic=... остаётся единственным способом открыть карточку.
-   Share URL ведёт на статичную страницу /share/relic/RELIC-.../,
+   Share URL ведёт на статичную HTML-страницу /share/relic/RELIC-....html,
    где OG/Twitter meta уже находятся в исходном HTML для Telegram/VK/WA.
    Для живого пользователя эта страница отдаёт полный shell основного сайта,
    ранним history.replaceState подменяет URL на /?relic=... и открывает карточку
