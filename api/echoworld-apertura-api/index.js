@@ -333,6 +333,13 @@ function isDuplicatePrimaryKeyError(error) {
   return /PRECONDITION_FAILED|insert_pk|constraint violation|already exists|duplicate/i.test(message);
 }
 
+function isTrueFlag(value) {
+  if (value === true) return true;
+  if (value === 1) return true;
+
+  return String(value || "").trim().toLowerCase() === "true";
+}
+
 function reservationPayload(event) {
   const body = parseBody(event);
   const query = getQuery(event);
@@ -377,7 +384,9 @@ async function readReservationProduct(productId) {
       title,
       status,
       orderable,
+      CAST(orderable AS Utf8) AS orderable_text,
       visible,
+      CAST(visible AS Utf8) AS visible_text,
       CAST(price_rub AS Utf8) AS price_rub_text,
       power_code,
       power_label,
@@ -558,7 +567,9 @@ async function reservationCreate(event) {
   }
 
   const status = String(product.status || "").trim();
-  const productOrderable = product.orderable === true && product.visible === true && isOrderableByStatus(status);
+  const dbOrderable = isTrueFlag(product.orderable) || isTrueFlag(product.orderable_text);
+  const dbVisible = isTrueFlag(product.visible) || isTrueFlag(product.visible_text);
+  const productOrderable = dbOrderable && dbVisible && isOrderableByStatus(status);
 
   if (!productOrderable) {
     return json(409, {
