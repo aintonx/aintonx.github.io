@@ -13,6 +13,12 @@ const HEADERS = {
 const ENDPOINT = process.env.ENDPOINT;
 const DATABASE = process.env.DATABASE;
 const SMARTCAPTCHA_SERVER_KEY = process.env.SMARTCAPTCHA_SERVER_KEY || "";
+const ORDER_STATUS_TOKEN_SECRET =
+  process.env.ORDER_STATUS_TOKEN_SECRET ||
+  process.env.STATUS_TOKEN_SECRET ||
+  SMARTCAPTCHA_SERVER_KEY ||
+  DATABASE ||
+  "echoworld-local-dev";
 
 let driverPromise = null;
 
@@ -243,6 +249,9 @@ async function productStatus(productId) {
   }
 
   const safeProductId = String(productId).replace(/[^0-9-]/g, "");
+
+  await expireReservationLockForProduct(safeProductId);
+  await expireStaleCheckoutLockForProduct(safeProductId);
 
   const query = `
     SELECT
@@ -552,6 +561,7 @@ async function reservationCreate(event) {
   }
 
   await expireReservationLockForProduct(payload.productId);
+  await expireStaleCheckoutLockForProduct(payload.productId);
 
   const product = await readReservationProduct(payload.productId);
 
@@ -721,6 +731,55 @@ function makeOrderNumber(reservationId) {
   return `EWO-${date}-${tail}`;
 }
 
+function makeOrderStatusToken(order) {
+  const source = [
+    order && order.id,
+    order && order.order_number,
+    order && order.customer_id,
+    order && order.reservation_id
+  ].map((value) => String(value || "")).join("|");
+
+  return crypto
+    .createHmac("sha256", String(ORDER_STATUS_TOKEN_SECRET || ""))
+    .update(source)
+    .digest("hex")
+    .slice(0, 48);
+}
+
+function verifyOrderStatusToken(order, token) {
+  const expected = makeOrderStatusToken(order);
+  const received = cleanScalar(token, 120);
+
+  if (!expected || !received) return false;
+
+  try {
+    const expectedBuffer = Buffer.from(expected);
+    const receivedBuffer = Buffer.from(received);
+    return expectedBuffer.length === receivedBuffer.length &&
+      crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+  } catch (_) {
+    return false;
+  }
+}
+
+function isPaymentStatusProtectedFromShortExpiry(status) {
+  const normalized = String(status || "").trim().toLowerCase();
+  return normalized === "pending" ||
+    normalized === "waiting_for_capture" ||
+    normalized === "succeeded";
+}
+
+function isPaymentStatusSafeToExpire(status) {
+  const normalized = String(status || "").trim().toLowerCase();
+  return !normalized || normalized === "not_started" || normalized === "canceled" || normalized === "cancelled";
+}
+
+function isLockTimeExpired(lock) {
+  const raw = lock && (lock.reserved_until_text || lock.reserved_until || lock.expires_at || "");
+  const ts = Date.parse(String(raw || ""));
+  return Number.isFinite(ts) && ts > 0 && ts < Date.now();
+}
+
 function checkoutCreatePayload(event) {
   const body = parseBody(event);
   const query = getQuery(event);
@@ -881,6 +940,37 @@ async function readCheckoutOrderByReservation(reservationId) {
   return rows[0] || null;
 }
 
+async function readCheckoutOrderById(orderId) {
+  if (!orderId) return null;
+
+  const query = `
+    SELECT
+      id,
+      order_number,
+      customer_id,
+      reservation_id,
+      status,
+      delivery_method,
+      delivery_address,
+      customer_comment,
+      CAST(subtotal_rub AS Utf8) AS subtotal_rub_text,
+      CAST(delivery_price_rub AS Utf8) AS delivery_price_rub_text,
+      CAST(total_rub AS Utf8) AS total_rub_text,
+      payment_status,
+      payment_provider,
+      payment_id,
+      CAST(created_at AS Utf8) AS created_at_text,
+      CAST(updated_at AS Utf8) AS updated_at_text
+    FROM product_orders
+    WHERE id = ${yqlUtf8(orderId)}
+    LIMIT 1;
+  `;
+
+  const resultSets = await ydbQuery(query);
+  const rows = resultSetToObjects(resultSets[0]);
+  return rows[0] || null;
+}
+
 async function readCheckoutOrderItem(orderId) {
   if (!orderId) return null;
 
@@ -909,7 +999,100 @@ async function readCheckoutOrderItem(orderId) {
   return rows[0] || null;
 }
 
+async function expireCheckoutOrderIfSafe(order, lock) {
+  if (!order || !lock) return { expired: false, reason: "missing_order_or_lock" };
+
+  const orderId = cleanScalar(order.id, 100);
+  const reservationId = cleanScalar(order.reservation_id || lock.reservation_id, 160);
+  const productId = safeProductId(lock.product_id);
+  const lockOrderId = cleanScalar(lock.converted_order_id, 100);
+  const lockStatus = String(lock.status || "").trim().toLowerCase();
+  const orderStatus = String(order.status || "").trim().toLowerCase();
+  const paymentStatus = String(order.payment_status || "").trim().toLowerCase();
+  const paymentId = cleanScalar(order.payment_id, 160);
+
+  if (!orderId || !reservationId || !productId) return { expired: false, reason: "missing_identity" };
+  if (lockStatus !== "converted") return { expired: false, reason: "lock_not_converted" };
+  if (lockOrderId && lockOrderId !== orderId) return { expired: false, reason: "lock_order_mismatch" };
+  if (orderStatus === "paid") {
+    return { expired: false, reason: "order_paid" };
+  }
+  if (paymentId || isPaymentStatusProtectedFromShortExpiry(paymentStatus)) {
+    return { expired: false, reason: "payment_in_progress_or_confirmed" };
+  }
+  if (!isPaymentStatusSafeToExpire(paymentStatus)) {
+    return { expired: false, reason: "payment_status_not_safe_to_expire" };
+  }
+  if (!isLockTimeExpired(lock)) {
+    return { expired: false, reason: "lock_window_active" };
+  }
+
+  const orderQuery = `
+    UPDATE product_orders
+    SET
+      status = "expired",
+      updated_at = CurrentUtcTimestamp()
+    WHERE
+      id = ${yqlUtf8(orderId)}
+      AND payment_id = ""
+      AND (
+        payment_status = "not_started"
+        OR payment_status = "canceled"
+        OR payment_status = "cancelled"
+      );
+  `;
+
+  const journalQuery = `
+    UPDATE product_reservations
+    SET
+      status = "expired",
+      expired_at = CurrentUtcTimestamp(),
+      updated_at = CurrentUtcTimestamp()
+    WHERE
+      id = ${yqlUtf8(reservationId)}
+      AND status = "converted"
+      AND converted_order_id = ${yqlUtf8(orderId)};
+  `;
+
+  const lockQuery = `
+    DELETE FROM product_reservation_locks
+    WHERE
+      product_id = ${yqlUtf8(productId)}
+      AND reservation_id = ${yqlUtf8(reservationId)}
+      AND status = "converted"
+      AND converted_order_id = ${yqlUtf8(orderId)};
+  `;
+
+  await ydbQuery(orderQuery);
+  await ydbQuery(journalQuery);
+  await ydbQuery(lockQuery);
+
+  return {
+    expired: true,
+    reason: "not_started_window_expired",
+    order_id: orderId,
+    reservation_id: reservationId,
+    product_id: productId
+  };
+}
+
+async function expireStaleCheckoutLockForProduct(productId) {
+  const safe = safeProductId(productId);
+  if (!safe) return { expired: false, reason: "missing_product_id" };
+
+  const lock = await readReservationLock(safe);
+  if (!lock || String(lock.status || "").toLowerCase() !== "converted" || !lock.converted_order_id) {
+    return { expired: false, reason: "no_converted_lock" };
+  }
+
+  const order = await readCheckoutOrderById(lock.converted_order_id);
+  return await expireCheckoutOrderIfSafe(order, lock);
+}
+
 function checkoutOrderResponse(order, item, product, lock, options = {}) {
+  const statusToken = makeOrderStatusToken(order);
+  const paymentStatus = order.payment_status || "not_started";
+
   return {
     ok: true,
     route: "POST /checkout/create",
@@ -925,9 +1108,12 @@ function checkoutOrderResponse(order, item, product, lock, options = {}) {
       subtotal_rub: toNumber(order.subtotal_rub_text),
       delivery_price_rub: toNumber(order.delivery_price_rub_text),
       total_rub: toNumber(order.total_rub_text),
-      payment_status: order.payment_status || "not_started",
+      payment_status: paymentStatus,
       payment_provider: order.payment_provider || "",
       payment_id: order.payment_id || "",
+      status_token: statusToken,
+      public_status_token: statusToken,
+      expires_at: lock && lock.reserved_until_text || "",
       created_at: order.created_at_text || "",
       updated_at: order.updated_at_text || ""
     },
@@ -961,12 +1147,168 @@ function checkoutOrderResponse(order, item, product, lock, options = {}) {
       converted_order_id: lock.converted_order_id || ""
     } : null,
     payment: {
-      status: "not_started",
-      provider: null,
-      payment_id: null
+      status: paymentStatus,
+      provider: order.payment_provider || null,
+      payment_id: order.payment_id || null
     },
     ts: nowIso()
   };
+}
+
+function checkoutStatusPayload(event) {
+  const body = parseBody(event);
+  const query = getQuery(event);
+
+  return {
+    orderId: cleanScalar(body.order_id || body.orderId || body.id || query.order_id || query.orderId || query.id || "", 120),
+    reservationId: cleanScalar(body.reservation_id || body.reservationId || query.reservation_id || query.reservationId || "", 160),
+    statusToken: cleanScalar(body.status_token || body.statusToken || body.token || query.status_token || query.statusToken || query.token || "", 160)
+  };
+}
+
+function checkoutStatusKey(order, lock) {
+  const orderStatus = String(order && order.status || "").trim().toLowerCase();
+  const paymentStatus = String(order && order.payment_status || "").trim().toLowerCase();
+
+  if (orderStatus === "expired") return "order-cycle-expired";
+  if (paymentStatus === "succeeded") return "order-paid";
+  if (paymentStatus === "waiting_for_capture") return "order-payment-authorized";
+  if (paymentStatus === "pending") return "order-payment-waiting";
+  if (paymentStatus === "canceled" || paymentStatus === "cancelled") return "order-payment-canceled";
+  if (lock && isLockTimeExpired(lock) && isPaymentStatusSafeToExpire(paymentStatus) && !cleanScalar(order && order.payment_id, 160)) {
+    return "order-cycle-expired";
+  }
+  return "order-fixed";
+}
+
+function checkoutStatusResponse(order, item, product, lock, lifecycle) {
+  const statusToken = makeOrderStatusToken(order);
+  const paymentStatus = order.payment_status || "not_started";
+  const orderStatus = order.status || "new";
+  const hasPayment = Boolean(order.payment_id);
+  const lockStillHeld = Boolean(lock && lock.reservation_id);
+  const stateKey = checkoutStatusKey(order, lock);
+
+  return {
+    ok: true,
+    route: "GET /checkout/status",
+    schema: "echoworld.checkout.status.v1",
+    order: {
+      id: order.id,
+      order_number: order.order_number,
+      status: orderStatus,
+      reservation_id: order.reservation_id,
+      subtotal_rub: toNumber(order.subtotal_rub_text),
+      delivery_price_rub: toNumber(order.delivery_price_rub_text),
+      total_rub: toNumber(order.total_rub_text),
+      payment_status: paymentStatus,
+      payment_provider: order.payment_provider || "",
+      payment_id: order.payment_id || "",
+      status_token: statusToken,
+      public_status_token: statusToken,
+      expires_at: lock && lock.reserved_until_text || "",
+      created_at: order.created_at_text || "",
+      updated_at: order.updated_at_text || ""
+    },
+    item: item ? {
+      id: item.id,
+      order_id: item.order_id,
+      product_id: item.product_id,
+      title: item.title_snapshot,
+      price_rub: toNumber(item.price_rub_snapshot_text),
+      power_code: item.power_code_snapshot || "",
+      power_label: item.power_name_snapshot || "",
+      item_total_rub: toNumber(item.item_total_rub_text)
+    } : null,
+    product: product ? {
+      product_id: product.product_id,
+      relic_code: product.relic_code,
+      title: product.title,
+      status: product.status,
+      price_rub: toNumber(product.price_rub_text),
+      power_code: product.power_code,
+      power_label: product.power_label,
+      echo_slots: toNumber(product.echo_slots_text),
+      catalog_status_label: product.catalog_status_label || ""
+    } : null,
+    reservation: lock ? {
+      product_id: lock.product_id,
+      reservation_id: lock.reservation_id,
+      reservation_code: lock.reservation_code || "",
+      status: lock.status || "",
+      reserved_until: lock.reserved_until_text || "",
+      converted_order_id: lock.converted_order_id || ""
+    } : null,
+    payment: {
+      status: paymentStatus,
+      provider: order.payment_provider || null,
+      payment_id: order.payment_id || null,
+      has_payment: hasPayment
+    },
+    state: {
+      key: stateKey,
+      lock_held: lockStillHeld,
+      can_pay: orderStatus !== "expired" && paymentStatus === "not_started" && !hasPayment && lockStillHeld,
+      can_retry_payment: orderStatus !== "expired" && (paymentStatus === "canceled" || paymentStatus === "cancelled") && lockStillHeld,
+      can_check: true
+    },
+    lifecycle: lifecycle || { expired: false },
+    ts: nowIso()
+  };
+}
+
+async function checkoutStatus(event) {
+  const payload = checkoutStatusPayload(event);
+
+  if (!payload.orderId && !payload.reservationId) {
+    return json(400, {
+      ok: false,
+      route: "GET /checkout/status",
+      schema: "echoworld.checkout.status.v1",
+      error: "missing_order_id",
+      ts: nowIso()
+    });
+  }
+
+  let order = payload.orderId
+    ? await readCheckoutOrderById(payload.orderId)
+    : await readCheckoutOrderByReservation(payload.reservationId);
+
+  if (!order) {
+    return json(404, {
+      ok: false,
+      route: "GET /checkout/status",
+      schema: "echoworld.checkout.status.v1",
+      error: "order_not_found",
+      ts: nowIso()
+    });
+  }
+
+  if (!verifyOrderStatusToken(order, payload.statusToken)) {
+    return json(403, {
+      ok: false,
+      route: "GET /checkout/status",
+      schema: "echoworld.checkout.status.v1",
+      error: "invalid_status_token",
+      ts: nowIso()
+    });
+  }
+
+  let item = await readCheckoutOrderItem(order.id);
+  let productId = item && item.product_id || "";
+  let lock = await readCheckoutReservationLock(productId, order.reservation_id);
+  let lifecycle = await expireCheckoutOrderIfSafe(order, lock);
+
+  if (lifecycle.expired) {
+    order = await readCheckoutOrderById(order.id) || order;
+    item = await readCheckoutOrderItem(order.id);
+    productId = item && item.product_id || productId;
+    lock = await readCheckoutReservationLock(productId, order.reservation_id);
+  }
+
+  const product = productId ? await readReservationProduct(productId) : null;
+
+  return json(200, checkoutStatusResponse(order, item, product, lock, lifecycle));
 }
 
 async function checkoutCreate(event) {
@@ -1398,6 +1740,10 @@ exports.handler = async function handler(event) {
       return await reservationCreate(event);
     }
 
+    if ((method === "GET" || method === "POST") && (route === "checkout/status" || route === "order/status")) {
+      return await checkoutStatus(event);
+    }
+
     if (method === "POST" && (route === "checkout/create" || route === "order/create")) {
       return await checkoutCreate(event);
     }
@@ -1415,7 +1761,8 @@ exports.handler = async function handler(event) {
         "POST ?route=smartcaptcha/verify",
         "POST ?route=reservations/create",
         "POST ?route=reservation/create",
-        "POST ?route=checkout/create"
+        "POST ?route=checkout/create",
+        "GET ?route=checkout/status&order_id=ord_...&status_token=..."
       ],
       ts: nowIso()
     });

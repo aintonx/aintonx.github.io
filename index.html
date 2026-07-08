@@ -24647,6 +24647,13 @@ function _apStatusRow(label, value, htmlValue){
    оплаченным: данные берутся из checkout/create сейчас и позже будут
    обновляться через checkout/status + YooKassa webhook/status. */
 const EW_ACTIVE_ORDER_STORAGE_KEY = 'ew:active-order:v1';
+function _ewActiveOrderStatusRouteUrl(){
+  if(typeof _ewAperturaRouteUrl === 'function') return _ewAperturaRouteUrl('checkout/status');
+  const base = String(typeof EW_APERTURA_API_URL === 'string' ? EW_APERTURA_API_URL : '').trim();
+  if(!base) return '';
+  const sep = base.indexOf('?') === -1 ? '?' : '&';
+  return base + sep + 'route=' + encodeURIComponent('checkout/status');
+}
 function _ewActiveOrderSafeText(value, max){
   const raw = String(value || '').trim();
   if(typeof safeText === 'function') return safeText(raw, {maxLength:max || 160});
@@ -24709,6 +24716,73 @@ function _ewActiveOrderRead(){
 function _ewActiveOrderClear(){
   try{ localStorage.removeItem(EW_ACTIVE_ORDER_STORAGE_KEY); }catch(_){ }
   try{ delete window.__EW_ACTIVE_ORDER__; }catch(_){ window.__EW_ACTIVE_ORDER__ = null; }
+}
+function _ewActiveOrderBuildFromStatusResponse(body, previous){
+  body = body || {};
+  previous = previous || {};
+  const order = body.order || {};
+  const reservation = body.reservation || {};
+  const product = body.product || {};
+  const item = body.item || {};
+  const payment = body.payment || {};
+  return {
+    order_id: _ewActiveOrderSafeText(order.id || previous.order_id || '', 80),
+    order_number: _ewActiveOrderSafeText(order.order_number || previous.order_number || '', 80),
+    reservation_id: _ewActiveOrderSafeText(order.reservation_id || reservation.reservation_id || previous.reservation_id || '', 100),
+    reservation_code: _ewActiveOrderSafeText(reservation.reservation_code || previous.reservation_code || '', 80),
+    product_id: _ewActiveOrderSafeText(product.product_id || item.product_id || reservation.product_id || previous.product_id || '', 40),
+    relic_code: _ewActiveOrderSafeText(product.relic_code || previous.relic_code || '', 60),
+    title: _ewActiveOrderSafeText(product.title || item.title || previous.title || 'Реликвия', 140),
+    status_token: _ewActiveOrderSafeText(order.status_token || order.public_status_token || previous.status_token || '', 120),
+    order_status: _ewActiveOrderSafeText(order.status || previous.order_status || 'new', 40),
+    payment_status: _ewActiveOrderSafeText(order.payment_status || payment.status || previous.payment_status || 'not_started', 40),
+    payment_id: _ewActiveOrderSafeText(order.payment_id || payment.payment_id || previous.payment_id || '', 120),
+    confirmation_url: _ewActiveOrderSafeText(order.confirmation_url || payment.confirmation_url || previous.confirmation_url || '', 600),
+    expires_at: _ewActiveOrderSafeText(order.expires_at || reservation.reserved_until || previous.expires_at || '', 80),
+    source: 'checkout-status',
+    updated_at: new Date().toISOString(),
+    response: body
+  };
+}
+async function _ewActiveOrderFetchStatus(rec){
+  rec = rec || _ewActiveOrderRead();
+  if(!rec || !rec.order_id) throw new Error('active_order_missing');
+  const url = _ewActiveOrderStatusRouteUrl();
+  if(!url) throw new Error('checkout_status_route_missing');
+  if(!rec.status_token) throw new Error('status_token_missing');
+
+  const payload = {
+    order_id: rec.order_id,
+    reservation_id: rec.reservation_id || '',
+    status_token: rec.status_token
+  };
+  const options = {
+    method: 'POST',
+    headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+    cache: 'no-store',
+    body: JSON.stringify(payload)
+  };
+
+  let result;
+  if(typeof _ewFetchJsonWithTimeout === 'function'){
+    result = await _ewFetchJsonWithTimeout(url, options, 7000);
+  }else{
+    const res = await fetch(url, options);
+    let data = null;
+    try{ data = await res.json(); }catch(_){ data = null; }
+    result = {res:res, data:data};
+  }
+
+  const res = result && result.res;
+  const body = result && result.data;
+  if(!(res && res.ok && body && body.ok === true && body.order)){
+    const err = new Error((body && body.error) || 'checkout_status_failed');
+    err.body = body;
+    err.httpStatus = res && res.status;
+    throw err;
+  }
+
+  return _ewActiveOrderStore(_ewActiveOrderBuildFromStatusResponse(body, rec));
 }
 function _ewActiveOrderStoreFromCheckout(orderRecord, reservation, orderPayload){
   return _ewActiveOrderStore(_ewActiveOrderBuild(orderRecord, reservation, orderPayload));
@@ -24774,12 +24848,25 @@ function _ewActiveOrderGoPayment(){
   showActiveOrderStatus(rec, {key:_ewActiveOrderStatusKey(rec)});
   if(typeof showNotif === 'function') showNotif('// Платёжный канал ещё не подключён. Заказ уже зафиксирован.', {contextual:true});
 }
-function _ewActiveOrderCheckStatus(){
-  /* Frontend foundation: пока backend checkout/status не подключён, показываем
-     последнее безопасно сохранённое состояние. В следующей фазе эта точка
-     должна вызвать checkout/status по order_id + status_token. */
+async function _ewActiveOrderCheckStatus(){
   const rec = _ewActiveOrderRead();
-  showActiveOrderStatus(rec);
+  if(!rec){ showActiveOrderStatus(null); return; }
+
+  if(!rec.status_token){
+    showActiveOrderStatus(rec);
+    if(typeof showNotif === 'function') showNotif('// Apertura не получила токен статуса. Показано последнее сохранённое состояние.', {contextual:true});
+    return;
+  }
+
+  try{
+    if(typeof showNotif === 'function') showNotif('// Apertura проверяет статус цикла.', {contextual:true});
+    const fresh = await _ewActiveOrderFetchStatus(rec);
+    showActiveOrderStatus(fresh, {source:'active-order-status'});
+  }catch(error){
+    console.warn('active order status check failed:', error);
+    showActiveOrderStatus(rec);
+    if(typeof showNotif === 'function') showNotif('// Apertura не получила актуальный статус. Показано последнее сохранённое состояние.', {contextual:true});
+  }
 }
 function bootActiveOrderStatusRestore(){
   const rec = _ewActiveOrderRead();
@@ -24792,6 +24879,15 @@ function bootActiveOrderStatusRestore(){
   setTimeout(function(){
     const ov = document.getElementById('apStatusOverlay');
     if(ov && ov.classList.contains('is-mounted')) return;
+    if(rec.status_token && typeof _ewActiveOrderFetchStatus === 'function'){
+      _ewActiveOrderFetchStatus(rec)
+        .then(function(fresh){ showActiveOrderStatus(fresh, {source:'active-order-restore'}); })
+        .catch(function(error){
+          console.warn('active order restore status check failed:', error);
+          showActiveOrderStatus(rec, {source:'active-order-restore'});
+        });
+      return;
+    }
     showActiveOrderStatus(rec, {source:'active-order-restore'});
   }, 760);
 }
@@ -24809,7 +24905,9 @@ function inspectActiveOrderStatusPatch(){
         scripts.includes('Phase 2D · ACTIVE ORDER STATUS FRONTEND FOUNDATION') &&
         scripts.includes('Ожидаем подтверждение оплаты.') &&
         scripts.includes('Время цикла истекло.') &&
-        scripts.includes('Apertura закрепила реликвию за вашим заказом'),
+        scripts.includes('Apertura закрепила реликвию за вашим заказом') &&
+        scripts.includes('checkout/status') &&
+        typeof _ewActiveOrderFetchStatus === 'function',
     activeOrder: _ewActiveOrderRead(),
     storageKey: EW_ACTIVE_ORDER_STORAGE_KEY,
     functions: {
