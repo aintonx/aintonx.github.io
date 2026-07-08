@@ -703,39 +703,6 @@ body.scroll-restoring #apConsoleOverlay.open .ap-console-panel {
   -webkit-transition: -webkit-filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
   transition: filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
-
-/* PATCH · INSTAGRAM ENTRY STATUS BACKDROP · 212
-   Только для ?signal=instagram. Нормальные APERTURA STATUS остаются на
-   прежней механике #_blurW. Для входного сигнала фон делается отдельным
-   backdrop-слоем под панелью: сайт за окном размывается, а текст панели не
-   попадает в filter-слой. Это следует модели backdrop-filter: эффект
-   применяется к тому, что находится позади элемента, а не к содержимому
-   панели. */
-body.ap-entry-status-open #_blurW {
-  -webkit-filter: none !important;
-  filter: none !important;
-}
-#apStatusOverlay[data-status-key="entry-instagram"] {
-  background: transparent !important;
-  overflow: hidden;
-}
-#apStatusOverlay[data-status-key="entry-instagram"]::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.13), transparent 46%),
-    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.12), transparent 54%),
-    rgba(4,4,10,.08);
-  -webkit-backdrop-filter: blur(12px) brightness(0.5);
-  backdrop-filter: blur(12px) brightness(0.5);
-}
-#apStatusOverlay[data-status-key="entry-instagram"] .ap-status-panel {
-  position: relative;
-  z-index: 1;
-}
 /* ── КЛЮЧЕВОЙ ФИКС ДЁРГАНОГО ВЫХОДА ИЗ БЛЮРА ──────────────────────
    Корневая проблема: open-классы (modal-open / chk-open / cart-open /
    legal-modal-open) нельзя снять сразу — они держат scroll-lock, header
@@ -13585,6 +13552,61 @@ button, a, [role="button"], label,
   .ap-status-title { font-size: 24px; }
 }
 
+/* PATCH · INSTAGRAM ENTRY STATUS READABILITY · 2026-07-08
+   Только для ?signal=instagram. Не меняет общую механику APERTURA STATUS:
+   #_blurW остаётся штатным blur(12px) brightness(0.5), mobile bottom-sheet
+   остаётся прежним. Исправляет две вещи: убирает тяжёлую дополнительную
+   чёрную плёнку поверх уже заблюренного сайта и не анимирует filter на
+   самой панели, чтобы текст не становился мыльным в iOS/Safari. */
+#apStatusOverlay[data-status-key="entry-instagram"] {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.10), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.10), transparent 54%),
+    rgba(4,4,10,.46) !important;
+}
+:root[data-theme="light"] #apStatusOverlay[data-status-key="entry-instagram"] {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,143,150,.10), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.08), transparent 54%),
+    rgba(244,247,252,.30) !important;
+}
+#apStatusOverlay[data-status-key="entry-instagram"] .ap-status-panel {
+  -webkit-filter: none !important;
+  filter: none !important;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+#apStatusOverlay[data-status-key="entry-instagram"].open .ap-status-panel {
+  animation: apEntryStatusIn .34s cubic-bezier(.22,0,.48,1) forwards !important;
+}
+#apStatusOverlay[data-status-key="entry-instagram"].closing .ap-status-panel {
+  animation: apEntryStatusOut .26s cubic-bezier(.55,0,.78,1) forwards !important;
+}
+@keyframes apEntryStatusIn {
+  from { opacity: 0; transform: translateY(28px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes apEntryStatusOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(22px) scale(.985); }
+}
+@media(max-width:720px){
+  #apStatusOverlay[data-status-key="entry-instagram"].open .ap-status-panel {
+    animation: apEntryStatusMobIn .32s cubic-bezier(.22,0,.48,1) forwards !important;
+  }
+  #apStatusOverlay[data-status-key="entry-instagram"].closing .ap-status-panel {
+    animation: apEntryStatusMobOut .26s cubic-bezier(.55,0,.78,1) forwards !important;
+  }
+}
+@keyframes apEntryStatusMobIn {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes apEntryStatusMobOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(100%); }
+}
+
 /* ── ICON CORE · Lucide local sprite ───────────────────────────────
    Размер резервируется контекстом, а локальный SVG-символ рисуется stroke-линиями
    через currentColor. Внешних mask/CDN-зависимостей у UI-иконок больше нет. */
@@ -24360,7 +24382,7 @@ function _apCloseOverlay(id, opts){
     ov.classList.remove('open','closing','is-mounted');
     _apReleaseOverlayViewport(ov);
     if(id === 'apStatusOverlay'){
-      document.body.classList.remove('ap-status-open','ap-status-fading','ap-entry-status-open');
+      document.body.classList.remove('ap-status-open','ap-status-fading');
     }
     if(!keepLock && !_apAnyMounted()){
       document.body.classList.remove('ap-console-open','_blur-fading');
@@ -24493,7 +24515,6 @@ function _renderAperturaStatus(payload){
     ov.dataset.statusKey=key;
     ov.dataset.statusSource=source;
     ov.dataset.copyCode=payload.copyCode || '';
-    document.body.classList.toggle('ap-entry-status-open', key === 'entry-instagram');
   }
   const titleText = String(payload.title || '');
   const kicker=document.querySelector('#apStatusOverlay .ap-status-kicker');
@@ -24549,7 +24570,7 @@ function isInstagramEntrySignal(){
 function showInstagramEntryStatus(){
   _renderAperturaStatus({
     key: 'entry-instagram',
-    source: 'console',
+    source: 'entry-instagram',
     kicker: '// APERTURA · ENTRY STATUS',
     title: 'Внешний сигнал распознан',
     text: 'Вы вошли в EchoWorld — интерфейс, через который в наш мир попадают физические реликвии из MARKETSPACE.',
