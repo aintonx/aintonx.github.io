@@ -30736,6 +30736,173 @@ svg.ew-mask-icon use,
 
 </style>
 
+
+
+<!-- PATCH · APERTURA STATUS GLASS LAYER · PHASE 2C.3 -->
+<style id="ew-apertura-status-glass-layer">
+/* Applies only to APERTURA STATUS windows (#apStatusOverlay):
+   emergency/status/success/entry/cart-replace states get the same softer glass layer.
+   Architect Console, cart, checkout, share, backend and SEO are intentionally untouched. */
+#apStatusOverlay.ap-console-overlay {
+  background:
+    radial-gradient(circle at 50% 16%, rgba(0,200,200,.16), transparent 42%),
+    radial-gradient(circle at 82% 82%, rgba(192,40,40,.14), transparent 46%),
+    radial-gradient(circle at 18% 92%, rgba(255,255,255,.045), transparent 40%),
+    rgba(4,4,10,.54) !important;
+  backdrop-filter: blur(18px) saturate(1.08);
+  -webkit-backdrop-filter: blur(18px) saturate(1.08);
+  transition: opacity .34s ease, background .34s ease !important;
+}
+#apStatusOverlay .ap-status-panel {
+  width: min(680px, calc(100vw - 48px)) !important;
+  border: 1px solid rgba(255,255,255,.13) !important;
+  border-top: 1px solid rgba(255,255,255,.16) !important;
+  border-radius: clamp(18px, 2.6vw, 28px) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.078), rgba(255,255,255,.026)),
+    radial-gradient(circle at 14% 0%, rgba(0,200,200,.13), transparent 46%),
+    radial-gradient(circle at 90% 100%, rgba(192,40,40,.13), transparent 48%),
+    color-mix(in srgb, var(--void) 76%, transparent) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.09) inset,
+    0 28px 84px rgba(0,0,0,.42),
+    0 0 0 1px rgba(0,200,200,.035),
+    0 0 46px rgba(0,200,200,.075),
+    0 0 58px rgba(192,40,40,.06) !important;
+  backdrop-filter: blur(24px) saturate(1.16);
+  -webkit-backdrop-filter: blur(24px) saturate(1.16);
+  opacity: 0;
+  transform: translate3d(0,18px,0) scale(.982) !important;
+  transition:
+    opacity .34s cubic-bezier(.16,1,.3,1),
+    transform .34s cubic-bezier(.16,1,.3,1),
+    box-shadow .34s ease !important;
+  animation: none !important;
+}
+#apStatusOverlay.open .ap-status-panel {
+  opacity: 1 !important;
+  transform: translate3d(0,0,0) scale(1) !important;
+  animation: none !important;
+}
+#apStatusOverlay.closing .ap-status-panel {
+  opacity: 0 !important;
+  transform: translate3d(0,14px,0) scale(.988) !important;
+  animation: none !important;
+}
+#apStatusOverlay .ap-status-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,.08), transparent 24%, transparent 72%, rgba(0,200,200,.035)),
+    linear-gradient(180deg, rgba(255,255,255,.06), transparent 22%);
+  opacity: .64;
+  mix-blend-mode: screen;
+}
+#apStatusOverlay .ap-status-head {
+  border-bottom: 1px solid rgba(255,255,255,.085) !important;
+  background: color-mix(in srgb, var(--void) 48%, transparent) !important;
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+}
+#apStatusOverlay .ap-status-body {
+  position: relative;
+  z-index: 1;
+}
+#apStatusOverlay .ap-status-kicker {
+  opacity: .92;
+  text-shadow: 0 0 16px rgba(0,200,200,.16);
+}
+#apStatusOverlay .ap-status-title {
+  text-shadow: 0 12px 38px rgba(0,0,0,.32), 0 0 24px rgba(0,200,200,.055);
+}
+#apStatusOverlay .ap-status-text,
+#apStatusOverlay .ap-status-note,
+#apStatusOverlay .ap-status-info {
+  color: var(--white-mid) !important;
+}
+#apStatusOverlay .ap-status-action {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  #apStatusOverlay.ap-console-overlay {
+    background:
+      radial-gradient(circle at 50% 16%, rgba(0,200,200,.12), transparent 42%),
+      radial-gradient(circle at 82% 82%, rgba(192,40,40,.12), transparent 46%),
+      rgba(4,4,10,.86) !important;
+  }
+  #apStatusOverlay .ap-status-panel {
+    background:
+      radial-gradient(circle at 14% 0%, rgba(0,200,200,.10), transparent 46%),
+      radial-gradient(circle at 90% 100%, rgba(192,40,40,.11), transparent 48%),
+      var(--void) !important;
+  }
+}
+:root[data-theme="light"] #apStatusOverlay.ap-console-overlay {
+  background:
+    radial-gradient(circle at 50% 14%, rgba(11,118,126,.16), transparent 42%),
+    radial-gradient(circle at 82% 82%, rgba(192,40,40,.10), transparent 46%),
+    rgba(231,233,241,.52) !important;
+}
+:root[data-theme="light"] #apStatusOverlay .ap-status-panel {
+  border-color: rgba(18,22,45,.13) !important;
+  border-top-color: rgba(255,255,255,.72) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.42)),
+    radial-gradient(circle at 14% 0%, rgba(11,118,126,.10), transparent 46%),
+    radial-gradient(circle at 90% 100%, rgba(192,40,40,.08), transparent 48%),
+    color-mix(in srgb, var(--surface) 78%, transparent) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.8) inset,
+    0 26px 74px rgba(18,22,45,.18),
+    0 0 0 1px rgba(11,118,126,.035),
+    0 0 42px rgba(11,118,126,.055) !important;
+}
+:root[data-theme="light"] #apStatusOverlay .ap-status-head {
+  background: rgba(255,255,255,.48) !important;
+  border-bottom-color: rgba(18,22,45,.095) !important;
+}
+:root[data-theme="light"] #apStatusOverlay .ap-status-panel::after {
+  opacity: .54;
+  mix-blend-mode: normal;
+}
+:root[data-theme="light"] #apStatusOverlay .ap-status-title {
+  text-shadow: 0 10px 34px rgba(18,22,45,.12);
+}
+:root[data-theme="light"] #apStatusOverlay .ap-status-text,
+:root[data-theme="light"] #apStatusOverlay .ap-status-note,
+:root[data-theme="light"] #apStatusOverlay .ap-status-info {
+  color: var(--ink-2) !important;
+}
+@media (max-width:720px) {
+  #apStatusOverlay.ap-console-overlay {
+    align-items: center !important;
+    padding: 14px !important;
+  }
+  #apStatusOverlay .ap-status-panel {
+    width: calc(100vw - 28px) !important;
+    max-height: calc(var(--ew-vvh, 100dvh) - 28px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 22px !important;
+    transform: translate3d(0,16px,0) scale(.988) !important;
+  }
+  #apStatusOverlay.open .ap-status-panel {
+    transform: translate3d(0,0,0) scale(1) !important;
+  }
+  #apStatusOverlay.closing .ap-status-panel {
+    transform: translate3d(0,12px,0) scale(.992) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #apStatusOverlay.ap-console-overlay,
+  #apStatusOverlay .ap-status-panel {
+    transition: opacity .12s ease !important;
+  }
+}
+</style>
+
 <!-- PATCH · MOBILE VISUAL VIEWPORT SYNC FOR APERTURA PANELS -->
 <script id="ew-apertura-visual-viewport-sync">
 (function(){
