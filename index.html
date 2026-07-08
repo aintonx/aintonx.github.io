@@ -703,6 +703,39 @@ body.scroll-restoring #apConsoleOverlay.open .ap-console-panel {
   -webkit-transition: -webkit-filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
   transition: filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
+
+/* PATCH · INSTAGRAM ENTRY STATUS BACKDROP · 212
+   Только для ?signal=instagram. Нормальные APERTURA STATUS остаются на
+   прежней механике #_blurW. Для входного сигнала фон делается отдельным
+   backdrop-слоем под панелью: сайт за окном размывается, а текст панели не
+   попадает в filter-слой. Это следует модели backdrop-filter: эффект
+   применяется к тому, что находится позади элемента, а не к содержимому
+   панели. */
+body.ap-entry-status-open #_blurW {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+#apStatusOverlay[data-status-key="entry-instagram"] {
+  background: transparent !important;
+  overflow: hidden;
+}
+#apStatusOverlay[data-status-key="entry-instagram"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.13), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.12), transparent 54%),
+    rgba(4,4,10,.08);
+  -webkit-backdrop-filter: blur(12px) brightness(0.5);
+  backdrop-filter: blur(12px) brightness(0.5);
+}
+#apStatusOverlay[data-status-key="entry-instagram"] .ap-status-panel {
+  position: relative;
+  z-index: 1;
+}
 /* ── КЛЮЧЕВОЙ ФИКС ДЁРГАНОГО ВЫХОДА ИЗ БЛЮРА ──────────────────────
    Корневая проблема: open-классы (modal-open / chk-open / cart-open /
    legal-modal-open) нельзя снять сразу — они держат scroll-lock, header
@@ -24327,7 +24360,7 @@ function _apCloseOverlay(id, opts){
     ov.classList.remove('open','closing','is-mounted');
     _apReleaseOverlayViewport(ov);
     if(id === 'apStatusOverlay'){
-      document.body.classList.remove('ap-status-open','ap-status-fading');
+      document.body.classList.remove('ap-status-open','ap-status-fading','ap-entry-status-open');
     }
     if(!keepLock && !_apAnyMounted()){
       document.body.classList.remove('ap-console-open','_blur-fading');
@@ -24460,6 +24493,7 @@ function _renderAperturaStatus(payload){
     ov.dataset.statusKey=key;
     ov.dataset.statusSource=source;
     ov.dataset.copyCode=payload.copyCode || '';
+    document.body.classList.toggle('ap-entry-status-open', key === 'entry-instagram');
   }
   const titleText = String(payload.title || '');
   const kicker=document.querySelector('#apStatusOverlay .ap-status-kicker');
