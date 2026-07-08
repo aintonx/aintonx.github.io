@@ -686,6 +686,23 @@ html.legal-modal-open body #_blurW {
   -webkit-transition: -webkit-filter .22s cubic-bezier(0.23, 1, 0.32, 1);
   transition: filter .22s cubic-bezier(0.23, 1, 0.32, 1);
 }
+/* PATCH · APERTURA STATUS BACKDROP CONSISTENCY · 211
+   Эталон блюра — существующий #_blurW: blur(12px) brightness(0.5).
+   Когда APERTURA STATUS открывается поверх Architect Console, консоль не входит
+   в #_blurW, поэтому размываем именно её панель тем же значением. Это применяет
+   один и тот же фон/blur ко всем аварийным статусам без изменения mobile-механики. */
+body.ap-status-open:not(.ap-status-fading) #apConsoleOverlay.open:not(.closing) .ap-console-panel {
+  -webkit-filter: blur(12px) brightness(0.5);
+  filter: blur(12px) brightness(0.5);
+  -webkit-transition: -webkit-filter .22s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: filter .22s cubic-bezier(0.23, 1, 0.32, 1);
+  pointer-events: none;
+}
+body.ap-status-fading #apConsoleOverlay.open .ap-console-panel,
+body.scroll-restoring #apConsoleOverlay.open .ap-console-panel {
+  -webkit-transition: -webkit-filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
+  transition: filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
 /* ── КЛЮЧЕВОЙ ФИКС ДЁРГАНОГО ВЫХОДА ИЗ БЛЮРА ──────────────────────
    Корневая проблема: open-классы (modal-open / chk-open / cart-open /
    legal-modal-open) нельзя снять сразу — они держат scroll-lock, header
@@ -24237,6 +24254,10 @@ function _apOpenOverlay(id){
       document.body.dataset.apConsoleLocked='1';
     }
     document.body.classList.add('ap-console-open');
+    if(id === 'apStatusOverlay'){
+      document.body.classList.remove('ap-status-fading');
+      document.body.classList.add('ap-status-open');
+    }
     ov.classList.remove('closing');
     ov.classList.add('is-mounted');
     ov._apOpenFrame = requestAnimationFrame(()=>{
@@ -24262,6 +24283,10 @@ function _apCloseOverlay(id, opts){
   _blurActiveField();
   const keepLock = !!opts.keepLock;
   const isLastAperturaLayer = !_apAnyMounted(id);
+  if(id === 'apStatusOverlay'){
+    document.body.classList.add('ap-status-fading');
+    document.body.classList.remove('ap-status-open');
+  }
   ov.classList.add('closing');
   ov.classList.remove('open');
   if(!keepLock && isLastAperturaLayer) document.body.classList.add('_blur-fading');
@@ -24269,6 +24294,9 @@ function _apCloseOverlay(id, opts){
     ov._apCloseTimer = 0;
     ov.classList.remove('open','closing','is-mounted');
     _apReleaseOverlayViewport(ov);
+    if(id === 'apStatusOverlay'){
+      document.body.classList.remove('ap-status-open','ap-status-fading');
+    }
     if(!keepLock && !_apAnyMounted()){
       document.body.classList.remove('ap-console-open','_blur-fading');
       if(document.body.dataset.apConsoleLocked==='1'){
