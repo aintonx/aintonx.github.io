@@ -29348,56 +29348,46 @@ function acceptCookies(){
 </style>
 
 
-<!-- PATCH · APERTURA ENTRY STATUS READABILITY GUARD -->
-<style id="ew-apertura-entry-signal-readability-guard">
-/* Safety net: APERTURA STATUS itself must never be part of the blurred page layer.
-   This does not change mobile bottom-sheet mechanics or status JS; it only prevents
-   the status panel/text from being filtered if the blur wrapper ever misclassifies it. */
-#apStatusOverlay,
-#apStatusPanel,
-#apStatusPanel * {
+
+<!-- PATCH · APERTURA ENTRY STATUS SHARP PANEL · 20260708 -->
+<style id="ew-apertura-entry-status-sharp-panel">
+/* Target only ?signal=instagram APERTURA ENTRY STATUS.
+   Keep the normal site blur/backdrop exactly as other APERTURA STATUS windows use it.
+   Do not change mobile bottom-sheet geometry, buttons, routes, cart, checkout or backend. */
+#apStatusOverlay[data-status-source="entry-instagram"] .ap-status-panel,
+#apStatusOverlay[data-status-source="entry-instagram"] .ap-status-panel * {
   -webkit-filter: none !important;
   filter: none !important;
 }
-</style>
-
-
-
-
-<!-- PATCH · APERTURA STATUS READABLE SITE CONTENT · 20260708 -->
-<style id="ew-apertura-status-readable-site-content">
-/*
-  Narrow fix only for APERTURA STATUS / ENTRY STATUS.
-  The status panel text stays sharp; the page behind it remains visible.
-  Mobile bottom-sheet geometry/animation is intentionally untouched.
-*/
-body.ap-status-open:not(.ap-status-fading) #_blurW {
-  -webkit-filter: blur(12px) brightness(.78) saturate(.96) !important;
-  filter: blur(12px) brightness(.78) saturate(.96) !important;
+#apStatusOverlay[data-status-source="entry-instagram"].open .ap-status-panel {
+  animation: ewEntryStatusIn .34s cubic-bezier(.22,0,.48,1) forwards !important;
 }
-:root[data-theme="light"] body.ap-status-open:not(.ap-status-fading) #_blurW {
-  -webkit-filter: blur(12px) brightness(.86) saturate(.98) !important;
-  filter: blur(12px) brightness(.86) saturate(.98) !important;
+#apStatusOverlay[data-status-source="entry-instagram"].closing .ap-status-panel {
+  animation: ewEntryStatusOut .26s cubic-bezier(.55,0,.78,1) forwards !important;
 }
-#apStatusOverlay.ap-console-overlay {
-  background:
-    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.11), transparent 46%),
-    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.10), transparent 54%),
-    rgba(4,4,10,.28) !important;
+@keyframes ewEntryStatusIn {
+  from { opacity: 0; transform: translateY(28px) scale(.97); }
+  to   { opacity: 1; transform: none; }
 }
-:root[data-theme="light"] #apStatusOverlay.ap-console-overlay {
-  background:
-    radial-gradient(ellipse at 50% 12%, rgba(11,118,126,.10), transparent 46%),
-    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.06), transparent 54%),
-    rgba(242,244,249,.18) !important;
+@keyframes ewEntryStatusOut {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(28px) scale(.97); }
 }
-body.ap-status-open:not(.ap-status-fading) #apConsoleOverlay.open:not(.closing) .ap-console-panel {
-  -webkit-filter: blur(12px) brightness(.78) saturate(.96) !important;
-  filter: blur(12px) brightness(.78) saturate(.96) !important;
+@media(max-width:720px){
+  #apStatusOverlay[data-status-source="entry-instagram"].open .ap-status-panel {
+    animation: ewEntryStatusMobIn .32s cubic-bezier(.22,0,.48,1) forwards !important;
+  }
+  #apStatusOverlay[data-status-source="entry-instagram"].closing .ap-status-panel {
+    animation: ewEntryStatusMobOut .26s cubic-bezier(.55,0,.78,1) forwards !important;
+  }
 }
-:root[data-theme="light"] body.ap-status-open:not(.ap-status-fading) #apConsoleOverlay.open:not(.closing) .ap-console-panel {
-  -webkit-filter: blur(12px) brightness(.86) saturate(.98) !important;
-  filter: blur(12px) brightness(.86) saturate(.98) !important;
+@keyframes ewEntryStatusMobIn {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ewEntryStatusMobOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(100%); }
 }
 </style>
 
