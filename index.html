@@ -29771,6 +29771,45 @@ function acceptCookies(){
 </style>
 
 
+
+
+<!-- PATCH · APERTURA STATUS READABLE SITE CONTENT · 20260708 -->
+<style id="ew-apertura-status-readable-site-content">
+/*
+  Narrow fix only for APERTURA STATUS / ENTRY STATUS.
+  The status panel text stays sharp; the page behind it remains visible.
+  Mobile bottom-sheet geometry/animation is intentionally untouched.
+*/
+body.ap-status-open:not(.ap-status-fading) #_blurW {
+  -webkit-filter: blur(12px) brightness(.78) saturate(.96) !important;
+  filter: blur(12px) brightness(.78) saturate(.96) !important;
+}
+:root[data-theme="light"] body.ap-status-open:not(.ap-status-fading) #_blurW {
+  -webkit-filter: blur(12px) brightness(.86) saturate(.98) !important;
+  filter: blur(12px) brightness(.86) saturate(.98) !important;
+}
+#apStatusOverlay.ap-console-overlay {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.11), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.10), transparent 54%),
+    rgba(4,4,10,.28) !important;
+}
+:root[data-theme="light"] #apStatusOverlay.ap-console-overlay {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(11,118,126,.10), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.06), transparent 54%),
+    rgba(242,244,249,.18) !important;
+}
+body.ap-status-open:not(.ap-status-fading) #apConsoleOverlay.open:not(.closing) .ap-console-panel {
+  -webkit-filter: blur(12px) brightness(.78) saturate(.96) !important;
+  filter: blur(12px) brightness(.78) saturate(.96) !important;
+}
+:root[data-theme="light"] body.ap-status-open:not(.ap-status-fading) #apConsoleOverlay.open:not(.closing) .ap-console-panel {
+  -webkit-filter: blur(12px) brightness(.86) saturate(.98) !important;
+  filter: blur(12px) brightness(.86) saturate(.98) !important;
+}
+</style>
+
 <!-- PATCH · APERTURA STATUS TITLES + MOBILE VIEWPORT STABILITY -->
 <style id="ew-apertura-status-title-and-vv-lock">
 /* One-line headings ONLY for full Apertura status / аварийные screens.
