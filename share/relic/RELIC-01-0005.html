@@ -701,6 +701,23 @@ html.legal-modal-open body #_blurW {
   -webkit-transition: -webkit-filter .22s cubic-bezier(0.23, 1, 0.32, 1);
   transition: filter .22s cubic-bezier(0.23, 1, 0.32, 1);
 }
+/* PATCH · APERTURA STATUS BACKDROP CONSISTENCY · 211
+   Эталон блюра — существующий #_blurW: blur(12px) brightness(0.5).
+   Когда APERTURA STATUS открывается поверх Architect Console, консоль не входит
+   в #_blurW, поэтому размываем именно её панель тем же значением. Это применяет
+   один и тот же фон/blur ко всем аварийным статусам без изменения mobile-механики. */
+body.ap-status-open:not(.ap-status-fading) #apConsoleOverlay.open:not(.closing) .ap-console-panel {
+  -webkit-filter: blur(12px) brightness(0.5);
+  filter: blur(12px) brightness(0.5);
+  -webkit-transition: -webkit-filter .22s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: filter .22s cubic-bezier(0.23, 1, 0.32, 1);
+  pointer-events: none;
+}
+body.ap-status-fading #apConsoleOverlay.open .ap-console-panel,
+body.scroll-restoring #apConsoleOverlay.open .ap-console-panel {
+  -webkit-transition: -webkit-filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
+  transition: filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
 /* ── КЛЮЧЕВОЙ ФИКС ДЁРГАНОГО ВЫХОДА ИЗ БЛЮРА ──────────────────────
    Корневая проблема: open-классы (modal-open / chk-open / cart-open /
    legal-modal-open) нельзя снять сразу — они держат scroll-lock, header
@@ -7190,6 +7207,27 @@ html.legal-modal-open .cookie-banner.show {
   color: var(--white-mid);
   line-height: 1.65;
   letter-spacing: 0.03em;
+}
+
+/* PATCH · LORE SIGNAL EXACT BLUR MATERIAL · 20260708
+   “Сигнал из MARKETSPACE” — отдельный side-notification, не APERTURA STATUS.
+   Поэтому даём ему тот же blur-материал, что и текущий эталонный фон сайта:
+   blur(12px) brightness(0.5). Механику показа/свайпа/таймера не меняем. */
+.lore-notif {
+  background: rgba(4,4,10,.72);
+  -webkit-backdrop-filter: blur(12px) brightness(0.5);
+  backdrop-filter: blur(12px) brightness(0.5);
+  border-color: rgba(0,200,200,.24);
+  border-left-color: var(--cyan);
+  box-shadow:
+    0 18px 60px rgba(0,0,0,.46),
+    0 0 26px rgba(0,200,200,.11),
+    inset 0 1px 0 rgba(255,255,255,.055);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lore-notif {
+    background: rgba(4,4,10,.92);
+  }
 }
 
 /* ── STD NOTIFICATION ── */
@@ -17686,8 +17724,9 @@ function createCartItemFromProduct(product){
     total: basePrice
   };
 }
-function normalizeCartForApiPreparation(){
-  const result = { changed:false, removedDuplicates:0, removedUnavailable:0, normalizedItems:0 };
+function normalizeCartForApiPreparation(opts){
+  opts = opts || {};
+  const result = { changed:false, removedDuplicates:0, removedUnavailable:0, removedExtraItems:0, normalizedItems:0 };
   if(!Array.isArray(cart)){ cart=[]; result.changed=true; return result; }
   const seen = new Set();
   const next = [];
@@ -17718,6 +17757,21 @@ function normalizeCartForApiPreparation(){
     next.push(normalized);
     result.normalizedItems++;
   });
+
+  /* Phase 2C.2 · ONE RELIC CART
+     Backend reservation/order flow is intentionally single-relic:
+     one unique relic = one Apertura cycle. If legacy/runtime state somehow
+     contains several relics, keep one safe item and never let checkout build
+     a multi-item payload. Interactive replacement is handled by add/buy now. */
+  if(next.length > 1){
+    const preferredKey = String(opts.preferredKey || '').trim();
+    const keepIndex = preferredKey ? next.findIndex(item => getCartProductKey(item) === preferredKey) : 0;
+    const keep = next[keepIndex >= 0 ? keepIndex : 0];
+    result.changed = true;
+    result.removedExtraItems += next.length - 1;
+    next.splice(0, next.length, keep);
+  }
+
   if(next.length !== cart.length) result.changed = true;
   for(let i=0;i<next.length;i++){
     if(cart[i] !== next[i]){ result.changed = true; break; }
@@ -17725,19 +17779,89 @@ function normalizeCartForApiPreparation(){
   if(result.changed){ cart.splice(0, cart.length, ...next); }
   return result;
 }
-function addProductToCart(product){
+function replaceCartRelicWithProduct(product){
+  if(!isProductOrderable(product)){
+    return { added:false, duplicate:false, blocked:true, replaced:false, index:-1, item:null };
+  }
+  const item = createCartItemFromProduct(product);
+  cart.splice(0, cart.length, item);
+  normalizeCartForApiPreparation({preferredKey:getCartProductKey(item)});
+  return { added:true, duplicate:false, blocked:false, replaced:true, index:0, item:cart[0] || item };
+}
+function addProductToCart(product, opts){
+  opts = opts || {};
   normalizeCartForApiPreparation();
   if(!isProductOrderable(product)){
-    return { added:false, duplicate:false, blocked:true, index:-1, item:null };
+    return { added:false, duplicate:false, blocked:true, needsReplace:false, replaced:false, index:-1, item:null };
   }
   const existingIndex = findCartIndexByProduct(product);
   if(existingIndex >= 0){
-    return { added:false, duplicate:true, index:existingIndex, item:cart[existingIndex] };
+    return { added:false, duplicate:true, blocked:false, needsReplace:false, replaced:false, index:existingIndex, item:cart[existingIndex] };
+  }
+  if(Array.isArray(cart) && cart.length > 0){
+    if(opts.replace === true) return replaceCartRelicWithProduct(product);
+    return { added:false, duplicate:false, blocked:false, needsReplace:true, replaced:false, index:0, item:cart[0] || null };
   }
   const item = createCartItemFromProduct(product);
-  cart.push(item);
-  normalizeCartForApiPreparation();
-  return { added:true, duplicate:false, index:cart.length-1, item };
+  cart.splice(0, cart.length, item);
+  normalizeCartForApiPreparation({preferredKey:getCartProductKey(item)});
+  return { added:true, duplicate:false, blocked:false, needsReplace:false, replaced:false, index:0, item:cart[0] || item };
+}
+let __EW_PENDING_CART_REPLACE = null;
+function showCartRelicReplaceDialog(product, opts){
+  opts = opts || {};
+  if(!product || !isProductOrderable(product)) return false;
+  __EW_PENDING_CART_REPLACE = {
+    product,
+    mode: opts.mode === 'checkout' ? 'checkout' : 'add',
+    at: Date.now()
+  };
+  window.__EW_PENDING_CART_REPLACE = __EW_PENDING_CART_REPLACE;
+  if(typeof _renderAperturaStatus === 'function'){
+    _renderAperturaStatus({
+      key: 'cart-replace-relic',
+      source: 'cart-replace',
+      title: 'В корзине уже есть реликвия.',
+      text: 'Apertura фиксирует одну реликвию за цикл. Чтобы продолжить с новой, замените текущую — или оставьте всё как есть.',
+      actions: [
+        {label:'Заменить реликвию', action:'cart-replace-confirm', primary:true},
+        {label:'Оставить текущую', action:'cart-replace-cancel'}
+      ]
+    });
+    return true;
+  }
+  if(typeof showNotif === 'function'){
+    showNotif('// В корзине уже есть реликвия.', {contextual:true, overOverlay:true});
+  }
+  return false;
+}
+function confirmCartRelicReplacement(){
+  const pending = __EW_PENDING_CART_REPLACE;
+  __EW_PENDING_CART_REPLACE = null;
+  window.__EW_PENDING_CART_REPLACE = null;
+  if(!pending || !pending.product){ closeAperturaStatus(); return false; }
+  const result = addProductToCart(pending.product, {replace:true});
+  try { updateCartUI(); } catch(e){ console.error('updateCartUI failed:', e); }
+  closeAperturaStatus();
+  if(!result || result.blocked) return false;
+  if(pending.mode === 'checkout'){
+    const delay = (typeof APERTURA_CONSOLE_CLOSE_MS !== 'undefined' ? APERTURA_CONSOLE_CLOSE_MS : 280) + 80;
+    setTimeout(function(){
+      if(typeof showNotif === 'function') showNotif('// Реликвия заменена в корзине.', {contextual:true, overOverlay:true});
+      directCheckout();
+    }, delay);
+  }else{
+    closeModal(function(){
+      if(typeof showNotif === 'function') showNotif('// Реликвия заменена в корзине.', {contextual:true});
+    });
+  }
+  return true;
+}
+function cancelCartRelicReplacement(){
+  __EW_PENDING_CART_REPLACE = null;
+  window.__EW_PENDING_CART_REPLACE = null;
+  closeAperturaStatus();
+  return true;
 }
 function openCartIfClosed(){
   const panel = document.getElementById('cartPanel');
@@ -19254,6 +19378,10 @@ function addToCart(ev){
     return;
   }
   const result = addProductToCart(cur);
+  if(result.needsReplace){
+    showCartRelicReplaceDialog(cur, {mode:'add'});
+    return;
+  }
   try { updateCartUI(); } catch(e){ console.error('updateCartUI failed:', e); }
   if(result.duplicate){
     closeModal(function(){
@@ -19266,7 +19394,8 @@ function addToCart(ev){
     showNotif('// Реликвия добавлена в корзину.', {contextual:true});
   });
 }
-/* Купить сейчас — минуем корзину, сразу открываем форму оформления */
+/* Купить сейчас — корзина остаётся одним слотом Apertura: если внутри уже
+   другая реликвия, сначала спрашиваем замену, затем открываем checkout. */
 function buyNow(ev){
   if(ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
   if(ev && typeof ev.preventDefault === 'function') ev.preventDefault();
@@ -19277,6 +19406,10 @@ function buyNow(ev){
     return;
   }
   const result = addProductToCart(cur);
+  if(result.needsReplace){
+    showCartRelicReplaceDialog(cur, {mode:'checkout'});
+    return;
+  }
   try { updateCartUI(); } catch(e){ console.error('updateCartUI failed:', e); }
   if(result.duplicate && typeof showNotif === 'function'){
     showNotif('// Эта реликвия уже была в корзине. Переходим к оформлению.', {contextual:true, overOverlay:true});
@@ -20358,6 +20491,16 @@ function _setupAutofillFreeze(panel, ids){
 }
 
 function openCheckout(){
+  const beforeCount = Array.isArray(cart) ? cart.length : 0;
+  let norm = {removedExtraItems:0};
+  try { norm = normalizeCartForApiPreparation(); updateCartUI(); } catch(e){ console.warn('oneRelicCheckoutGuard:', e); }
+  if(!Array.isArray(cart) || cart.length === 0){
+    if(typeof showNotif === 'function') showNotif('// Корзина молчит.', {contextual:true});
+    return;
+  }
+  if(beforeCount > 1 || (norm && norm.removedExtraItems > 0)){
+    if(typeof showNotif === 'function') showNotif('// Apertura фиксирует одну реликвию за цикл. В корзине оставлена одна реликвия.', {contextual:true});
+  }
   // Корзина → чекаут: тихо прячем корзину и открываем чекаут той же
   // механикой, что и карточка товара. Раньше здесь был отдельный путь
   // (закрытие корзины + reflow-танец chkOverlay + setTimeout-setup),
@@ -24320,6 +24463,14 @@ function _apFollowHeroAnchor(href){
 }
 function handleAperturaStatusAction(action, key){
   const source=_apStatusSource();
+  if(action==='cart-replace-confirm'){
+    if(typeof confirmCartRelicReplacement === 'function') confirmCartRelicReplacement();
+    return;
+  }
+  if(action==='cart-replace-cancel'){
+    if(typeof cancelCartRelicReplacement === 'function') cancelCartRelicReplacement();
+    return;
+  }
   if(action==='close'){ closeAperturaStatus(); return; }
   if(action==='copy-relic-code'){ _apCopyCode('Код реликвии'); return; }
   if(action==='copy-echo-code'){ _apCopyCode('Частотный код'); return; }
