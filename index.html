@@ -24515,7 +24515,7 @@ function isInstagramEntrySignal(){
 function showInstagramEntryStatus(){
   _renderAperturaStatus({
     key: 'entry-instagram',
-    source: 'entry-instagram',
+    source: 'console',
     kicker: '// APERTURA · ENTRY STATUS',
     title: 'Внешний сигнал распознан',
     text: 'Вы вошли в EchoWorld — интерфейс, через который в наш мир попадают физические реликвии из MARKETSPACE.',
@@ -29757,54 +29757,6 @@ function acceptCookies(){
 </style>
 
 
-
-<!-- PATCH · APERTURA ENTRY STATUS SHARP PANEL · 20260708 -->
-<style id="ew-apertura-entry-status-sharp-panel">
-/* Target only ?signal=instagram APERTURA ENTRY STATUS.
-   The site/background blur stays on #_blurW (the existing shared mechanism):
-   body.ap-console-open #_blurW { filter: blur(12px) brightness(0.5); }
-   This overlay must not add its own dark veil, otherwise iOS Safari renders the
-   site content almost black and visually muddy. The status panel itself remains
-   outside #_blurW, so its text stays sharp. */
-#apStatusOverlay[data-status-source="entry-instagram"] {
-  background: transparent !important;
-}
-#apStatusOverlay[data-status-source="entry-instagram"] .ap-status-panel,
-#apStatusOverlay[data-status-source="entry-instagram"] .ap-status-panel * {
-  -webkit-filter: none !important;
-  filter: none !important;
-}
-#apStatusOverlay[data-status-source="entry-instagram"].open .ap-status-panel {
-  animation: ewEntryStatusIn .34s cubic-bezier(.22,0,.48,1) forwards !important;
-}
-#apStatusOverlay[data-status-source="entry-instagram"].closing .ap-status-panel {
-  animation: ewEntryStatusOut .26s cubic-bezier(.55,0,.78,1) forwards !important;
-}
-@keyframes ewEntryStatusIn {
-  from { opacity: 0; transform: translateY(28px) scale(.97); }
-  to   { opacity: 1; transform: none; }
-}
-@keyframes ewEntryStatusOut {
-  from { opacity: 1; transform: none; }
-  to   { opacity: 0; transform: translateY(28px) scale(.97); }
-}
-@media(max-width:720px){
-  #apStatusOverlay[data-status-source="entry-instagram"].open .ap-status-panel {
-    animation: ewEntryStatusMobIn .32s cubic-bezier(.22,0,.48,1) forwards !important;
-  }
-  #apStatusOverlay[data-status-source="entry-instagram"].closing .ap-status-panel {
-    animation: ewEntryStatusMobOut .26s cubic-bezier(.55,0,.78,1) forwards !important;
-  }
-}
-@keyframes ewEntryStatusMobIn {
-  from { opacity: 0; transform: translateY(100%); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes ewEntryStatusMobOut {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(100%); }
-}
-</style>
 
 <!-- PATCH · APERTURA STATUS TITLES + MOBILE VIEWPORT STABILITY -->
 <style id="ew-apertura-status-title-and-vv-lock">
