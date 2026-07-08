@@ -24206,6 +24206,37 @@ const APERTURA_STATUS_STATES = {
     text: 'Форма не потеряна. Apertura не получила ответ вовремя. Проверьте данные и повторите попытку.',
     actions: [{label:'Вернуться к оформлению', action:'checkout', primary:true}, {label:'Закрыть', action:'close'}]
   },
+
+  'order-fixed': {
+    title: 'Заказ зафиксирован.',
+    text: 'Apertura удерживает реликвию для вашего цикла. Следующий шаг — подтверждение оплаты.',
+    actions: [{label:'Перейти к оплате', action:'order-pay', primary:true}, {label:'Проверить статус', action:'order-check-status'}]
+  },
+  'order-payment-waiting': {
+    title: 'Ожидаем подтверждение оплаты.',
+    text: 'Apertura ожидает ответ платёжного канала. Это может занять несколько минут. Не создавайте новый заказ на эту реликвию.',
+    actions: [{label:'Проверить ещё раз', action:'order-check-status', primary:true}, {label:'Вернуться в каталог', action:'catalog'}]
+  },
+  'order-payment-authorized': {
+    title: 'Оплата авторизована.',
+    text: 'Платёжный канал удерживает сумму. Apertura ожидает финальное списание.',
+    actions: [{label:'Проверить ещё раз', action:'order-check-status', primary:true}, {label:'Вернуться в каталог', action:'catalog'}]
+  },
+  'order-paid': {
+    title: 'Платёж подтверждён.',
+    text: 'Apertura закрепила реликвию за вашим заказом. Следующий этап начнётся после обработки цикла.',
+    actions: [{label:'Проверить статус', action:'order-check-status', primary:true}, {label:'Вернуться в каталог', action:'catalog'}]
+  },
+  'order-payment-canceled': {
+    title: 'Платёж не прошёл.',
+    text: 'Платёжный канал не подтвердил оплату. Если время цикла ещё не истекло, вы можете попробовать снова.',
+    actions: [{label:'Повторить оплату', action:'order-pay', primary:true}, {label:'Вернуться в каталог', action:'catalog'}]
+  },
+  'order-cycle-expired': {
+    title: 'Время цикла истекло.',
+    text: 'Apertura не получила подтверждение оплаты вовремя. Реликвия возвращена в поток.',
+    actions: [{label:'Вернуться в каталог', action:'catalog', primary:true}]
+  },
   'mic-denied': {
     title: 'Голосовой канал не открылся.',
     text: 'Система Apertura не получила доступ к микрофону. Эхо можно отправить и текстом — сигнал дойдёт.',
@@ -24609,6 +24640,188 @@ function _apStatusRow(label, value, htmlValue){
       <div class="ap-status-value">${htmlValue || _apEsc(value)}</div>
     </div>`;
 }
+
+
+/* Phase 2D · ACTIVE ORDER STATUS FRONTEND FOUNDATION
+   Frontend-память цикла заказа. Это не создаёт оплату и не считает заказ
+   оплаченным: данные берутся из checkout/create сейчас и позже будут
+   обновляться через checkout/status + YooKassa webhook/status. */
+const EW_ACTIVE_ORDER_STORAGE_KEY = 'ew:active-order:v1';
+function _ewActiveOrderSafeText(value, max){
+  const raw = String(value || '').trim();
+  if(typeof safeText === 'function') return safeText(raw, {maxLength:max || 160});
+  return raw.replace(/[<>]/g, '').slice(0, max || 160);
+}
+function _ewActiveOrderFirstItem(orderPayload){
+  return orderPayload && Array.isArray(orderPayload.items) ? (orderPayload.items[0] || {}) : {};
+}
+function _ewActiveOrderBuild(orderRecord, reservation, orderPayload){
+  orderRecord = orderRecord || {};
+  reservation = reservation || {};
+  orderPayload = orderPayload || {};
+  const item = _ewActiveOrderFirstItem(orderPayload);
+  const responseOrder = orderRecord.response && orderRecord.response.order ? orderRecord.response.order : {};
+  const responseReservation = orderRecord.response && orderRecord.response.reservation ? orderRecord.response.reservation : {};
+  const responseItem = orderRecord.response && orderRecord.response.item ? orderRecord.response.item : {};
+  const payment = orderRecord.payment || orderRecord.response && orderRecord.response.payment || {};
+  const confirmation = payment && (payment.confirmation || payment.confirmation_url || payment.confirmationUrl) || {};
+  const confirmationUrl = _ewActiveOrderSafeText(
+    orderRecord.confirmation_url || orderRecord.confirmationUrl || payment.confirmation_url || payment.confirmationUrl || confirmation.confirmation_url || confirmation.confirmationUrl || '',
+    600
+  );
+  const expiresAt = _ewActiveOrderSafeText(
+    orderRecord.expires_at || orderRecord.expiresAt || responseOrder.expires_at || responseOrder.expiresAt || responseReservation.reserved_until || reservation.reserved_until || '',
+    80
+  );
+  return {
+    order_id: _ewActiveOrderSafeText(orderRecord.order_id || responseOrder.id || '', 80),
+    order_number: _ewActiveOrderSafeText(orderRecord.order_number || responseOrder.order_number || '', 80),
+    reservation_id: _ewActiveOrderSafeText(orderRecord.reservation_id || responseOrder.reservation_id || reservation.reservation_id || '', 100),
+    reservation_code: _ewActiveOrderSafeText(reservation.reservation_code || responseReservation.reservation_code || '', 80),
+    product_id: _ewActiveOrderSafeText(orderRecord.product_id || responseOrder.product_id || responseItem.product_id || reservation.product_id || item.product_id || item.productId || '', 40),
+    relic_code: _ewActiveOrderSafeText(reservation.relic_code || item.relicId || item.relic_code || '', 60),
+    title: _ewActiveOrderSafeText(reservation.title || item.title || responseItem.title_snapshot || 'Реликвия', 140),
+    status_token: _ewActiveOrderSafeText(orderRecord.status_token || responseOrder.status_token || orderRecord.public_status_token || responseOrder.public_status_token || '', 120),
+    order_status: _ewActiveOrderSafeText(orderRecord.status || responseOrder.status || 'new', 40),
+    payment_status: _ewActiveOrderSafeText(orderRecord.payment_status || responseOrder.payment_status || 'not_started', 40),
+    payment_id: _ewActiveOrderSafeText(orderRecord.payment_id || responseOrder.payment_id || payment.id || '', 120),
+    confirmation_url: confirmationUrl,
+    expires_at: expiresAt,
+    source: 'frontend-checkout-create',
+    updated_at: new Date().toISOString()
+  };
+}
+function _ewActiveOrderStore(record){
+  if(!record || !record.order_id) return null;
+  try{ localStorage.setItem(EW_ACTIVE_ORDER_STORAGE_KEY, JSON.stringify(record)); }catch(_){ }
+  window.__EW_ACTIVE_ORDER__ = record;
+  return record;
+}
+function _ewActiveOrderRead(){
+  try{
+    const raw = localStorage.getItem(EW_ACTIVE_ORDER_STORAGE_KEY);
+    if(!raw) return null;
+    const rec = JSON.parse(raw);
+    if(!rec || !rec.order_id) return null;
+    return rec;
+  }catch(_){ return null; }
+}
+function _ewActiveOrderClear(){
+  try{ localStorage.removeItem(EW_ACTIVE_ORDER_STORAGE_KEY); }catch(_){ }
+  try{ delete window.__EW_ACTIVE_ORDER__; }catch(_){ window.__EW_ACTIVE_ORDER__ = null; }
+}
+function _ewActiveOrderStoreFromCheckout(orderRecord, reservation, orderPayload){
+  return _ewActiveOrderStore(_ewActiveOrderBuild(orderRecord, reservation, orderPayload));
+}
+function _ewActiveOrderHasPaymentInProgress(rec){
+  const ps = String(rec && rec.payment_status || '').toLowerCase();
+  return ps === 'pending' || ps === 'waiting_for_capture' || ps === 'succeeded';
+}
+function _ewActiveOrderIsExpired(rec){
+  if(!rec || _ewActiveOrderHasPaymentInProgress(rec)) return false;
+  const raw = rec.expires_at || rec.reserved_until || '';
+  const ts = Date.parse(raw);
+  return Number.isFinite(ts) && ts > 0 && ts < Date.now();
+}
+function _ewActiveOrderStatusKey(rec){
+  if(!rec) return 'checkout-timeout';
+  const os = String(rec.order_status || rec.status || '').toLowerCase();
+  const ps = String(rec.payment_status || '').toLowerCase();
+  if(os === 'expired' || _ewActiveOrderIsExpired(rec)) return 'order-cycle-expired';
+  if(ps === 'succeeded') return 'order-paid';
+  if(ps === 'waiting_for_capture') return 'order-payment-authorized';
+  if(ps === 'pending') return 'order-payment-waiting';
+  if(ps === 'canceled' || ps === 'cancelled') return 'order-payment-canceled';
+  return 'order-fixed';
+}
+function _ewActiveOrderStatusHtml(rec){
+  if(!rec) return '';
+  const rows = [];
+  if(rec.order_number) rows.push(_apStatusRow('Заказ', rec.order_number));
+  if(rec.title) rows.push(_apStatusRow('Реликвия', rec.title));
+  if(rec.relic_code) rows.push(_apStatusRow('Код', rec.relic_code));
+  if(rec.expires_at && !_ewActiveOrderHasPaymentInProgress(rec)) rows.push(_apStatusRow('Окно цикла', rec.expires_at));
+  return rows.length ? '<div class="ap-status-fields">' + rows.join('') + '</div>' : '';
+}
+function showActiveOrderStatus(rec, opts){
+  rec = rec || _ewActiveOrderRead();
+  if(!rec){
+    if(typeof showAperturaStatus === 'function') showAperturaStatus('checkout-timeout', {source:'active-order'});
+    return;
+  }
+  opts = opts || {};
+  const key = opts.key || _ewActiveOrderStatusKey(rec);
+  showAperturaStatus(key, {
+    source: opts.source || 'active-order',
+    html: _ewActiveOrderStatusHtml(rec)
+  });
+}
+function _ewActiveOrderPaymentUrl(rec){
+  const url = rec && (rec.confirmation_url || rec.payment_url || rec.confirmationUrl || rec.paymentUrl) || '';
+  if(!url) return '';
+  if(typeof validatePaymentUrl === 'function'){
+    const checked = validatePaymentUrl(url);
+    return checked && checked.ok ? checked.url : '';
+  }
+  return String(url || '');
+}
+function _ewActiveOrderGoPayment(){
+  const rec = _ewActiveOrderRead();
+  if(!rec){ showActiveOrderStatus(null); return; }
+  if(_ewActiveOrderIsExpired(rec)){ showActiveOrderStatus(rec, {key:'order-cycle-expired'}); return; }
+  const url = _ewActiveOrderPaymentUrl(rec);
+  if(url){ window.location.href = url; return; }
+  showActiveOrderStatus(rec, {key:_ewActiveOrderStatusKey(rec)});
+  if(typeof showNotif === 'function') showNotif('// Платёжный канал ещё не подключён. Заказ уже зафиксирован.', {contextual:true});
+}
+function _ewActiveOrderCheckStatus(){
+  /* Frontend foundation: пока backend checkout/status не подключён, показываем
+     последнее безопасно сохранённое состояние. В следующей фазе эта точка
+     должна вызвать checkout/status по order_id + status_token. */
+  const rec = _ewActiveOrderRead();
+  showActiveOrderStatus(rec);
+}
+function bootActiveOrderStatusRestore(){
+  const rec = _ewActiveOrderRead();
+  if(!rec) return;
+  try{
+    const url = new URL(location.href);
+    if(url.searchParams.has('signal')) return;
+    if(typeof RELIC_DEEP_LINK_PARAM !== 'undefined' && url.searchParams.has(RELIC_DEEP_LINK_PARAM)) return;
+  }catch(_){ }
+  setTimeout(function(){
+    const ov = document.getElementById('apStatusOverlay');
+    if(ov && ov.classList.contains('is-mounted')) return;
+    showActiveOrderStatus(rec, {source:'active-order-restore'});
+  }, 760);
+}
+(function setupActiveOrderStatusRestore(){
+  function boot(){ bootActiveOrderStatusRestore(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+function inspectActiveOrderStatusPatch(){
+  const scripts = Array.from(document.scripts).map(s=>s.textContent || '').join('\n');
+  return {
+    ok: typeof showActiveOrderStatus === 'function' &&
+        typeof _ewActiveOrderRead === 'function' &&
+        typeof _ewActiveOrderGoPayment === 'function' &&
+        scripts.includes('Phase 2D · ACTIVE ORDER STATUS FRONTEND FOUNDATION') &&
+        scripts.includes('Ожидаем подтверждение оплаты.') &&
+        scripts.includes('Время цикла истекло.') &&
+        scripts.includes('Apertura закрепила реликвию за вашим заказом'),
+    activeOrder: _ewActiveOrderRead(),
+    storageKey: EW_ACTIVE_ORDER_STORAGE_KEY,
+    functions: {
+      showActiveOrderStatus: typeof showActiveOrderStatus,
+      read: typeof _ewActiveOrderRead,
+      clear: typeof _ewActiveOrderClear,
+      pay: typeof _ewActiveOrderGoPayment,
+      check: typeof _ewActiveOrderCheckStatus
+    }
+  };
+}
+try{ window.inspectActiveOrderStatusPatch = inspectActiveOrderStatusPatch; }catch(_){ }
 function _apFirstFormStatusRow(){
   return `
     <div class="ap-status-row ap-first-form-row" id="apFirstFormRow" role="button" tabindex="0" aria-expanded="false" aria-label="Статус реликвии: В MARKETSPACE. Нажмите, чтобы открыть расшифровку статуса." onclick="toggleFirstFormTip(event)" onkeydown="handleFirstFormTipKey(event)">
@@ -24913,6 +25126,14 @@ function handleAperturaStatusAction(action, key){
   }
   if(action==='cart-replace-cancel'){
     if(typeof cancelCartRelicReplacement === 'function') cancelCartRelicReplacement();
+    return;
+  }
+  if(action==='order-pay'){
+    if(typeof _ewActiveOrderGoPayment === 'function') _ewActiveOrderGoPayment();
+    return;
+  }
+  if(action==='order-check-status'){
+    if(typeof _ewActiveOrderCheckStatus === 'function') _ewActiveOrderCheckStatus();
     return;
   }
   if(action==='close'){ closeAperturaStatus(); return; }
@@ -25779,9 +26000,15 @@ function selectGender(el, g){
         btn.disabled = true;
         _ewCaptchaSetButtonText(btn, 'Заказ зафиксирован');
       }
-      // Phase 2C.1: заказ уже создан в YDB, но YooKassa пока не подключена.
-      // Не рисуем фейковую оплату и не очищаем корзину до реального payment/create.
-      showNotif('// Apertura: заказ зафиксирован. Оплата будет подключена следующим циклом.', {contextual:true});
+      // Phase 2D: заказ уже создан в YDB. Сохраняем активный цикл
+      // в localStorage и показываем APERTURA STATUS вместо обычного toast.
+      // YooKassa пока не подключена: payment/create не вызывается, фейковой
+      // оплаты и transition_complete здесь нет.
+      const activeOrder = (typeof _ewActiveOrderStoreFromCheckout === 'function')
+        ? _ewActiveOrderStoreFromCheckout(checkoutOrder, reservation, orderPayload)
+        : null;
+      if(typeof showActiveOrderStatus === 'function') showActiveOrderStatus(activeOrder || checkoutOrder, {key:'order-fixed', source:'checkout-order'});
+      else showNotif('// Apertura: заказ зафиксирован. Оплата будет подключена следующим циклом.', {contextual:true});
     }catch(error){
       console.warn('checkout reservation failed:', error);
       if(btn){
