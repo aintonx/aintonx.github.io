@@ -29761,8 +29761,14 @@ function acceptCookies(){
 <!-- PATCH · APERTURA ENTRY STATUS SHARP PANEL · 20260708 -->
 <style id="ew-apertura-entry-status-sharp-panel">
 /* Target only ?signal=instagram APERTURA ENTRY STATUS.
-   Keep the normal site blur/backdrop exactly as other APERTURA STATUS windows use it.
-   Do not change mobile bottom-sheet geometry, buttons, routes, cart, checkout or backend. */
+   The site/background blur stays on #_blurW (the existing shared mechanism):
+   body.ap-console-open #_blurW { filter: blur(12px) brightness(0.5); }
+   This overlay must not add its own dark veil, otherwise iOS Safari renders the
+   site content almost black and visually muddy. The status panel itself remains
+   outside #_blurW, so its text stays sharp. */
+#apStatusOverlay[data-status-source="entry-instagram"] {
+  background: transparent !important;
+}
 #apStatusOverlay[data-status-source="entry-instagram"] .ap-status-panel,
 #apStatusOverlay[data-status-source="entry-instagram"] .ap-status-panel * {
   -webkit-filter: none !important;
