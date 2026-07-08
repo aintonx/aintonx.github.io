@@ -12526,7 +12526,7 @@ button, a, [role="button"], label,
 :root[data-theme="light"] .attr-result-title { color: var(--ink-2); }
 :root[data-theme="light"] .attr-result-row-val { color: var(--ink); }
 
-/* ── LOCKED ARTIFACT CARDS — Ожидает Перехода / Цикл завершён ─────
+/* ── LOCKED ARTIFACT CARDS — В MARKETSPACE / Цикл завершён ─────
    Канон MARKETSPACE: недоступная карточка остаётся на своём месте,
    темнеет, получает red lock-полоски, цену по рангу и статус вместо CTA. */
 .pcard.locked,
@@ -13634,7 +13634,7 @@ button, a, [role="button"], label,
 
 
 
-/* ── MODAL STATUS · Ожидает Перехода подсказка внутри поля STATUS ─
+/* ── MODAL STATUS · В MARKETSPACE подсказка внутри поля STATUS ─
    Подсказка живёт прямо в статусном поле карточки/модалки. Всё поле
    становится точкой взаимодействия, а стрелка работает как в переключателях. */
 .mstatus-field {
@@ -15169,18 +15169,18 @@ button, a, [role="button"], label,
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0006</div>
-        <div class="pbeacon" data-status="first_form"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Ожидает Перехода</span></div>
+        <div class="pbeacon" data-status="first_form"><div class="pbeacon-dot"></div><span class="pbeacon-txt">В MARKETSPACE</span></div>
         <img src="img/ball.webp" alt="Тёмный оракул" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
-          <div class="pmeta"><span class="pwrld">Marketspace</span><span class="pstatus">Ожидает Перехода</span></div>
+          <div class="pmeta"><span class="pwrld">Marketspace</span><span class="pstatus">В MARKETSPACE</span></div>
           <h3 class="pname">Тёмный оракул</h3>
           <p class="pdesc">Отвечал раньше, чем успеешь договорить, — спокойно, будто всё знал. <em>Сбывалось так часто, что во второй раз боялись подходить.</em> Спросите — ответит, как всем, кто потом жалел.</p>
         </div>
         <div class="pfooter">
           <div class="pprice">25 999 <span>₽</span></div>
-          <button class="pbtn" onclick="event.stopPropagation();openModal(6)">Ожидает Перехода</button>
+          <button class="pbtn" onclick="event.stopPropagation();openModal(6)">В MARKETSPACE</button>
         </div>
       </div>
     </div>
@@ -18483,11 +18483,11 @@ const PRODUCT_STATUS_MODEL = {
     className: 'status-available'
   },
   first_form: {
-    label: 'Ожидает Перехода',
+    label: 'В MARKETSPACE',
     className: 'status-first_form'
   },
   transition_complete: {
-    label: 'Прошёл Переход',
+    label: 'В нашем мире',
     className: 'status-transition_complete'
   }
 };
@@ -18812,7 +18812,7 @@ function setupModalFirstFormStatusHint(status){
   field.setAttribute('tabindex', isFirstForm ? '0' : '-1');
   field.setAttribute('role', isFirstForm ? 'button' : 'group');
   if(isFirstForm){
-    field.setAttribute('aria-label','STATUS: Ожидает Перехода. Нажмите, чтобы открыть расшифровку статуса.');
+    field.setAttribute('aria-label','STATUS: В MARKETSPACE. Нажмите, чтобы открыть расшифровку статуса.');
   }else{
     field.removeAttribute('aria-label');
   }
@@ -24140,7 +24140,7 @@ function _apWithConsolePreview(fn){
    и Ауру. Аура назначается рандомайзером и сохраняется. На success-экране
    показывается та Аура, что уже выпала, не новая.
    Исток — место, куда уходят Виши после Перехода.
-   Ожидает Перехода — публичный статус реликвии, чей сигнал уже
+   В MARKETSPACE — публичный статус реликвии, чей сигнал уже
    обнаружен Apertura в MARKETSPACE, но сама реликвия ещё не появилась
    в нашем мире и пока не может быть заказана.
    Конденсат — цифровая энергия желания. Каталог формируется через Конденсат,
@@ -24611,14 +24611,14 @@ function _apStatusRow(label, value, htmlValue){
 }
 function _apFirstFormStatusRow(){
   return `
-    <div class="ap-status-row ap-first-form-row" id="apFirstFormRow" role="button" tabindex="0" aria-expanded="false" aria-label="Статус реликвии: Ожидает Перехода. Нажмите, чтобы открыть расшифровку статуса." onclick="toggleFirstFormTip(event)" onkeydown="handleFirstFormTipKey(event)">
+    <div class="ap-status-row ap-first-form-row" id="apFirstFormRow" role="button" tabindex="0" aria-expanded="false" aria-label="Статус реликвии: В MARKETSPACE. Нажмите, чтобы открыть расшифровку статуса." onclick="toggleFirstFormTip(event)" onkeydown="handleFirstFormTipKey(event)">
       <div class="ap-status-label">Статус реликвии</div>
       <div class="ap-status-value ap-first-form-value">
-        <span class="ap-first-form-text">Ожидает Перехода</span>
+        <span class="ap-first-form-text">В MARKETSPACE</span>
         <span class="ap-first-form-arr" aria-hidden="true"><svg class="ico ew-mask-icon ew-icon--chevron-down" aria-hidden="true"><use href="#i-chevron-down"/></svg></span>
       </div>
       <div class="ap-first-form-tip" id="apFirstFormTip" aria-hidden="true">
-        <div class="ap-first-form-tip-title">Ожидает Перехода</div>
+        <div class="ap-first-form-tip-title">В MARKETSPACE</div>
         <div class="ap-first-form-tip-text">${_apEsc(FIRST_FORM_HINT_TEXT)}</div>
       </div>
     </div>`;
