@@ -15892,7 +15892,7 @@ body._blur-fading #_blurW {
     <div class="modal-scroll-pill" id="modalScrollPill" aria-hidden="true">
       <div class="modal-scroll-pill-thumb" id="modalScrollPillThumb"></div>
     </div>
-    <div class="mimgw"><img id="mimg" src="" alt=""></div>
+    <div class="mimgw"><img id="mimg" src="" alt="" loading="eager" decoding="async" fetchpriority="high"></div>
     <div class="mbody">
       <div class="mart" id="mart"></div>
       <h2 class="mname" id="mname"></h2>
@@ -19448,6 +19448,7 @@ function openModal(i){
     setTimeout(()=>clickedCard.classList.remove('reading'),400);
   }
   document.getElementById('mimg').src=p.img;
+  try{ if(typeof _ewWarmProductModalImage === 'function') _ewWarmProductModalImage(document.getElementById('mimg'), p.img); }catch(e){}
   document.getElementById('mart').textContent='// ART. '+p.id;
   document.getElementById('mname').textContent=p.name;
   document.getElementById('mdesc').textContent=p.desc;
@@ -19496,9 +19497,14 @@ function openModal(i){
     document.getElementById('mpriceecho').textContent=blockLabel;
   }
   const _productOverlay = document.getElementById('moverlay');
+  const _productPanel = document.getElementById('modalPanel');
   if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(_productOverlay);
   _productOverlay.classList.remove('closing');
-  _productOverlay.classList.add('open');
+  if(typeof _ewPrepareProductSheetFirstFrame === 'function'){
+    _ewPrepareProductSheetFirstFrame(_productOverlay, _productPanel);
+  }else{
+    _productOverlay.classList.add('open');
+  }
   lockScroll();
   // Чистим stale-флаг blur fade на случай если эта модалка открывается
   // моментально после закрытия предыдущей — иначе блюр не появится.
@@ -19667,9 +19673,12 @@ function _cleanupModal(){
      отработала, теперь скрываем модал. */
   ov.classList.remove('open');
   ov.classList.remove('closing');
+  ov.classList.remove('ew-sheet-preopen');
+  if(ov._ewSheetOpenRaf){ cancelAnimationFrame(ov._ewSheetOpenRaf); ov._ewSheetOpenRaf = 0; }
   /* 2. Сбрасываем все inline-стили анимации */
   panel.style.transform=''; panel.style.transition='';
   panel.style.opacity='';   panel.style.filter='';
+  panel.style.animation='';
   panel.style.clipPath=''; panel.style.webkitClipPath='';
   ov.style.opacity='';      ov.style.transition='';
   panel.classList.remove('mob-animate-in');
@@ -32198,6 +32207,152 @@ body.modal-open .pcard.reading::before {
 }
 </style>
 
+
+
+<style id="ew-sheet-first-frame-safety-v1">
+/* ════════════════════════════════════════════════════════════════
+   Phase 2D.8 · SHEET FIRST-FRAME SAFETY
+   Micro-patch поверх Telegram-like sheet: не меняем понравившуюся
+   механику, длительность и easing. Убираем последний first-frame flash:
+   sheet в состоянии покоя и preopen находится гарантированно ниже viewport,
+   а открытие стартует только после подготовленного кадра.
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --ew-sheet-start-y: calc(var(--ew-vvh, 100vh) + 180px);
+  --ew-tg-sheet-y: var(--ew-sheet-start-y);
+}
+
+/* Product modal получает отдельный preopen-кадр: overlay уже создан,
+   но панель ещё строго за нижней границей и backdrop не вспыхивает. */
+.moverlay.ew-sheet-preopen {
+  display: flex !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+.moverlay.ew-sheet-preopen::before {
+  opacity: 0 !important;
+  animation: none !important;
+}
+.moverlay.ew-sheet-preopen #modalPanel {
+  opacity: 1 !important;
+  transform: translate3d(0, var(--ew-sheet-start-y), 0) !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+/* Переопределяем последний sheet-keyframe без изменения общей физики:
+   старт/финиш теперь используют более глубокую offscreen-позицию. */
+@keyframes ewTelegramSheetIn {
+  from { opacity: 1; transform: translate3d(0, var(--ew-sheet-start-y), 0); filter: none; }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+}
+@keyframes ewTelegramSheetOut {
+  from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+  to   { opacity: 1; transform: translate3d(0, var(--ew-sheet-start-y), 0); filter: none; }
+}
+
+.moverlay:not(.open):not(.closing) .modal,
+.chk-overlay:not(.open):not(.closing) .chk-modal,
+#reqModal:not(.open):not(.closing) .legal-modal,
+#offerModal:not(.open):not(.closing) .legal-modal,
+#privacyModal:not(.open):not(.closing) .legal-modal,
+.ap-console-overlay:not(.open):not(.closing) .ap-console-panel,
+.ap-console-overlay:not(.open):not(.closing) .ap-status-panel,
+#apStatusOverlay:not(.open):not(.closing) .ap-status-panel {
+  opacity: 1 !important;
+  transform: translate3d(0, var(--ew-sheet-start-y), 0) !important;
+  filter: none !important;
+}
+
+@media(max-width:960px){
+  :root {
+    --ew-sheet-start-y: calc(100% + 96px);
+    --ew-tg-sheet-y: var(--ew-sheet-start-y);
+  }
+}
+</style>
+
+<script id="ew-sheet-first-frame-safety-js">
+(function(){
+  function clearProductSheetPreopen(overlay, panel){
+    if(!overlay) return;
+    if(overlay._ewSheetOpenRaf){
+      cancelAnimationFrame(overlay._ewSheetOpenRaf);
+      overlay._ewSheetOpenRaf = 0;
+    }
+    overlay.classList.remove('ew-sheet-preopen');
+    if(panel){
+      panel.style.animation = '';
+      panel.style.transform = '';
+      panel.style.opacity = '';
+      panel.style.filter = '';
+    }
+  }
+
+  window._ewPrepareProductSheetFirstFrame = function(overlay, panel){
+    if(!overlay) return false;
+    clearProductSheetPreopen(overlay, panel);
+    overlay.classList.remove('open', 'closing');
+    overlay.classList.add('ew-sheet-preopen');
+    if(panel){
+      panel.style.animation = 'none';
+      panel.style.transform = 'translate3d(0, var(--ew-sheet-start-y), 0)';
+      panel.style.opacity = '1';
+      panel.style.filter = 'none';
+      /* Принудительно фиксируем стартовый кадр до .open, чтобы браузер
+         не успел показать финальное состояние панели на первом paint. */
+      void panel.offsetHeight;
+    }
+    overlay._ewSheetOpenRaf = requestAnimationFrame(function(){
+      overlay._ewSheetOpenRaf = 0;
+      if(!overlay.classList.contains('ew-sheet-preopen')) return;
+      overlay.classList.remove('ew-sheet-preopen');
+      if(panel){
+        panel.style.animation = '';
+        panel.style.transform = '';
+        panel.style.opacity = '';
+        panel.style.filter = '';
+      }
+      overlay.classList.add('open');
+    });
+    return true;
+  };
+
+  const decoded = new Set();
+  window._ewWarmProductModalImage = function(img, src){
+    if(!img || !src) return;
+    try{ img.decoding = 'async'; }catch(_){ }
+    try{ img.loading = 'eager'; }catch(_){ }
+    try{ img.fetchPriority = 'high'; }catch(_){ }
+    if(decoded.has(src)) return;
+    const mark = function(){ decoded.add(src); };
+    try{
+      if(img.complete && typeof img.decode === 'function'){
+        img.decode().then(mark).catch(function(){ decoded.delete(src); });
+      }else{
+        img.addEventListener('load', function(){
+          if(typeof img.decode === 'function') img.decode().then(mark).catch(mark);
+          else mark();
+        }, {once:true});
+        img.addEventListener('error', function(){ decoded.delete(src); }, {once:true});
+      }
+    }catch(_){ }
+  };
+
+  /* Низкоприоритетная подготовка уже отрисованных карточек: не грузим
+     насильно весь каталог, но декодируем то, что браузер уже успел загрузить. */
+  function idleDecodeLoadedCatalogImages(){
+    try{
+      document.querySelectorAll('.pcard img').forEach(function(img){
+        if(!img || !img.complete || !img.currentSrc) return;
+        if(typeof img.decode === 'function') img.decode().catch(function(){});
+      });
+    }catch(_){ }
+  }
+  if('requestIdleCallback' in window) requestIdleCallback(idleDecodeLoadedCatalogImages, {timeout:2500});
+  else window.addEventListener('load', function(){ setTimeout(idleDecodeLoadedCatalogImages, 900); }, {once:true});
+})();
+</script>
 
 
 <!-- PATCH 5 · STABILITY CORE / OLD MODAL MOTION PRESERVED -->
