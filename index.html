@@ -33343,97 +33343,60 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
 
 
 
-<style id="ew-apertura-status-two-panel-pivot-v1">
-/* Phase 2D.13h · APERTURA STATUS TWO-PANEL PIVOT
-   No more gap-guards / matte overlays. The old status card and the new status
-   card exist at the same time during the pivot, like a local old/new snapshot.
-   Backdrop stays mounted; only APERTURA STATUS panel layers move. */
-#apStatusOverlay.ew-ap-status-two-panel,
+<style id="ew-apertura-status-pivot-transition-v4">
+/* Phase 2D.13i · APERTURA STATUS PIVOT BLUR-OFF REVERT
+   Возвращает прежнюю понравившуюся pivot-механику APERTURA STATUS: старая
+   status-карточка тихо снимается как слой, новый status входит штатной
+   sheet-анимацией. Без two-panel/snapshot/matte/toast-shields.
+   Дополнительно на время APERTURA STATUS отключаем blur фона (#_blurW),
+   потому что animated filter/backdrop recomposition может давать белый кадр. */
 #apStatusOverlay.ew-ap-status-pivoting {
   overflow: hidden !important;
 }
-#apStatusOverlay.ew-ap-status-two-panel::before,
-#apStatusOverlay.ew-ap-status-pivoting::before {
-  opacity: 1 !important;
-  visibility: visible !important;
-  animation: none !important;
+#apStatusOverlay.ew-ap-status-pivoting #apStatusPanel {
+  pointer-events: none;
 }
-#apStatusOverlay.ew-ap-status-two-panel::after,
-#apStatusOverlay.ew-ap-status-pivoting::after {
-  content: none !important;
-  display: none !important;
-}
-#apStatusOverlay .ew-ap-status-panel-snapshot {
-  position: fixed !important;
-  box-sizing: border-box !important;
-  margin: 0 !important;
-  z-index: 2147482602 !important;
-  pointer-events: none !important;
-  opacity: 1 !important;
-  transform: translate3d(0, 0, 0) !important;
+/* APERTURA STATUS уже имеет собственную тёмную плёнку overlay::before.
+   Не держим одновременно ещё и filter: blur(...) на #_blurW: это тяжёлый
+   compositing/filter слой и именно он может давать промежуточную вспышку. */
+body.ap-status-open #_blurW,
+body.ap-status-open._blur-fading #_blurW,
+body.ap-status-open.scroll-restoring #_blurW {
+  -webkit-filter: none !important;
   filter: none !important;
-  animation: none !important;
-  transition: transform var(--ew-tg-sheet-out, 360ms) var(--ew-tg-sheet-ease-out, cubic-bezier(.32,0,.67,0)) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-  will-change: transform;
-}
-#apStatusOverlay .ew-ap-status-panel-snapshot.ew-ap-status-leave {
-  transform: translate3d(0, var(--ew-tg-sheet-y), 0) !important;
-}
-#apStatusOverlay.ew-ap-status-two-panel #apStatusPanel {
-  position: relative;
-  z-index: 2147482603 !important;
-  opacity: 1 !important;
-  filter: none !important;
-  animation: none !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-}
-#apStatusOverlay.ew-ap-status-two-panel #apStatusPanel.ew-ap-status-incoming {
-  transform: translate3d(0, var(--ew-tg-sheet-y), 0) !important;
+  -webkit-transition: none !important;
   transition: none !important;
 }
-#apStatusOverlay.ew-ap-status-two-panel #apStatusPanel.ew-ap-status-incoming.ew-ap-status-enter {
-  transform: translate3d(0, 0, 0) !important;
-  transition: transform var(--ew-tg-sheet-in, 460ms) var(--ew-tg-sheet-ease-in, cubic-bezier(.18,.78,.22,1)) !important;
+/* Если APERTURA STATUS открыт поверх Architect Console, не блюрим нижнюю
+   консольную панель: статусный overlay сам закрывает сцену. */
+body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
+  -webkit-filter: none !important;
+  filter: none !important;
 }
-#apStatusOverlay.ew-ap-status-two-panel #apStatusPanel,
-#apStatusOverlay.ew-ap-status-two-panel #apStatusPanel * {
-  pointer-events: none !important;
-}
-@media (prefers-reduced-motion: reduce){
-  #apStatusOverlay .ew-ap-status-panel-snapshot,
-  #apStatusOverlay.ew-ap-status-two-panel #apStatusPanel.ew-ap-status-incoming.ew-ap-status-enter {
-    transition: none !important;
+@media (prefers-reduced-motion: reduce) {
+  #apStatusOverlay.ew-ap-status-pivoting #apStatusPanel {
+    animation: none !important;
   }
 }
 </style>
-<script id="ew-apertura-status-two-panel-pivot-js-v1">
-/* Phase 2D.13h · APERTURA STATUS TWO-PANEL PIVOT JS
-   Железное правило: во время смены статуса никогда не существует пустого
-   кадра. Старый panel остаётся snapshot-слоем, новый panel уже подготовлен
-   ниже viewport и входит только после фиксации стартового кадра. */
+<script id="ew-apertura-status-pivot-transition-js-v4">
+/* Phase 2D.13i · APERTURA STATUS PIVOT BLUR-OFF REVERT JS */
 (function(){
-  const PATCH = 'Phase 2D.13h · APERTURA STATUS TWO-PANEL PIVOT';
-  const EXIT_MS = 380;
-  const ENTER_MS = 500;
-  const CLEANUP_MS = 620;
-
+  const PATCH = 'Phase 2D.13i · APERTURA STATUS PIVOT BLUR-OFF REVERT';
   function reduceMotion(){
     try{ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
     catch(e){ return false; }
   }
-  function raf2(fn){
-    requestAnimationFrame(function(){ requestAnimationFrame(fn); });
-  }
-  function removeIds(node){
-    if(!node || !node.querySelectorAll) return;
-    if(node.removeAttribute) node.removeAttribute('id');
-    node.querySelectorAll('[id]').forEach(function(el){ el.removeAttribute('id'); });
-  }
-  function clearPreviousPivot(overlay){
+  function resetStatusOverlayForPivot(overlay){
     if(!overlay) return;
+    if(overlay._apCloseTimer){
+      clearTimeout(overlay._apCloseTimer);
+      overlay._apCloseTimer = 0;
+    }
+    if(overlay._apOpenFrame){
+      cancelAnimationFrame(overlay._apOpenFrame);
+      overlay._apOpenFrame = 0;
+    }
     if(overlay._apStatusTwoPanelTimer){
       clearTimeout(overlay._apStatusTwoPanelTimer);
       overlay._apStatusTwoPanelTimer = 0;
@@ -33448,111 +33411,66 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
       panel.style.removeProperty('transform');
       panel.style.removeProperty('animation');
     }
-    overlay.classList.remove('ew-ap-status-two-panel','ew-ap-status-pivoting');
-  }
-  function makeSnapshot(panel, overlay){
-    const rect = panel.getBoundingClientRect();
-    const clone = panel.cloneNode(true);
-    removeIds(clone);
-    clone.setAttribute('aria-hidden','true');
-    clone.classList.add('ew-ap-status-panel-snapshot');
-    clone.style.left = Math.round(rect.left) + 'px';
-    clone.style.top = Math.round(rect.top) + 'px';
-    clone.style.width = Math.round(rect.width) + 'px';
-    clone.style.height = Math.round(rect.height) + 'px';
-    clone.style.maxWidth = Math.round(rect.width) + 'px';
-    clone.style.maxHeight = Math.round(rect.height) + 'px';
-    overlay.appendChild(clone);
-    return clone;
-  }
-  function keepAperturaSceneMounted(overlay){
-    if(!overlay) return;
-    if(overlay._apCloseTimer){
-      clearTimeout(overlay._apCloseTimer);
-      overlay._apCloseTimer = 0;
-    }
-    if(overlay._apOpenFrame){
-      cancelAnimationFrame(overlay._apOpenFrame);
-      overlay._apOpenFrame = 0;
-    }
     if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(overlay);
-    overlay.classList.remove('closing');
-    overlay.classList.add('is-mounted','open','ew-ap-status-two-panel','ew-ap-status-pivoting');
-    document.body.classList.remove('scroll-restoring','_blur-fading','ap-status-fading');
-    document.body.classList.add('ap-console-open','ap-status-open');
-    if(typeof _ewHardHideNotif === 'function') _ewHardHideNotif();
-  }
-  function cleanupPivot(overlay, snapshot, panel){
-    try{ if(snapshot && snapshot.parentNode) snapshot.parentNode.removeChild(snapshot); }catch(e){}
-    if(panel){
-      panel.classList.remove('ew-ap-status-incoming','ew-ap-status-enter');
-      panel.style.removeProperty('transition');
-      panel.style.removeProperty('transform');
-      panel.style.removeProperty('animation');
-      panel.scrollTop = 0;
-    }
-    if(overlay){
-      overlay.classList.remove('ew-ap-status-two-panel','ew-ap-status-pivoting');
-      overlay._apStatusTwoPanelTimer = 0;
-    }
+
+    // ВАЖНО: это ровно старая понравившаяся механика pivot, а не новая
+    // two-panel система. Снимаем open, но не отпускаем scroll/body scene.
+    overlay.classList.remove('open', 'closing', 'ew-ap-status-two-panel');
+    overlay.classList.add('is-mounted', 'ew-ap-status-pivoting');
+    document.body.classList.remove('scroll-restoring', '_blur-fading', 'ap-status-fading');
+    document.body.classList.add('ap-console-open', 'ap-status-open');
   }
 
   window._apStatusPivotReplace = function(overlay, body, html){
-    if(!overlay || !body) return false;
+    if(!overlay || !body){ return false; }
     html = String(html == null ? '' : html);
-    const panel = document.getElementById('apStatusPanel');
-    if(!panel){ body.innerHTML = html; if(typeof _apOpenOverlay === 'function') _apOpenOverlay('apStatusOverlay'); return true; }
-
-    clearPreviousPivot(overlay);
-    keepAperturaSceneMounted(overlay);
 
     if(reduceMotion()){
       body.innerHTML = html;
-      try{ panel.scrollTop = 0; body.scrollTop = 0; }catch(e){}
+      try{
+        const p = document.getElementById('apStatusPanel');
+        if(p) p.scrollTop = 0;
+        body.scrollTop = 0;
+      }catch(e){}
+      if(typeof _apOpenOverlay === 'function') _apOpenOverlay('apStatusOverlay');
       return true;
     }
 
-    const snapshot = makeSnapshot(panel, overlay);
+    resetStatusOverlayForPivot(overlay);
 
-    // New status content is committed while the real panel is still below the
-    // viewport. The outgoing snapshot covers the previous state, so there is no
-    // white/intermediate frame between DOM states.
-    panel.classList.add('ew-ap-status-incoming');
-    panel.classList.remove('ew-ap-status-enter');
-    body.innerHTML = html;
-    try{ panel.scrollTop = 0; body.scrollTop = 0; }catch(e){}
-
-    // Force initial offscreen state before starting the two-panel motion.
-    void panel.offsetHeight;
-    void snapshot.offsetHeight;
-
-    raf2(function(){
-      snapshot.classList.add('ew-ap-status-leave');
-      panel.classList.add('ew-ap-status-enter');
+    requestAnimationFrame(function(){
+      body.innerHTML = html;
+      try{
+        const panel = document.getElementById('apStatusPanel');
+        if(panel) panel.scrollTop = 0;
+        body.scrollTop = 0;
+        if(panel) void panel.offsetHeight;
+      }catch(e){}
+      if(typeof _apOpenOverlay === 'function') _apOpenOverlay('apStatusOverlay');
+      window.setTimeout(function(){
+        overlay.classList.remove('ew-ap-status-pivoting');
+      }, 560);
     });
-
-    overlay._apStatusTwoPanelTimer = setTimeout(function(){
-      cleanupPivot(overlay, snapshot, panel);
-    }, CLEANUP_MS);
-
     return true;
   };
 
   window.inspectAperturaStatusCardSwapPatch = function(){
     const ov = document.getElementById('apStatusOverlay');
     const panel = document.getElementById('apStatusPanel');
+    const body = document.getElementById('apStatusBody');
+    const blurW = document.getElementById('_blurW');
+    let blurFilter = '';
+    try{ blurFilter = blurW ? getComputedStyle(blurW).filter : ''; }catch(e){}
     return {
-      ok: !!ov && !!panel && typeof window._apStatusPivotReplace === 'function',
+      ok: typeof window._apStatusPivotReplace === 'function' && !!ov && !!panel && !!body,
       patch: PATCH,
-      open: !!(ov && ov.classList.contains('open')),
-      mounted: !!(ov && ov.classList.contains('is-mounted')),
+      statusOpen: !!(ov && ov.classList.contains('open')),
       pivoting: !!(ov && ov.classList.contains('ew-ap-status-pivoting')),
-      twoPanel: !!(ov && ov.classList.contains('ew-ap-status-two-panel')),
-      snapshots: ov ? ov.querySelectorAll('.ew-ap-status-panel-snapshot').length : 0,
-      statusKey: ov ? (ov.dataset.statusKey || '') : ''
+      statusKey: ov ? ov.dataset.statusKey || '' : '',
+      blurFilter: blurFilter || 'none'
     };
   };
-  window.inspectAperturaStatusTwoPanelPivot = window.inspectAperturaStatusCardSwapPatch;
+  window.inspectAperturaStatusPivotBlurOff = window.inspectAperturaStatusCardSwapPatch;
 })();
 </script>
 
