@@ -25073,7 +25073,9 @@ function _renderAperturaStatus(payload){
   if(!body) return;
   const key = payload.key || '';
   const source=payload.source || 'console';
+  const previousStatusKey = ov ? String(ov.dataset.statusKey || '') : '';
   if(ov){
+    ov.dataset.previousStatusKey = previousStatusKey;
     ov.dataset.statusKey=key;
     ov.dataset.statusSource=source;
     ov.dataset.copyCode=payload.copyCode || '';
@@ -25090,11 +25092,13 @@ function _renderAperturaStatus(payload){
     <div class="ap-status-actions">
       ${_apStatusActionsHtml(payload.actions, key)}
     </div>`;
-  if(typeof _ewSmoothAperturaStatusReplace === 'function' && ov && ov.classList.contains('open')){
-    _ewSmoothAperturaStatusReplace(ov, body, nextStatusHtml);
-  }else{
-    body.innerHTML=nextStatusHtml;
+  const wasOpen = !!(ov && ov.classList.contains('open') && ov.classList.contains('is-mounted') && !ov.classList.contains('closing'));
+  const previousKey = ov ? String(ov.dataset.previousStatusKey || '') : '';
+  if(wasOpen && previousKey && previousKey !== key && typeof _apStatusPivotReplace === 'function'){
+    _apStatusPivotReplace(ov, body, nextStatusHtml);
+    return;
   }
+  body.innerHTML=nextStatusHtml;
   const panel=document.getElementById('apStatusPanel');
   if(panel){
     panel.scrollTop = 0;
@@ -33285,141 +33289,92 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
 
 
 
-<style id="ew-apertura-status-card-swap-v2">
-/* Phase 2D.13b · APERTURA STATUS PANEL SWAP
-   Fix after failed body-swap. APERTURA STATUS state changes now use a
-   full-panel ghost replacement: old card exits as a whole layer, new card
-   enters as a whole layer. Backdrop/overlay stay mounted and are not restarted. */
-#apStatusOverlay.ew-ap-status-panel-swapping {
-  pointer-events: auto;
+
+
+
+
+
+
+<style id="ew-apertura-status-pivot-transition-v3">
+/* Phase 2D.13c · APERTURA STATUS PIVOT TRANSITION
+   Uses the same site-native pivot idea as product modal → checkout:
+   quiet-hide the current panel layer, replace content offscreen, then reopen
+   through the existing Telegram-like APERTURA sheet animation. */
+#apStatusOverlay.ew-ap-status-pivoting {
+  overflow: hidden !important;
 }
-#apStatusOverlay.ew-ap-status-panel-swapping #apStatusPanel,
-#apStatusOverlay .ew-ap-status-panel-ghost {
-  animation: none !important;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-#apStatusOverlay #apStatusPanel.ew-ap-status-panel-incoming {
-  opacity: 0 !important;
-  transform: translate3d(0, 22px, 0) !important;
-  pointer-events: none !important;
-  transition:
-    opacity .24s ease,
-    transform .34s cubic-bezier(.18,.86,.22,1) !important;
-}
-#apStatusOverlay #apStatusPanel.ew-ap-status-panel-incoming.ew-ap-status-panel-live {
-  opacity: 1 !important;
-  transform: translate3d(0, 0, 0) !important;
-}
-#apStatusOverlay .ew-ap-status-panel-ghost {
-  position: fixed !important;
-  box-sizing: border-box !important;
-  margin: 0 !important;
-  z-index: 7 !important;
-  pointer-events: none !important;
-  opacity: 1 !important;
-  transform: translate3d(0, 0, 0) !important;
-  transition:
-    opacity .20s ease,
-    transform .30s cubic-bezier(.22,.72,.22,1) !important;
-}
-#apStatusOverlay .ew-ap-status-panel-ghost.ew-ap-status-panel-ghost-out {
-  opacity: 0 !important;
-  transform: translate3d(0, -18px, 0) !important;
+#apStatusOverlay.ew-ap-status-pivoting #apStatusPanel {
+  pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  #apStatusOverlay #apStatusPanel.ew-ap-status-panel-incoming,
-  #apStatusOverlay .ew-ap-status-panel-ghost {
-    transition: none !important;
+  #apStatusOverlay.ew-ap-status-pivoting #apStatusPanel {
+    animation: none !important;
   }
 }
 </style>
-<script id="ew-apertura-status-card-swap-js-v2">
-/* Phase 2D.13b · APERTURA STATUS PANEL SWAP JS */
+<script id="ew-apertura-status-pivot-transition-js-v3">
+/* Phase 2D.13c · APERTURA STATUS PIVOT TRANSITION JS */
 (function(){
   function reduceMotion(){
     try{ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
     catch(e){ return false; }
   }
-  function stripInteractiveIdentity(root){
-    if(!root || !root.querySelectorAll) return;
-    root.querySelectorAll('[id]').forEach(function(n){ n.removeAttribute('id'); });
-    root.querySelectorAll('[name]').forEach(function(n){ n.removeAttribute('name'); });
-    root.querySelectorAll('button,a,input,textarea,select').forEach(function(n){
-      try{ n.tabIndex = -1; }catch(e){}
-      try{ n.setAttribute('aria-hidden', 'true'); }catch(e){}
-    });
-  }
-  function clearSwap(overlay, panel){
-    if(panel && panel._ewApPanelSwapTimer){
-      clearTimeout(panel._ewApPanelSwapTimer);
-      panel._ewApPanelSwapTimer = 0;
+  function resetStatusOverlayForPivot(overlay){
+    if(!overlay) return;
+    if(overlay._apCloseTimer){
+      clearTimeout(overlay._apCloseTimer);
+      overlay._apCloseTimer = 0;
     }
-    if(overlay && overlay._ewApPanelSwapGhost){
-      try{ overlay._ewApPanelSwapGhost.remove(); }catch(e){}
-      overlay._ewApPanelSwapGhost = null;
+    if(overlay._apOpenFrame){
+      cancelAnimationFrame(overlay._apOpenFrame);
+      overlay._apOpenFrame = 0;
     }
-    if(overlay) overlay.classList.remove('ew-ap-status-panel-swapping');
-    if(panel){
-      panel.classList.remove('ew-ap-status-panel-incoming', 'ew-ap-status-panel-live');
-      panel.style.animation = '';
-      panel.style.transform = '';
-      panel.style.opacity = '';
-      panel.style.pointerEvents = '';
-    }
+    if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(overlay);
+
+    // This mirrors the working product-card → checkout pivot: the old layer is
+    // silently removed without releasing scroll/blur, then the next layer opens
+    // with the existing sheet animation. No ghost nodes, no text-height morph.
+    overlay.classList.remove('open', 'closing');
+    overlay.classList.add('is-mounted', 'ew-ap-status-pivoting');
+    document.body.classList.remove('scroll-restoring', '_blur-fading', 'ap-status-fading');
+    document.body.classList.add('ap-console-open', 'ap-status-open');
   }
 
-  window._ewSmoothAperturaStatusReplace = function(overlay, body, html){
-    if(!body){ return; }
+  window._apStatusPivotReplace = function(overlay, body, html){
+    if(!overlay || !body){ return false; }
     html = String(html == null ? '' : html);
-    if(body.innerHTML === html) return;
-    const panel = overlay && overlay.querySelector ? overlay.querySelector('#apStatusPanel, .ap-status-panel') : document.getElementById('apStatusPanel');
-    if(!panel || !overlay || !overlay.classList || !overlay.classList.contains('open') || reduceMotion()){
+
+    // Reduced motion: no extra choreography, just stable content replacement.
+    if(reduceMotion()){
       body.innerHTML = html;
-      return;
+      try{
+        const p = document.getElementById('apStatusPanel');
+        if(p) p.scrollTop = 0;
+        body.scrollTop = 0;
+      }catch(e){}
+      if(typeof _apOpenOverlay === 'function') _apOpenOverlay('apStatusOverlay');
+      return true;
     }
 
-    clearSwap(overlay, panel);
+    resetStatusOverlayForPivot(overlay);
 
-    const rect = panel.getBoundingClientRect();
-    if(!rect || rect.width < 1 || rect.height < 1){
-      body.innerHTML = html;
-      return;
-    }
-
-    const ghost = panel.cloneNode(true);
-    stripInteractiveIdentity(ghost);
-    ghost.classList.add('ew-ap-status-panel-ghost');
-    ghost.setAttribute('aria-hidden', 'true');
-    ghost.removeAttribute('role');
-    ghost.removeAttribute('aria-modal');
-    ghost.removeAttribute('aria-labelledby');
-    ghost.style.left = Math.round(rect.left) + 'px';
-    ghost.style.top = Math.round(rect.top) + 'px';
-    ghost.style.width = Math.round(rect.width) + 'px';
-    ghost.style.minHeight = Math.round(rect.height) + 'px';
-    ghost.style.height = Math.round(rect.height) + 'px';
-    ghost.style.maxWidth = Math.round(rect.width) + 'px';
-
-    overlay._ewApPanelSwapGhost = ghost;
-    overlay.classList.add('ew-ap-status-panel-swapping');
-    overlay.appendChild(ghost);
-
-    panel.classList.add('ew-ap-status-panel-incoming');
-    body.innerHTML = html;
-    try{ panel.scrollTop = 0; body.scrollTop = 0; }catch(e){}
-
-    // Force the browser to commit the incoming start frame before playing.
-    void panel.offsetHeight;
+    // Commit the offscreen state first, then replace content and let the
+    // existing _apOpenOverlay rAF start the normal APERTURA sheet entry.
     requestAnimationFrame(function(){
-      if(overlay._ewApPanelSwapGhost !== ghost) return;
-      panel.classList.add('ew-ap-status-panel-live');
-      ghost.classList.add('ew-ap-status-panel-ghost-out');
-      panel._ewApPanelSwapTimer = setTimeout(function(){
-        if(overlay._ewApPanelSwapGhost !== ghost) return;
-        clearSwap(overlay, panel);
-      }, 360);
+      body.innerHTML = html;
+      try{
+        const panel = document.getElementById('apStatusPanel');
+        if(panel) panel.scrollTop = 0;
+        body.scrollTop = 0;
+        // Force the browser to see the panel below viewport before .open.
+        if(panel) void panel.offsetHeight;
+      }catch(e){}
+      if(typeof _apOpenOverlay === 'function') _apOpenOverlay('apStatusOverlay');
+      window.setTimeout(function(){
+        overlay.classList.remove('ew-ap-status-pivoting');
+      }, 560);
     });
+    return true;
   };
 
   window.inspectAperturaStatusCardSwapPatch = function(){
@@ -33427,15 +33382,15 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
     const panel = document.getElementById('apStatusPanel');
     const body = document.getElementById('apStatusBody');
     return {
-      ok: typeof window._ewSmoothAperturaStatusReplace === 'function' && !!ov && !!panel && !!body,
-      patch: 'Phase 2D.13b · APERTURA STATUS PANEL SWAP',
+      ok: typeof window._apStatusPivotReplace === 'function' && !!ov && !!panel && !!body,
+      patch: 'Phase 2D.13c · APERTURA STATUS PIVOT TRANSITION',
       statusOpen: !!(ov && ov.classList.contains('open')),
-      swapping: !!(ov && ov.classList.contains('ew-ap-status-panel-swapping'))
+      pivoting: !!(ov && ov.classList.contains('ew-ap-status-pivoting')),
+      statusKey: ov ? ov.dataset.statusKey || '' : ''
     };
   };
 })();
 </script>
-
 
 </body>
 </html>
