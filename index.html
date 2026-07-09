@@ -25462,6 +25462,10 @@ async function _ewActiveOrderCreatePayment(rec){
   }
   return _ewActiveOrderStore(_ewActiveOrderBuildFromPaymentCreateResponse(body, rec));
 }
+function _ewShouldShowActiveOrderToast(){
+  const ov = document.getElementById('apStatusOverlay');
+  return !(ov && ov.classList.contains('is-mounted'));
+}
 async function _ewActiveOrderGoPayment(){
   const rec = _ewActiveOrderRead();
   if(!rec){ showActiveOrderStatus(null); return; }
@@ -25469,7 +25473,7 @@ async function _ewActiveOrderGoPayment(){
   const existingUrl = _ewActiveOrderPaymentUrl(rec);
   if(existingUrl){ window.location.href = existingUrl; return; }
   try{
-    if(typeof showNotif === 'function') showNotif('// Apertura открывает платёжный канал ЮKassa.', {contextual:true});
+    if(_ewShouldShowActiveOrderToast() && typeof showNotif === 'function') showNotif('// Apertura открывает платёжный канал ЮKassa.', {contextual:true});
     const fresh = await _ewActiveOrderCreatePayment(rec);
     const payUrl = _ewActiveOrderPaymentUrl(fresh);
     if(payUrl){ window.location.href = payUrl; return; }
@@ -25486,7 +25490,7 @@ async function _ewActiveOrderGoPayment(){
       return;
     }
     showActiveOrderStatus(rec, {source:'payment-create-failed'});
-    if(typeof showNotif === 'function') showNotif('// Платёжный канал не открылся. Проверьте статус заказа или попробуйте позже.', {contextual:true});
+    if(_ewShouldShowActiveOrderToast() && typeof showNotif === 'function') showNotif('// Платёжный канал не открылся. Проверьте статус заказа или попробуйте позже.', {contextual:true});
   }
 }
 
@@ -25496,18 +25500,18 @@ async function _ewActiveOrderCheckStatus(){
 
   if(!rec.status_token){
     showActiveOrderStatus(rec);
-    if(typeof showNotif === 'function') showNotif('// Apertura не получила токен статуса. Показано последнее сохранённое состояние.', {contextual:true});
+    if(_ewShouldShowActiveOrderToast() && typeof showNotif === 'function') showNotif('// Apertura не получила токен статуса. Показано последнее сохранённое состояние.', {contextual:true});
     return;
   }
 
   try{
-    if(typeof showNotif === 'function') showNotif('// Apertura проверяет статус цикла.', {contextual:true});
+    if(_ewShouldShowActiveOrderToast() && typeof showNotif === 'function') showNotif('// Apertura проверяет статус цикла.', {contextual:true});
     const fresh = await _ewActiveOrderFetchStatus(rec);
     showActiveOrderStatus(fresh, {source:'active-order-status'});
   }catch(error){
     console.warn('active order status check failed:', error);
     showActiveOrderStatus(rec);
-    if(typeof showNotif === 'function') showNotif('// Apertura не получила актуальный статус. Показано последнее сохранённое состояние.', {contextual:true});
+    if(_ewShouldShowActiveOrderToast() && typeof showNotif === 'function') showNotif('// Apertura не получила актуальный статус. Показано последнее сохранённое состояние.', {contextual:true});
   }
 }
 function bootActiveOrderStatusRestore(){
@@ -33361,6 +33365,7 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
     overlay.classList.add('is-mounted', 'ew-ap-status-pivoting');
     document.body.classList.remove('scroll-restoring', '_blur-fading', 'ap-status-fading');
     document.body.classList.add('ap-console-open', 'ap-status-open');
+    if(typeof _hideAllNotifs === 'function') _hideAllNotifs();
   }
 
   window._apStatusPivotReplace = function(overlay, body, html){
@@ -33406,7 +33411,7 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
     const body = document.getElementById('apStatusBody');
     return {
       ok: typeof window._apStatusPivotReplace === 'function' && !!ov && !!panel && !!body,
-      patch: 'Phase 2D.13d · APERTURA STATUS PIVOT FLASH GUARD',
+      patch: 'Phase 2D.13e · APERTURA STATUS TOAST FLASH GUARD',
       statusOpen: !!(ov && ov.classList.contains('open')),
       pivoting: !!(ov && ov.classList.contains('ew-ap-status-pivoting')),
       statusKey: ov ? ov.dataset.statusKey || '' : ''
