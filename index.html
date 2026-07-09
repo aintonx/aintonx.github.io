@@ -31502,6 +31502,80 @@ svg.ew-mask-icon use,
 })();
 </script>
 
+
+<style id="ew-apertura-status-layer-engine-v2">
+/* ════════════════════════════════════════════════════════════════
+   Phase 2D.3 · APERTURA STATUS LAYER ENGINE
+   Распространяет modal-layer поведение на аварийные APERTURA STATUS:
+   сам overlay больше не растворяет всю сцену opacity-фейдом. Backdrop/blur
+   живёт в #apStatusOverlay::before, а .ap-status-panel уходит отдельной
+   физической панелью через уже подключённые apConsoleIn/apConsoleOut.
+   ════════════════════════════════════════════════════════════════ */
+#apStatusOverlay {
+  isolation: isolate !important;
+  background: transparent !important;
+  opacity: 1 !important;
+  transition: none !important;
+}
+#apStatusOverlay.is-mounted,
+#apStatusOverlay.open,
+#apStatusOverlay.closing {
+  opacity: 1 !important;
+  transition: none !important;
+}
+#apStatusOverlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.14), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.14), transparent 54%),
+    rgba(4,4,10,.82);
+  will-change: opacity;
+}
+#apStatusOverlay.open::before {
+  animation: ewModalLayerBackdropIn var(--ew-modal-layer-in, .22s) ease-out both !important;
+}
+#apStatusOverlay.closing::before {
+  animation: ewModalLayerBackdropOut var(--ew-modal-layer-out, .26s) ease-out both !important;
+}
+#apStatusOverlay .ap-status-panel {
+  position: relative;
+  z-index: 1;
+  will-change: transform, opacity, filter;
+}
+/* entry-instagram сохраняет собственную читаемую плёнку, но теперь она тоже
+   живёт на backdrop-layer, а не на самом overlay-контейнере. */
+#apStatusOverlay[data-status-key="entry-instagram"] {
+  background: transparent !important;
+}
+#apStatusOverlay[data-status-key="entry-instagram"]::before {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.10), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.10), transparent 54%),
+    rgba(4,4,10,.46) !important;
+}
+:root[data-theme="light"] #apStatusOverlay[data-status-key="entry-instagram"] {
+  background: transparent !important;
+}
+:root[data-theme="light"] #apStatusOverlay[data-status-key="entry-instagram"]::before {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,143,150,.10), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.08), transparent 54%),
+    rgba(244,247,252,.30) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  #apStatusOverlay::before,
+  #apStatusOverlay .ap-status-panel {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+
 <!-- PATCH 5 · STABILITY CORE / OLD MODAL MOTION PRESERVED -->
 <script id="ew-patch5-stability-core">
 (function(){
