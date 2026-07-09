@@ -20,6 +20,24 @@
 <meta name="echoworld-deploy-built-at" content="2026-07-06T14:41:33Z">
 <meta name="echoworld-share-version" content="r20260707sharehtml1">
 
+
+<script id="ew-share-handoff-to-index-v1">
+(function(){
+  var code = "RELIC-01-0007";
+  var ua = String(navigator.userAgent || '');
+  if(/(bot|crawler|spider|slurp|telegrambot|whatsapp|vkshare|facebookexternalhit|twitterbot|discordbot|skypeuripreview|linkedinbot|pinterest|googlebot|yandex|duckduckbot|bingbot)/i.test(ua)) return;
+  try{
+    var current = new URL(window.location.href);
+    if(current.searchParams.get('nohandoff') === '1') return;
+    var target = new URL('/', window.location.origin);
+    target.searchParams.set('relic', code);
+    target.searchParams.set('source', 'share');
+    window.location.replace(target.toString());
+  }catch(e){
+    window.location.href = '/?relic=' + encodeURIComponent(code) + '&source=share';
+  }
+})();
+</script>
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="EchoWorld">

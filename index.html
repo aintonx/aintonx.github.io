@@ -24945,6 +24945,7 @@ function _apStatusRow(label, value, htmlValue){
    оплаченным: данные берутся из checkout/create сейчас и позже будут
    обновляться через checkout/status + YooKassa webhook/status. */
 const EW_ACTIVE_ORDER_STORAGE_KEY = 'ew:active-order:v1';
+const EW_ACTIVE_ORDER_EXPIRED_NOTICE_KEY = 'ew:active-order-expired-notice:v1';
 function _ewActiveOrderStatusRouteUrl(){
   if(typeof _ewAperturaRouteUrl === 'function') return _ewAperturaRouteUrl('checkout/status');
   const base = String(typeof EW_APERTURA_API_URL === 'string' ? EW_APERTURA_API_URL : '').trim();
@@ -25014,6 +25015,33 @@ function _ewActiveOrderRead(){
 function _ewActiveOrderClear(){
   try{ localStorage.removeItem(EW_ACTIVE_ORDER_STORAGE_KEY); }catch(_){ }
   try{ delete window.__EW_ACTIVE_ORDER__; }catch(_){ window.__EW_ACTIVE_ORDER__ = null; }
+}
+function _ewActiveOrderExpiredNoticeId(rec){
+  rec = rec || {};
+  const id = rec.order_id || rec.order_number || rec.reservation_id || rec.relic_code || rec.product_id || '';
+  return id ? ('order-cycle-expired:' + String(id)) : '';
+}
+function _ewActiveOrderExpiredNoticeRead(){
+  try{
+    const raw = localStorage.getItem(EW_ACTIVE_ORDER_EXPIRED_NOTICE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  }catch(_){ return {}; }
+}
+function _ewActiveOrderExpiredNoticeSeen(rec){
+  const id = _ewActiveOrderExpiredNoticeId(rec);
+  if(!id) return false;
+  const store = _ewActiveOrderExpiredNoticeRead();
+  return !!store[id];
+}
+function _ewActiveOrderExpiredNoticeMark(rec){
+  const id = _ewActiveOrderExpiredNoticeId(rec);
+  if(!id) return;
+  try{
+    const store = _ewActiveOrderExpiredNoticeRead();
+    store[id] = new Date().toISOString();
+    localStorage.setItem(EW_ACTIVE_ORDER_EXPIRED_NOTICE_KEY, JSON.stringify(store));
+  }catch(_){ }
 }
 function _ewActiveOrderBuildFromStatusResponse(body, previous){
   body = body || {};
@@ -25119,14 +25147,27 @@ function showActiveOrderStatus(rec, opts){
   rec = rec || _ewActiveOrderRead();
   if(!rec){
     if(typeof showAperturaStatus === 'function') showAperturaStatus('checkout-timeout', {source:'active-order'});
-    return;
+    return false;
   }
   opts = opts || {};
   const key = opts.key || _ewActiveOrderStatusKey(rec);
+  if(key === 'order-cycle-expired'){
+    if(!opts.force && _ewActiveOrderExpiredNoticeSeen(rec)){
+      _ewActiveOrderClear();
+      return false;
+    }
+    _ewActiveOrderExpiredNoticeMark(rec);
+  }
   showAperturaStatus(key, {
     source: opts.source || 'active-order',
     html: _ewActiveOrderStatusHtml(rec)
   });
+  if(key === 'order-cycle-expired'){
+    /* Это одноразовое системное уведомление: после первого показа
+       очищаем active order, чтобы сайт не доставал пользователя при каждом входе. */
+    setTimeout(_ewActiveOrderClear, 0);
+  }
+  return true;
 }
 function _ewActiveOrderPaymentUrl(rec){
   const url = rec && (rec.confirmation_url || rec.payment_url || rec.confirmationUrl || rec.paymentUrl) || '';
@@ -25169,6 +25210,10 @@ async function _ewActiveOrderCheckStatus(){
 function bootActiveOrderStatusRestore(){
   const rec = _ewActiveOrderRead();
   if(!rec) return;
+  if(_ewActiveOrderStatusKey(rec) === 'order-cycle-expired' && _ewActiveOrderExpiredNoticeSeen(rec)){
+    _ewActiveOrderClear();
+    return;
+  }
   try{
     const url = new URL(location.href);
     if(url.searchParams.has('signal')) return;
@@ -25205,6 +25250,7 @@ function inspectActiveOrderStatusPatch(){
         scripts.includes('Время цикла истекло.') &&
         scripts.includes('Apertura закрепила реликвию за вашим заказом') &&
         scripts.includes('checkout/status') &&
+        scripts.includes('EW_ACTIVE_ORDER_EXPIRED_NOTICE_KEY') &&
         typeof _ewActiveOrderFetchStatus === 'function',
     activeOrder: _ewActiveOrderRead(),
     storageKey: EW_ACTIVE_ORDER_STORAGE_KEY,
