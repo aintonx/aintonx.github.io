@@ -22327,6 +22327,7 @@ function _fadeOutNotif(el, opts){
 }
 function showNotif(text, opts){
   opts = opts || {};
+  if(typeof _ewShouldSuppressNotif === 'function' && _ewShouldSuppressNotif(text, opts)) return;
   const contextual = !!(opts.contextual || opts.important || opts.overOverlay);
   if(_anyWindowOpen() && !contextual) return;
   const n=document.getElementById('notif');
@@ -22338,6 +22339,48 @@ function showNotif(text, opts){
   document.getElementById('nbody').textContent=_notifBodyText(text);
   n.classList.add('show');
   n._autoHideTimer = setTimeout(()=>_fadeOutNotif(n), opts.duration || 6000);   // T1: плавно гаснет
+}
+function _ewIsApStatusSceneActive(){
+  const ov = document.getElementById('apStatusOverlay');
+  const body = document.body;
+  return !!(ov && (
+    ov.classList.contains('is-mounted') ||
+    ov.classList.contains('open') ||
+    ov.classList.contains('closing') ||
+    ov.classList.contains('ew-ap-status-pivoting') ||
+    (body && (body.classList.contains('ap-status-open') || body.classList.contains('ap-status-fading')))
+  ));
+}
+function _ewHardHideNotif(){
+  const n = document.getElementById('notif');
+  if(!n) return false;
+  try{
+    if(n._autoHideTimer){ clearTimeout(n._autoHideTimer); n._autoHideTimer = null; }
+    if(n._fadeTimer){ clearTimeout(n._fadeTimer); n._fadeTimer = null; }
+    n._afterFade = null;
+    n.classList.remove('show');
+    n.dataset.notifKind = '';
+    n._fadingOut = false;
+    n.style.transition = '';
+    n.style.opacity = '';
+    n.style.transform = '';
+    n.style.animation = '';
+  }catch(e){}
+  return true;
+}
+function _ewShouldSuppressNotif(text, opts){
+  opts = opts || {};
+  const raw = String(text || '');
+  if(raw.indexOf('Apertura открывает платёжный канал') >= 0 || raw.indexOf('Apertura проверяет статус цикла') >= 0){
+    return true;
+  }
+  if(opts.overApStatus === true) return false;
+  const contextual = !!(opts.contextual || opts.important || opts.overOverlay);
+  if(contextual && _ewIsApStatusSceneActive()){
+    _ewHardHideNotif();
+    return true;
+  }
+  return false;
 }
 /* Копирование ника (раздел «В социальных сетях») с короткой обратной связью */
 function triggerClassifiedLocked(el){
@@ -25068,6 +25111,7 @@ function _apStatusActionsHtml(actions, key){
 }
 function _renderAperturaStatus(payload){
   payload = payload || {};
+  if(typeof _ewHardHideNotif === 'function') _ewHardHideNotif();
   const body=document.getElementById('apStatusBody');
   const ov=document.getElementById('apStatusOverlay');
   if(!body) return;
@@ -25463,8 +25507,7 @@ async function _ewActiveOrderCreatePayment(rec){
   return _ewActiveOrderStore(_ewActiveOrderBuildFromPaymentCreateResponse(body, rec));
 }
 function _ewShouldShowActiveOrderToast(){
-  const ov = document.getElementById('apStatusOverlay');
-  return !(ov && ov.classList.contains('is-mounted'));
+  return !(typeof _ewIsApStatusSceneActive === 'function' && _ewIsApStatusSceneActive());
 }
 async function _ewActiveOrderGoPayment(){
   const rec = _ewActiveOrderRead();
@@ -25473,7 +25516,7 @@ async function _ewActiveOrderGoPayment(){
   const existingUrl = _ewActiveOrderPaymentUrl(rec);
   if(existingUrl){ window.location.href = existingUrl; return; }
   try{
-    if(_ewShouldShowActiveOrderToast() && typeof showNotif === 'function') showNotif('// Apertura открывает платёжный канал ЮKassa.', {contextual:true});
+    if(typeof _ewHardHideNotif === 'function') _ewHardHideNotif();
     const fresh = await _ewActiveOrderCreatePayment(rec);
     const payUrl = _ewActiveOrderPaymentUrl(fresh);
     if(payUrl){ window.location.href = payUrl; return; }
@@ -25505,7 +25548,7 @@ async function _ewActiveOrderCheckStatus(){
   }
 
   try{
-    if(_ewShouldShowActiveOrderToast() && typeof showNotif === 'function') showNotif('// Apertura проверяет статус цикла.', {contextual:true});
+    if(typeof _ewHardHideNotif === 'function') _ewHardHideNotif();
     const fresh = await _ewActiveOrderFetchStatus(rec);
     showActiveOrderStatus(fresh, {source:'active-order-status'});
   }catch(error){
@@ -33415,6 +33458,37 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
       statusOpen: !!(ov && ov.classList.contains('open')),
       pivoting: !!(ov && ov.classList.contains('ew-ap-status-pivoting')),
       statusKey: ov ? ov.dataset.statusKey || '' : ''
+    };
+  };
+})();
+</script>
+
+
+<style id="ew-apertura-status-toast-flash-guard-v2">
+/* Phase 2D.13f · APERTURA STATUS TOAST LAYER KILL
+   Contextual toast must never paint above an active APERTURA STATUS scene. */
+body.ap-status-open #notif[data-notif-kind="contextual"],
+body.ap-status-fading #notif[data-notif-kind="contextual"],
+#apStatusOverlay.ew-ap-status-pivoting ~ #notif[data-notif-kind="contextual"] {
+  display: none !important;
+  opacity: 0 !important;
+  transform: translate3d(0, 120vh, 0) !important;
+  pointer-events: none !important;
+}
+</style>
+<script id="ew-apertura-status-toast-flash-guard-js-v2">
+/* Phase 2D.13f · APERTURA STATUS TOAST LAYER KILL JS */
+(function(){
+  window.inspectAperturaStatusToastFlashGuard = function(){
+    const ov = document.getElementById('apStatusOverlay');
+    const n = document.getElementById('notif');
+    return {
+      ok: typeof window._ewHardHideNotif === 'function' && typeof window._ewShouldSuppressNotif === 'function',
+      patch: 'Phase 2D.13f · APERTURA STATUS TOAST LAYER KILL',
+      apStatusActive: typeof window._ewIsApStatusSceneActive === 'function' ? window._ewIsApStatusSceneActive() : null,
+      notifVisible: !!(n && n.classList.contains('show')),
+      notifKind: n ? (n.dataset.notifKind || '') : '',
+      statusKey: ov ? (ov.dataset.statusKey || '') : ''
     };
   };
 })();
