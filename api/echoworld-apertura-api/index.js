@@ -204,6 +204,75 @@ function productFromRow(row) {
   };
 }
 
+async function expireStaleCatalogReservationLocks() {
+  const markJournalQuery = `
+    UPDATE product_reservations
+    SET
+      status = "expired",
+      expired_at = CurrentUtcTimestamp(),
+      updated_at = CurrentUtcTimestamp()
+    WHERE
+      status = "active"
+      AND reserved_until < CurrentUtcTimestamp();
+  `;
+
+  const removeLockQuery = `
+    DELETE FROM product_reservation_locks
+    WHERE
+      status = "active"
+      AND reserved_until < CurrentUtcTimestamp();
+  `;
+
+  await ydbQuery(markJournalQuery);
+  await ydbQuery(removeLockQuery);
+}
+
+async function readActiveCatalogReservationLocks() {
+  const query = `
+    SELECT
+      product_id,
+      reservation_id,
+      reservation_code,
+      status,
+      CAST(reserved_until AS Utf8) AS reserved_until_text,
+      converted_order_id
+    FROM product_reservation_locks
+    WHERE
+      status = "active"
+      AND reserved_until >= CurrentUtcTimestamp();
+  `;
+
+  const resultSets = await ydbQuery(query);
+  return resultSetToObjects(resultSets[0]);
+}
+
+function applyCatalogReservationLocks(products, locks) {
+  const byProduct = new Map();
+  for (const lock of locks || []) {
+    if (!lock || !lock.product_id) continue;
+    byProduct.set(String(lock.product_id), lock);
+  }
+
+  for (const product of products || []) {
+    const lock = byProduct.get(String(product.product_id));
+    if (!lock) {
+      product.reservation_status = "";
+      product.reserved_until = "";
+      product.reservation_id = "";
+      continue;
+    }
+
+    product.orderable = false;
+    product.available = false;
+    product.reservation_status = "active";
+    product.reservation_id = lock.reservation_id || "";
+    product.reserved_until = lock.reserved_until_text || "";
+    product.catalog_status_label = "В резерве";
+  }
+
+  return products;
+}
+
 async function catalogList() {
   const query = `
     SELECT
@@ -230,9 +299,13 @@ async function catalogList() {
     ORDER BY sort_order ASC;
   `;
 
+  await expireStaleCatalogReservationLocks();
+
   const resultSets = await ydbQuery(query);
   const rows = resultSetToObjects(resultSets[0]);
   const products = rows.map(productFromRow);
+  const locks = await readActiveCatalogReservationLocks();
+  applyCatalogReservationLocks(products, locks);
 
   return json(200, {
     ok: true,

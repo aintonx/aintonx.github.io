@@ -14918,6 +14918,42 @@ body._blur-fading #_blurW {
   }
 }
 </style>
+
+<style id="ew-active-order-reservation-ui-v1">
+/* Phase 2D.10 · ACTIVE ORDER RESERVATION UI
+   Локальная бронь/резерв показывается в карточках и модалке без изменения
+   backend-логики checkout. Аккуратно: только текстовые badges и CTA. */
+.pcard.ew-user-reserved {
+  border-color: rgba(0, 200, 200, .38) !important;
+  box-shadow: 0 0 0 1px rgba(0, 200, 200, .12), 0 0 24px rgba(0, 200, 200, .08);
+}
+.pcard.ew-user-reserved .pstatus,
+.pcard.ew-user-reserved .pbeacon-txt {
+  color: var(--cyan) !important;
+}
+.pcard.ew-global-reserved .pstatus,
+.pcard.ew-global-reserved .pbeacon-txt {
+  color: var(--white-mid) !important;
+}
+.pcard.ew-user-reserved .pbtn {
+  border-color: rgba(0, 200, 200, .46);
+  color: var(--cyan);
+}
+.pcard.ew-user-reserved .pbtn:hover {
+  background: rgba(0, 200, 200, .10);
+  box-shadow: 0 0 18px rgba(0, 200, 200, .22);
+}
+.mbtn.ew-active-order-cta {
+  border-color: rgba(0, 200, 200, .45);
+  color: var(--cyan);
+}
+.mbtn.ew-active-order-cta.primary {
+  color: #001414;
+  background: linear-gradient(135deg, var(--cyan), #dff);
+  border-color: rgba(0, 200, 200, .75);
+}
+</style>
+
 </head>
 <body>
 <div id="ewSmartCaptchaRoot" aria-hidden="true"></div>
@@ -19258,6 +19294,21 @@ function applyCatalogApiRecord(product, record){
     product.catalog_status_label=catalogLabel;
     changed=true;
   }
+  const reservationStatus=String(record.reservation_status || record.reservationStatus || '').trim();
+  if(product.reservation_status !== reservationStatus){
+    product.reservation_status=reservationStatus;
+    changed=true;
+  }
+  const reservedUntil=String(record.reserved_until || record.reservedUntil || record.reservation_expires_at || '').trim();
+  if(product.reserved_until !== reservedUntil){
+    product.reserved_until=reservedUntil;
+    changed=true;
+  }
+  const reservationId=String(record.reservation_id || record.reservationId || '').trim();
+  if(product.reservation_id !== reservationId){
+    product.reservation_id=reservationId;
+    changed=true;
+  }
   const updatedAt=String(record.updated_at || record.updatedAt || record.updated_at_ms || '').trim();
   if(updatedAt && product.catalogUpdatedAt!==updatedAt){
     product.catalogUpdatedAt=updatedAt;
@@ -19277,6 +19328,130 @@ function applyCatalogApiProducts(records){
   });
   return result;
 }
+
+/* Phase 2D.10 · ACTIVE ORDER RESERVATION UI
+   Показывает локальный active order как понятную бронь/резерв и не даёт
+   пользователю случайно создавать новый цикл, когда один уже зафиксирован. */
+function _ewRelicProductIdFromProduct(p){
+  const raw = String(p && (p.product_id || p.productId || p.id) || '').trim();
+  const normalized = normalizeCatalogApiId(raw);
+  return normalized || raw.replace(/^RELIC-?/i,'');
+}
+function _ewRelicCodeFromProduct(p){
+  try{ return getRelicCode(p); }catch(_){ return String(p && (p.relic_code || p.relicCode || p.id) || '').trim(); }
+}
+function _ewActiveOrderMatchesProduct(rec, p){
+  if(!rec || !p) return false;
+  const recProduct = String(rec.product_id || '').trim().toUpperCase().replace(/^RELIC-?/,'');
+  const productId = String(_ewRelicProductIdFromProduct(p) || '').trim().toUpperCase().replace(/^RELIC-?/,'');
+  const recCode = String(rec.relic_code || '').trim().toUpperCase();
+  const productCode = String(_ewRelicCodeFromProduct(p) || '').trim().toUpperCase();
+  return !!((recProduct && productId && recProduct === productId) || (recCode && productCode && recCode === productCode));
+}
+function _ewActiveOrderBlocksCheckout(rec){
+  if(!rec || !rec.order_id) return false;
+  if(typeof _ewActiveOrderIsExpired === 'function' && _ewActiveOrderIsExpired(rec)) return false;
+  const os = String(rec.order_status || rec.status || '').toLowerCase();
+  const ps = String(rec.payment_status || '').toLowerCase();
+  if(os === 'expired' || os === 'canceled' || os === 'cancelled') return false;
+  if(ps === 'canceled' || ps === 'cancelled') return false;
+  return true;
+}
+function _ewCountdownParts(raw){
+  const ts = Date.parse(raw || '');
+  if(!Number.isFinite(ts) || ts <= 0) return null;
+  const left = Math.max(0, Math.ceil((ts - Date.now()) / 1000));
+  if(left <= 0) return null;
+  const h = Math.floor(left / 3600);
+  const m = Math.floor((left % 3600) / 60);
+  const sec = left % 60;
+  const two = v => String(v).padStart(2,'0');
+  return {seconds:left, text:h > 0 ? (h + ':' + two(m) + ':' + two(sec)) : (m + ':' + two(sec))};
+}
+function _ewProductReservationUiState(p){
+  const rec = (typeof _ewActiveOrderRead === 'function') ? _ewActiveOrderRead() : null;
+  if(rec && _ewActiveOrderBlocksCheckout(rec) && _ewActiveOrderMatchesProduct(rec, p)){
+    const ps = String(rec.payment_status || '').toLowerCase();
+    const countdown = _ewCountdownParts(rec.expires_at || rec.reserved_until || '');
+    let text = 'Ваш резерв';
+    if(ps === 'pending') text = 'Оплата ожидается';
+    else if(ps === 'waiting_for_capture') text = 'Оплата авторизована';
+    else if(ps === 'succeeded') text = 'Закреплена за вами';
+    else if(countdown) text = 'Ваш резерв · ' + countdown.text;
+    return {kind:'self', text, base:'Ваш резерв', countdown, rec};
+  }
+  const reservationStatus = String(p && (p.reservation_status || p.reservationStatus) || '').toLowerCase();
+  const countdown = _ewCountdownParts(p && (p.reserved_until || p.reservedUntil || p.reservation_expires_at) || '');
+  if((reservationStatus === 'active' || reservationStatus === 'reserved') && countdown){
+    return {kind:'global', text:'В резерве · ' + countdown.text, base:'В резерве', countdown};
+  }
+  if((reservationStatus === 'active' || reservationStatus === 'reserved') && p && p.orderable === false){
+    return {kind:'global', text:'В резерве', base:'В резерве', countdown:null};
+  }
+  return null;
+}
+function _ewModalOrderButtonsHtml(p, fallbackOrderable){
+  const reservation = _ewProductReservationUiState(p);
+  if(reservation && reservation.kind === 'self'){
+    const label = String(reservation.text || '').toLowerCase().includes('оплат') ? 'Вернуться к оплате' : 'Продолжить оплату';
+    return '<button class="mbtn primary ew-active-order-cta" type="button" data-modal-action="activeOrderStatus">' + label + '</button><button class="mbtn mbtn-share" type="button" data-modal-action="shareRelic" aria-label="Поделиться реликвией" title="Поделиться"><svg class="ico ew-mask-icon ew-icon--share-2" aria-hidden="true"><use href="#i-share-2"/></svg></button>';
+  }
+  if(fallbackOrderable){
+    return '<button class="mbtn" type="button" data-modal-action="addToCart">В корзину</button><button class="mbtn primary" type="button" data-modal-action="buyNow">Купить сейчас</button><button class="mbtn mbtn-share" type="button" data-modal-action="shareRelic" aria-label="Поделиться реликвией" title="Поделиться"><svg class="ico ew-mask-icon ew-icon--share-2" aria-hidden="true"><use href="#i-share-2"/></svg></button>';
+  }
+  return '';
+}
+function _ewShowActiveOrderFromProduct(ev){
+  if(ev && typeof ev.preventDefault === 'function') ev.preventDefault();
+  if(ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+  const rec = (typeof _ewActiveOrderRead === 'function') ? _ewActiveOrderRead() : null;
+  const show = function(){
+    if(rec && typeof showActiveOrderStatus === 'function') showActiveOrderStatus(rec, {source:'product-active-order'});
+    else if(typeof showAperturaStatus === 'function') showAperturaStatus('checkout-timeout', {source:'product-active-order'});
+  };
+  if(typeof closeModal === 'function') closeModal(function(){ setTimeout(show, 40); });
+  else show();
+}
+function _ewActiveOrderGuardBeforeCheckout(source){
+  const rec = (typeof _ewActiveOrderRead === 'function') ? _ewActiveOrderRead() : null;
+  if(!_ewActiveOrderBlocksCheckout(rec)) return false;
+  if(typeof showNotif === 'function') showNotif('// У вас уже есть активный цикл. Apertura покажет его статус.', {contextual:true, overOverlay:true});
+  const show = function(){ if(typeof showActiveOrderStatus === 'function') showActiveOrderStatus(rec, {source:source || 'active-order-guard'}); };
+  const ov = document.getElementById('moverlay');
+  if(ov && ov.classList.contains('open') && typeof closeModal === 'function') closeModal(function(){ setTimeout(show, 40); });
+  else show();
+  return true;
+}
+function _ewApplyReservationTextToModal(p){
+  const reservation = _ewProductReservationUiState(p);
+  if(!reservation) return false;
+  const statusEl = document.getElementById('mfstatus');
+  if(statusEl) statusEl.textContent = reservation.text;
+  const priceEcho = document.getElementById('mpriceecho');
+  if(priceEcho && reservation.kind === 'self') priceEcho.textContent = reservation.text;
+  return true;
+}
+function _ewStartActiveOrderReservationTicker(){
+  if(window.__EW_ACTIVE_ORDER_RESERVATION_TICKER__) return;
+  window.__EW_ACTIVE_ORDER_RESERVATION_TICKER__ = setInterval(function(){
+    try{
+      if(typeof syncCatalogLockStates === 'function') syncCatalogLockStates();
+      if(typeof refreshCurrentModalFromProduct === 'function') refreshCurrentModalFromProduct();
+    }catch(e){ console.warn('activeOrderReservationTicker:', e); }
+  }, 1000);
+}
+function inspectActiveOrderReservationUi(){
+  const rec = (typeof _ewActiveOrderRead === 'function') ? _ewActiveOrderRead() : null;
+  const p = rec ? products.find(item => _ewActiveOrderMatchesProduct(rec, item)) : null;
+  return {
+    ok: typeof _ewProductReservationUiState === 'function' && typeof _ewActiveOrderGuardBeforeCheckout === 'function',
+    activeOrder: rec,
+    matchedProduct: p ? {id:p.id, name:p.name, reservation:_ewProductReservationUiState(p)} : null,
+    ticker: !!window.__EW_ACTIVE_ORDER_RESERVATION_TICKER__
+  };
+}
+try{ window.inspectActiveOrderReservationUi = inspectActiveOrderReservationUi; }catch(_){ }
+
 function refreshCurrentModalFromProduct(){
   if(!cur) return;
   const ov=document.getElementById('moverlay');
@@ -19295,18 +19470,27 @@ function refreshCurrentModalFromProduct(){
   const btns=document.getElementById('mfooterBtns');
   const insta=document.getElementById('minsta');
   if(!btns) return;
-  if(orderable){
+  const reservationState = _ewProductReservationUiState(cur);
+  if(reservationState && reservationState.kind === 'self'){
+    if(insta) insta.style.display='none';
+    setModalOrderFieldsDisabled(true);
+    btns.classList.add('has-share');
+    btns.innerHTML=_ewModalOrderButtonsHtml(cur, true);
+    _ewApplyReservationTextToModal(cur);
+  }else if(orderable){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(false);
     btns.classList.add('has-share');
-    btns.innerHTML='<button class="mbtn" type="button" data-modal-action="addToCart">В корзину</button><button class="mbtn primary" type="button" data-modal-action="buyNow">Купить сейчас</button><button class="mbtn mbtn-share" type="button" data-modal-action="shareRelic" aria-label="Поделиться реликвией" title="Поделиться"><svg class="ico ew-mask-icon ew-icon--share-2" aria-hidden="true"><use href="#i-share-2"/></svg></button>';
+    btns.innerHTML=_ewModalOrderButtonsHtml(cur, true);
+    _ewApplyReservationTextToModal(cur);
   }else{
     if(insta) insta.style.display=status==='transition_complete'?'flex':'none';
     setModalOrderFieldsDisabled(true);
     btns.classList.remove('has-share');
-    btns.innerHTML='<button class="mbtn dis" disabled>'+blockLabel+'</button>';
+    btns.innerHTML='<button class="mbtn dis" disabled>'+((reservationState && reservationState.text) || blockLabel)+'</button>';
     const priceEcho=document.getElementById('mpriceecho');
-    if(priceEcho) priceEcho.textContent=blockLabel;
+    if(priceEcho) priceEcho.textContent=(reservationState && reservationState.text) || blockLabel;
+    _ewApplyReservationTextToModal(cur);
   }
 }
 async function refreshEchoWorldCatalog(opts){
@@ -19386,12 +19570,16 @@ function syncCatalogLockStates(){
       const visible = p.visible !== false && p.is_visible !== false;
       card.hidden = !visible;
       card.dataset.visible = visible ? 'true' : 'false';
+      const reservationState = _ewProductReservationUiState(p);
       card.classList.toggle('locked', locked);
-      card.classList.remove('sold','reserved');
+      card.classList.remove('sold','reserved','ew-user-reserved','ew-global-reserved');
+      if(reservationState){
+        card.classList.add(reservationState.kind === 'self' ? 'ew-user-reserved' : 'ew-global-reserved');
+      }
       card.dataset.status = status;
       const statusEl = card.querySelector('.pstatus');
       if(statusEl){
-        statusEl.textContent = statusLabel;
+        statusEl.textContent = reservationState ? reservationState.text : statusLabel;
         statusEl.classList.remove('done');
       }
       const priceEl = card.querySelector('.pprice');
@@ -19410,10 +19598,11 @@ function syncCatalogLockStates(){
         beacon.classList.add(statusClass);
       }
       const beaconTxt = card.querySelector('.pbeacon-txt');
-      if(beaconTxt) beaconTxt.textContent = statusLabel;
+      if(beaconTxt) beaconTxt.textContent = reservationState ? reservationState.text : statusLabel;
       const btn = card.querySelector('.pbtn');
-      if(orderable) restoreOpenButton(btn);
-      else renderStatusButton(btn, blockLabel);
+      if(reservationState && reservationState.kind === 'self') renderStatusButton(btn, 'Продолжить оплату');
+      else if(orderable) restoreOpenButton(btn);
+      else renderStatusButton(btn, reservationState ? reservationState.text : blockLabel);
     });
     if(typeof syncAperturaFeed === 'function') syncAperturaFeed();
     if(typeof updateCategoryCounts === 'function') updateCategoryCounts();
@@ -19490,17 +19679,26 @@ function openModal(i){
   resetProductClarityAccordions();
   updateModalPrice();
   const insta=document.getElementById('minsta'),btns=document.getElementById('mfooterBtns');
-  if(orderable){
+  const reservationState = _ewProductReservationUiState(p);
+  if(reservationState && reservationState.kind === 'self'){
+    if(insta) insta.style.display='none';
+    setModalOrderFieldsDisabled(true);
+    btns.classList.add('has-share');
+    btns.innerHTML=_ewModalOrderButtonsHtml(p, true);
+    _ewApplyReservationTextToModal(p);
+  }else if(orderable){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(false);
     btns.classList.add('has-share');
-    btns.innerHTML='<button class="mbtn" type="button" data-modal-action="addToCart">В корзину</button><button class="mbtn primary" type="button" data-modal-action="buyNow">Купить сейчас</button><button class="mbtn mbtn-share" type="button" data-modal-action="shareRelic" aria-label="Поделиться реликвией" title="Поделиться"><svg class="ico ew-mask-icon ew-icon--share-2" aria-hidden="true"><use href="#i-share-2"/></svg></button>';
+    btns.innerHTML=_ewModalOrderButtonsHtml(p, true);
+    _ewApplyReservationTextToModal(p);
   }else{
     if(insta) insta.style.display=status==='transition_complete'?'flex':'none';
     setModalOrderFieldsDisabled(true);
     btns.classList.remove('has-share');
-    btns.innerHTML='<button class="mbtn dis" disabled>'+blockLabel+'</button>';
-    document.getElementById('mpriceecho').textContent=blockLabel;
+    btns.innerHTML='<button class="mbtn dis" disabled>'+((reservationState && reservationState.text) || blockLabel)+'</button>';
+    document.getElementById('mpriceecho').textContent=(reservationState && reservationState.text) || blockLabel;
+    _ewApplyReservationTextToModal(p);
   }
   const _productOverlay = document.getElementById('moverlay');
   const _productPanel = document.getElementById('modalPanel');
@@ -19773,6 +19971,7 @@ function buyNow(ev){
     }
     return;
   }
+  if(_ewActiveOrderGuardBeforeCheckout('buy-now-active-order')) return;
   const result = addProductToCart(cur);
   if(result.needsReplace){
     showCartRelicReplaceDialog(cur, {mode:'checkout'});
@@ -19975,6 +20174,7 @@ function _modalActionPressOff(btn){
       if(action === 'addToCart')  addToCart(e);
       else if(action === 'buyNow') buyNow(e);
       else if(action === 'shareRelic') shareCurrentRelic(e);
+      else if(action === 'activeOrderStatus') _ewShowActiveOrderFromProduct(e);
     });
   }
   if(document.readyState === 'loading'){
@@ -21182,6 +21382,7 @@ function openCheckout(){
   if(beforeCount > 1 || (norm && norm.removedExtraItems > 0)){
     if(typeof showNotif === 'function') showNotif('// Apertura фиксирует одну реликвию за цикл. В корзине оставлена одна реликвия.', {contextual:true});
   }
+  if(_ewActiveOrderGuardBeforeCheckout('cart-checkout-active-order')) return;
   // Корзина → чекаут: тихо прячем корзину и открываем чекаут той же
   // механикой, что и карточка товара. Раньше здесь был отдельный путь
   // (закрытие корзины + reflow-танец chkOverlay + setTimeout-setup),
@@ -25320,6 +25521,13 @@ function bootActiveOrderStatusRestore(){
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 })();
+(function setupActiveOrderReservationUi(){
+  function boot(){
+    try{ _ewStartActiveOrderReservationTicker(); }catch(e){ console.warn('activeOrderReservationUi boot:', e); }
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
 function inspectActiveOrderStatusPatch(){
   const scripts = Array.from(document.scripts).map(s=>s.textContent || '').join('\\n');
   return {
@@ -25330,7 +25538,8 @@ function inspectActiveOrderStatusPatch(){
         scripts.includes('Phase 2D · ACTIVE ORDER STATUS FRONTEND FOUNDATION') &&
         scripts.includes('payment/create') &&
         scripts.includes('Платёжный канал готовится.') &&
-        typeof _ewActiveOrderFetchStatus === 'function',
+        typeof _ewActiveOrderFetchStatus === 'function' &&
+        typeof _ewProductReservationUiState === 'function',
     activeOrder: _ewActiveOrderRead(),
     storageKey: EW_ACTIVE_ORDER_STORAGE_KEY,
     functions: {
