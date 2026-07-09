@@ -14954,6 +14954,99 @@ body._blur-fading #_blurW {
 }
 </style>
 
+
+
+<style id="ew-unified-neutral-modal-backdrop-v1">
+/* Phase 2D.14 · UNIFIED NEUTRAL MODAL BACKDROP
+   Расширяет найденный удачный APERTURA STATUS фон на остальные модальные
+   сцены. Не меняет механику открытия/закрытия, timing/easing и JS lifecycle:
+   только убирает непроглядный var(--void) / тяжёлый page blur под модалками
+   и оставляет нейтральную защитную плёнку без cyan/red glow. */
+:root {
+  --ew-neutral-modal-backdrop: rgba(4,4,10,.88);
+  --ew-neutral-modal-backdrop-light: rgba(244,247,252,.68);
+}
+
+/* Product / checkout / echo-order / return / legal overlays: same neutral
+   backdrop language as APERTURA STATUS after cyan-wash-off. */
+.moverlay::before,
+.chk-overlay::before,
+#reqModal::before,
+#offerModal::before,
+#privacyModal::before,
+#apStatusOverlay::before {
+  background: var(--ew-neutral-modal-backdrop) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Cart and Architect Console do not use the same ::before layer everywhere,
+   so we normalize their actual overlay background directly. */
+.cart-overlay,
+#apConsoleGateOverlay,
+#apConsoleOverlay {
+  background: var(--ew-neutral-modal-backdrop) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+:root[data-theme="light"] .moverlay::before,
+:root[data-theme="light"] .chk-overlay::before,
+:root[data-theme="light"] #reqModal::before,
+:root[data-theme="light"] #offerModal::before,
+:root[data-theme="light"] #privacyModal::before,
+:root[data-theme="light"] #apStatusOverlay::before {
+  background: var(--ew-neutral-modal-backdrop-light) !important;
+}
+:root[data-theme="light"] .cart-overlay,
+:root[data-theme="light"] #apConsoleGateOverlay,
+:root[data-theme="light"] #apConsoleOverlay {
+  background: var(--ew-neutral-modal-backdrop-light) !important;
+}
+
+/* The neutral overlay now does the visual separation. Avoid running the
+   heavy page-wide filter layer underneath modals; it was the source of
+   muddy/opaque scenes and can cause filter recomposition flashes. */
+body.modal-open #_blurW,
+body.chk-open #_blurW,
+body.cart-open #_blurW,
+body.ap-console-open #_blurW,
+html.legal-modal-open body #_blurW,
+body._blur-fading #_blurW,
+body.scroll-restoring #_blurW {
+  -webkit-filter: none !important;
+  filter: none !important;
+  -webkit-transition: none !important;
+  transition: none !important;
+}
+
+/* If APERTURA STATUS is opened above Architect Console, keep the lower
+   console panel unfiltered as well; the neutral overlay already shields it. */
+body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+</style>
+<script id="ew-unified-neutral-modal-backdrop-js">
+(function(){
+  const PATCH = 'Phase 2D.14 · UNIFIED NEUTRAL MODAL BACKDROP';
+  window.inspectUnifiedNeutralModalBackdrop = function(){
+    const root = getComputedStyle(document.documentElement);
+    const blur = document.getElementById('_blurW');
+    return {
+      ok: true,
+      patch: PATCH,
+      neutralBackdrop: root.getPropertyValue('--ew-neutral-modal-backdrop').trim(),
+      neutralBackdropLight: root.getPropertyValue('--ew-neutral-modal-backdrop-light').trim(),
+      modalOpen: !!document.body.classList.contains('modal-open'),
+      checkoutOpen: !!document.body.classList.contains('chk-open'),
+      cartOpen: !!document.body.classList.contains('cart-open'),
+      apConsoleOpen: !!document.body.classList.contains('ap-console-open'),
+      blurFilter: blur ? getComputedStyle(blur).filter : ''
+    };
+  };
+})();
+</script>
 </head>
 <body>
 <div id="ewSmartCaptchaRoot" aria-hidden="true"></div>
