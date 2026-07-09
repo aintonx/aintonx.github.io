@@ -33295,13 +33295,36 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
 
 
 
-<style id="ew-apertura-status-pivot-transition-v3">
-/* Phase 2D.13c · APERTURA STATUS PIVOT TRANSITION
+<style id="ew-apertura-status-pivot-transition-v4">
+/* Phase 2D.13d · APERTURA STATUS PIVOT FLASH GUARD
    Uses the same site-native pivot idea as product modal → checkout:
    quiet-hide the current panel layer, replace content offscreen, then reopen
    through the existing Telegram-like APERTURA sheet animation. */
 #apStatusOverlay.ew-ap-status-pivoting {
   overflow: hidden !important;
+}
+/* During APERTURA STATUS pivot the panel leaves the viewport for a moment.
+   Keep the APERTURA backdrop fully mounted in that gap, otherwise the
+   underlying checkout/card layer flashes through between the two status cards. */
+#apStatusOverlay.ew-ap-status-pivoting::before {
+  opacity: 1 !important;
+  animation: none !important;
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.14), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.14), transparent 54%),
+    rgba(4,4,10,.82) !important;
+}
+#apStatusOverlay.ew-ap-status-pivoting[data-status-key="entry-instagram"]::before {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.10), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.10), transparent 54%),
+    rgba(4,4,10,.46) !important;
+}
+:root[data-theme="light"] #apStatusOverlay.ew-ap-status-pivoting[data-status-key="entry-instagram"]::before {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,143,150,.10), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.08), transparent 54%),
+    rgba(244,247,252,.30) !important;
 }
 #apStatusOverlay.ew-ap-status-pivoting #apStatusPanel {
   pointer-events: none;
@@ -33312,8 +33335,8 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
   }
 }
 </style>
-<script id="ew-apertura-status-pivot-transition-js-v3">
-/* Phase 2D.13c · APERTURA STATUS PIVOT TRANSITION JS */
+<script id="ew-apertura-status-pivot-transition-js-v4">
+/* Phase 2D.13d · APERTURA STATUS PIVOT FLASH GUARD JS */
 (function(){
   function reduceMotion(){
     try{ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
@@ -33383,7 +33406,7 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
     const body = document.getElementById('apStatusBody');
     return {
       ok: typeof window._apStatusPivotReplace === 'function' && !!ov && !!panel && !!body,
-      patch: 'Phase 2D.13c · APERTURA STATUS PIVOT TRANSITION',
+      patch: 'Phase 2D.13d · APERTURA STATUS PIVOT FLASH GUARD',
       statusOpen: !!(ov && ov.classList.contains('open')),
       pivoting: !!(ov && ov.classList.contains('ew-ap-status-pivoting')),
       statusKey: ov ? ov.dataset.statusKey || '' : ''
