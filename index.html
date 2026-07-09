@@ -19675,6 +19675,7 @@ function _cleanupModal(){
   ov.classList.remove('closing');
   ov.classList.remove('ew-sheet-preopen');
   if(ov._ewSheetOpenRaf){ cancelAnimationFrame(ov._ewSheetOpenRaf); ov._ewSheetOpenRaf = 0; }
+  if(ov._ewSheetOpenRaf2){ cancelAnimationFrame(ov._ewSheetOpenRaf2); ov._ewSheetOpenRaf2 = 0; }
   /* 2. Сбрасываем все inline-стили анимации */
   panel.style.transform=''; panel.style.transition='';
   panel.style.opacity='';   panel.style.filter='';
@@ -32280,6 +32281,10 @@ body.modal-open .pcard.reading::before {
       cancelAnimationFrame(overlay._ewSheetOpenRaf);
       overlay._ewSheetOpenRaf = 0;
     }
+    if(overlay._ewSheetOpenRaf2){
+      cancelAnimationFrame(overlay._ewSheetOpenRaf2);
+      overlay._ewSheetOpenRaf2 = 0;
+    }
     overlay.classList.remove('ew-sheet-preopen');
     if(panel){
       panel.style.animation = '';
@@ -32305,15 +32310,21 @@ body.modal-open .pcard.reading::before {
     }
     overlay._ewSheetOpenRaf = requestAnimationFrame(function(){
       overlay._ewSheetOpenRaf = 0;
-      if(!overlay.classList.contains('ew-sheet-preopen')) return;
-      overlay.classList.remove('ew-sheet-preopen');
-      if(panel){
-        panel.style.animation = '';
-        panel.style.transform = '';
-        panel.style.opacity = '';
-        panel.style.filter = '';
-      }
-      overlay.classList.add('open');
+      /* Даём браузеру один реальный кадр с panel строго ниже viewport.
+         Это микрозадержка ~1 frame, но она убирает старт из промежуточной
+         точки и делает вход симметричным выходу вниз. */
+      overlay._ewSheetOpenRaf2 = requestAnimationFrame(function(){
+        overlay._ewSheetOpenRaf2 = 0;
+        if(!overlay.classList.contains('ew-sheet-preopen')) return;
+        overlay.classList.remove('ew-sheet-preopen');
+        if(panel){
+          panel.style.animation = '';
+          panel.style.transform = '';
+          panel.style.opacity = '';
+          panel.style.filter = '';
+        }
+        overlay.classList.add('open');
+      });
     });
     return true;
   };
@@ -32353,6 +32364,49 @@ body.modal-open .pcard.reading::before {
   else window.addEventListener('load', function(){ setTimeout(idleDecodeLoadedCatalogImages, 900); }, {once:true});
 })();
 </script>
+
+<style id="ew-product-sheet-origin-lock-v1">
+/* ════════════════════════════════════════════════════════════════
+   Phase 2D.9 · PRODUCT SHEET ORIGIN LOCK
+   Micro-patch: не меняем понравившуюся Telegram-like механику.
+   Только карточка товара получает более жёсткую offscreen-точку старта
+   и финиша, чтобы открытие начиналось из той же нижней точки, куда
+   панель уходит при закрытии.
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --ew-product-sheet-start-y: calc(var(--ew-vvh, 100vh) + 160px);
+}
+
+.moverlay.ew-sheet-preopen #modalPanel,
+.moverlay:not(.open):not(.closing) #modalPanel {
+  opacity: 1 !important;
+  transform: translate3d(0, var(--ew-product-sheet-start-y), 0) !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+@keyframes ewProductSheetOriginIn {
+  from { opacity: 1; transform: translate3d(0, var(--ew-product-sheet-start-y), 0); filter: none; }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+}
+@keyframes ewProductSheetOriginOut {
+  from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+  to   { opacity: 1; transform: translate3d(0, var(--ew-product-sheet-start-y), 0); filter: none; }
+}
+
+.moverlay.open #modalPanel {
+  animation: ewProductSheetOriginIn var(--ew-tg-sheet-in) var(--ew-tg-sheet-ease-in) both !important;
+}
+.moverlay.closing #modalPanel {
+  animation: ewProductSheetOriginOut var(--ew-tg-sheet-out) var(--ew-tg-sheet-ease-out) forwards !important;
+}
+
+@media(max-width:960px){
+  :root {
+    --ew-product-sheet-start-y: calc(var(--ew-vvh, 100vh) + 120px);
+  }
+}
+</style>
 
 
 <!-- PATCH 5 · STABILITY CORE / OLD MODAL MOTION PRESERVED -->
