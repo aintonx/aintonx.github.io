@@ -19299,9 +19299,11 @@ function applyCatalogApiRecord(product, record){
     product.reservation_status=reservationStatus;
     changed=true;
   }
-  const reservedUntil=String(record.reserved_until || record.reservedUntil || record.reservation_expires_at || '').trim();
-  if(product.reserved_until !== reservedUntil){
+  const reservedUntil=String(record.reserved_until || record.reservedUntil || record.reservation_expires_at || record.reservationExpiresAt || record.expires_at || record.expiresAt || '').trim();
+  if(product.reserved_until !== reservedUntil || product.reservation_expires_at !== reservedUntil){
     product.reserved_until=reservedUntil;
+    product.reservation_expires_at=reservedUntil;
+    product.reservationExpiresAt=reservedUntil;
     changed=true;
   }
   const reservationId=String(record.reservation_id || record.reservationId || '').trim();
@@ -19483,19 +19485,20 @@ function refreshCurrentModalFromProduct(){
   if(reservationState && reservationState.kind === 'self'){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(true);
-    btns.classList.add('has-share');
+    btns.classList.add('has-share', 'ew-active-order-actions');
     _ewSetHtmlIfChanged(btns, _ewModalOrderButtonsHtml(cur, true));
     _ewApplyReservationTextToModal(cur);
   }else if(orderable){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(false);
     btns.classList.add('has-share');
+    btns.classList.remove('ew-active-order-actions');
     _ewSetHtmlIfChanged(btns, _ewModalOrderButtonsHtml(cur, true));
     _ewApplyReservationTextToModal(cur);
   }else{
     if(insta) insta.style.display=status==='transition_complete'?'flex':'none';
     setModalOrderFieldsDisabled(true);
-    btns.classList.remove('has-share');
+    btns.classList.remove('has-share', 'ew-active-order-actions');
     _ewSetHtmlIfChanged(btns, '<button class="mbtn dis" disabled>'+((reservationState && reservationState.text) || blockLabel)+'</button>');
     const priceEcho=document.getElementById('mpriceecho');
     if(priceEcho) _ewSetSmoothText(priceEcho, (reservationState && reservationState.text) || blockLabel);
@@ -19698,19 +19701,20 @@ function openModal(i){
   if(reservationState && reservationState.kind === 'self'){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(true);
-    btns.classList.add('has-share');
+    btns.classList.add('has-share', 'ew-active-order-actions');
     _ewSetHtmlIfChanged(btns, _ewModalOrderButtonsHtml(p, true));
     _ewApplyReservationTextToModal(p);
   }else if(orderable){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(false);
     btns.classList.add('has-share');
+    btns.classList.remove('ew-active-order-actions');
     _ewSetHtmlIfChanged(btns, _ewModalOrderButtonsHtml(p, true));
     _ewApplyReservationTextToModal(p);
   }else{
     if(insta) insta.style.display=status==='transition_complete'?'flex':'none';
     setModalOrderFieldsDisabled(true);
-    btns.classList.remove('has-share');
+    btns.classList.remove('has-share', 'ew-active-order-actions');
     _ewSetHtmlIfChanged(btns, '<button class="mbtn dis" disabled>'+((reservationState && reservationState.text) || blockLabel)+'</button>');
     _ewSetSmoothText(document.getElementById('mpriceecho'), (reservationState && reservationState.text) || blockLabel);
     _ewApplyReservationTextToModal(p);
@@ -33078,6 +33082,204 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
     });
   }, 80);
 }
+</script>
+
+
+<style id="ew-reservation-visual-fix-v2">
+/* Phase 2D.12 · RESERVATION VISUAL FIX
+   Исправляет только ошибки предыдущего polish: стабильная плашка резерва,
+   возврат обычной кнопки «Открыть», центр CTA оплаты и мягкая замена APERTURA STATUS. */
+.pcard.ew-user-reserved .pbtn,
+.pcard.ew-global-reserved .pbtn {
+  background: var(--red) !important;
+  border-color: var(--red2) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+@media (hover:hover) and (pointer:fine) {
+  .pcard.ew-user-reserved .pbtn:hover,
+  .pcard.ew-global-reserved .pbtn:hover {
+    background: var(--red2) !important;
+    border-color: var(--red2) !important;
+    color: #fff !important;
+    box-shadow: 0 0 20px rgba(192,40,40,.4) !important;
+  }
+}
+.pcard.ew-user-reserved .pbeacon-txt,
+.pcard.ew-global-reserved .pbeacon-txt {
+  color: var(--cyan) !important;
+}
+.pcard.ew-user-reserved .pbeacon,
+.pcard.ew-global-reserved .pbeacon {
+  overflow: hidden !important;
+  contain: paint;
+}
+.pcard.ew-user-reserved .pbeacon-txt,
+.pcard.ew-global-reserved .pbeacon-txt {
+  display: block !important;
+  width: 132px !important;
+  max-width: 132px !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  transform: translateZ(0);
+}
+.pcard.ew-user-reserved .pstatus,
+.pcard.ew-global-reserved .pstatus {
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: clip !important;
+}
+.ew-status-rollbox {
+  display: inline !important;
+  overflow: visible !important;
+  height: auto !important;
+  contain: none !important;
+}
+.ew-status-rollbox .ew-roll-stack {
+  display: inline !important;
+  animation: none !important;
+  transform: none !important;
+}
+.ew-status-rollbox .ew-roll-old { display: none !important; }
+.ew-status-rollbox .ew-roll-new { display: inline !important; }
+.mfooter-btns.ew-active-order-actions {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 44px !important;
+  align-items: stretch !important;
+}
+.mfooter-btns.ew-active-order-actions .mbtn.ew-active-order-cta {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  line-height: 1.12 !important;
+  padding: 12px 14px !important;
+}
+.mfooter-btns.ew-active-order-actions .mbtn-share {
+  grid-column: auto !important;
+}
+.ew-smooth-text,
+.ew-smooth-text.ew-text-changing,
+.mfooter-btns.ew-html-changing {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+.ap-status-panel.ew-layout-morphing {
+  overflow: hidden;
+  transition: height .24s cubic-bezier(.2,.8,.2,1) !important;
+}
+.ap-status-body.ew-status-body-fade {
+  transition: opacity .16s ease !important;
+}
+.ap-status-body.ew-status-body-fade-out {
+  opacity: .08 !important;
+}
+.ap-status-body.ew-status-body-swap {
+  opacity: 1 !important;
+  transform: none !important;
+}
+</style>
+<script id="ew-reservation-visual-fix-js-v2">
+/* Phase 2D.12 · RESERVATION VISUAL FIX JS */
+(function(){
+  function plain(value){ return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); }
+
+  window._ewSetRollingText = function(el, next){
+    if(!el) return false;
+    next = plain(next);
+    const current = plain(el.dataset.ewTextValue || el.textContent || '');
+    if(current === next){ el.dataset.ewTextValue = next; return false; }
+    if(el._ewRollTimer){ clearTimeout(el._ewRollTimer); el._ewRollTimer = 0; }
+    el.classList.remove('ew-status-rollbox');
+    el.style.removeProperty('--ew-roll-line');
+    el.style.height = '';
+    el.textContent = next;
+    el.dataset.ewTextValue = next;
+    return true;
+  };
+
+  window._ewSetSmoothText = function(el, next){
+    if(!el) return false;
+    next = String(next == null ? '' : next);
+    if((el.textContent || '') === next) return false;
+    if(el._ewSmoothTextTimer){ clearTimeout(el._ewSmoothTextTimer); el._ewSmoothTextTimer = 0; }
+    el.classList.remove('ew-smooth-text', 'ew-text-changing');
+    el.textContent = next;
+    return true;
+  };
+
+  window._ewSetHtmlIfChanged = function(el, html){
+    if(!el) return false;
+    html = String(html == null ? '' : html);
+    if(el.dataset.ewLastHtml === html || el.innerHTML === html){
+      el.dataset.ewLastHtml = html;
+      return false;
+    }
+    if(el._ewHtmlTimer){ clearTimeout(el._ewHtmlTimer); el._ewHtmlTimer = 0; }
+    el.classList.remove('ew-html-changing');
+    el.dataset.ewLastHtml = html;
+    el.innerHTML = html;
+    return true;
+  };
+
+  window._ewProductReservationUiState = function(p){
+    const rec = (typeof _ewActiveOrderRead === 'function') ? _ewActiveOrderRead() : null;
+    if(rec && typeof _ewActiveOrderBlocksCheckout === 'function' && _ewActiveOrderBlocksCheckout(rec) && typeof _ewActiveOrderMatchesProduct === 'function' && _ewActiveOrderMatchesProduct(rec, p)){
+      const ps = String(rec.payment_status || '').toLowerCase();
+      const countdown = typeof _ewCountdownParts === 'function' ? _ewCountdownParts(rec.expires_at || rec.reserved_until || '') : null;
+      let text = 'Резерв';
+      if(ps === 'pending') text = 'Оплата ожидается';
+      else if(ps === 'waiting_for_capture') text = 'Оплата авторизована';
+      else if(ps === 'succeeded') text = 'Закреплена';
+      else if(countdown) text = 'Резерв · ' + countdown.text;
+      return {kind:'self', text, base:'Резерв', countdown, rec};
+    }
+    const reservationStatus = String(p && (p.reservation_status || p.reservationStatus) || '').toLowerCase();
+    const rawUntil = p && (p.reserved_until || p.reservedUntil || p.reservation_expires_at || p.reservationExpiresAt || p.expires_at || p.expiresAt) || '';
+    const countdown = typeof _ewCountdownParts === 'function' ? _ewCountdownParts(rawUntil) : null;
+    if((reservationStatus === 'active' || reservationStatus === 'reserved') && countdown){
+      return {kind:'global', text:'Резерв · ' + countdown.text, base:'Резерв', countdown};
+    }
+    if((reservationStatus === 'active' || reservationStatus === 'reserved') && p && p.orderable === false){
+      return {kind:'global', text:'Резерв', base:'Резерв', countdown:null};
+    }
+    return null;
+  };
+
+  window._ewSmoothAperturaStatusReplace = function(overlay, body, html){
+    if(!body){ return; }
+    html = String(html == null ? '' : html);
+    if(body.innerHTML === html) return;
+    const panel = overlay && overlay.querySelector ? overlay.querySelector('.ap-status-panel') : document.getElementById('apStatusPanel');
+    const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if(!panel || reduce || !overlay || !overlay.classList.contains('open')){ body.innerHTML = html; return; }
+    if(panel._ewStatusSwapTimer){ clearTimeout(panel._ewStatusSwapTimer); panel._ewStatusSwapTimer = 0; }
+    const from = Math.max(1, Math.ceil(panel.getBoundingClientRect().height || panel.offsetHeight || 1));
+    panel.style.height = from + 'px';
+    panel.classList.add('ew-layout-morphing');
+    body.classList.add('ew-status-body-fade', 'ew-status-body-fade-out');
+    panel._ewStatusSwapTimer = setTimeout(function(){
+      body.innerHTML = html;
+      const to = Math.max(1, Math.ceil(panel.scrollHeight || panel.getBoundingClientRect().height || from));
+      requestAnimationFrame(function(){
+        panel.style.height = to + 'px';
+        body.classList.remove('ew-status-body-fade-out');
+        panel._ewStatusSwapTimer = setTimeout(function(){
+          panel.style.height = '';
+          panel.classList.remove('ew-layout-morphing');
+          body.classList.remove('ew-status-body-fade');
+          panel._ewStatusSwapTimer = 0;
+        }, 280);
+      });
+    }, 90);
+  };
+})();
 </script>
 
 </body>
