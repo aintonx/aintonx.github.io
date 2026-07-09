@@ -33379,6 +33379,51 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
   }
 }
 </style>
+
+<style id="ew-apertura-status-cyan-wash-off-v1">
+/* Phase 2D.13j · APERTURA STATUS CYAN WASH OFF
+   Микропатч: не меняет pivot-механику APERTURA STATUS.
+   Убирает cyan/red radial-wash из backdrop APERTURA STATUS, потому что
+   при pivot между status-карточками именно этот световой слой может давать
+   заметный cyan/white flash. Оставляем тёмную защитную плёнку без glow. */
+#apStatusOverlay::before,
+#apStatusOverlay.open::before,
+#apStatusOverlay.closing::before,
+#apStatusOverlay.ew-ap-status-pivoting::before,
+#apStatusOverlay[data-status-key="entry-instagram"]::before {
+  background: rgba(4,4,10,.88) !important;
+}
+:root[data-theme="light"] #apStatusOverlay::before,
+:root[data-theme="light"] #apStatusOverlay.open::before,
+:root[data-theme="light"] #apStatusOverlay.closing::before,
+:root[data-theme="light"] #apStatusOverlay.ew-ap-status-pivoting::before,
+:root[data-theme="light"] #apStatusOverlay[data-status-key="entry-instagram"]::before {
+  background: rgba(244,247,252,.68) !important;
+}
+</style>
+<script id="ew-apertura-status-cyan-wash-off-js">
+/* Phase 2D.13j · APERTURA STATUS CYAN WASH OFF JS */
+(function(){
+  const PATCH = 'Phase 2D.13j · APERTURA STATUS CYAN WASH OFF';
+  const prevInspect = window.inspectAperturaStatusCardSwapPatch;
+  window.inspectAperturaStatusCyanWashOff = function(){
+    const ov = document.getElementById('apStatusOverlay');
+    let beforeBg = '';
+    try{ beforeBg = ov ? getComputedStyle(ov, '::before').backgroundColor : ''; }catch(e){}
+    return {
+      ok: !!ov,
+      patch: PATCH,
+      statusOpen: !!(ov && ov.classList.contains('open')),
+      pivoting: !!(ov && ov.classList.contains('ew-ap-status-pivoting')),
+      statusKey: ov ? ov.dataset.statusKey || '' : '',
+      beforeBackgroundColor: beforeBg || '',
+      previous: typeof prevInspect === 'function' ? prevInspect() : null
+    };
+  };
+  window.inspectAperturaStatusPivotBlurOff = window.inspectAperturaStatusCyanWashOff;
+})();
+</script>
+
 <script id="ew-apertura-status-pivot-transition-js-v4">
 /* Phase 2D.13i · APERTURA STATUS PIVOT BLUR-OFF REVERT JS */
 (function(){
