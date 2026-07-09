@@ -33282,5 +33282,145 @@ function _ewSmoothAperturaStatusReplace(overlay, body, html){
 })();
 </script>
 
+
+<style id="ew-apertura-status-card-swap-v1">
+/* Phase 2D.13 · APERTURA STATUS CARD SWAP
+   Точечно улучшает только смену содержимого APERTURA STATUS, когда overlay уже открыт:
+   не закрывает/открывает весь слой заново, а мягко заменяет внутреннюю карточку
+   с height-morph панели. Остальные модалки и modal motion не трогаются. */
+#apStatusPanel.ew-ap-card-morph {
+  overflow: hidden !important;
+  transition: height .30s cubic-bezier(.20,.82,.22,1) !important;
+}
+#apStatusBody.ew-ap-status-card-swap {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+#apStatusBody .ew-ap-status-card-old,
+#apStatusBody .ew-ap-status-card-new {
+  transition:
+    opacity .18s ease,
+    transform .28s cubic-bezier(.20,.82,.22,1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+#apStatusBody .ew-ap-status-card-old {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 1;
+  transform: translate3d(0,0,0);
+  pointer-events: none;
+}
+#apStatusBody .ew-ap-status-card-new {
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  transform: translate3d(0,14px,0);
+  pointer-events: none;
+}
+#apStatusBody.ew-ap-status-card-swap-live .ew-ap-status-card-old {
+  opacity: 0;
+  transform: translate3d(0,-12px,0);
+}
+#apStatusBody.ew-ap-status-card-swap-live .ew-ap-status-card-new {
+  opacity: 1;
+  transform: translate3d(0,0,0);
+}
+@media (prefers-reduced-motion: reduce) {
+  #apStatusPanel.ew-ap-card-morph,
+  #apStatusBody .ew-ap-status-card-old,
+  #apStatusBody .ew-ap-status-card-new {
+    transition: none !important;
+  }
+}
+</style>
+<script id="ew-apertura-status-card-swap-js-v1">
+/* Phase 2D.13 · APERTURA STATUS CARD SWAP JS */
+(function(){
+  function reduceMotion(){
+    try{ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch(e){ return false; }
+  }
+  function cleanupSwap(panel, body, finalHtml){
+    if(panel && panel._ewApStatusSwapTimer){
+      clearTimeout(panel._ewApStatusSwapTimer);
+      panel._ewApStatusSwapTimer = 0;
+    }
+    if(panel){
+      panel.classList.remove('ew-ap-card-morph');
+      panel.style.height = '';
+      panel._ewApStatusSwapFinalHtml = '';
+    }
+    if(body){
+      body.classList.remove('ew-ap-status-card-swap','ew-ap-status-card-swap-live');
+      if(typeof finalHtml === 'string') body.innerHTML = finalHtml;
+    }
+  }
+  window._ewSmoothAperturaStatusReplace = function(overlay, body, html){
+    if(!body){ return; }
+    html = String(html == null ? '' : html);
+    if(body.innerHTML === html) return;
+    const panel = overlay && overlay.querySelector ? overlay.querySelector('.ap-status-panel') : document.getElementById('apStatusPanel');
+    if(panel && panel._ewApStatusSwapFinalHtml){
+      cleanupSwap(panel, body, panel._ewApStatusSwapFinalHtml);
+    }
+    const canAnimate = !!(panel && overlay && overlay.classList && overlay.classList.contains('open') && !reduceMotion());
+    if(!canAnimate){ body.innerHTML = html; return; }
+
+    const fromPanelH = Math.max(1, Math.ceil(panel.getBoundingClientRect().height || panel.offsetHeight || 1));
+    const fromBodyH = Math.max(1, Math.ceil(body.getBoundingClientRect().height || body.scrollHeight || 1));
+    const oldHtml = body.innerHTML;
+
+    panel._ewApStatusSwapFinalHtml = html;
+    panel.classList.add('ew-ap-card-morph');
+    panel.style.height = fromPanelH + 'px';
+
+    body.classList.remove('ew-ap-status-card-swap-live');
+    body.classList.add('ew-ap-status-card-swap');
+    body.innerHTML = '<div class="ew-ap-status-card-old" aria-hidden="true">' + oldHtml + '</div><div class="ew-ap-status-card-new">' + html + '</div>';
+
+    const oldLayer = body.querySelector('.ew-ap-status-card-old');
+    const newLayer = body.querySelector('.ew-ap-status-card-new');
+    if(oldLayer){
+      oldLayer.querySelectorAll('[id]').forEach(function(n){ n.removeAttribute('id'); });
+      oldLayer.querySelectorAll('[name]').forEach(function(n){ n.removeAttribute('name'); });
+      oldLayer.querySelectorAll('button,a,input,textarea,select').forEach(function(n){
+        try{ n.tabIndex = -1; }catch(e){}
+      });
+    }
+    if(!newLayer){ body.innerHTML = html; panel.style.height = ''; panel.classList.remove('ew-ap-card-morph'); return; }
+
+    const newBodyH = Math.max(1, Math.ceil(newLayer.getBoundingClientRect().height || newLayer.scrollHeight || fromBodyH));
+    const toPanelH = Math.max(1, fromPanelH - fromBodyH + newBodyH);
+
+    try{ panel.scrollTop = 0; body.scrollTop = 0; }catch(e){}
+    void panel.offsetHeight;
+    requestAnimationFrame(function(){
+      if(panel._ewApStatusSwapFinalHtml !== html) return;
+      panel.style.height = toPanelH + 'px';
+      body.classList.add('ew-ap-status-card-swap-live');
+      panel._ewApStatusSwapTimer = setTimeout(function(){
+        if(panel._ewApStatusSwapFinalHtml !== html) return;
+        cleanupSwap(panel, body, html);
+        try{ panel.scrollTop = 0; body.scrollTop = 0; }catch(e){}
+      }, 340);
+    });
+  };
+
+  window.inspectAperturaStatusCardSwapPatch = function(){
+    const panel = document.getElementById('apStatusPanel');
+    const body = document.getElementById('apStatusBody');
+    return {
+      ok: typeof window._ewSmoothAperturaStatusReplace === 'function' && !!panel && !!body,
+      patch: 'Phase 2D.13 · APERTURA STATUS CARD SWAP',
+      statusOpen: !!(document.getElementById('apStatusOverlay') && document.getElementById('apStatusOverlay').classList.contains('open')),
+      morphing: !!(panel && panel.classList.contains('ew-ap-card-morph'))
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
