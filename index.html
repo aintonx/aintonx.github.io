@@ -31974,6 +31974,231 @@ body.modal-open .pcard.reading::before {
 }
 </style>
 
+<style id="ew-modal-telegram-sheet-motion-v1">
+/* ════════════════════════════════════════════════════════════════
+   Phase 2D.7 · TELEGRAM-LIKE SHEET MOTION
+   Цель: сохранить modal-layer/backdrop архитектуру, но заменить
+   подпрыгивающий drawer на цельный sheet-motion в духе Telegram:
+   панель стартует полностью ниже viewport, едет одним внешним слоем,
+   внутренний контент не скейлится/не блюрится/не фейдится отдельно.
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --ew-tg-sheet-y: calc(var(--ew-vvh, 100vh) + 72px);
+  --ew-tg-sheet-in: .48s;
+  --ew-tg-sheet-out: .34s;
+  --ew-tg-sheet-ease-in: cubic-bezier(.18, .86, .22, 1);
+  --ew-tg-sheet-ease-out: cubic-bezier(.32, 0, .67, 0);
+  --ew-tg-backdrop-in: .20s;
+  --ew-tg-backdrop-out: .22s;
+}
+
+/* Overlay/root сцена клипует всё, что приезжает снизу. Это убирает
+   некрасивые просветы/полосы от панели, когда она ещё за viewport. */
+.moverlay,
+.chk-overlay,
+#reqModal,
+#offerModal,
+#privacyModal,
+.ap-console-overlay,
+#apStatusOverlay {
+  overflow: hidden !important;
+}
+
+/* Внутренний контент не должен жить отдельной анимацией: картинка,
+   крестик и текст едут как единый цельный Telegram-like sheet. */
+.modal,
+.chk-modal,
+.legal-modal,
+.ap-console-panel,
+.ap-status-panel {
+  filter: none !important;
+  transform-style: flat !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* Не держим дорогостоящие compositor hints постоянно. Браузер сам
+   поднимет слой на время transform-анимации, а мы не раздуваем память. */
+.modal,
+.chk-modal,
+.legal-modal,
+.ap-console-panel,
+.ap-status-panel {
+  will-change: auto !important;
+}
+
+/* Состояние покоя: если overlay уже в DOM/display, но ещё не open,
+   панель гарантированно находится ниже экрана. */
+.moverlay:not(.open):not(.closing) .modal,
+.chk-overlay:not(.open):not(.closing) .chk-modal,
+#reqModal:not(.open):not(.closing) .legal-modal,
+#offerModal:not(.open):not(.closing) .legal-modal,
+#privacyModal:not(.open):not(.closing) .legal-modal,
+.ap-console-overlay:not(.open):not(.closing) .ap-console-panel,
+.ap-console-overlay:not(.open):not(.closing) .ap-status-panel,
+#apStatusOverlay:not(.open):not(.closing) .ap-status-panel {
+  opacity: 1 !important;
+  transform: translate3d(0, var(--ew-tg-sheet-y), 0) !important;
+}
+
+@keyframes ewTelegramSheetIn {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, var(--ew-tg-sheet-y), 0);
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: none;
+  }
+}
+
+@keyframes ewTelegramSheetOut {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, var(--ew-tg-sheet-y), 0);
+    filter: none;
+  }
+}
+
+/* Переопределяем старые имена keyframes, на которые уже ссылаются
+   разные участки сайта, чтобы не оставались bounce/overshoot/blur. */
+@keyframes ewDrawerPanelIn { from { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } to { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+@keyframes ewDrawerPanelOut { from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } }
+@keyframes ewModalLayerPanelIn { from { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } to { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+@keyframes ewModalLayerPanelOut { from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } }
+@keyframes ewPanelRiseInPolished { from { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } to { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+@keyframes ewPanelRiseOutPolished { from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } }
+@keyframes ewStablePanelIn { from { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } to { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+@keyframes ewStablePanelOut { from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } }
+@keyframes modalQuickIn { from { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+@keyframes modalQuickOut { from { opacity: 1; transform: translate3d(0, 0, 0); } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); } }
+@keyframes chkClose { from { opacity: 1; transform: translate3d(0, 0, 0); } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); } }
+@keyframes apConsoleIn { from { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } to { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+@keyframes apConsoleOut { from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } }
+
+.moverlay.open .modal,
+.chk-overlay.open .chk-modal,
+#reqModal.open .legal-modal,
+#offerModal.open .legal-modal,
+#privacyModal.open .legal-modal,
+.ap-console-overlay.open .ap-console-panel,
+.ap-console-overlay.open .ap-status-panel,
+#apStatusOverlay.open .ap-status-panel {
+  animation: ewTelegramSheetIn var(--ew-tg-sheet-in) var(--ew-tg-sheet-ease-in) both !important;
+}
+
+.moverlay.closing .modal,
+.chk-overlay.closing .chk-modal,
+#reqModal.closing .legal-modal,
+#offerModal.closing .legal-modal,
+#privacyModal.closing .legal-modal,
+.ap-console-overlay.closing .ap-console-panel,
+.ap-console-overlay.closing .ap-status-panel,
+#apStatusOverlay.closing .ap-status-panel {
+  animation: ewTelegramSheetOut var(--ew-tg-sheet-out) var(--ew-tg-sheet-ease-out) forwards !important;
+}
+
+/* Backdrop не играет второй отдельной фазой: быстро собирается вместе
+   с sheet и быстро отпускает сайт вместе с уходом панели. */
+.moverlay.open::before,
+.chk-overlay.open::before,
+#reqModal.open::before,
+#offerModal.open::before,
+#privacyModal.open::before,
+#apStatusOverlay.open::before,
+.cart-overlay.cart-opening {
+  animation-duration: var(--ew-tg-backdrop-in) !important;
+}
+.moverlay.closing::before,
+.chk-overlay.closing::before,
+#reqModal.closing::before,
+#offerModal.closing::before,
+#privacyModal.closing::before,
+#apStatusOverlay.closing::before,
+.cart-overlay.cart-closing {
+  animation-duration: var(--ew-tg-backdrop-out) !important;
+}
+
+/* На модалке реликвии не фейдим внутреннюю картинку отдельно: именно это
+   давало ощущение дубля/вспышки поверх каталога. */
+.moverlay.open .mimgw,
+.moverlay.open .mimgw img,
+.moverlay.closing .mimgw,
+.moverlay.closing .mimgw img {
+  animation: none !important;
+  transition-property: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Мобильная версия остаётся bottom-sheet. Дистанция — чуть больше панели,
+   а не bounce через отрицательный overshoot. */
+@media(max-width:960px){
+  :root {
+    --ew-tg-sheet-y: 112%;
+    --ew-tg-sheet-in: .44s;
+    --ew-tg-sheet-out: .32s;
+  }
+  @keyframes modalMobIn { from { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+  @keyframes modalMobOut { from { opacity: 1; transform: translate3d(0, 0, 0); } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); } }
+  @keyframes ewModalLayerSheetIn { from { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } to { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+  @keyframes ewModalLayerSheetOut { from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } }
+  @keyframes ewPanelSheetInPolished { from { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } to { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+  @keyframes ewPanelSheetOutPolished { from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } }
+  @keyframes ewStableSheetIn { from { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } to { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+  @keyframes ewStableSheetOut { from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } to { opacity: 1; transform: translate3d(0, var(--ew-tg-sheet-y), 0); filter: none; } }
+  .moverlay.open .modal,
+  .chk-overlay.open .chk-modal,
+  #reqModal.open .legal-modal,
+  #offerModal.open .legal-modal,
+  #privacyModal.open .legal-modal,
+  .ap-console-overlay.open .ap-console-panel,
+  .ap-console-overlay.open .ap-status-panel,
+  #apStatusOverlay.open .ap-status-panel {
+    animation-duration: var(--ew-tg-sheet-in) !important;
+  }
+  .moverlay.closing .modal,
+  .chk-overlay.closing .chk-modal,
+  #reqModal.closing .legal-modal,
+  #offerModal.closing .legal-modal,
+  #privacyModal.closing .legal-modal,
+  .ap-console-overlay.closing .ap-console-panel,
+  .ap-console-overlay.closing .ap-status-panel,
+  #apStatusOverlay.closing .ap-status-panel {
+    animation-duration: var(--ew-tg-sheet-out) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .moverlay.open .modal,
+  .moverlay.closing .modal,
+  .chk-overlay.open .chk-modal,
+  .chk-overlay.closing .chk-modal,
+  #reqModal.open .legal-modal,
+  #reqModal.closing .legal-modal,
+  #offerModal.open .legal-modal,
+  #offerModal.closing .legal-modal,
+  #privacyModal.open .legal-modal,
+  #privacyModal.closing .legal-modal,
+  .ap-console-overlay.open .ap-console-panel,
+  .ap-console-overlay.closing .ap-console-panel,
+  .ap-console-overlay.open .ap-status-panel,
+  .ap-console-overlay.closing .ap-status-panel,
+  #apStatusOverlay.open .ap-status-panel,
+  #apStatusOverlay.closing .ap-status-panel {
+    animation-duration: .01ms !important;
+  }
+}
+</style>
+
+
 
 <!-- PATCH 5 · STABILITY CORE / OLD MODAL MOTION PRESERVED -->
 <script id="ew-patch5-stability-core">
