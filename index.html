@@ -31576,6 +31576,188 @@ svg.ew-mask-icon use,
 }
 </style>
 
+<style id="ew-modal-panel-motion-polish-v1">
+/* ════════════════════════════════════════════════════════════════
+   Phase 2D.4 · MODAL PANEL MOTION POLISH
+   Сохраняет modal-layer engine, но убирает ощущение вспышки/дубля:
+   панели входят как физический slide-rise слой, opacity не ведёт всю
+   анимацию, а мягко подключается/гасится в конце движения.
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --ew-modal-panel-in: .36s;
+  --ew-modal-panel-out: .30s;
+  --ew-modal-ease-in: cubic-bezier(.16, 1, .3, 1);
+  --ew-modal-ease-out: cubic-bezier(.45, 0, .22, 1);
+}
+
+/* Базовое скрытое состояние панели до .open. Это защищает от первого
+   кадра, где display:flex уже включился, а open-animation ещё не успела
+   примениться — именно этот кадр воспринимался как резкая вспышка. */
+.moverlay:not(.open):not(.closing) .modal,
+.chk-overlay:not(.open):not(.closing) .chk-modal,
+#reqModal:not(.open):not(.closing) .legal-modal,
+#offerModal:not(.open):not(.closing) .legal-modal,
+#privacyModal:not(.open):not(.closing) .legal-modal {
+  opacity: 0;
+  transform: translate3d(0, 76px, 0) scale(.972);
+  filter: blur(2px);
+}
+
+@keyframes ewPanelRiseInPolished {
+  0%   { opacity: .001; transform: translate3d(0, 82px, 0) scale(.972); filter: blur(3px); }
+  16%  { opacity: .001; transform: translate3d(0, 70px, 0) scale(.974); filter: blur(2.5px); }
+  54%  { opacity: 1; transform: translate3d(0, 12px, 0) scale(.994); filter: blur(.35px); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+}
+
+@keyframes ewPanelRiseOutPolished {
+  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+  62%  { opacity: 1; transform: translate3d(0, 56px, 0) scale(.976); filter: blur(.35px); }
+  82%  { opacity: .74; transform: translate3d(0, 78px, 0) scale(.968); filter: blur(1.1px); }
+  100% { opacity: 0; transform: translate3d(0, 96px, 0) scale(.96); filter: blur(2px); }
+}
+
+/* Product card — самый заметный случай из-за крупного изображения.
+   Делаем вход чуть более "снизу", чем у остальных панелей. */
+.moverlay.open .modal {
+  animation: ewPanelRiseInPolished var(--ew-modal-panel-in) var(--ew-modal-ease-in) both !important;
+}
+.moverlay.closing .modal {
+  animation: ewPanelRiseOutPolished var(--ew-modal-panel-out) var(--ew-modal-ease-out) forwards !important;
+}
+
+/* Остальные модальные панели получают тот же motion preset, чтобы сайт
+   не распался на разные механики. */
+.chk-overlay.open .chk-modal,
+#reqModal.open .legal-modal,
+#offerModal.open .legal-modal,
+#privacyModal.open .legal-modal {
+  animation: ewPanelRiseInPolished .34s var(--ew-modal-ease-in) both !important;
+}
+.chk-overlay.closing .chk-modal,
+#reqModal.closing .legal-modal,
+#offerModal.closing .legal-modal,
+#privacyModal.closing .legal-modal {
+  animation: ewPanelRiseOutPolished .29s var(--ew-modal-ease-out) forwards !important;
+}
+
+/* Подложка должна стартовать вместе с панелью, но быстрее набрать защитную
+   плотность, чтобы картинка реликвии не дублировалась поверх каталога. */
+.moverlay.open::before,
+.chk-overlay.open::before,
+#reqModal.open::before,
+#offerModal.open::before,
+#privacyModal.open::before,
+.cart-overlay.cart-opening,
+#apStatusOverlay.open::before {
+  animation-duration: .18s !important;
+}
+.moverlay.closing::before,
+.chk-overlay.closing::before,
+#reqModal.closing::before,
+#offerModal.closing::before,
+#privacyModal.closing::before,
+.cart-overlay.cart-closing,
+#apStatusOverlay.closing::before {
+  animation-duration: .26s !important;
+}
+
+/* Источник товара в сетке раньше сам мигал opacity-анимацией .reading.
+   Пока открыта модалка, этот flash под overlay даёт ощущение второго
+   изображения. Гасим только opacity-flash под модальным слоем, не меняя
+   поведение карточек в обычном каталоге. */
+body.modal-open .pcard.reading,
+body.modal-open .pcard.reading::before {
+  animation: none !important;
+}
+body.modal-open .pcard.reading::before {
+  opacity: 0 !important;
+}
+
+/* Architect / APERTURA STATUS используют тот же принцип: вход/уход панелью,
+   opacity подключается поздно, чтобы не было нескольких крестиков/дублей. */
+@keyframes apConsoleIn {
+  0%   { opacity: .001; transform: translate3d(0, 72px, 0) scale(.972); filter: blur(3px); }
+  16%  { opacity: .001; transform: translate3d(0, 62px, 0) scale(.974); filter: blur(2.4px); }
+  54%  { opacity: 1; transform: translate3d(0, 10px, 0) scale(.994); filter: blur(.3px); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+}
+@keyframes apConsoleOut {
+  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+  62%  { opacity: 1; transform: translate3d(0, 52px, 0) scale(.976); filter: blur(.3px); }
+  82%  { opacity: .74; transform: translate3d(0, 74px, 0) scale(.968); filter: blur(1px); }
+  100% { opacity: 0; transform: translate3d(0, 92px, 0) scale(.96); filter: blur(2px); }
+}
+
+@media(max-width:960px){
+  .moverlay:not(.open):not(.closing) .modal,
+  .chk-overlay:not(.open):not(.closing) .chk-modal,
+  #reqModal:not(.open):not(.closing) .legal-modal,
+  #offerModal:not(.open):not(.closing) .legal-modal,
+  #privacyModal:not(.open):not(.closing) .legal-modal {
+    opacity: 0;
+    transform: translate3d(0, 104%, 0);
+    filter: blur(1.5px);
+  }
+
+  @keyframes ewPanelSheetInPolished {
+    0%   { opacity: .001; transform: translate3d(0, 104%, 0); filter: blur(2px); }
+    14%  { opacity: .001; transform: translate3d(0, 96%, 0); filter: blur(1.8px); }
+    58%  { opacity: 1; transform: translate3d(0, 8%, 0); filter: blur(.25px); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+  }
+  @keyframes ewPanelSheetOutPolished {
+    0%   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+    66%  { opacity: 1; transform: translate3d(0, 84%, 0); filter: blur(.25px); }
+    84%  { opacity: .72; transform: translate3d(0, 98%, 0); filter: blur(.8px); }
+    100% { opacity: 0; transform: translate3d(0, 108%, 0); filter: blur(1.5px); }
+  }
+
+  .moverlay.open .modal,
+  .chk-overlay.open .chk-modal,
+  #reqModal.open .legal-modal,
+  #offerModal.open .legal-modal,
+  #privacyModal.open .legal-modal {
+    animation: ewPanelSheetInPolished .34s var(--ew-modal-ease-in) both !important;
+  }
+  .moverlay.closing .modal,
+  .chk-overlay.closing .chk-modal,
+  #reqModal.closing .legal-modal,
+  #offerModal.closing .legal-modal,
+  #privacyModal.closing .legal-modal {
+    animation: ewPanelSheetOutPolished .29s var(--ew-modal-ease-out) forwards !important;
+  }
+}
+
+@media(max-width:720px){
+  @keyframes apConsoleMobIn {
+    0%   { opacity: .001; transform: translate3d(0, 104%, 0); filter: blur(2px); }
+    14%  { opacity: .001; transform: translate3d(0, 96%, 0); filter: blur(1.8px); }
+    58%  { opacity: 1; transform: translate3d(0, 8%, 0); filter: blur(.25px); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+  }
+  @keyframes apConsoleMobOut {
+    0%   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+    66%  { opacity: 1; transform: translate3d(0, 84%, 0); filter: blur(.25px); }
+    84%  { opacity: .72; transform: translate3d(0, 98%, 0); filter: blur(.8px); }
+    100% { opacity: 0; transform: translate3d(0, 108%, 0); filter: blur(1.5px); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .moverlay:not(.open):not(.closing) .modal,
+  .chk-overlay:not(.open):not(.closing) .chk-modal,
+  #reqModal:not(.open):not(.closing) .legal-modal,
+  #offerModal:not(.open):not(.closing) .legal-modal,
+  #privacyModal:not(.open):not(.closing) .legal-modal {
+    opacity: 0;
+    transform: none;
+    filter: none;
+  }
+}
+</style>
+
+
 <!-- PATCH 5 · STABILITY CORE / OLD MODAL MOTION PRESERVED -->
 <script id="ew-patch5-stability-core">
 (function(){
