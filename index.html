@@ -19516,8 +19516,8 @@ async function refreshEchoWorldCatalog(opts){
     : (EW_APERTURA_API_URL + '?route=' + encodeURIComponent(EW_CATALOG_READONLY_SYNC.route));
   try{
     const result = typeof _ewFetchJsonWithTimeout === 'function'
-      ? await _ewFetchJsonWithTimeout(url, {method:'GET', headers:{'Accept':'application/json'}, credentials:'omit'}, EW_CATALOG_READONLY_SYNC.timeoutMs)
-      : {res: await fetch(url, {method:'GET', headers:{'Accept':'application/json'}, credentials:'omit'}), data:null};
+      ? await _ewFetchJsonWithTimeout(url, {method:'GET', headers:{'Accept':'application/json'}, credentials:'omit', cache:'no-store'}, EW_CATALOG_READONLY_SYNC.timeoutMs)
+      : {res: await fetch(url, {method:'GET', headers:{'Accept':'application/json'}, credentials:'omit', cache:'no-store'}), data:null};
     const data = result.data || (result.res && typeof result.res.json === 'function' ? await result.res.json() : null);
     if(!result.res || !result.res.ok || !data || data.ok !== true || !Array.isArray(data.products)){
       throw new Error('catalog_response_invalid');

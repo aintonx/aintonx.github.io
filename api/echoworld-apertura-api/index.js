@@ -238,7 +238,7 @@ async function readActiveCatalogReservationLocks() {
       converted_order_id
     FROM product_reservation_locks
     WHERE
-      status = "active"
+      status IN ("active", "converted")
       AND reserved_until >= CurrentUtcTimestamp();
   `;
 
@@ -370,6 +370,14 @@ async function productStatus(productId) {
 
   const row = rows[0];
   const status = row.status || "";
+  const lock = await readReservationLock(safeProductId);
+  const lockStatus = String(lock && lock.status || "").trim().toLowerCase();
+  const hasPublicReservationLock = !!(
+    lock &&
+    (lockStatus === "active" || lockStatus === "converted") &&
+    !isLockTimeExpired(lock)
+  );
+  const reservedUntil = hasPublicReservationLock ? (lock.reserved_until_text || "") : "";
 
   return json(200, {
     ok: true,
@@ -379,13 +387,19 @@ async function productStatus(productId) {
     relic_code: row.relic_code,
     title: row.title,
     status,
-    orderable: isOrderableByStatus(status),
+    orderable: hasPublicReservationLock ? false : isOrderableByStatus(status),
     visible: true,
     echo_slots: toNumber(row.echo_slots_text),
     price_rub: toNumber(row.price_rub_text),
     power_code: row.power_code,
     power_label: row.power_label,
-    catalog_status_label: row.catalog_status_label || "",
+    catalog_status_label: hasPublicReservationLock ? "Резерв" : (row.catalog_status_label || ""),
+    reservation_status: hasPublicReservationLock ? "active" : "",
+    reservation_id: hasPublicReservationLock ? (lock.reservation_id || "") : "",
+    reserved_until: reservedUntil,
+    reservation_expires_at: reservedUntil,
+    reservationExpiresAt: reservedUntil,
+    expires_at: reservedUntil,
     updated_at: row.updated_at || "",
     ts: nowIso()
   });
