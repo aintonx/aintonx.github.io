@@ -14492,6 +14492,218 @@ button, a, [role="button"], label,
   }
 }
 
+
+
+/* ════════════════════════════════════════════════════════════════
+   Phase 2D.2 · MODAL LAYER ENGINE
+   Аккуратная замена визуальной модели модалок без переписывания
+   бизнес-логики: фон/защитный слой и карточка теперь анимируются как
+   два независимых слоя одной сцены. Blur #_blurW стартует одновременно
+   с входом/выходом панели; cleanup остаётся в существующем JS lifecycle.
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --ew-modal-layer-in: .22s;
+  --ew-modal-layer-out: .26s;
+  --ew-modal-panel-in: .34s;
+  --ew-modal-panel-out: .28s;
+  --ew-modal-ease-in: cubic-bezier(.16, 1, .3, 1);
+  --ew-modal-ease-out: cubic-bezier(.55, 0, .78, 1);
+}
+
+/* Overlay = отдельный backdrop-layer. Сам контейнер остаётся старым, чтобы
+   не ломать onclick/focus/scroll-lock/mobile mechanics; визуальная подложка
+   переезжает в ::before. */
+.moverlay,
+.chk-overlay,
+#reqModal,
+#offerModal,
+#privacyModal {
+  background: transparent !important;
+  isolation: isolate;
+}
+.moverlay::before,
+.chk-overlay::before,
+#reqModal::before,
+#offerModal::before,
+#privacyModal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: var(--void);
+  will-change: opacity;
+}
+.moverlay.open::before,
+.chk-overlay.open::before,
+#reqModal.open::before,
+#offerModal.open::before,
+#privacyModal.open::before {
+  animation: ewModalLayerBackdropIn var(--ew-modal-layer-in) ease-out both;
+}
+.moverlay.closing::before,
+.chk-overlay.closing::before,
+#reqModal.closing::before,
+#offerModal.closing::before,
+#privacyModal.closing::before {
+  animation: ewModalLayerBackdropOut var(--ew-modal-layer-out) ease-out both;
+}
+.modal,
+.chk-modal,
+.legal-modal {
+  z-index: 1;
+  will-change: transform, opacity, filter;
+  transform-origin: center center;
+}
+
+@keyframes ewModalLayerBackdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes ewModalLayerBackdropOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Карточка теперь не «гаснет opacity», а уходит как физический слой.
+   Прозрачность включается только в последней трети, когда объект уже ушёл. */
+@keyframes ewModalLayerPanelIn {
+  0%   { opacity: 0; transform: translate3d(0, 42px, 0) scale(.975); filter: blur(3px); }
+  62%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+}
+@keyframes ewModalLayerPanelOut {
+  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+  66%  { opacity: 1; transform: translate3d(0, 58px, 0) scale(.972); filter: blur(.6px); }
+  100% { opacity: 0; transform: translate3d(0, 78px, 0) scale(.96); filter: blur(2px); }
+}
+
+.moverlay.open .modal,
+.chk-overlay.open .chk-modal,
+#reqModal.open .legal-modal,
+#offerModal.open .legal-modal,
+#privacyModal.open .legal-modal {
+  animation: ewModalLayerPanelIn var(--ew-modal-panel-in) var(--ew-modal-ease-in) both !important;
+}
+.moverlay.closing .modal,
+.chk-overlay.closing .chk-modal,
+#reqModal.closing .legal-modal,
+#offerModal.closing .legal-modal,
+#privacyModal.closing .legal-modal {
+  animation: ewModalLayerPanelOut var(--ew-modal-panel-out) var(--ew-modal-ease-out) forwards !important;
+}
+
+/* #_blurW уходит/появляется в том же окне времени, что и panel/backdrop.
+   Важно: это не отдельная вторая фаза, поэтому сайт не остаётся долго
+   заблюренным после ухода карточки и не просвечивает раньше времени. */
+body.modal-open #_blurW,
+body.chk-open #_blurW,
+body.cart-open #_blurW,
+body.ap-console-open #_blurW,
+html.legal-modal-open body #_blurW {
+  -webkit-transition: -webkit-filter .22s cubic-bezier(.23, 1, .32, 1) !important;
+  transition: filter .22s cubic-bezier(.23, 1, .32, 1) !important;
+}
+body._blur-fading #_blurW {
+  -webkit-transition: -webkit-filter .26s cubic-bezier(.23, 1, .32, 1) !important;
+  transition: filter .26s cubic-bezier(.23, 1, .32, 1) !important;
+}
+
+/* Корзина уже была разделена на backdrop (.cart-overlay) и panel
+   (.cart-panel). Доводим её до того же синхронного слоя: overlay больше
+   не исчезает раньше панели, а уходит в одном таймлайне с ней. */
+.cart-overlay {
+  background: var(--void) !important;
+  will-change: opacity;
+}
+.cart-overlay.cart-closing {
+  animation: ewModalLayerBackdropOut .26s ease-out forwards !important;
+}
+.cart-overlay.cart-opening {
+  animation: ewModalLayerBackdropIn .24s ease-out both !important;
+}
+@keyframes cartSlideOut {
+  0%   { transform: translateX(0); opacity: 1; }
+  72%  { transform: translateX(92%); opacity: 1; }
+  100% { transform: translateX(100%); opacity: .98; }
+}
+@keyframes cartSlideIn {
+  0%   { transform: translateX(100%); opacity: .98; filter: blur(1px); }
+  70%  { opacity: 1; filter: blur(0); }
+  100% { transform: translateX(0); opacity: 1; filter: none; }
+}
+
+/* APERTURA STATUS / Architect уже имеют отдельный overlay; меняем только
+   физику панели, не трогая цветовые/читабельные правила signal=instagram. */
+.ap-console-panel,
+.ap-status-panel {
+  will-change: transform, opacity, filter;
+}
+@keyframes apConsoleIn {
+  0%   { opacity: 0; transform: translate3d(0, 42px, 0) scale(.975); filter: blur(3px); }
+  62%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+}
+@keyframes apConsoleOut {
+  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+  66%  { opacity: 1; transform: translate3d(0, 56px, 0) scale(.972); filter: blur(.5px); }
+  100% { opacity: 0; transform: translate3d(0, 76px, 0) scale(.96); filter: blur(2px); }
+}
+
+@media(max-width:960px){
+  @keyframes ewModalLayerSheetIn {
+    0%   { opacity: 0; transform: translate3d(0, 100%, 0); filter: blur(2px); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+  }
+  @keyframes ewModalLayerSheetOut {
+    0%   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+    74%  { opacity: 1; transform: translate3d(0, 88%, 0); filter: blur(.4px); }
+    100% { opacity: 0; transform: translate3d(0, 104%, 0); filter: blur(1.5px); }
+  }
+  .moverlay.open .modal,
+  .chk-overlay.open .chk-modal,
+  #reqModal.open .legal-modal,
+  #offerModal.open .legal-modal,
+  #privacyModal.open .legal-modal {
+    animation: ewModalLayerSheetIn .32s cubic-bezier(.16,1,.3,1) both !important;
+  }
+  .moverlay.closing .modal,
+  .chk-overlay.closing .chk-modal,
+  #reqModal.closing .legal-modal,
+  #offerModal.closing .legal-modal,
+  #privacyModal.closing .legal-modal {
+    animation: ewModalLayerSheetOut .28s cubic-bezier(.55,0,.78,1) forwards !important;
+  }
+}
+@media(max-width:720px){
+  @keyframes apConsoleMobIn {
+    0%   { opacity: 0; transform: translate3d(0, 100%, 0); filter: blur(2px); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+  }
+  @keyframes apConsoleMobOut {
+    0%   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+    74%  { opacity: 1; transform: translate3d(0, 88%, 0); filter: blur(.4px); }
+    100% { opacity: 0; transform: translate3d(0, 104%, 0); filter: blur(1.5px); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .moverlay::before,
+  .chk-overlay::before,
+  #reqModal::before,
+  #offerModal::before,
+  #privacyModal::before,
+  .modal,
+  .chk-modal,
+  .legal-modal,
+  .cart-overlay,
+  .cart-panel,
+  .ap-console-panel,
+  .ap-status-panel {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
 </style>
 <script>
   /* Тема — выставляем как можно раньше, чтобы не было вспышки при загрузке.
