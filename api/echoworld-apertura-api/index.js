@@ -20,6 +20,11 @@ const ORDER_STATUS_TOKEN_SECRET =
   DATABASE ||
   "echoworld-local-dev";
 
+const YOOKASSA_SHOP_ID = process.env.YOOKASSA_SHOP_ID || "";
+const YOOKASSA_SECRET_KEY = process.env.YOOKASSA_SECRET_KEY || "";
+const YOOKASSA_RETURN_URL = process.env.YOOKASSA_RETURN_URL || "https://www.echoworld.space/?payment=return";
+const YOOKASSA_API_HOST = "api.yookassa.ru";
+
 let driverPromise = null;
 
 function json(statusCode, body) {
@@ -1017,8 +1022,11 @@ async function expireCheckoutOrderIfSafe(order, lock) {
   if (orderStatus === "paid") {
     return { expired: false, reason: "order_paid" };
   }
-  if (paymentId || isPaymentStatusProtectedFromShortExpiry(paymentStatus)) {
+  if (isPaymentStatusProtectedFromShortExpiry(paymentStatus)) {
     return { expired: false, reason: "payment_in_progress_or_confirmed" };
+  }
+  if (paymentId && !isPaymentStatusSafeToExpire(paymentStatus)) {
+    return { expired: false, reason: "payment_status_not_safe_to_expire" };
   }
   if (!isPaymentStatusSafeToExpire(paymentStatus)) {
     return { expired: false, reason: "payment_status_not_safe_to_expire" };
@@ -1034,9 +1042,8 @@ async function expireCheckoutOrderIfSafe(order, lock) {
       updated_at = CurrentUtcTimestamp()
     WHERE
       id = ${yqlUtf8(orderId)}
-      AND payment_id = ""
       AND (
-        payment_status = "not_started"
+        (payment_id = "" AND payment_status = "not_started")
         OR payment_status = "canceled"
         OR payment_status = "cancelled"
       );
@@ -1257,6 +1264,338 @@ function checkoutStatusResponse(order, item, product, lock, lifecycle) {
   };
 }
 
+
+function isYooKassaConfigured() {
+  return Boolean(cleanScalar(YOOKASSA_SHOP_ID, 120) && cleanScalar(YOOKASSA_SECRET_KEY, 240));
+}
+
+function safeYooKassaReturnUrl(value) {
+  const fallback = "https://www.echoworld.space/?payment=return";
+  const raw = cleanScalar(value || fallback, 600);
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:") return fallback;
+    const host = url.hostname.toLowerCase();
+    if (host !== "echoworld.space" && host !== "www.echoworld.space") return fallback;
+    return url.href;
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function yookassaAmount(value) {
+  const n = Math.max(0, toNumber(value));
+  return n.toFixed(2);
+}
+
+function yookassaIdempotenceKey(order, purpose) {
+  const seed = [
+    purpose || "payment",
+    order && order.id || "",
+    order && order.payment_id || "",
+    order && order.reservation_id || ""
+  ].join("|");
+  const digest = crypto.createHash("sha256").update(seed).digest("hex").slice(0, 32);
+  return ("ew:" + (purpose || "pay") + ":" + digest).slice(0, 64);
+}
+
+function yookassaHeaders(idempotenceKey) {
+  const token = Buffer.from(`${YOOKASSA_SHOP_ID}:${YOOKASSA_SECRET_KEY}`).toString("base64");
+  const headers = {
+    "Authorization": `Basic ${token}`,
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+  };
+  if (idempotenceKey) headers["Idempotence-Key"] = idempotenceKey;
+  return headers;
+}
+
+function yookassaRequest(method, path, payload, idempotenceKey) {
+  return new Promise((resolve, reject) => {
+    if (!isYooKassaConfigured()) {
+      const err = new Error("payment_provider_not_configured");
+      err.code = "payment_provider_not_configured";
+      reject(err);
+      return;
+    }
+
+    const body = payload ? JSON.stringify(payload) : "";
+    const req = https.request({
+      hostname: YOOKASSA_API_HOST,
+      path,
+      method,
+      timeout: 12000,
+      headers: Object.assign({}, yookassaHeaders(idempotenceKey), body ? {"Content-Length": Buffer.byteLength(body)} : {})
+    }, (res) => {
+      let raw = "";
+      res.setEncoding("utf8");
+      res.on("data", (chunk) => { raw += chunk; });
+      res.on("end", () => {
+        let data = null;
+        try { data = raw ? JSON.parse(raw) : null; } catch (_) { data = {raw}; }
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve({statusCode: res.statusCode, data});
+        } else {
+          const err = new Error(data && (data.description || data.error || data.type) || `yookassa_http_${res.statusCode}`);
+          err.code = data && (data.code || data.error || data.type) || `yookassa_http_${res.statusCode}`;
+          err.statusCode = res.statusCode;
+          err.body = data;
+          reject(err);
+        }
+      });
+    });
+    req.on("timeout", () => req.destroy(new Error("yookassa_timeout")));
+    req.on("error", reject);
+    if (body) req.write(body);
+    req.end();
+  });
+}
+
+function normalizeYooKassaPayment(payment) {
+  payment = payment || {};
+  const confirmation = payment.confirmation || {};
+  const confirmationUrl = cleanScalar(confirmation.confirmation_url || confirmation.confirmationUrl || "", 800);
+  return {
+    id: cleanScalar(payment.id || "", 160),
+    status: cleanScalar(payment.status || "", 40),
+    paid: Boolean(payment.paid),
+    confirmation_url: confirmationUrl,
+    raw: payment
+  };
+}
+
+async function updateCheckoutOrderPayment(orderId, paymentStatus, paymentId) {
+  const normalizedStatus = cleanScalar(paymentStatus || "pending", 40);
+  const normalizedPaymentId = cleanScalar(paymentId || "", 180);
+  const orderStatus = normalizedStatus === "succeeded" ? "paid" : "new";
+  const query = `
+    UPDATE product_orders
+    SET
+      status = ${yqlUtf8(orderStatus)},
+      payment_status = ${yqlUtf8(normalizedStatus)},
+      payment_provider = "yookassa",
+      payment_id = ${yqlUtf8(normalizedPaymentId)},
+      updated_at = CurrentUtcTimestamp()
+    WHERE id = ${yqlUtf8(orderId)};
+  `;
+  await ydbQuery(query);
+}
+
+async function fetchYooKassaPayment(paymentId) {
+  const safeId = cleanScalar(paymentId, 180);
+  if (!safeId) return null;
+  const result = await yookassaRequest("GET", `/v3/payments/${encodeURIComponent(safeId)}`, null, "");
+  return normalizeYooKassaPayment(result.data);
+}
+
+async function refreshCheckoutOrderPaymentFromYooKassa(order) {
+  if (!order || !order.payment_id || !isYooKassaConfigured()) return {refreshed:false, payment:null};
+  try {
+    const payment = await fetchYooKassaPayment(order.payment_id);
+    if (payment && payment.status && payment.status !== order.payment_status) {
+      await updateCheckoutOrderPayment(order.id, payment.status, payment.id || order.payment_id);
+      return {refreshed:true, payment};
+    }
+    return {refreshed:false, payment};
+  } catch (error) {
+    console.warn("YOOKASSA_PAYMENT_REFRESH_FAILED", {
+      order_id: order && order.id,
+      payment_id: order && order.payment_id,
+      code: error && error.code,
+      statusCode: error && error.statusCode
+    });
+    return {refreshed:false, payment:null, error: error && error.code || "payment_refresh_failed"};
+  }
+}
+
+function paymentCreatePayload(event) {
+  const body = parseBody(event);
+  const query = getQuery(event);
+  return {
+    orderId: cleanScalar(body.order_id || body.orderId || query.order_id || query.orderId || "", 120),
+    reservationId: cleanScalar(body.reservation_id || body.reservationId || query.reservation_id || query.reservationId || "", 160),
+    statusToken: cleanScalar(body.status_token || body.statusToken || body.token || query.status_token || query.statusToken || query.token || "", 160)
+  };
+}
+
+function paymentCreateResponse(order, item, product, lock, payment, options = {}) {
+  const statusToken = makeOrderStatusToken(order);
+  const normalizedPayment = normalizeYooKassaPayment(payment);
+  const paymentStatus = normalizedPayment.status || order.payment_status || "pending";
+  return {
+    ok: true,
+    route: "POST /payment/create",
+    schema: "echoworld.payment.create.v1",
+    reused: Boolean(options.reused),
+    order: {
+      id: order.id,
+      order_number: order.order_number,
+      status: paymentStatus === "succeeded" ? "paid" : (order.status || "new"),
+      reservation_id: order.reservation_id,
+      subtotal_rub: toNumber(order.subtotal_rub_text),
+      delivery_price_rub: toNumber(order.delivery_price_rub_text),
+      total_rub: toNumber(order.total_rub_text),
+      payment_status: paymentStatus,
+      payment_provider: "yookassa",
+      payment_id: normalizedPayment.id || order.payment_id || "",
+      status_token: statusToken,
+      public_status_token: statusToken,
+      expires_at: lock && lock.reserved_until_text || "",
+      created_at: order.created_at_text || "",
+      updated_at: nowIso()
+    },
+    item: item ? {
+      id: item.id,
+      order_id: item.order_id,
+      product_id: item.product_id,
+      title: item.title_snapshot,
+      price_rub: toNumber(item.price_rub_snapshot_text),
+      power_code: item.power_code_snapshot || "",
+      power_label: item.power_name_snapshot || "",
+      item_total_rub: toNumber(item.item_total_rub_text)
+    } : null,
+    product: product ? {
+      product_id: product.product_id,
+      relic_code: product.relic_code,
+      title: product.title,
+      status: product.status,
+      price_rub: toNumber(product.price_rub_text),
+      power_code: product.power_code,
+      power_label: product.power_label,
+      echo_slots: toNumber(product.echo_slots_text),
+      catalog_status_label: product.catalog_status_label || ""
+    } : null,
+    reservation: lock ? {
+      product_id: lock.product_id,
+      reservation_id: lock.reservation_id,
+      reservation_code: lock.reservation_code || "",
+      status: lock.status || "",
+      reserved_until: lock.reserved_until_text || "",
+      converted_order_id: lock.converted_order_id || ""
+    } : null,
+    payment: {
+      status: paymentStatus,
+      provider: "yookassa",
+      payment_id: normalizedPayment.id || order.payment_id || "",
+      confirmation_url: normalizedPayment.confirmation_url || "",
+      paid: normalizedPayment.paid
+    },
+    ts: nowIso()
+  };
+}
+
+async function paymentCreate(event) {
+  const payload = paymentCreatePayload(event);
+  if (!payload.orderId) {
+    return json(400, {ok:false, route:"POST /payment/create", schema:"echoworld.payment.create.v1", error:"missing_order_id", ts:nowIso()});
+  }
+
+  const order = await readCheckoutOrderById(payload.orderId);
+  if (!order) {
+    return json(404, {ok:false, route:"POST /payment/create", schema:"echoworld.payment.create.v1", error:"order_not_found", ts:nowIso()});
+  }
+  if (payload.reservationId && payload.reservationId !== order.reservation_id) {
+    return json(403, {ok:false, route:"POST /payment/create", schema:"echoworld.payment.create.v1", error:"reservation_mismatch", ts:nowIso()});
+  }
+  if (!verifyOrderStatusToken(order, payload.statusToken)) {
+    return json(403, {ok:false, route:"POST /payment/create", schema:"echoworld.payment.create.v1", error:"invalid_status_token", ts:nowIso()});
+  }
+
+  const item = await readCheckoutOrderItem(order.id);
+  const productId = item && item.product_id || "";
+  const lock = await readCheckoutReservationLock(productId, order.reservation_id);
+  const lifecycle = await expireCheckoutOrderIfSafe(order, lock);
+  if (lifecycle.expired) {
+    return json(409, {ok:false, route:"POST /payment/create", schema:"echoworld.payment.create.v1", error:"order_cycle_expired", lifecycle, ts:nowIso()});
+  }
+  if (!lock) {
+    return json(409, {ok:false, route:"POST /payment/create", schema:"echoworld.payment.create.v1", error:"reservation_lock_missing", ts:nowIso()});
+  }
+  const product = productId ? await readReservationProduct(productId) : null;
+  const paymentStatus = String(order.payment_status || "not_started").toLowerCase();
+
+  if (!isYooKassaConfigured()) {
+    return json(503, {
+      ok:false,
+      route:"POST /payment/create",
+      schema:"echoworld.payment.create.v1",
+      error:"payment_provider_not_configured",
+      required_env:["YOOKASSA_SHOP_ID", "YOOKASSA_SECRET_KEY", "YOOKASSA_RETURN_URL"],
+      ts:nowIso()
+    });
+  }
+
+  if (order.payment_id && (paymentStatus === "pending" || paymentStatus === "waiting_for_capture" || paymentStatus === "succeeded")) {
+    try {
+      const existingPayment = await fetchYooKassaPayment(order.payment_id);
+      if (existingPayment && existingPayment.status) await updateCheckoutOrderPayment(order.id, existingPayment.status, existingPayment.id || order.payment_id);
+      const freshOrder = await readCheckoutOrderById(order.id) || order;
+      return json(200, paymentCreateResponse(freshOrder, item, product, lock, existingPayment && existingPayment.raw || existingPayment, {reused:true}));
+    } catch (error) {
+      return json(502, {
+        ok:false,
+        route:"POST /payment/create",
+        schema:"echoworld.payment.create.v1",
+        error:"payment_provider_status_error",
+        provider_error: cleanScalar(error && (error.code || error.message) || "provider_error", 120),
+        provider_status: error && error.statusCode || null,
+        ts:nowIso()
+      });
+    }
+  }
+
+  if (String(order.status || "").toLowerCase() === "expired") {
+    return json(409, {ok:false, route:"POST /payment/create", schema:"echoworld.payment.create.v1", error:"order_expired", ts:nowIso()});
+  }
+  if (String(order.status || "").toLowerCase() === "paid" || paymentStatus === "succeeded") {
+    return json(409, {ok:false, route:"POST /payment/create", schema:"echoworld.payment.create.v1", error:"order_already_paid", ts:nowIso()});
+  }
+
+  const totalRub = toNumber(order.total_rub_text);
+  if (!totalRub || totalRub <= 0) {
+    return json(409, {ok:false, route:"POST /payment/create", schema:"echoworld.payment.create.v1", error:"bad_order_amount", ts:nowIso()});
+  }
+
+  const description = cleanScalar(`EchoWorld ${order.order_number || order.id} · ${item && item.title_snapshot || product && product.title || "Реликвия"}`, 128);
+  const paymentPayload = {
+    amount: { value: yookassaAmount(totalRub), currency: "RUB" },
+    capture: true,
+    confirmation: { type: "redirect", return_url: safeYooKassaReturnUrl(YOOKASSA_RETURN_URL) },
+    description,
+    metadata: {
+      project: "EchoWorld",
+      order_id: order.id,
+      order_number: order.order_number || "",
+      reservation_id: order.reservation_id || "",
+      product_id: productId || "",
+      relic_code: product && product.relic_code || ""
+    }
+  };
+
+  const idem = yookassaIdempotenceKey(order, "pay");
+  let result;
+  try {
+    result = await yookassaRequest("POST", "/v3/payments", paymentPayload, idem);
+  } catch (error) {
+    return json(502, {
+      ok:false,
+      route:"POST /payment/create",
+      schema:"echoworld.payment.create.v1",
+      error:"payment_provider_create_error",
+      provider_error: cleanScalar(error && (error.code || error.message) || "provider_error", 120),
+      provider_status: error && error.statusCode || null,
+      ts:nowIso()
+    });
+  }
+  const payment = normalizeYooKassaPayment(result.data);
+  if (!payment.id || !payment.status) {
+    return json(502, {ok:false, route:"POST /payment/create", schema:"echoworld.payment.create.v1", error:"bad_payment_provider_response", ts:nowIso()});
+  }
+  await updateCheckoutOrderPayment(order.id, payment.status, payment.id);
+  const freshOrder = await readCheckoutOrderById(order.id) || order;
+  return json(201, paymentCreateResponse(freshOrder, item, product, lock, result.data));
+}
+
 async function checkoutStatus(event) {
   const payload = checkoutStatusPayload(event);
 
@@ -1292,6 +1631,11 @@ async function checkoutStatus(event) {
       error: "invalid_status_token",
       ts: nowIso()
     });
+  }
+
+  const paymentRefresh = await refreshCheckoutOrderPaymentFromYooKassa(order);
+  if (paymentRefresh.refreshed) {
+    order = await readCheckoutOrderById(order.id) || order;
   }
 
   let item = await readCheckoutOrderItem(order.id);
@@ -1744,6 +2088,10 @@ exports.handler = async function handler(event) {
       return await checkoutStatus(event);
     }
 
+    if (method === "POST" && (route === "payment/create" || route === "payments/create")) {
+      return await paymentCreate(event);
+    }
+
     if (method === "POST" && (route === "checkout/create" || route === "order/create")) {
       return await checkoutCreate(event);
     }
@@ -1762,7 +2110,8 @@ exports.handler = async function handler(event) {
         "POST ?route=reservations/create",
         "POST ?route=reservation/create",
         "POST ?route=checkout/create",
-        "GET ?route=checkout/status&order_id=ord_...&status_token=..."
+        "GET ?route=checkout/status&order_id=ord_...&status_token=...",
+        "POST ?route=payment/create"
       ],
       ts: nowIso()
     });

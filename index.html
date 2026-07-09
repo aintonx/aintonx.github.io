@@ -16103,6 +16103,7 @@ body._blur-fading #_blurW {
             <div class="addr-suggest" id="addrSuggest" role="listbox" aria-label="Подсказки адреса"></div>
           </div>
         </div>
+        <div class="chk-gender-hint" style="margin-top:10px">Оплата откроется через ЮKassa после фиксации заказа. EchoWorld не получает и не хранит данные банковской карты. Чек самозанятого НПД будет направлен на указанный контакт после успешной оплаты.</div>
       </div>
       <div class="chk-section chk-echo-section" id="chkEchoSection" style="display:none">
         <div class="chk-section-title">Эхо</div>
@@ -16805,7 +16806,7 @@ body._blur-fading #_blurW {
         <span class="faq-unlock-label">// ДОСТУП РАЗРЕШЁН</span>
         <span class="faq-unlock-action">Развернуть протокол</span>
       </span>
-      <span class="faq-unlock-meta">18 записей</span>
+      <span class="faq-unlock-meta">19 записей</span>
     </button>
     <div class="faq-grid" id="faqGrid">
       <div class="faq-group-label">// ЗАКАЗ</div>
@@ -16813,6 +16814,11 @@ body._blur-fading #_blurW {
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Что я получу после заказа?<span class="faq-q-toggle">+</span></div>
         <div class="faq-a">Вы получаете не просто предмет, а реликвию с происхождением: физический объект, авторскую упаковку, имя и биографию Виша, а также фрагмент его жизни — восстановленную Apertura последовательность сцен.<br><br>Если вы добавите Эхо, Виш произнесёт ваши слова внутри одного из фрагментов. После открытия личного интерфейса рядом с реликвией появится её Цифровая Подпись.<div class="faq-cta-row"><a class="faq-mini-cta" href="#catalog" onclick="event.stopPropagation();">Открыть каталог</a></div></div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Как проходит оплата и доставка?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-a">После оформления заказа сайт фиксирует одну реликвию за вашим циклом и открывает платёжный канал ЮKassa. Оплата проходит в рублях Российской Федерации на стороне платёжного провайдера; EchoWorld не хранит данные банковской карты.<br><br>Доставка сейчас доступна по России. Базовый способ — Почта России, 5–14 дней после отправки. Подготовка заказа занимает до 14 календарных дней после подтверждения оплаты и получения всех необходимых данных.<br><br>Исполнитель применяет НПД: после успешной оплаты доход регистрируется в сервисе «Мой налог», а чек самозанятого направляется покупателю на указанный контактный канал.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
@@ -24503,6 +24509,12 @@ const APERTURA_STATUS_STATES = {
     actions: [{label:'Вернуться к оформлению', action:'checkout', primary:true}, {label:'Закрыть', action:'close'}]
   },
 
+  'payment-channel-setup': {
+    title: 'Платёжный канал готовится.',
+    text: 'Сайт уже подготовлен к подключению ЮKassa, но платёжные ключи ещё не активированы. Деньги не списаны. Заказ можно проверить позже или связаться с Архитектором.',
+    actions: [{label:'Проверить статус', action:'order-check-status', primary:true}, {label:'Связаться с Архитектором', action:'contact'}]
+  },
+
   'order-fixed': {
     title: 'Заказ зафиксирован.',
     text: 'Apertura удерживает реликвию для вашего цикла. Следующий шаг — подтверждение оплаты.',
@@ -24548,6 +24560,7 @@ const APERTURA_STATUS_STATES = {
 const APERTURA_CONSOLE_SECTIONS = [
   {title:'01 · АВАРИЙНЫЕ ЭКРАНЫ', items:[
     ['Apertura проверяет сигнал','показывает состояние, когда платёж ещё не получил финальный статус.','status:payment-check'],
+    ['Платёжный канал готовится','показывает безопасное состояние до активации ключей ЮKassa.','status:payment-channel-setup'],
     ['Оплата Эхо не прошла','показывает экран “Вас не услышат.”','status:echo-payment-failed'],
     ['Товар недоступен','показывает экран “Реликвия покинула поток.”','status:product-unavailable'],
     ['Каталог пуст','показывает экран “Поток замолчал.” без имитации подписки.','status:catalog-empty'],
@@ -24953,6 +24966,13 @@ function _ewActiveOrderStatusRouteUrl(){
   const sep = base.indexOf('?') === -1 ? '?' : '&';
   return base + sep + 'route=' + encodeURIComponent('checkout/status');
 }
+function _ewActiveOrderPaymentCreateRouteUrl(){
+  if(typeof _ewAperturaRouteUrl === 'function') return _ewAperturaRouteUrl('payment/create');
+  const base = String(typeof EW_APERTURA_API_URL === 'string' ? EW_APERTURA_API_URL : '').trim();
+  if(!base) return '';
+  const sep = base.indexOf('?') === -1 ? '?' : '&';
+  return base + sep + 'route=' + encodeURIComponent('payment/create');
+}
 function _ewActiveOrderSafeText(value, max){
   const raw = String(value || '').trim();
   if(typeof safeText === 'function') return safeText(raw, {maxLength:max || 160});
@@ -25178,15 +25198,69 @@ function _ewActiveOrderPaymentUrl(rec){
   }
   return String(url || '');
 }
-function _ewActiveOrderGoPayment(){
+function _ewActiveOrderBuildFromPaymentCreateResponse(body, previous){
+  body = body || {};
+  previous = previous || {};
+  const rec = _ewActiveOrderBuildFromStatusResponse(body, previous);
+  const payment = body.payment || {};
+  rec.source = 'payment-create';
+  rec.confirmation_url = _ewActiveOrderSafeText(payment.confirmation_url || rec.confirmation_url || '', 800);
+  return rec;
+}
+async function _ewActiveOrderCreatePayment(rec){
+  rec = rec || _ewActiveOrderRead();
+  if(!rec || !rec.order_id) throw new Error('active_order_missing');
+  if(!rec.status_token) throw new Error('status_token_missing');
+  const url = _ewActiveOrderPaymentCreateRouteUrl();
+  if(!url) throw new Error('payment_create_route_missing');
+  const payload = { order_id: rec.order_id, reservation_id: rec.reservation_id || '', status_token: rec.status_token };
+  const options = { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, cache:'no-store', body:JSON.stringify(payload) };
+  let result;
+  if(typeof _ewFetchJsonWithTimeout === 'function') result = await _ewFetchJsonWithTimeout(url, options, 12000);
+  else{
+    const res = await fetch(url, options);
+    let data = null;
+    try{ data = await res.json(); }catch(_){ data = null; }
+    result = {res:res, data:data};
+  }
+  const res = result && result.res;
+  const body = result && result.data;
+  if(!(res && res.ok && body && body.ok === true && body.order)){
+    const err = new Error((body && body.error) || 'payment_create_failed');
+    err.body = body;
+    err.httpStatus = res && res.status;
+    throw err;
+  }
+  return _ewActiveOrderStore(_ewActiveOrderBuildFromPaymentCreateResponse(body, rec));
+}
+async function _ewActiveOrderGoPayment(){
   const rec = _ewActiveOrderRead();
   if(!rec){ showActiveOrderStatus(null); return; }
   if(_ewActiveOrderIsExpired(rec)){ showActiveOrderStatus(rec, {key:'order-cycle-expired'}); return; }
-  const url = _ewActiveOrderPaymentUrl(rec);
-  if(url){ window.location.href = url; return; }
-  showActiveOrderStatus(rec, {key:_ewActiveOrderStatusKey(rec)});
-  if(typeof showNotif === 'function') showNotif('// Платёжный канал ещё не подключён. Заказ уже зафиксирован.', {contextual:true});
+  const existingUrl = _ewActiveOrderPaymentUrl(rec);
+  if(existingUrl){ window.location.href = existingUrl; return; }
+  try{
+    if(typeof showNotif === 'function') showNotif('// Apertura открывает платёжный канал ЮKassa.', {contextual:true});
+    const fresh = await _ewActiveOrderCreatePayment(rec);
+    const payUrl = _ewActiveOrderPaymentUrl(fresh);
+    if(payUrl){ window.location.href = payUrl; return; }
+    showActiveOrderStatus(fresh, {source:'payment-create'});
+  }catch(error){
+    console.warn('payment/create failed:', error);
+    const code = String(error && error.body && error.body.error || error && error.code || error && error.message || '').toLowerCase();
+    if(code === 'payment_provider_not_configured'){
+      showActiveOrderStatus(rec, {key:'payment-channel-setup', source:'payment-create'});
+      return;
+    }
+    if(code === 'order_cycle_expired' || code === 'order_expired'){
+      showActiveOrderStatus(rec, {key:'order-cycle-expired', source:'payment-create'});
+      return;
+    }
+    showActiveOrderStatus(rec, {source:'payment-create-failed'});
+    if(typeof showNotif === 'function') showNotif('// Платёжный канал не открылся. Проверьте статус заказа или попробуйте позже.', {contextual:true});
+  }
 }
+
 async function _ewActiveOrderCheckStatus(){
   const rec = _ewActiveOrderRead();
   if(!rec){ showActiveOrderStatus(null); return; }
@@ -25217,6 +25291,13 @@ function bootActiveOrderStatusRestore(){
   try{
     const url = new URL(location.href);
     if(url.searchParams.has('signal')) return;
+    if(String(url.searchParams.get('payment') || '').toLowerCase() === 'return'){
+      setTimeout(function(){
+        if(typeof _ewActiveOrderCheckStatus === 'function') _ewActiveOrderCheckStatus();
+        else showActiveOrderStatus(rec, {source:'payment-return'});
+      }, 700);
+      return;
+    }
     if(typeof RELIC_DEEP_LINK_PARAM !== 'undefined' && url.searchParams.has(RELIC_DEEP_LINK_PARAM)) return;
   }catch(_){ }
   setTimeout(function(){
@@ -25240,17 +25321,15 @@ function bootActiveOrderStatusRestore(){
   else boot();
 })();
 function inspectActiveOrderStatusPatch(){
-  const scripts = Array.from(document.scripts).map(s=>s.textContent || '').join('\n');
+  const scripts = Array.from(document.scripts).map(s=>s.textContent || '').join('\\n');
   return {
     ok: typeof showActiveOrderStatus === 'function' &&
         typeof _ewActiveOrderRead === 'function' &&
         typeof _ewActiveOrderGoPayment === 'function' &&
+        typeof _ewActiveOrderCreatePayment === 'function' &&
         scripts.includes('Phase 2D · ACTIVE ORDER STATUS FRONTEND FOUNDATION') &&
-        scripts.includes('Ожидаем подтверждение оплаты.') &&
-        scripts.includes('Время цикла истекло.') &&
-        scripts.includes('Apertura закрепила реликвию за вашим заказом') &&
-        scripts.includes('checkout/status') &&
-        scripts.includes('EW_ACTIVE_ORDER_EXPIRED_NOTICE_KEY') &&
+        scripts.includes('payment/create') &&
+        scripts.includes('Платёжный канал готовится.') &&
         typeof _ewActiveOrderFetchStatus === 'function',
     activeOrder: _ewActiveOrderRead(),
     storageKey: EW_ACTIVE_ORDER_STORAGE_KEY,
@@ -25259,11 +25338,28 @@ function inspectActiveOrderStatusPatch(){
       read: typeof _ewActiveOrderRead,
       clear: typeof _ewActiveOrderClear,
       pay: typeof _ewActiveOrderGoPayment,
+      createPayment: typeof _ewActiveOrderCreatePayment,
+      paymentRoute: typeof _ewActiveOrderPaymentCreateRouteUrl,
       check: typeof _ewActiveOrderCheckStatus
     }
   };
 }
+function inspectYooKassaFrontendReadiness(){
+  return {
+    ok: true,
+    paymentCreateRoute: typeof _ewActiveOrderPaymentCreateRouteUrl === 'function' ? _ewActiveOrderPaymentCreateRouteUrl() : '',
+    paymentUrlAllowlist: typeof APERTURA_PAYMENT_URL_ALLOWLIST !== 'undefined' ? APERTURA_PAYMENT_URL_ALLOWLIST : [],
+    activeOrder: _ewActiveOrderRead(),
+    functions: {
+      createPayment: typeof _ewActiveOrderCreatePayment,
+      goPayment: typeof _ewActiveOrderGoPayment,
+      checkStatus: typeof _ewActiveOrderCheckStatus
+    }
+  };
+}
+
 try{ window.inspectActiveOrderStatusPatch = inspectActiveOrderStatusPatch; }catch(_){ }
+try{ window.inspectYooKassaFrontendReadiness = inspectYooKassaFrontendReadiness; }catch(_){ }
 function _apFirstFormStatusRow(){
   return `
     <div class="ap-status-row ap-first-form-row" id="apFirstFormRow" role="button" tabindex="0" aria-expanded="false" aria-label="Статус реликвии: В MARKETSPACE. Нажмите, чтобы открыть расшифровку статуса." onclick="toggleFirstFormTip(event)" onkeydown="handleFirstFormTipKey(event)">
@@ -26442,15 +26538,14 @@ function selectGender(el, g){
         btn.disabled = true;
         _ewCaptchaSetButtonText(btn, 'Заказ зафиксирован');
       }
-      // Phase 2D: заказ уже создан в YDB. Сохраняем активный цикл
-      // в localStorage и показываем APERTURA STATUS вместо обычного toast.
-      // YooKassa пока не подключена: payment/create не вызывается, фейковой
-      // оплаты и transition_complete здесь нет.
+      // Phase 2E preflight: заказ уже создан в YDB. Сохраняем активный цикл
+      // в localStorage и показываем APERTURA STATUS. Платёж открывается отдельным
+      // действием через payment/create; фейковой оплаты и transition_complete здесь нет.
       const activeOrder = (typeof _ewActiveOrderStoreFromCheckout === 'function')
         ? _ewActiveOrderStoreFromCheckout(checkoutOrder, reservation, orderPayload)
         : null;
       if(typeof showActiveOrderStatus === 'function') showActiveOrderStatus(activeOrder || checkoutOrder, {key:'order-fixed', source:'checkout-order'});
-      else showNotif('// Apertura: заказ зафиксирован. Оплата будет подключена следующим циклом.', {contextual:true});
+      else showNotif('// Apertura: заказ зафиксирован. Следующий шаг — платёжный канал ЮKassa.', {contextual:true});
     }catch(error){
       console.warn('checkout reservation failed:', error);
       if(btn){
@@ -29183,7 +29278,7 @@ function _spinEchoAuraDrum(onDone){
     </div>
     <div class="legal-modal-body">
       <h2 class="offer-h1">ПУБЛИЧНАЯ ОФЕРТА</h2>
-      <p class="offer-meta">на оказание услуг и передачу авторских реликвий · редакция от 05.07.2026</p>
+      <p class="offer-meta">на оказание услуг и передачу авторских реликвий · редакция от 09.07.2026</p>
 
       <div class="offer-section">
         <div class="offer-h2">1. ОБЩИЕ ПОЛОЖЕНИЯ</div>
@@ -29205,16 +29300,20 @@ function _spinEchoAuraDrum(onDone){
       <div class="offer-section">
         <div class="offer-h2">3. СТОИМОСТЬ И ПОРЯДОК ОПЛАТЫ</div>
         <p>3.1. Стоимость Основной услуги и микро-услуги «Эхо» указывается на сайте https://echoworld.space/ в соответствующей карточке или форме.</p>
-        <p>3.2. Оплата заказа производится в рублях Российской Федерации в полном объёме до начала оказания услуги посредством доступных на сайте платёжных способов.</p>
-        <p>3.3. Исполнитель вправе не приступать к оказанию услуги до подтверждения оплаты. Если платёж не прошёл или был отменён платёжным провайдером, заказ считается неоформленным.</p>
-        <p>3.4. Каналы поддержки в разделе «Усилить сигнал» не связаны с оформлением заказов и регулируются разделом 6 настоящей оферты.</p>
+        <p>3.2. Оплата заказа производится в рублях Российской Федерации в полном объёме до начала оказания услуги посредством доступных на сайте платёжных способов, включая платёжный сервис ЮKassa после его подключения.</p>
+        <p>3.3. Банковские платёжные данные обрабатываются на стороне платёжного провайдера. EchoWorld не получает и не хранит полный номер банковской карты, CVV/CVC-код и иные данные, необходимые для списания средств.</p>
+        <p>3.4. Исполнитель вправе не приступать к оказанию услуги до подтверждения оплаты. Если платёж не прошёл или был отменён платёжным провайдером, заказ считается неоформленным.</p>
+        <p>3.5. Исполнитель применяет специальный налоговый режим НПД. После успешной оплаты Исполнитель регистрирует доход в сервисе «Мой налог» и направляет Заказчику чек самозанятого на указанный контактный канал, если это требуется для подтверждения оплаты.</p>
+        <p>3.6. Каналы поддержки в разделе «Усилить сигнал» не связаны с оформлением заказов и регулируются разделом 6 настоящей оферты.</p>
       </div>
 
       <div class="offer-section">
         <div class="offer-h2">4. СРОКИ ОКАЗАНИЯ УСЛУГИ</div>
         <p>4.1. Если в карточке реликвии или переписке с Заказчиком не указан иной срок, Исполнитель подготавливает заказ к отправке в течение 14 (четырнадцати) календарных дней с момента подтверждения оплаты и получения необходимых данных от Заказчика.</p>
-        <p>4.2. Доставка физической реликвии осуществляется Почтой России, СДЭК или иной доступной службой доставки. Сроки доставки зависят от региона, режима работы службы доставки и не входят в срок авторской подготовки заказа.</p>
-        <p>4.3. Если исполнение заказа невозможно из-за отсутствия данных, ошибки в адресе, недоступности Заказчика или иных обстоятельств на стороне Заказчика, срок исполнения приостанавливается до устранения препятствия.</p>
+        <p>4.2. Доставка физической реликвии осуществляется по территории Российской Федерации Почтой России, СДЭК или иной доступной службой доставки. Базовый способ доставки, если иное не указано в форме заказа, — Почта России.</p>
+        <p>4.3. Если стоимость доставки в форме заказа указана как «Бесплатно» или 0 ₽, она включена в стоимость Основной услуги и не оплачивается Заказчиком отдельно. Сроки доставки зависят от региона, режима работы службы доставки и не входят в срок авторской подготовки заказа.</p>
+        <p>4.4. После передачи отправления службе доставки Исполнитель по возможности направляет Заказчику трек-номер или иной идентификатор отправления на указанный контактный канал.</p>
+        <p>4.5. Если исполнение заказа невозможно из-за отсутствия данных, ошибки в адресе, недоступности Заказчика или иных обстоятельств на стороне Заказчика, срок исполнения приостанавливается до устранения препятствия.</p>
       </div>
 
       <div class="offer-section">
@@ -29274,7 +29373,7 @@ function _spinEchoAuraDrum(onDone){
         <p>8.4. Если реликвия получена повреждённой или с недостатком, Заказчик вправе заявить требования, предусмотренные законодательством РФ. Для ускорения рассмотрения рекомендуется направить фото/видео повреждения, упаковки и трек-номер в течение 7 (семи) дней с момента получения.</p>
         <p>8.5. Неверно указанный адрес, неявка за отправлением, истечение срока хранения или иные обстоятельства на стороне Заказчика могут повлечь удержание фактических расходов на доставку, возврат, хранение и повторную отправку.</p>
         <p>8.6. Исполнитель не гарантирует количество просмотров, охваты, алгоритмическое продвижение и иные показатели третьих платформ в отношении созданного видеоматериала.</p>
-        <p>8.7. Возврат денежных средств производится тем же способом, которым была произведена оплата, если это технически возможно, либо иным согласованным сторонами способом. Добровольная поддержка проекта регулируется разделом 6.</p>
+        <p>8.7. Возврат денежных средств производится тем же способом, которым была произведена оплата, если это технически возможно, либо иным согласованным сторонами способом. При оплате через ЮKassa возврат может обрабатываться с учётом правил и сроков платёжного провайдера и банка Заказчика. Добровольная поддержка проекта регулируется разделом 6.</p>
       </div>
 
       <div class="offer-section">
@@ -29324,7 +29423,7 @@ function _spinEchoAuraDrum(onDone){
       <div class="req-divider"></div>
 
       <h2 class="offer-h1">ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ</h2>
-      <p class="offer-meta">в отношении обработки персональных данных · редакция от 05.07.2026</p>
+      <p class="offer-meta">в отношении обработки персональных данных · редакция от 09.07.2026</p>
 
       <div class="offer-section">
         <div class="offer-h2">1. ОБЩИЕ ПОЛОЖЕНИЯ</div>
@@ -29387,7 +29486,8 @@ function _spinEchoAuraDrum(onDone){
         <div class="offer-h2">6. ПЕРЕДАЧА ТРЕТЬИМ ЛИЦАМ</div>
         <p>6.1. Оператор не продаёт персональные данные Пользователей и не передаёт их третьим лицам для самостоятельной рекламы.</p>
         <p>6.2. Для исполнения договора часть данных может быть передана Почте России, СДЭК или иной службе доставки исключительно для оформления и выполнения отправления.</p>
-        <p>6.3. Для приёма и проверки платежей данные могут передаваться платёжным провайдерам в объёме, необходимом для проведения операции, возврата средств, подтверждения оплаты и исполнения требований закона.</p>
+        <p>6.3. Для приёма и проверки платежей данные могут передаваться платёжным провайдерам, включая ЮKassa после подключения платёжного канала, в объёме, необходимом для проведения операции, возврата средств, подтверждения оплаты и исполнения требований закона.</p>
+        <p>6.3.1. Для выполнения налоговых обязанностей самозанятого НПД сведения об оплате могут использоваться Исполнителем для регистрации дохода в сервисе «Мой налог» и направления Заказчику чека самозанятого.</p>
         <p>6.4. Для подсказок при вводе адреса используется сервис DaData (ООО «Инфоком», Россия). Передаётся только введённый Пользователем фрагмент адреса и технические данные запроса.</p>
         <p>6.5. Для защиты форм от автоматических отправок Сайт использует Yandex SmartCaptcha. При проверке могут обрабатываться технические данные запроса, включая IP-адрес, параметры браузера и сведения о взаимодействии с формой.</p>
         <p>6.6. Для обезличенной статистики и диагностики интерфейса может использоваться Яндекс Метрика. Сервис обрабатывает технические данные посещения, cookies, сведения об устройстве и событиях на сайте в обезличенном или псевдонимизированном виде.</p>
