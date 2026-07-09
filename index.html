@@ -31757,145 +31757,118 @@ body.modal-open .pcard.reading::before {
 }
 </style>
 
-<style id="ew-modal-motion-stabilization-v1">
+<style id="ew-modal-drawer-motion-restore-v1">
 /* ════════════════════════════════════════════════════════════════
-   Phase 2D.5 · MODAL MOTION STABILIZATION
-   Стабилизирует Phase 2D.4: сохраняет modal-layer/backdrop архитектуру,
-   но убирает тяжёлые panel-filter/blur keyframes, длинные перелёты и
-   постоянные will-change, которые давали рывки/фризы при open/close.
-   Motion остаётся только на дешёвых transform + opacity.
+   Phase 2D.6 · MODAL DRAWER MOTION RESTORE
+   Возвращает физику выезда/заезда модальных панелей за пределы экрана,
+   но без тяжёлого blur/filter на самой карточке. Двигается только внешний
+   panel-layer через transform: translate3d(); контент внутри панели не
+   получает отдельного blur/scale/fade и поэтому не двоится.
    ════════════════════════════════════════════════════════════════ */
 :root {
-  --ew-modal-layer-in: .16s;
-  --ew-modal-layer-out: .16s;
-  --ew-modal-panel-in: .22s;
-  --ew-modal-panel-out: .18s;
-  --ew-modal-ease-in: cubic-bezier(.2, .82, .2, 1);
-  --ew-modal-ease-out: cubic-bezier(.4, 0, .2, 1);
+  --ew-modal-layer-in: .24s;
+  --ew-modal-layer-out: .34s;
+  --ew-modal-panel-in: .52s;
+  --ew-modal-panel-out: .38s;
+  --ew-modal-drawer-y: calc(var(--ew-vvh, 100vh) + 96px);
+  --ew-modal-drawer-ease-in: cubic-bezier(.16, 1, .3, 1);
+  --ew-modal-drawer-ease-out: cubic-bezier(.42, 0, .72, .18);
 }
 
-/* Не держим весь парк модалок в постоянном will-change/filter-режиме.
-   Это оставляет браузеру простую задачу: composited transform + opacity. */
-.modal,
-.chk-modal,
-.legal-modal,
-.ap-console-panel,
-.ap-status-panel {
-  will-change: auto !important;
-  filter: none !important;
-  backface-visibility: hidden;
-  transform-style: flat;
-}
-
-/* Защитный backdrop остаётся отдельным слоем, но без тяжелой анимации blur.
-   #_blurW продолжает штатно отвечать за page-blur/анти-вспышки. */
-.moverlay::before,
-.chk-overlay::before,
-#reqModal::before,
-#offerModal::before,
-#privacyModal::before,
-#apStatusOverlay::before,
-.cart-overlay {
-  will-change: auto !important;
-}
-
-body.modal-open #_blurW,
-body.chk-open #_blurW,
-body.cart-open #_blurW,
-body.ap-console-open #_blurW,
-html.legal-modal-open body #_blurW {
-  -webkit-transition: -webkit-filter .18s cubic-bezier(.23, 1, .32, 1) !important;
-  transition: filter .18s cubic-bezier(.23, 1, .32, 1) !important;
-}
-body._blur-fading #_blurW,
-body.scroll-restoring #_blurW {
-  -webkit-transition: -webkit-filter .16s cubic-bezier(.23, 1, .32, 1) !important;
-  transition: filter .16s cubic-bezier(.23, 1, .32, 1) !important;
-}
-
-/* Убираем «голый первый кадр», но без blur и без далёкого translate. */
+/* Базово: panel-layer скрыт за нижней границей сцены. Это защищает от
+   первого кадра-вспышки, когда overlay уже display:flex, а open-анимация
+   ещё не успела начать проигрываться. */
 .moverlay:not(.open):not(.closing) .modal,
 .chk-overlay:not(.open):not(.closing) .chk-modal,
 #reqModal:not(.open):not(.closing) .legal-modal,
 #offerModal:not(.open):not(.closing) .legal-modal,
 #privacyModal:not(.open):not(.closing) .legal-modal {
   opacity: 0;
-  transform: translate3d(0, 14px, 0) scale(.988);
+  transform: translate3d(0, var(--ew-modal-drawer-y), 0);
   filter: none !important;
 }
 
-@keyframes ewStablePanelIn {
-  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.988); filter: none; }
-  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+/* Панель движется как один внешний слой. Внутренний контент не размывается,
+   не скейлится и не получает отдельный fade — поэтому крестик/картинка не
+   оставляют несколько полупрозрачных дублей. */
+.modal,
+.chk-modal,
+.legal-modal,
+.ap-console-panel,
+.ap-status-panel {
+  filter: none !important;
+  backface-visibility: hidden;
+  transform-style: flat;
+  will-change: auto !important;
 }
-@keyframes ewStablePanelOut {
-  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  to   { opacity: 0; transform: translate3d(0, 12px, 0) scale(.99); filter: none; }
+.moverlay.open .modal,
+.moverlay.closing .modal,
+.chk-overlay.open .chk-modal,
+.chk-overlay.closing .chk-modal,
+#reqModal.open .legal-modal,
+#reqModal.closing .legal-modal,
+#offerModal.open .legal-modal,
+#offerModal.closing .legal-modal,
+#privacyModal.open .legal-modal,
+#privacyModal.closing .legal-modal,
+.ap-console-overlay.open .ap-console-panel,
+.ap-console-overlay.closing .ap-console-panel,
+.ap-console-overlay.open .ap-status-panel,
+.ap-console-overlay.closing .ap-status-panel {
+  will-change: transform, opacity !important;
 }
 
-/* Переписываем прежние heavy keyframes теми же именами, чтобы все старые
-   вызовы автоматически стали лёгкими, даже если их правила выше ещё активны. */
-@keyframes ewModalLayerPanelIn {
-  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.988); filter: none; }
-  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
+@keyframes ewDrawerPanelIn {
+  0%   { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; }
+  72%  { opacity: 1; transform: translate3d(0, -10px, 0); filter: none; }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
 }
-@keyframes ewModalLayerPanelOut {
-  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  to   { opacity: 0; transform: translate3d(0, 12px, 0) scale(.99); filter: none; }
+@keyframes ewDrawerPanelOut {
+  0%   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+  82%  { opacity: 1; transform: translate3d(0, 78vh, 0); filter: none; }
+  100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; }
 }
-@keyframes ewPanelRiseInPolished {
-  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.988); filter: none; }
-  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-}
-@keyframes ewPanelRiseOutPolished {
-  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  to   { opacity: 0; transform: translate3d(0, 12px, 0) scale(.99); filter: none; }
-}
-@keyframes modalQuickIn {
-  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.988); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-}
-@keyframes modalQuickOut {
-  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-  to   { opacity: 0; transform: translate3d(0, 12px, 0) scale(.99); }
-}
-@keyframes chkClose {
-  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-  to   { opacity: 0; transform: translate3d(0, 12px, 0) scale(.99); }
-}
-@keyframes apConsoleIn {
-  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.988); filter: none; }
-  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-}
-@keyframes apConsoleOut {
-  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: none; }
-  to   { opacity: 0; transform: translate3d(0, 12px, 0) scale(.99); filter: none; }
-}
+
+/* Переписываем старые имена keyframes, чтобы более ранние правила сайта
+   автоматически получили drawer-motion, даже если где-то ещё ссылаются на
+   modalQuickIn / ewPanelRiseInPolished / ewModalLayerPanelIn. */
+@keyframes ewStablePanelIn { 0% { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } 72% { opacity: 1; transform: translate3d(0, -10px, 0); filter: none; } 100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+@keyframes ewStablePanelOut { 0% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } 82% { opacity: 1; transform: translate3d(0, 78vh, 0); filter: none; } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } }
+@keyframes ewModalLayerPanelIn { 0% { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } 72% { opacity: 1; transform: translate3d(0, -10px, 0); filter: none; } 100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+@keyframes ewModalLayerPanelOut { 0% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } 82% { opacity: 1; transform: translate3d(0, 78vh, 0); filter: none; } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } }
+@keyframes ewPanelRiseInPolished { 0% { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } 72% { opacity: 1; transform: translate3d(0, -10px, 0); filter: none; } 100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+@keyframes ewPanelRiseOutPolished { 0% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } 82% { opacity: 1; transform: translate3d(0, 78vh, 0); filter: none; } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } }
+@keyframes modalQuickIn { 0% { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); } 72% { opacity: 1; transform: translate3d(0, -10px, 0); } 100% { opacity: 1; transform: translate3d(0, 0, 0); } }
+@keyframes modalQuickOut { 0% { opacity: 1; transform: translate3d(0, 0, 0); } 82% { opacity: 1; transform: translate3d(0, 78vh, 0); } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); } }
+@keyframes chkClose { 0% { opacity: 1; transform: translate3d(0, 0, 0); } 82% { opacity: 1; transform: translate3d(0, 78vh, 0); } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); } }
+@keyframes apConsoleIn { 0% { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } 72% { opacity: 1; transform: translate3d(0, -10px, 0); filter: none; } 100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+@keyframes apConsoleOut { 0% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } 82% { opacity: 1; transform: translate3d(0, 78vh, 0); filter: none; } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } }
 
 .moverlay.open .modal,
 .chk-overlay.open .chk-modal,
 #reqModal.open .legal-modal,
 #offerModal.open .legal-modal,
 #privacyModal.open .legal-modal {
-  animation: ewStablePanelIn var(--ew-modal-panel-in) var(--ew-modal-ease-in) both !important;
+  animation: ewDrawerPanelIn var(--ew-modal-panel-in) var(--ew-modal-drawer-ease-in) both !important;
 }
 .moverlay.closing .modal,
 .chk-overlay.closing .chk-modal,
 #reqModal.closing .legal-modal,
 #offerModal.closing .legal-modal,
 #privacyModal.closing .legal-modal {
-  animation: ewStablePanelOut var(--ew-modal-panel-out) var(--ew-modal-ease-out) forwards !important;
+  animation: ewDrawerPanelOut var(--ew-modal-panel-out) var(--ew-modal-drawer-ease-out) forwards !important;
 }
 .ap-console-overlay.open .ap-console-panel,
 .ap-console-overlay.open .ap-status-panel {
-  animation: apConsoleIn .22s var(--ew-modal-ease-in) forwards !important;
+  animation: apConsoleIn .48s var(--ew-modal-drawer-ease-in) both !important;
 }
 .ap-console-overlay.closing .ap-console-panel,
 .ap-console-overlay.closing .ap-status-panel {
-  animation: apConsoleOut .18s var(--ew-modal-ease-out) forwards !important;
+  animation: apConsoleOut .36s var(--ew-modal-drawer-ease-out) forwards !important;
 }
 
-/* Backdrop быстро закрывает первый кадр, но не соревнуется с панелью. */
+/* Backdrop/blur стартуют одновременно с drawer-motion, но не изображают
+   отдельную долгую сцену. Они просто держат защитную плёнку от вспышек. */
 .moverlay.open::before,
 .chk-overlay.open::before,
 #reqModal.open::before,
@@ -31903,7 +31876,7 @@ body.scroll-restoring #_blurW {
 #privacyModal.open::before,
 #apStatusOverlay.open::before,
 .cart-overlay.cart-opening {
-  animation-duration: .14s !important;
+  animation-duration: var(--ew-modal-layer-in) !important;
 }
 .moverlay.closing::before,
 .chk-overlay.closing::before,
@@ -31912,81 +31885,73 @@ body.scroll-restoring #_blurW {
 #privacyModal.closing::before,
 #apStatusOverlay.closing::before,
 .cart-overlay.cart-closing {
-  animation-duration: .16s !important;
+  animation-duration: var(--ew-modal-layer-out) !important;
+}
+body.modal-open #_blurW,
+body.chk-open #_blurW,
+body.cart-open #_blurW,
+body.ap-console-open #_blurW,
+html.legal-modal-open body #_blurW {
+  -webkit-transition: -webkit-filter .24s cubic-bezier(.23, 1, .32, 1) !important;
+  transition: filter .24s cubic-bezier(.23, 1, .32, 1) !important;
+}
+body._blur-fading #_blurW,
+body.scroll-restoring #_blurW {
+  -webkit-transition: -webkit-filter .34s cubic-bezier(.23, 1, .32, 1) !important;
+  transition: filter .34s cubic-bezier(.23, 1, .32, 1) !important;
+}
+
+/* Сохраняем защиту от дубля исходной карточки под overlay. */
+body.modal-open .pcard.reading,
+body.modal-open .pcard.reading::before {
+  animation: none !important;
+}
+body.modal-open .pcard.reading::before {
+  opacity: 0 !important;
 }
 
 @media(max-width:960px){
+  :root { --ew-modal-drawer-y: 108%; }
   .moverlay:not(.open):not(.closing) .modal,
   .chk-overlay:not(.open):not(.closing) .chk-modal,
   #reqModal:not(.open):not(.closing) .legal-modal,
   #offerModal:not(.open):not(.closing) .legal-modal,
   #privacyModal:not(.open):not(.closing) .legal-modal {
     opacity: 0;
-    transform: translate3d(0, 24px, 0);
+    transform: translate3d(0, var(--ew-modal-drawer-y), 0);
     filter: none !important;
   }
-  @keyframes ewStableSheetIn {
-    from { opacity: 0; transform: translate3d(0, 24px, 0); filter: none; }
-    to   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
-  }
-  @keyframes ewStableSheetOut {
-    from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
-    to   { opacity: 0; transform: translate3d(0, 24px, 0); filter: none; }
-  }
-  @keyframes modalMobIn {
-    from { opacity: 0; transform: translate3d(0, 24px, 0); }
-    to   { opacity: 1; transform: translate3d(0, 0, 0); }
-  }
-  @keyframes modalMobOut {
-    from { opacity: 1; transform: translate3d(0, 0, 0); }
-    to   { opacity: 0; transform: translate3d(0, 24px, 0); }
-  }
-  @keyframes ewModalLayerSheetIn {
-    from { opacity: 0; transform: translate3d(0, 24px, 0); filter: none; }
-    to   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
-  }
-  @keyframes ewModalLayerSheetOut {
-    from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
-    to   { opacity: 0; transform: translate3d(0, 24px, 0); filter: none; }
-  }
-  @keyframes ewPanelSheetInPolished {
-    from { opacity: 0; transform: translate3d(0, 24px, 0); filter: none; }
-    to   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
-  }
-  @keyframes ewPanelSheetOutPolished {
-    from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
-    to   { opacity: 0; transform: translate3d(0, 24px, 0); filter: none; }
-  }
-  @keyframes chkClose {
-    from { opacity: 1; transform: translate3d(0, 0, 0); }
-    to   { opacity: 0; transform: translate3d(0, 24px, 0); }
-  }
+  @keyframes ewDrawerPanelIn { 0% { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } 74% { opacity: 1; transform: translate3d(0, -8px, 0); filter: none; } 100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+  @keyframes ewDrawerPanelOut { 0% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } 84% { opacity: 1; transform: translate3d(0, 98%, 0); filter: none; } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } }
+  @keyframes modalMobIn { 0% { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); } 74% { opacity: 1; transform: translate3d(0, -8px, 0); } 100% { opacity: 1; transform: translate3d(0, 0, 0); } }
+  @keyframes modalMobOut { 0% { opacity: 1; transform: translate3d(0, 0, 0); } 84% { opacity: 1; transform: translate3d(0, 98%, 0); } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); } }
+  @keyframes ewModalLayerSheetIn { 0% { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } 74% { opacity: 1; transform: translate3d(0, -8px, 0); filter: none; } 100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+  @keyframes ewModalLayerSheetOut { 0% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } 84% { opacity: 1; transform: translate3d(0, 98%, 0); filter: none; } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } }
+  @keyframes ewPanelSheetInPolished { 0% { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } 74% { opacity: 1; transform: translate3d(0, -8px, 0); filter: none; } 100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+  @keyframes ewPanelSheetOutPolished { 0% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } 84% { opacity: 1; transform: translate3d(0, 98%, 0); filter: none; } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } }
+  @keyframes ewStableSheetIn { 0% { opacity: 1; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } 74% { opacity: 1; transform: translate3d(0, -8px, 0); filter: none; } 100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+  @keyframes ewStableSheetOut { 0% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } 84% { opacity: 1; transform: translate3d(0, 98%, 0); filter: none; } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); filter: none; } }
+  @keyframes chkClose { 0% { opacity: 1; transform: translate3d(0, 0, 0); } 84% { opacity: 1; transform: translate3d(0, 98%, 0); } 100% { opacity: 0; transform: translate3d(0, var(--ew-modal-drawer-y), 0); } }
 
   .moverlay.open .modal,
   .chk-overlay.open .chk-modal,
   #reqModal.open .legal-modal,
   #offerModal.open .legal-modal,
   #privacyModal.open .legal-modal {
-    animation: ewStableSheetIn .20s var(--ew-modal-ease-in) both !important;
+    animation: ewDrawerPanelIn .46s var(--ew-modal-drawer-ease-in) both !important;
   }
   .moverlay.closing .modal,
   .chk-overlay.closing .chk-modal,
   #reqModal.closing .legal-modal,
   #offerModal.closing .legal-modal,
   #privacyModal.closing .legal-modal {
-    animation: ewStableSheetOut .16s var(--ew-modal-ease-out) forwards !important;
+    animation: ewDrawerPanelOut .34s var(--ew-modal-drawer-ease-out) forwards !important;
   }
 }
 
 @media(max-width:720px){
-  @keyframes apConsoleMobIn {
-    from { opacity: 0; transform: translate3d(0, 24px, 0); filter: none; }
-    to   { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
-  }
-  @keyframes apConsoleMobOut {
-    from { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
-    to   { opacity: 0; transform: translate3d(0, 24px, 0); filter: none; }
-  }
+  @keyframes apConsoleMobIn { 0% { opacity: 1; transform: translate3d(0, 108%, 0); filter: none; } 74% { opacity: 1; transform: translate3d(0, -8px, 0); filter: none; } 100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } }
+  @keyframes apConsoleMobOut { 0% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; } 84% { opacity: 1; transform: translate3d(0, 98%, 0); filter: none; } 100% { opacity: 0; transform: translate3d(0, 108%, 0); filter: none; } }
 }
 
 @media (prefers-reduced-motion: reduce) {
