@@ -19373,12 +19373,12 @@ function _ewProductReservationUiState(p){
   if(rec && _ewActiveOrderBlocksCheckout(rec) && _ewActiveOrderMatchesProduct(rec, p)){
     const ps = String(rec.payment_status || '').toLowerCase();
     const countdown = _ewCountdownParts(rec.expires_at || rec.reserved_until || '');
-    let text = 'Ваш резерв';
+    let text = 'Резерв';
     if(ps === 'pending') text = 'Оплата ожидается';
     else if(ps === 'waiting_for_capture') text = 'Оплата авторизована';
     else if(ps === 'succeeded') text = 'Закреплена за вами';
-    else if(countdown) text = 'Ваш резерв · ' + countdown.text;
-    return {kind:'self', text, base:'Ваш резерв', countdown, rec};
+    else if(countdown) text = 'Резерв · ' + countdown.text;
+    return {kind:'self', text, base:'Резерв', countdown, rec};
   }
   const reservationStatus = String(p && (p.reservation_status || p.reservationStatus) || '').toLowerCase();
   const countdown = _ewCountdownParts(p && (p.reserved_until || p.reservedUntil || p.reservation_expires_at) || '');
@@ -19426,9 +19426,15 @@ function _ewApplyReservationTextToModal(p){
   const reservation = _ewProductReservationUiState(p);
   if(!reservation) return false;
   const statusEl = document.getElementById('mfstatus');
-  if(statusEl) statusEl.textContent = reservation.text;
+  if(statusEl){
+    if(typeof _ewSetRollingText === 'function') _ewSetRollingText(statusEl, reservation.text);
+    else statusEl.textContent = reservation.text;
+  }
   const priceEcho = document.getElementById('mpriceecho');
-  if(priceEcho && reservation.kind === 'self') priceEcho.textContent = reservation.text;
+  if(priceEcho && reservation.kind === 'self'){
+    if(typeof _ewSetSmoothText === 'function') _ewSetSmoothText(priceEcho, reservation.text);
+    else priceEcho.textContent = reservation.text;
+  }
   return true;
 }
 function _ewStartActiveOrderReservationTicker(){
@@ -19463,7 +19469,10 @@ function refreshCurrentModalFromProduct(){
   const blockLabel=getProductOrderBlockLabel(cur);
   const orderable=isProductOrderable(cur);
   const statusEl=document.getElementById('mfstatus');
-  if(statusEl) statusEl.textContent=statusLabel;
+  if(statusEl){
+    if(typeof _ewSetRollingText === 'function') _ewSetRollingText(statusEl, statusLabel);
+    else statusEl.textContent=statusLabel;
+  }
   setupModalFirstFormStatusHint(status);
   renderProductStatusDetails(status);
   updateModalPrice();
@@ -19475,21 +19484,21 @@ function refreshCurrentModalFromProduct(){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(true);
     btns.classList.add('has-share');
-    btns.innerHTML=_ewModalOrderButtonsHtml(cur, true);
+    _ewSetHtmlIfChanged(btns, _ewModalOrderButtonsHtml(cur, true));
     _ewApplyReservationTextToModal(cur);
   }else if(orderable){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(false);
     btns.classList.add('has-share');
-    btns.innerHTML=_ewModalOrderButtonsHtml(cur, true);
+    _ewSetHtmlIfChanged(btns, _ewModalOrderButtonsHtml(cur, true));
     _ewApplyReservationTextToModal(cur);
   }else{
     if(insta) insta.style.display=status==='transition_complete'?'flex':'none';
     setModalOrderFieldsDisabled(true);
     btns.classList.remove('has-share');
-    btns.innerHTML='<button class="mbtn dis" disabled>'+((reservationState && reservationState.text) || blockLabel)+'</button>';
+    _ewSetHtmlIfChanged(btns, '<button class="mbtn dis" disabled>'+((reservationState && reservationState.text) || blockLabel)+'</button>');
     const priceEcho=document.getElementById('mpriceecho');
-    if(priceEcho) priceEcho.textContent=(reservationState && reservationState.text) || blockLabel;
+    if(priceEcho) _ewSetSmoothText(priceEcho, (reservationState && reservationState.text) || blockLabel);
     _ewApplyReservationTextToModal(cur);
   }
 }
@@ -19579,7 +19588,9 @@ function syncCatalogLockStates(){
       card.dataset.status = status;
       const statusEl = card.querySelector('.pstatus');
       if(statusEl){
-        statusEl.textContent = reservationState ? reservationState.text : statusLabel;
+        const nextStatusText = reservationState ? reservationState.text : statusLabel;
+        if(typeof _ewSetRollingText === 'function') _ewSetRollingText(statusEl, nextStatusText);
+        else statusEl.textContent = nextStatusText;
         statusEl.classList.remove('done');
       }
       const priceEl = card.querySelector('.pprice');
@@ -19598,11 +19609,15 @@ function syncCatalogLockStates(){
         beacon.classList.add(statusClass);
       }
       const beaconTxt = card.querySelector('.pbeacon-txt');
-      if(beaconTxt) beaconTxt.textContent = reservationState ? reservationState.text : statusLabel;
+      if(beaconTxt){
+        const nextBeaconText = reservationState ? reservationState.text : statusLabel;
+        if(typeof _ewSetRollingText === 'function') _ewSetRollingText(beaconTxt, nextBeaconText);
+        else beaconTxt.textContent = nextBeaconText;
+      }
       const btn = card.querySelector('.pbtn');
-      if(reservationState && reservationState.kind === 'self') renderStatusButton(btn, 'Продолжить оплату');
+      if(reservationState) restoreOpenButton(btn);
       else if(orderable) restoreOpenButton(btn);
-      else renderStatusButton(btn, reservationState ? reservationState.text : blockLabel);
+      else renderStatusButton(btn, blockLabel);
     });
     if(typeof syncAperturaFeed === 'function') syncAperturaFeed();
     if(typeof updateCategoryCounts === 'function') updateCategoryCounts();
@@ -19684,20 +19699,20 @@ function openModal(i){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(true);
     btns.classList.add('has-share');
-    btns.innerHTML=_ewModalOrderButtonsHtml(p, true);
+    _ewSetHtmlIfChanged(btns, _ewModalOrderButtonsHtml(p, true));
     _ewApplyReservationTextToModal(p);
   }else if(orderable){
     if(insta) insta.style.display='none';
     setModalOrderFieldsDisabled(false);
     btns.classList.add('has-share');
-    btns.innerHTML=_ewModalOrderButtonsHtml(p, true);
+    _ewSetHtmlIfChanged(btns, _ewModalOrderButtonsHtml(p, true));
     _ewApplyReservationTextToModal(p);
   }else{
     if(insta) insta.style.display=status==='transition_complete'?'flex':'none';
     setModalOrderFieldsDisabled(true);
     btns.classList.remove('has-share');
-    btns.innerHTML='<button class="mbtn dis" disabled>'+((reservationState && reservationState.text) || blockLabel)+'</button>';
-    document.getElementById('mpriceecho').textContent=(reservationState && reservationState.text) || blockLabel;
+    _ewSetHtmlIfChanged(btns, '<button class="mbtn dis" disabled>'+((reservationState && reservationState.text) || blockLabel)+'</button>');
+    _ewSetSmoothText(document.getElementById('mpriceecho'), (reservationState && reservationState.text) || blockLabel);
     _ewApplyReservationTextToModal(p);
   }
   const _productOverlay = document.getElementById('moverlay');
@@ -25064,13 +25079,18 @@ function _renderAperturaStatus(payload){
   if(kicker) kicker.textContent = payload.kicker || '// APERTURA · STATUS';
   const titleLen = Array.from(titleText).length;
   const titleFitClass = titleLen >= 34 ? ' ap-title-xxl' : (titleLen >= 29 ? ' ap-title-xl' : (titleLen >= 22 ? ' ap-title-long' : ''));
-  body.innerHTML=`
+  const nextStatusHtml=`
     <h2 class="ap-status-title${titleFitClass}" id="apStatusTitle" data-title-len="${titleLen}">${_apEsc(titleText)}</h2>
     ${payload.text ? `<div class="ap-status-text">${_apEsc(payload.text)}</div>` : ''}
     ${payload.html || ''}
     <div class="ap-status-actions">
       ${_apStatusActionsHtml(payload.actions, key)}
     </div>`;
+  if(typeof _ewSmoothAperturaStatusReplace === 'function' && ov && ov.classList.contains('open')){
+    _ewSmoothAperturaStatusReplace(ov, body, nextStatusHtml);
+  }else{
+    body.innerHTML=nextStatusHtml;
+  }
   const panel=document.getElementById('apStatusPanel');
   if(panel){
     panel.scrollTop = 0;
@@ -32857,6 +32877,208 @@ body.modal-open .pcard.reading::before {
 </script>
 
 
+
+
+<style id="ew-reservation-visual-polish-v1">
+/* Phase 2D.11 · RESERVATION VISUAL POLISH
+   Микропатч: резерв без «ваш», барабанная смена статусов, центрирование CTA
+   и мягкая перестройка APERTURA STATUS без изменения общей визуальной системы. */
+.pcard.ew-user-reserved .pbtn,
+.pcard.ew-global-reserved .pbtn {
+  border-color: rgba(0, 200, 200, .32);
+  color: var(--white-mid);
+}
+.pcard.ew-user-reserved .pbtn:hover,
+.pcard.ew-global-reserved .pbtn:hover {
+  background: var(--surface-hi);
+  color: var(--white);
+  box-shadow: 0 0 16px rgba(0, 200, 200, .12);
+}
+.mbtn.ew-active-order-cta,
+.mbtn.ew-active-order-cta.primary {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  min-width: 0;
+  white-space: nowrap;
+}
+.mfooter-btns .mbtn.ew-active-order-cta:not(.mbtn-share) {
+  flex: 1 1 auto;
+}
+.ew-status-rollbox {
+  display: inline-grid;
+  grid-template: 1fr / 1fr;
+  align-items: center;
+  overflow: hidden;
+  vertical-align: middle;
+  contain: paint;
+  max-width: 100%;
+}
+.ew-status-rollbox .ew-roll-stack {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  animation: ewStatusDrumRoll .24s cubic-bezier(.20,.78,.24,1) both;
+}
+.ew-status-rollbox .ew-roll-old,
+.ew-status-rollbox .ew-roll-new {
+  display: block;
+  white-space: inherit;
+  line-height: inherit;
+  min-height: var(--ew-roll-line, 1em);
+}
+@keyframes ewStatusDrumRoll {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -50%, 0); }
+}
+.ew-smooth-text {
+  transition: opacity .18s ease, transform .18s cubic-bezier(.20,.78,.24,1);
+}
+.ew-smooth-text.ew-text-changing {
+  opacity: .08;
+  transform: translate3d(0, -3px, 0);
+}
+.mfooter-btns {
+  transition: opacity .18s ease, transform .2s cubic-bezier(.20,.78,.24,1);
+}
+.mfooter-btns.ew-html-changing {
+  opacity: .08;
+  transform: translate3d(0, 4px, 0);
+}
+.ap-status-panel.ew-layout-morphing {
+  overflow: hidden;
+  transition: height .26s cubic-bezier(.20,.78,.24,1), border-color .22s ease, box-shadow .22s ease;
+}
+.ap-status-body.ew-status-body-swap {
+  opacity: 0;
+  transform: translate3d(0, 6px, 0);
+}
+.ap-status-body {
+  transition: opacity .20s ease, transform .22s cubic-bezier(.20,.78,.24,1);
+}
+.ap-status-action,
+.mbtn,
+.pbtn {
+  transition-property: background, border-color, color, box-shadow, transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ew-status-rollbox .ew-roll-stack { animation: none !important; transform: none !important; }
+  .mfooter-btns,
+  .ap-status-panel.ew-layout-morphing,
+  .ap-status-body,
+  .ew-smooth-text { transition: none !important; }
+}
+</style>
+<script id="ew-reservation-visual-polish-js">
+/* Phase 2D.11 · RESERVATION VISUAL POLISH JS */
+function _ewPlainText(value){ return String(value == null ? '' : value).replace(/\s+/g,' ').trim(); }
+function _ewSetRollingText(el, next){
+  if(!el) return false;
+  next = _ewPlainText(next);
+  const old = _ewPlainText(el.dataset.ewTextValue || el.textContent || '');
+  if(old === next){
+    if(el.dataset.ewTextValue !== next) el.dataset.ewTextValue = next;
+    return false;
+  }
+  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if(reduce || !old){
+    el.textContent = next;
+    el.dataset.ewTextValue = next;
+    return true;
+  }
+  if(el._ewRollTimer) clearTimeout(el._ewRollTimer);
+  const h = Math.max(10, Math.ceil(el.getBoundingClientRect().height || parseFloat(getComputedStyle(el).lineHeight) || 14));
+  el.classList.add('ew-status-rollbox');
+  el.style.setProperty('--ew-roll-line', h + 'px');
+  el.style.height = h + 'px';
+  el.innerHTML = '<span class="ew-roll-stack"><span class="ew-roll-old"></span><span class="ew-roll-new"></span></span>';
+  const oldNode = el.querySelector('.ew-roll-old');
+  const newNode = el.querySelector('.ew-roll-new');
+  if(oldNode) oldNode.textContent = old;
+  if(newNode) newNode.textContent = next;
+  el.dataset.ewTextValue = next;
+  el._ewRollTimer = setTimeout(function(){
+    el._ewRollTimer = 0;
+    el.classList.remove('ew-status-rollbox');
+    el.style.removeProperty('--ew-roll-line');
+    el.style.height = '';
+    el.textContent = next;
+    el.dataset.ewTextValue = next;
+  }, 270);
+  return true;
+}
+function _ewSetSmoothText(el, next){
+  if(!el) return false;
+  next = String(next == null ? '' : next);
+  if((el.textContent || '') === next) return false;
+  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if(reduce){ el.textContent = next; return true; }
+  if(el._ewSmoothTextTimer) clearTimeout(el._ewSmoothTextTimer);
+  el.classList.add('ew-smooth-text', 'ew-text-changing');
+  el._ewSmoothTextTimer = setTimeout(function(){
+    el.textContent = next;
+    requestAnimationFrame(function(){
+      el.classList.remove('ew-text-changing');
+      el._ewSmoothTextTimer = setTimeout(function(){
+        el.classList.remove('ew-smooth-text');
+        el._ewSmoothTextTimer = 0;
+      }, 220);
+    });
+  }, 90);
+  return true;
+}
+function _ewSetHtmlIfChanged(el, html){
+  if(!el) return false;
+  html = String(html == null ? '' : html);
+  if(el.dataset.ewLastHtml === html || el.innerHTML === html){
+    el.dataset.ewLastHtml = html;
+    return false;
+  }
+  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  el.dataset.ewLastHtml = html;
+  if(reduce || !el.innerHTML){ el.innerHTML = html; return true; }
+  if(el._ewHtmlTimer) clearTimeout(el._ewHtmlTimer);
+  el.classList.add('ew-html-changing');
+  el._ewHtmlTimer = setTimeout(function(){
+    el.innerHTML = html;
+    requestAnimationFrame(function(){
+      el.classList.remove('ew-html-changing');
+      el._ewHtmlTimer = setTimeout(function(){ el._ewHtmlTimer = 0; }, 220);
+    });
+  }, 90);
+  return true;
+}
+function _ewSmoothAperturaStatusReplace(overlay, body, html){
+  if(!body){ return; }
+  html = String(html == null ? '' : html);
+  if(body.innerHTML === html) return;
+  const panel = overlay && overlay.querySelector ? overlay.querySelector('.ap-status-panel') : document.getElementById('apStatusPanel');
+  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if(!panel || reduce || !overlay.classList.contains('open')){ body.innerHTML = html; return; }
+  if(panel._ewStatusSwapTimer) clearTimeout(panel._ewStatusSwapTimer);
+  const from = Math.max(1, Math.ceil(panel.getBoundingClientRect().height || panel.offsetHeight || 1));
+  panel.style.height = from + 'px';
+  panel.classList.add('ew-layout-morphing');
+  body.classList.add('ew-status-body-swap');
+  panel._ewStatusSwapTimer = setTimeout(function(){
+    body.innerHTML = html;
+    panel.style.height = 'auto';
+    const to = Math.max(1, Math.ceil(panel.getBoundingClientRect().height || panel.scrollHeight || from));
+    panel.style.height = from + 'px';
+    requestAnimationFrame(function(){
+      panel.style.height = to + 'px';
+      body.classList.remove('ew-status-body-swap');
+      panel._ewStatusSwapTimer = setTimeout(function(){
+        panel.style.height = '';
+        panel.classList.remove('ew-layout-morphing');
+        panel._ewStatusSwapTimer = 0;
+      }, 310);
+    });
+  }, 80);
+}
+</script>
 
 </body>
 </html>

@@ -258,6 +258,7 @@ function applyCatalogReservationLocks(products, locks) {
     if (!lock) {
       product.reservation_status = "";
       product.reserved_until = "";
+      product.reservation_expires_at = "";
       product.reservation_id = "";
       continue;
     }
@@ -267,6 +268,7 @@ function applyCatalogReservationLocks(products, locks) {
     product.reservation_status = "active";
     product.reservation_id = lock.reservation_id || "";
     product.reserved_until = lock.reserved_until_text || "";
+    product.reservation_expires_at = lock.reserved_until_text || "";
     product.catalog_status_label = "В резерве";
   }
 
