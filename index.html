@@ -19283,7 +19283,10 @@ function openModal(i){
     btns.innerHTML='<button class="mbtn dis" disabled>'+blockLabel+'</button>';
     document.getElementById('mpriceecho').textContent=blockLabel;
   }
-  document.getElementById('moverlay').classList.add('open');
+  const _productOverlay = document.getElementById('moverlay');
+  if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(_productOverlay);
+  _productOverlay.classList.remove('closing');
+  _productOverlay.classList.add('open');
   lockScroll();
   // Чистим stale-флаг blur fade на случай если эта модалка открывается
   // моментально после закрытия предыдущей — иначе блюр не появится.
@@ -19368,6 +19371,76 @@ function _setupModalScrollHint(){
 /* Шапка не скрывается при открытии модалок — no-op для совместимости. */
 function _materializeHeader(){ /* no-op */ }
 
+/* Phase 2D.1 · MODAL CLOSE LIFECYCLE POLISH
+   Закрытие больше не привязано к «магическим» таймерам. Сначала слой получает
+   .closing / .cart-closing, CSS проигрывает обратную open-анимацию, затем cleanup
+   выполняется после фактической длительности transition/animation. Это защищает
+   от рваного opacity/display:none и синхронизирует уход #_blurW через _blur-fading. */
+function _ewCssTimeToMs(value){
+  value = String(value || '0').trim();
+  if(!value) return 0;
+  if(value.endsWith('ms')) return Math.max(0, parseFloat(value) || 0);
+  if(value.endsWith('s')) return Math.max(0, (parseFloat(value) || 0) * 1000);
+  return Math.max(0, parseFloat(value) || 0);
+}
+function _ewCssTimeList(value){
+  return String(value || '0s').split(',').map(_ewCssTimeToMs);
+}
+function _ewMaxCssMotionMs(el){
+  if(!el || typeof getComputedStyle !== 'function') return 0;
+  let cs;
+  try{ cs = getComputedStyle(el); }catch(e){ return 0; }
+  const td = _ewCssTimeList(cs.transitionDuration);
+  const tl = _ewCssTimeList(cs.transitionDelay);
+  const ad = _ewCssTimeList(cs.animationDuration);
+  const al = _ewCssTimeList(cs.animationDelay);
+  const maxPair = (dur, delay) => {
+    const len = Math.max(dur.length, delay.length, 1);
+    let max = 0;
+    for(let i=0;i<len;i++){
+      const d = dur[i % dur.length] || 0;
+      const l = delay[i % delay.length] || 0;
+      max = Math.max(max, d + Math.max(0, l));
+    }
+    return max;
+  };
+  return Math.max(maxPair(td, tl), maxPair(ad, al));
+}
+function _ewCancelModalExit(root){
+  if(!root) return;
+  root._ewCloseToken = (root._ewCloseToken || 0) + 1;
+  if(root._ewVisualExitTimer){
+    clearTimeout(root._ewVisualExitTimer);
+    root._ewVisualExitTimer = 0;
+  }
+}
+function _ewAfterModalExit(root, panel, done, opts){
+  opts = opts || {};
+  if(!root){ if(typeof done === 'function') done('missing-root'); return 0; }
+  _ewCancelModalExit(root);
+  const token = root._ewCloseToken;
+  const closingClass = Object.prototype.hasOwnProperty.call(opts, 'closingClass') ? opts.closingClass : 'closing';
+  const prefersReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const cssMs = prefersReduced ? 0 : Math.max(
+    _ewMaxCssMotionMs(root),
+    _ewMaxCssMotionMs(panel)
+  );
+  const minMs = typeof opts.minMs === 'number' ? opts.minMs : 160;
+  const maxMs = typeof opts.maxMs === 'number' ? opts.maxMs : 620;
+  const waitMs = prefersReduced ? 30 : Math.max(minMs, Math.min(maxMs, Math.ceil(cssMs + 48)));
+  root._ewVisualExitTimer = setTimeout(function(){
+    if(root._ewCloseToken !== token) return;
+    if(closingClass && !root.classList.contains(closingClass)) return;
+    root._ewVisualExitTimer = 0;
+    requestAnimationFrame(function(){
+      if(root._ewCloseToken !== token) return;
+      if(closingClass && !root.classList.contains(closingClass)) return;
+      if(typeof done === 'function') done('css-motion-complete');
+    });
+  }, waitMs);
+  return root._ewVisualExitTimer;
+}
+
 function _cleanupModal(){
   const ov    = document.getElementById('moverlay');
   const panel = document.getElementById('modalPanel');
@@ -19423,13 +19496,10 @@ function closeModal(callback){
   // пропадал — отсюда «дёрганое» закрытие. CSS-правило
   // body._blur-fading #_blurW перекроет active-blur через !important.
   document.body.classList.add('_blur-fading');
-  // Match анимации закрытия (legalOut-pattern): desktop 280мс, mobile 280мс
-  const isMobile = window.innerWidth <= 760;
-  const DUR = isMobile ? 280 : 280;
-  setTimeout(()=>{
+  _ewAfterModalExit(ov, panel, function(){
     _cleanupModal();
     if(typeof callback === 'function') callback();
-  }, DUR);
+  }, {minMs:260, maxMs:460});
 }
 function closeOut(e){if(e.target===document.getElementById('moverlay'))closeModal();}
 
@@ -19496,6 +19566,7 @@ function _quickHideModal(){
   const ov = document.getElementById('moverlay');
   const panel = document.getElementById('modalPanel');
   if(!ov) return;
+  if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
   ov.classList.remove('open');
   ov.classList.remove('closing');
   document.body.classList.remove('modal-open');
@@ -19529,6 +19600,7 @@ function _quickHideCart(){
     panel.style.transform = '';
   }
   if(ov){
+    if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
     ov.classList.remove('open');
     ov.style.opacity = '';
     ov.style.transition = '';
@@ -19566,6 +19638,7 @@ function _openCheckoutOverlay(hidePrev){
   const ov = document.getElementById('chkOverlay');
   if(!ov) return;
   // Force-reset dirty state (если предыдущее закрытие оставило closing)
+  if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
   ov.classList.remove('closing');
   if(ov.classList.contains('open')) return;
   // Снимаем возможный «застрявший» флаг scroll-restoring: открытие модалки —
@@ -20590,22 +20663,24 @@ function toggleCart(){
     // cart-open оставляем (он держит header z-index до конца слайда);
     // _blur-fading перекроет blur через !important.
     document.body.classList.add('_blur-fading');
+    if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(overlay);
     if(overlay) overlay.style.pointerEvents='none';
     panel.classList.add('cart-closing');
     if(overlay) overlay.classList.add('cart-closing');
-    setTimeout(()=>{
+    _ewAfterModalExit(overlay, panel, function(){
       panel.classList.remove('open','cart-closing');
       if(overlay){ overlay.classList.remove('open','cart-closing'); overlay.style.pointerEvents=''; }
       document.body.classList.remove('cart-open');
       document.body.classList.remove('_blur-fading');
       unlockScroll();
       _materializeHeader();
-    }, 300);
+    }, {closingClass:'cart-closing', minMs:300, maxMs:520});
   } else {
     // Открытие через keyframe-класс, а не только transition: в сценарии
     // duplicate → closeModal → openCart body ещё может держать
     // scroll-restoring, который глушит transitions. Animation остаётся
     // плавной и не даёт корзине резко “прыгнуть” на экран.
+    if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(overlay);
     panel.classList.remove('cart-closing','cart-opening');
     if(overlay) overlay.classList.remove('cart-closing','cart-opening');
     // Чистим stale blur fade flag — иначе открытие корзины поверх
@@ -20935,9 +21010,8 @@ function closeCheckout(){
   ov.classList.add('closing');
   // BLUR FADE SYNC — уход блюра в тот же кадр, что и slide-out панели чекаута.
   document.body.classList.add('_blur-fading');
-  // Match анимации legalOut на обеих платформах — 280мс
-  const DUR = 280;
-  setTimeout(()=>{
+  const panel = document.getElementById('chkModalPanel');
+  _ewAfterModalExit(ov, panel, function(){
     document.body.classList.add('scroll-restoring');
     ov.classList.remove('open');
     ov.classList.remove('closing');
@@ -20953,7 +21027,7 @@ function closeCheckout(){
       p.style.transform = '';
       delete p.dataset.topSwipeInit;
     }
-  }, DUR);
+  }, {minMs:280, maxMs:500});
 }
 function closeChkOut(e){if(e.target===document.getElementById('chkOverlay'))closeCheckout();}
 function selectDelivery(el){document.querySelectorAll('.chk-del-opt').forEach(o=>o.classList.remove('active'));el.classList.add('active');}
@@ -24359,6 +24433,7 @@ function _apOpenOverlay(id){
     clearTimeout(ov._apCloseTimer);
     ov._apCloseTimer = 0;
   }
+  if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
   if(ov._apOpenFrame){
     cancelAnimationFrame(ov._apOpenFrame);
     ov._apOpenFrame = 0;
@@ -24408,7 +24483,8 @@ function _apCloseOverlay(id, opts){
   ov.classList.add('closing');
   ov.classList.remove('open');
   if(!keepLock && isLastAperturaLayer) document.body.classList.add('_blur-fading');
-  ov._apCloseTimer = setTimeout(()=>{
+  const panel = ov.querySelector('.ap-status-panel, .ap-console-panel');
+  ov._apCloseTimer = _ewAfterModalExit(ov, panel, function(){
     ov._apCloseTimer = 0;
     ov.classList.remove('open','closing','is-mounted');
     _apReleaseOverlayViewport(ov);
@@ -24424,7 +24500,7 @@ function _apCloseOverlay(id, opts){
       }
     }
     if(typeof opts.onDone === 'function') opts.onDone();
-  }, APERTURA_CONSOLE_CLOSE_MS);
+  }, {minMs:APERTURA_CONSOLE_CLOSE_MS, maxMs:560});
 }
 function apConsoleReport(text){
   const el=document.getElementById('apConsoleReport');
@@ -25645,17 +25721,17 @@ function initCartSwipeClose(){
         overlay.style.transition='opacity .28s';
         overlay.style.opacity='0';
       }
-      setTimeout(()=>{
+      const cartOverlayEl=document.getElementById('cartOverlay');
+      _ewAfterModalExit(cartOverlayEl || panel, panel, function(){
         // Закрываем без вызова toggleCart(), чтобы избежать прыжка страницы
         panel.classList.remove('open');
-        const cartOverlayEl=document.getElementById('cartOverlay');
         if(cartOverlayEl) cartOverlayEl.classList.remove('open');
         document.body.classList.remove('cart-open');
         panel.style.transform='';
         panel.style.transition='';
         if(overlay){ overlay.style.opacity=''; overlay.style.transition=''; }
         unlockScroll();
-      },280);
+      }, {closingClass:'', minMs:280, maxMs:480});
     } else {
       // Snap back
       panel.style.transition='transform .22s ease';
@@ -28457,6 +28533,7 @@ function _openEchoOrderModal(){
     if(el) el.name = 'noac_' + Math.random().toString(36).slice(2, 10);
   });
   // Открываем модалку
+  if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
   ov.classList.remove('closing'); // сброс dirty state от прерванного закрытия
   document.body.classList.remove('scroll-restoring'); // снять «застрявший» флаг паузы — иначе входная анимация залипнет на кадре 0 (чёрный экран)
   document.body.classList.remove('_blur-fading'); // stale-флаг blur fade — иначе блюр не появится при открытии формы
@@ -28544,8 +28621,8 @@ function closeEchoOrder(e){
   // BLUR FADE SYNC — блюр уходит синхронно со slide-out панели (как карточка/
   // чекаут): иначе хедер «расплывался → резкость» с задержкой = вспышка.
   document.body.classList.add('_blur-fading');
-  const DUR = 290;
-  setTimeout(()=>{
+  const panel = document.getElementById('echoOrderModal');
+  _ewAfterModalExit(ov, panel, function(){
     ov.classList.remove('open');
     ov.classList.remove('closing');
     document.body.classList.remove('chk-open');
@@ -28555,7 +28632,7 @@ function closeEchoOrder(e){
     // открытие снова стартовало с чистой keyframe-анимацией.
     const p = document.getElementById('echoOrderModal');
     if(p){ p.style.animation=''; p.style.opacity=''; p.style.transform=''; }
-  }, DUR);
+  }, {minMs:280, maxMs:520});
 }
 function toggleEchoOrderReveal(){
   const rv = document.getElementById('echoOrderReveal');
@@ -29252,6 +29329,7 @@ function _openLegalModal(id) {
     clearTimeout(m._legalCloseTimer);
     m._legalCloseTimer = null;
   }
+  if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(m);
   _hideAllNotifs();
   if(typeof _closeWorldDrop === 'function') _closeWorldDrop();
   m.classList.remove('closing');
@@ -29294,7 +29372,9 @@ function _closeLegalModal(id, e) {
   // legal-modal-open живёт на html, но _blur-fading на body тоже сработает:
   // селектор body._blur-fading #_blurW перекроет фильтр через !important.
   document.body.classList.add('_blur-fading');
-  m._legalCloseTimer = setTimeout(() => _finishLegalModalClose(id), 280);
+  m._legalCloseTimer = _ewAfterModalExit(m, m.querySelector('.legal-modal'), function(){
+    _finishLegalModalClose(id);
+  }, {minMs:280, maxMs:540});
 }
 function openReqModal()      { _openLegalModal('reqModal'); }
 function closeReqModal(e)    { _closeLegalModal('reqModal', e); }
@@ -29355,6 +29435,7 @@ function openReturnModal(){
   const bodyAlreadyLocked = _scrollLockCount > 0;
   _setupReturnForm();
   _resetReturnFormState(true);
+  if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
   ov.classList.remove('closing');
   if(ov.classList.contains('open')) return;
   document.body.classList.remove('scroll-restoring');
@@ -29383,8 +29464,8 @@ function closeReturnModal(){
   if(typeof _blurActiveField === 'function') _blurActiveField();
   ov.classList.add('closing');
   document.body.classList.add('_blur-fading');
-  const DUR = 280;
-  setTimeout(()=>{
+  const panel = document.getElementById('returnModalPanel');
+  _ewAfterModalExit(ov, panel, function(){
     document.body.classList.add('scroll-restoring');
     ov.classList.remove('open');
     ov.classList.remove('closing');
@@ -29399,7 +29480,7 @@ function closeReturnModal(){
       p.style.transition = '';
       delete p.dataset.topSwipeInit;
     }
-  }, DUR);
+  }, {minMs:280, maxMs:520});
 }
 function closeReturnOut(e){
   if(e && e.target === document.getElementById('returnModal')) closeReturnModal();
