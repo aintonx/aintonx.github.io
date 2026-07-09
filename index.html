@@ -33494,5 +33494,101 @@ body.ap-status-fading #notif[data-notif-kind="contextual"],
 })();
 </script>
 
+
+
+<style id="ew-apertura-status-pivot-matte-guard-v1">
+/* Phase 2D.13g · APERTURA STATUS PIVOT MATTE GUARD
+   Micro-fix only: preserve the approved APERTURA STATUS pivot motion and
+   cover the one-frame gap between outgoing and incoming status panels. */
+#apStatusOverlay.ew-ap-status-pivoting {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.12), transparent 46%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.12), transparent 54%),
+    rgba(4,4,10,.88) !important;
+}
+#apStatusOverlay.ew-ap-status-pivoting::before {
+  opacity: 1 !important;
+  visibility: visible !important;
+  animation: none !important;
+}
+#apStatusOverlay.ew-ap-status-pivoting::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 1;
+  visibility: visible;
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.10), transparent 48%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.10), transparent 56%),
+    rgba(4,4,10,.74);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: opacity;
+}
+#apStatusOverlay.ew-ap-status-pivoting #apStatusPanel {
+  position: relative;
+  z-index: 2 !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+#apStatusOverlay.ew-ap-status-pivoting[data-status-key="entry-instagram"] {
+  background: rgba(4,4,10,.42) !important;
+}
+#apStatusOverlay.ew-ap-status-pivoting[data-status-key="entry-instagram"]::after {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.08), transparent 48%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.08), transparent 56%),
+    rgba(4,4,10,.30);
+}
+:root[data-theme="light"] #apStatusOverlay.ew-ap-status-pivoting[data-status-key="entry-instagram"] {
+  background: rgba(244,247,252,.26) !important;
+}
+:root[data-theme="light"] #apStatusOverlay.ew-ap-status-pivoting[data-status-key="entry-instagram"]::after {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(0,143,150,.08), transparent 48%),
+    radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.06), transparent 56%),
+    rgba(244,247,252,.24);
+}
+@media (prefers-reduced-motion: reduce){
+  #apStatusOverlay.ew-ap-status-pivoting::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+</style>
+<script id="ew-apertura-status-pivot-matte-guard-js-v1">
+/* Phase 2D.13g · APERTURA STATUS PIVOT MATTE GUARD JS */
+(function(){
+  const previousInspect = window.inspectAperturaStatusCardSwapPatch;
+  window.inspectAperturaStatusCardSwapPatch = function(){
+    const base = typeof previousInspect === 'function' ? previousInspect() : {};
+    const ov = document.getElementById('apStatusOverlay');
+    return Object.assign({}, base, {
+      ok: !!ov && typeof window._apStatusPivotReplace === 'function',
+      patch: 'Phase 2D.13g · APERTURA STATUS PIVOT MATTE GUARD',
+      pivoting: !!(ov && ov.classList.contains('ew-ap-status-pivoting')),
+      matteGuard: true,
+      statusKey: ov ? (ov.dataset.statusKey || '') : ''
+    });
+  };
+  window.inspectAperturaStatusPivotMatteGuard = function(){
+    const ov = document.getElementById('apStatusOverlay');
+    const panel = document.getElementById('apStatusPanel');
+    return {
+      ok: !!ov && !!panel && typeof window._apStatusPivotReplace === 'function',
+      patch: 'Phase 2D.13g · APERTURA STATUS PIVOT MATTE GUARD',
+      pivoting: !!(ov && ov.classList.contains('ew-ap-status-pivoting')),
+      open: !!(ov && ov.classList.contains('open')),
+      mounted: !!(ov && ov.classList.contains('is-mounted')),
+      statusKey: ov ? (ov.dataset.statusKey || '') : ''
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
