@@ -34444,5 +34444,160 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
   };
 })();
 </script>
+
+
+<style id="ew-footer-modal-uniformity-collab-text-align-v1">
+/* Phase 2E.7b · FOOTER MODAL UNIFORMITY + COLLAB TEXT-ROW ALIGNMENT
+   Точечный desktop-only патч поверх текущего кода.
+   Не добавляет элементы, не меняет тексты, цвета, фоны, рамки, тени,
+   theme variables, backend, checkout/payment/reservation логику и mobile.
+
+   1) Футерные модалки получают одинаковый desktop-footprint, чтобы не
+      прыгать по размеру между Реквизитами / Офертой / Политикой / Возвратом.
+   2) Кнопки в Партнёрствах выравниваются именно относительно основного
+      текста слева (.cdesc), а не относительно всей секции с заголовком. */
+@media (min-width: 961px) {
+  :root {
+    --ew-footer-modal-width: min(860px, calc(100vw - 96px));
+    --ew-footer-modal-height-vh: min(720px, calc(100vh - 96px));
+    --ew-footer-modal-height-dvh: min(720px, calc(100dvh - 96px));
+  }
+
+  #reqModal .legal-modal,
+  #offerModal .legal-modal,
+  #privacyModal .legal-modal,
+  #returnModal .return-modal {
+    width: var(--ew-footer-modal-width) !important;
+    max-width: var(--ew-footer-modal-width) !important;
+    min-width: var(--ew-footer-modal-width) !important;
+    height: var(--ew-footer-modal-height-vh) !important;
+    max-height: var(--ew-footer-modal-height-vh) !important;
+    height: var(--ew-footer-modal-height-dvh) !important;
+    max-height: var(--ew-footer-modal-height-dvh) !important;
+  }
+
+  #reqModal .legal-modal,
+  #offerModal .legal-modal,
+  #privacyModal .legal-modal {
+    overflow: hidden !important;
+  }
+
+  #returnModal .return-modal {
+    overflow-y: auto !important;
+  }
+
+  #collab .collab-in {
+    align-items: start !important;
+    grid-template-rows: auto auto auto;
+    gap: 0 72px !important;
+  }
+
+  #collab .collab-in > div:first-child {
+    display: contents;
+  }
+
+  #collab .clabel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #collab .ctitle {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #collab .cdesc {
+    grid-column: 1;
+    grid-row: 3;
+    align-self: start;
+  }
+
+  #collab .clinks {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: center !important;
+    justify-self: stretch;
+    justify-content: center;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+}
+</style>
+<script id="ew-footer-modal-uniformity-collab-text-align-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7b · FOOTER MODAL UNIFORMITY + COLLAB TEXT-ROW ALIGNMENT';
+  const modalDefs = [
+    ['requisites', '#reqModal .legal-modal'],
+    ['offer', '#offerModal .legal-modal'],
+    ['privacy', '#privacyModal .legal-modal'],
+    ['return', '#returnModal .return-modal']
+  ];
+
+  function readPanel(name, selector){
+    const el = document.querySelector(selector);
+    if(!el) return {name, selector, found:false};
+    const cs = getComputedStyle(el);
+    return {
+      name,
+      selector,
+      found: true,
+      width: cs.width,
+      height: cs.height,
+      maxWidth: cs.maxWidth,
+      maxHeight: cs.maxHeight,
+      minWidth: cs.minWidth,
+      overflowY: cs.overflowY
+    };
+  }
+
+  function rectInfo(selector){
+    const el = document.querySelector(selector);
+    if(!el) return null;
+    const r = el.getBoundingClientRect();
+    return {
+      top: Math.round(r.top),
+      height: Math.round(r.height),
+      centerY: Math.round(r.top + r.height / 2)
+    };
+  }
+
+  window.inspectFooterModalUniformityAndCollabTextAlignPatch = function(){
+    const style = document.getElementById('ew-footer-modal-uniformity-collab-text-align-v1');
+    const desktop = !!(window.matchMedia && window.matchMedia('(min-width: 961px)').matches);
+    const root = getComputedStyle(document.documentElement);
+    const panels = modalDefs.map(function(def){ return readPanel(def[0], def[1]); });
+    const text = rectInfo('#collab .cdesc');
+    const links = rectInfo('#collab .clinks');
+    const linkStyles = document.querySelector('#collab .clinks') ? getComputedStyle(document.querySelector('#collab .clinks')) : null;
+    const sizes = panels.filter(p => p.found).map(p => p.width + ' × ' + p.height);
+    const uniqueSizes = Array.from(new Set(sizes));
+
+    return {
+      ok: Boolean(style && panels.every(p => p.found)),
+      patch: PATCH,
+      desktopMediaActive: desktop,
+      scope: 'Desktop-only @media (min-width: 961px). Mobile layout is intentionally untouched.',
+      themeSafe: 'No color, background, border, shadow, or theme-variable rules are introduced by this patch.',
+      footerModalVars: {
+        width: root.getPropertyValue('--ew-footer-modal-width').trim(),
+        heightVh: root.getPropertyValue('--ew-footer-modal-height-vh').trim(),
+        heightDvh: root.getPropertyValue('--ew-footer-modal-height-dvh').trim()
+      },
+      footerPanels: panels,
+      sameRenderedFootprint: uniqueSizes.length <= 1,
+      renderedFootprints: uniqueSizes,
+      collabTextAlignment: {
+        text,
+        links,
+        centerDeltaPx: text && links ? Math.abs(text.centerY - links.centerY) : null,
+        linksGridRow: linkStyles ? linkStyles.gridRowStart + ' / ' + linkStyles.gridRowEnd : null,
+        linksAlignSelf: linkStyles ? linkStyles.alignSelf : null,
+        linksJustifyContent: linkStyles ? linkStyles.justifyContent : null
+      }
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
