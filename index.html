@@ -24867,14 +24867,14 @@ const APERTURA_STATUS_STATES = {
 
   'payment-channel-setup': {
     title: 'Платёжный канал готовится.',
-    text: 'Сайт уже подготовлен к подключению ЮKassa, но платёжные ключи ещё не активированы. Деньги не списаны. Заказ можно проверить позже или связаться с Архитектором.',
-    actions: [{label:'Проверить статус', action:'order-check-status', primary:true}, {label:'Связаться с Архитектором', action:'contact'}]
+    text: 'Сайт уже подготовлен к подключению ЮKassa, но платёжные ключи ещё не активированы. Деньги не списаны. Заказ можно проверить позже, отказаться от покупки или связаться с Архитектором.',
+    actions: [{label:'Проверить статус', action:'order-check-status', primary:true}, {label:'Отказаться от покупки', action:'order-cancel-ask'}, {label:'Связаться с Архитектором', action:'contact'}]
   },
 
   'order-fixed': {
     title: 'Заказ зафиксирован.',
     text: 'Apertura удерживает реликвию для вашего цикла. Следующий шаг — подтверждение оплаты.',
-    actions: [{label:'Перейти к оплате', action:'order-pay', primary:true}, {label:'Проверить статус', action:'order-check-status'}]
+    actions: [{label:'Перейти к оплате', action:'order-pay', primary:true}, {label:'Проверить статус', action:'order-check-status'}, {label:'Отказаться от покупки', action:'order-cancel-ask'}]
   },
   'order-payment-waiting': {
     title: 'Ожидаем подтверждение оплаты.',
@@ -24893,8 +24893,28 @@ const APERTURA_STATUS_STATES = {
   },
   'order-payment-canceled': {
     title: 'Платёж не прошёл.',
-    text: 'Платёжный канал не подтвердил оплату. Если время цикла ещё не истекло, вы можете попробовать снова.',
-    actions: [{label:'Повторить оплату', action:'order-pay', primary:true}, {label:'Вернуться в каталог', action:'catalog'}]
+    text: 'Платёжный канал не подтвердил оплату. Если время цикла ещё не истекло, вы можете попробовать снова или отказаться от покупки.',
+    actions: [{label:'Повторить оплату', action:'order-pay', primary:true}, {label:'Отказаться от покупки', action:'order-cancel-ask'}, {label:'Вернуться в каталог', action:'catalog'}]
+  },
+  'order-cancel-confirm': {
+    title: 'Отказаться от покупки?',
+    text: 'Apertura снимет резерв и вернёт реликвию в поток. После этого её сможет выбрать кто-то другой.',
+    actions: [{label:'Снять резерв', action:'order-cancel-confirm', primary:true}, {label:'Оставить резерв', action:'order-cancel-keep'}]
+  },
+  'order-canceling': {
+    title: 'Снимаем резерв.',
+    text: 'Apertura закрывает текущий цикл и возвращает реликвию в поток. Подождите несколько секунд.',
+    actions: []
+  },
+  'order-canceled': {
+    title: 'Резерв снят.',
+    text: 'Apertura вернула реликвию в поток. Теперь можно выбрать другую реликвию или вернуться в каталог.',
+    actions: [{label:'Вернуться в каталог', action:'catalog', primary:true}]
+  },
+  'order-cancel-denied': {
+    title: 'Резерв нельзя снять автоматически.',
+    text: 'Платёжный канал уже получил сигнал или статус заказа изменился. Проверьте статус цикла — если нужно, свяжитесь с Архитектором.',
+    actions: [{label:'Проверить статус', action:'order-check-status', primary:true}, {label:'Связаться с Архитектором', action:'contact'}]
   },
   'order-cycle-expired': {
     title: 'Время цикла истекло.',
@@ -24917,6 +24937,7 @@ const APERTURA_CONSOLE_SECTIONS = [
   {title:'01 · АВАРИЙНЫЕ ЭКРАНЫ', items:[
     ['Apertura проверяет сигнал','показывает состояние, когда платёж ещё не получил финальный статус.','status:payment-check'],
     ['Платёжный канал готовится','показывает безопасное состояние до активации ключей ЮKassa.','status:payment-channel-setup'],
+    ['Отказ от покупки','показывает подтверждение снятия резерва без отправки запроса.','status:order-cancel-confirm'],
     ['Оплата Эхо не прошла','показывает экран “Вас не услышат.”','status:echo-payment-failed'],
     ['Товар недоступен','показывает экран “Реликвия покинула поток.”','status:product-unavailable'],
     ['Каталог пуст','показывает экран “Поток замолчал.” без имитации подписки.','status:catalog-empty'],
@@ -25339,6 +25360,13 @@ function _ewActiveOrderPaymentCreateRouteUrl(){
   const sep = base.indexOf('?') === -1 ? '?' : '&';
   return base + sep + 'route=' + encodeURIComponent('payment/create');
 }
+function _ewActiveOrderCancelRouteUrl(){
+  if(typeof _ewAperturaRouteUrl === 'function') return _ewAperturaRouteUrl('checkout/cancel');
+  const base = String(typeof EW_APERTURA_API_URL === 'string' ? EW_APERTURA_API_URL : '').trim();
+  if(!base) return '';
+  const sep = base.indexOf('?') === -1 ? '?' : '&';
+  return base + sep + 'route=' + encodeURIComponent('checkout/cancel');
+}
 function _ewActiveOrderSafeText(value, max){
   const raw = String(value || '').trim();
   if(typeof safeText === 'function') return safeText(raw, {maxLength:max || 160});
@@ -25514,6 +25542,7 @@ function _ewActiveOrderStatusKey(rec){
   const os = String(rec.order_status || rec.status || '').toLowerCase();
   const ps = String(rec.payment_status || '').toLowerCase();
   if(os === 'expired' || _ewActiveOrderIsExpired(rec)) return 'order-cycle-expired';
+  if(os === 'canceled' || os === 'cancelled') return 'order-canceled';
   if(ps === 'succeeded') return 'order-paid';
   if(ps === 'waiting_for_capture') return 'order-payment-authorized';
   if(ps === 'pending') return 'order-payment-waiting';
@@ -25650,6 +25679,58 @@ async function _ewActiveOrderCheckStatus(){
     if(_ewShouldShowActiveOrderToast() && typeof showNotif === 'function') showNotif('// Apertura не получила актуальный статус. Показано последнее сохранённое состояние.', {contextual:true});
   }
 }
+async function _ewActiveOrderCancel(rec){
+  rec = rec || _ewActiveOrderRead();
+  if(!rec || !rec.order_id) throw new Error('active_order_missing');
+  if(!rec.status_token) throw new Error('status_token_missing');
+  const url = _ewActiveOrderCancelRouteUrl();
+  if(!url) throw new Error('checkout_cancel_route_missing');
+  const payload = { order_id: rec.order_id, reservation_id: rec.reservation_id || '', status_token: rec.status_token };
+  const options = { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, cache:'no-store', body:JSON.stringify(payload) };
+  let result;
+  if(typeof _ewFetchJsonWithTimeout === 'function') result = await _ewFetchJsonWithTimeout(url, options, 12000);
+  else{
+    const res = await fetch(url, options);
+    let data = null;
+    try{ data = await res.json(); }catch(_){ data = null; }
+    result = {res:res, data:data};
+  }
+  const res = result && result.res;
+  const body = result && result.data;
+  if(!(res && res.ok && body && body.ok === true)){
+    const err = new Error((body && body.error) || 'checkout_cancel_failed');
+    err.body = body;
+    err.httpStatus = res && res.status;
+    throw err;
+  }
+  return body;
+}
+async function _ewActiveOrderCancelFlow(){
+  const rec = _ewActiveOrderRead();
+  if(!rec){ showActiveOrderStatus(null); return; }
+  if(_ewActiveOrderIsExpired(rec)){ showActiveOrderStatus(rec, {key:'order-cycle-expired', source:'order-cancel'}); return; }
+  try{
+    showActiveOrderStatus(rec, {key:'order-canceling', source:'order-cancel'});
+    const result = await _ewActiveOrderCancel(rec);
+    _ewActiveOrderClear();
+    try{ localStorage.removeItem('ew:checkout-reservation:v1'); }catch(_){ }
+    try{ if(typeof refreshEchoWorldCatalog === 'function') refreshEchoWorldCatalog({manual:false}); }catch(_){ }
+    showAperturaStatus('order-canceled', {source:'order-cancel', html: _ewActiveOrderStatusHtml(rec)});
+    return result;
+  }catch(error){
+    console.warn('checkout/cancel failed:', error);
+    const code = String(error && error.body && error.body.error || error && error.code || error && error.message || '').toLowerCase();
+    if(code === 'payment_already_started' || code === 'order_already_paid' || code === 'payment_status_protected'){
+      showActiveOrderStatus(rec, {key:'order-cancel-denied', source:'order-cancel'});
+      return;
+    }
+    if(code === 'order_cycle_expired' || code === 'order_expired'){
+      showActiveOrderStatus(rec, {key:'order-cycle-expired', source:'order-cancel'});
+      return;
+    }
+    showAperturaStatus('architect-help', {source:'order-cancel'});
+  }
+}
 function bootActiveOrderStatusRestore(){
   const rec = _ewActiveOrderRead();
   if(!rec) return;
@@ -25717,6 +25798,9 @@ function inspectActiveOrderStatusPatch(){
       pay: typeof _ewActiveOrderGoPayment,
       createPayment: typeof _ewActiveOrderCreatePayment,
       paymentRoute: typeof _ewActiveOrderPaymentCreateRouteUrl,
+      cancel: typeof _ewActiveOrderCancel,
+      cancelFlow: typeof _ewActiveOrderCancelFlow,
+      cancelRoute: typeof _ewActiveOrderCancelRouteUrl,
       check: typeof _ewActiveOrderCheckStatus
     }
   };
@@ -26049,6 +26133,20 @@ function handleAperturaStatusAction(action, key){
   }
   if(action==='order-check-status'){
     if(typeof _ewActiveOrderCheckStatus === 'function') _ewActiveOrderCheckStatus();
+    return;
+  }
+  if(action==='order-cancel-ask'){
+    const rec = typeof _ewActiveOrderRead === 'function' ? _ewActiveOrderRead() : null;
+    if(typeof showActiveOrderStatus === 'function') showActiveOrderStatus(rec, {key:'order-cancel-confirm', source:'order-cancel-ask'});
+    return;
+  }
+  if(action==='order-cancel-keep'){
+    const rec = typeof _ewActiveOrderRead === 'function' ? _ewActiveOrderRead() : null;
+    if(typeof showActiveOrderStatus === 'function') showActiveOrderStatus(rec, {source:'order-cancel-keep'});
+    return;
+  }
+  if(action==='order-cancel-confirm'){
+    if(typeof _ewActiveOrderCancelFlow === 'function') _ewActiveOrderCancelFlow();
     return;
   }
   if(action==='close'){ closeAperturaStatus(); return; }
@@ -33679,6 +33777,33 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
       elevationShadow: root.getPropertyValue('--ew-modal-elevation-shadow').trim(),
       sampleSelector: sample ? (sample.id ? '#' + sample.id : '.' + Array.from(sample.classList || []).join('.')) : null,
       sampleBoxShadow: sample ? getComputedStyle(sample).boxShadow : null
+    };
+  };
+})();
+</script>
+
+
+<script id="ew-active-order-cancel-flow-v1">
+/* Phase 2E.1 · ACTIVE ORDER CANCEL FLOW
+   Adds a user-confirmed cancellation path for unpaid active orders.
+   APERTURA STATUS uses the existing pivot transition; this layer only wires
+   actions and exposes a diagnostic helper. */
+(function(){
+  const PATCH = 'Phase 2E.1 · ACTIVE ORDER CANCEL FLOW';
+  window.inspectActiveOrderCancelFlow = function(){
+    const rec = typeof _ewActiveOrderRead === 'function' ? _ewActiveOrderRead() : null;
+    return {
+      ok: typeof _ewActiveOrderCancel === 'function' &&
+          typeof _ewActiveOrderCancelFlow === 'function' &&
+          typeof _ewActiveOrderCancelRouteUrl === 'function',
+      patch: PATCH,
+      cancelRoute: typeof _ewActiveOrderCancelRouteUrl === 'function' ? _ewActiveOrderCancelRouteUrl() : '',
+      activeOrder: rec,
+      states: {
+        confirm: (typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['order-cancel-confirm']),
+        canceled: (typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['order-canceled']),
+        denied: (typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['order-cancel-denied'])
+      }
     };
   };
 })();

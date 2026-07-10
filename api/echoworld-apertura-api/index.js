@@ -1501,6 +1501,180 @@ async function refreshCheckoutOrderPaymentFromYooKassa(order) {
   }
 }
 
+function checkoutCancelPayload(event) {
+  const body = parseBody(event);
+  const query = getQuery(event);
+  return {
+    orderId: cleanScalar(body.order_id || body.orderId || body.id || query.order_id || query.orderId || query.id || "", 120),
+    reservationId: cleanScalar(body.reservation_id || body.reservationId || query.reservation_id || query.reservationId || "", 160),
+    statusToken: cleanScalar(body.status_token || body.statusToken || body.token || query.status_token || query.statusToken || query.token || "", 160)
+  };
+}
+
+function isCheckoutCancelPaymentSafe(order) {
+  const paymentStatus = String(order && order.payment_status || "").trim().toLowerCase();
+  const paymentId = cleanScalar(order && order.payment_id, 180);
+  if (!paymentId && (paymentStatus === "not_started" || paymentStatus === "canceled" || paymentStatus === "cancelled" || paymentStatus === "failed" || !paymentStatus)) return true;
+  return false;
+}
+
+async function cancelCheckoutOrderInYdb(order, item, lock) {
+  const orderId = cleanScalar(order && order.id, 120);
+  const reservationId = cleanScalar(order && order.reservation_id, 160);
+  const productId = safeProductId(item && item.product_id || lock && lock.product_id || "");
+
+  if (!orderId || !reservationId || !productId) {
+    return { released:false, reason:"missing_identity" };
+  }
+
+  const orderQuery = `
+    UPDATE product_orders
+    SET
+      status = "canceled",
+      payment_status = "canceled",
+      updated_at = CurrentUtcTimestamp()
+    WHERE
+      id = ${yqlUtf8(orderId)}
+      AND status != "paid"
+      AND (
+        (payment_id = "" AND payment_status = "not_started")
+        OR payment_status = "canceled"
+        OR payment_status = "cancelled"
+        OR payment_status = "failed"
+      );
+  `;
+
+  const reservationQuery = `
+    UPDATE product_reservations
+    SET
+      status = "canceled",
+      updated_at = CurrentUtcTimestamp()
+    WHERE
+      id = ${yqlUtf8(reservationId)}
+      AND status IN ("active", "converted");
+  `;
+
+  const lockQuery = `
+    DELETE FROM product_reservation_locks
+    WHERE
+      product_id = ${yqlUtf8(productId)}
+      AND reservation_id = ${yqlUtf8(reservationId)}
+      AND status IN ("active", "converted");
+  `;
+
+  await ydbQuery(orderQuery);
+  await ydbQuery(reservationQuery);
+  await ydbQuery(lockQuery);
+
+  return { released:true, product_id:productId, reservation_id:reservationId };
+}
+
+function checkoutCancelResponse(order, item, product, releaseResult, options = {}) {
+  const statusToken = makeOrderStatusToken(order);
+  return {
+    ok: true,
+    route: "POST /checkout/cancel",
+    schema: "echoworld.checkout.cancel.v1",
+    already_canceled: Boolean(options.alreadyCanceled),
+    order: {
+      id: order.id,
+      order_number: order.order_number,
+      status: "canceled",
+      reservation_id: order.reservation_id,
+      subtotal_rub: toNumber(order.subtotal_rub_text),
+      delivery_price_rub: toNumber(order.delivery_price_rub_text),
+      total_rub: toNumber(order.total_rub_text),
+      payment_status: "canceled",
+      payment_provider: order.payment_provider || "",
+      payment_id: order.payment_id || "",
+      status_token: statusToken,
+      public_status_token: statusToken,
+      updated_at: nowIso()
+    },
+    item: item ? {
+      id: item.id,
+      order_id: item.order_id,
+      product_id: item.product_id,
+      title: item.title_snapshot,
+      price_rub: toNumber(item.price_rub_snapshot_text)
+    } : null,
+    product: product ? {
+      product_id: product.product_id,
+      relic_code: product.relic_code,
+      title: product.title,
+      status: product.status,
+      price_rub: toNumber(product.price_rub_text),
+      catalog_status_label: product.catalog_status_label || ""
+    } : null,
+    reservation: {
+      reservation_id: order.reservation_id,
+      status: "canceled",
+      released: Boolean(releaseResult && releaseResult.released)
+    },
+    state: {
+      key: "order-canceled",
+      can_pay: false,
+      can_check: true
+    },
+    ts: nowIso()
+  };
+}
+
+async function checkoutCancel(event) {
+  const payload = checkoutCancelPayload(event);
+  if (!payload.orderId) {
+    return json(400, {ok:false, route:"POST /checkout/cancel", schema:"echoworld.checkout.cancel.v1", error:"missing_order_id", ts:nowIso()});
+  }
+
+  const order = await readCheckoutOrderById(payload.orderId);
+  if (!order) {
+    return json(404, {ok:false, route:"POST /checkout/cancel", schema:"echoworld.checkout.cancel.v1", error:"order_not_found", ts:nowIso()});
+  }
+  if (payload.reservationId && payload.reservationId !== order.reservation_id) {
+    return json(403, {ok:false, route:"POST /checkout/cancel", schema:"echoworld.checkout.cancel.v1", error:"reservation_mismatch", ts:nowIso()});
+  }
+  if (!verifyOrderStatusToken(order, payload.statusToken)) {
+    return json(403, {ok:false, route:"POST /checkout/cancel", schema:"echoworld.checkout.cancel.v1", error:"invalid_status_token", ts:nowIso()});
+  }
+
+  const item = await readCheckoutOrderItem(order.id);
+  const productId = item && item.product_id || "";
+  const lock = await readCheckoutReservationLock(productId, order.reservation_id);
+  const product = productId ? await readReservationProduct(productId) : null;
+  const orderStatus = String(order.status || "").trim().toLowerCase();
+
+  if (orderStatus === "canceled" || orderStatus === "cancelled") {
+    return json(200, checkoutCancelResponse(order, item, product, {released:!lock}, {alreadyCanceled:true}));
+  }
+
+  if (orderStatus === "paid" || String(order.payment_status || "").toLowerCase() === "succeeded") {
+    return json(409, {ok:false, route:"POST /checkout/cancel", schema:"echoworld.checkout.cancel.v1", error:"order_already_paid", ts:nowIso()});
+  }
+
+  if (!isCheckoutCancelPaymentSafe(order)) {
+    return json(409, {
+      ok:false,
+      route:"POST /checkout/cancel",
+      schema:"echoworld.checkout.cancel.v1",
+      error:"payment_already_started",
+      payment_status: order.payment_status || "",
+      has_payment_id: Boolean(order.payment_id),
+      ts:nowIso()
+    });
+  }
+
+  if (lock) {
+    const lifecycle = await expireCheckoutOrderIfSafe(order, lock);
+    if (lifecycle.expired) {
+      return json(409, {ok:false, route:"POST /checkout/cancel", schema:"echoworld.checkout.cancel.v1", error:"order_cycle_expired", lifecycle, ts:nowIso()});
+    }
+  }
+
+  const releaseResult = await cancelCheckoutOrderInYdb(order, item, lock);
+  const canceledOrder = Object.assign({}, order, {status:"canceled", payment_status:"canceled"});
+  return json(200, checkoutCancelResponse(canceledOrder, item, product, releaseResult));
+}
+
 function paymentCreatePayload(event) {
   const body = parseBody(event);
   const query = getQuery(event);
@@ -2181,6 +2355,10 @@ exports.handler = async function handler(event) {
       return await checkoutStatus(event);
     }
 
+    if (method === "POST" && (route === "checkout/cancel" || route === "order/cancel" || route === "reservation/cancel")) {
+      return await checkoutCancel(event);
+    }
+
     if (method === "POST" && (route === "payment/create" || route === "payments/create")) {
       return await paymentCreate(event);
     }
@@ -2204,6 +2382,7 @@ exports.handler = async function handler(event) {
         "POST ?route=reservation/create",
         "POST ?route=checkout/create",
         "GET ?route=checkout/status&order_id=ord_...&status_token=...",
+        "POST ?route=checkout/cancel",
         "POST ?route=payment/create"
       ],
       ts: nowIso()
