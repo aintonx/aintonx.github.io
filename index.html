@@ -35103,5 +35103,62 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
+<!-- Phase 2E.7g · ATTR CONDENSATE BADGE RADIUS -->
+<style id="ew-attr-condensate-radius-v1">
+/*
+  Phase 2E.7g · ATTR CONDENSATE BADGE RADIUS
+  Scope: only the containers that hold the condensate/attributes formation note.
+  No colors, backgrounds, borders, shadows, layout, scroll, mobile, or JS flow changes.
+*/
+.attr-drum-header{
+  border-radius: 16px;
+}
+.attr-result-panel{
+  border-radius: 16px;
+}
+.attr-result-head{
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+</style>
+<script id="ew-attr-condensate-radius-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7g · ATTR CONDENSATE BADGE RADIUS';
+
+  function readRadius(selector){
+    const el = document.querySelector(selector);
+    if(!el) return { selector, found:false };
+    const cs = getComputedStyle(el);
+    return {
+      selector,
+      found: true,
+      borderTopLeftRadius: cs.borderTopLeftRadius,
+      borderTopRightRadius: cs.borderTopRightRadius,
+      borderBottomRightRadius: cs.borderBottomRightRadius,
+      borderBottomLeftRadius: cs.borderBottomLeftRadius
+    };
+  }
+
+  window.inspectAttrCondensateBadgeRadiusPatch = function(){
+    const style = document.getElementById('ew-attr-condensate-radius-v1');
+    const txt = style ? style.textContent : '';
+    const drumHeader = readRadius('.attr-drum-header');
+    const resultPanel = readRadius('.attr-result-panel');
+    const resultHead = readRadius('.attr-result-head');
+    const css = txt.replace(/\/\*[\s\S]*?\*\//g, '');
+    const scopeSafe = !/background|box-shadow|color\s*:|border\s*:|overflow|height\s*:|width\s*:|position|display/.test(css.replace(/border-radius|border-top-left-radius|border-top-right-radius/g, ''));
+
+    return {
+      ok: Boolean(style && drumHeader.found && resultPanel.found && resultHead.found && scopeSafe),
+      patch: PATCH,
+      scope: 'Only rounding for the condensate/attributes formation containers.',
+      themeSafe: 'No colors, backgrounds, borders, shadows, or theme variables are changed.',
+      layoutSafe: 'No width, height, overflow, scroll, display, or position rules are changed.',
+      radius: { drumHeader, resultPanel, resultHead }
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
