@@ -57,7 +57,9 @@ html[data-theme="light"].ew-first-boot-pending body{
   pointer-events:auto;
   isolation:isolate;
   contain:layout paint style;
-  animation:ewBootShellIn .22s steps(2,end) both;
+  /* Phase 2E.8f · the surface is opaque from its very first frame.
+     The system flash lives on ::after, so site content can never leak through. */
+  animation:none;
 }
 html[data-theme="light"] #ewFirstBoot{
   background:
@@ -95,7 +97,11 @@ html[data-theme="light"] #ewFirstBoot::before{
 }
 #ewFirstBoot.ew-boot-closing{
   pointer-events:none;
-  animation:ewBootShellOut .28s steps(3,end) forwards;
+  /* Card clears first; the solid system surface then releases as one layer. */
+  animation:ewBootShellOut .16s cubic-bezier(.22,1,.36,1) .09s forwards;
+}
+#ewFirstBoot.ew-boot-closing .ew-boot-card{
+  animation:ewBootCardOut .11s cubic-bezier(.4,0,1,1) forwards;
 }
 html.ew-first-boot-ready #ewFirstBoot{
   opacity:0;
@@ -233,8 +239,8 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   box-shadow:0 0 10px rgba(54,223,154,.62);
 }
 @keyframes ewBootSystemFlash{0%{opacity:.34}45%{opacity:0}62%{opacity:.11}100%{opacity:0}}
-@keyframes ewBootShellIn{0%{opacity:.16;filter:brightness(1.32) contrast(1.14)}48%{opacity:1;filter:brightness(1.04)}100%{opacity:1;filter:none}}
-@keyframes ewBootShellOut{0%{opacity:1;filter:none;transform:translateX(0)}24%{opacity:.94;filter:contrast(1.12);transform:translateX(-1px)}42%{opacity:.80;clip-path:inset(2% 0 0 0);transform:translateX(1px)}70%{opacity:.38;clip-path:inset(0 0 7% 0);transform:translateX(0)}100%{opacity:0;clip-path:inset(49% 0 49% 0);filter:contrast(1.16)}}
+@keyframes ewBootShellOut{0%{opacity:1}100%{opacity:0}}
+@keyframes ewBootCardOut{0%{opacity:1;transform:translate3d(0,0,0) scale(1)}100%{opacity:0;transform:translate3d(0,-3px,0) scale(.992)}}
 @keyframes ewBootCardIn{0%{opacity:0;transform:translateY(5px) scale(.992)}58%{opacity:1;transform:translateY(-1px)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @media (max-width:720px){
   #ewFirstBoot{padding:16px;}
@@ -268,7 +274,7 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   var FONT_WAIT = 680;
   var SEGMENT_FAST_MS = 62;
   var FINAL_SEGMENT_MS = 56;
-  var EXIT_MS = 280;
+  var EXIT_MS = 250;
   var EXIT_CLEANUP_MS = EXIT_MS + 40;
   var FRAME_FALLBACK_MS = 96;
   var FIRST_PAINT_FALLBACK_MS = 180;
@@ -19353,14 +19359,89 @@ const VISH_FACES={
  '01-0010':['Character/popit-boy.webp','Character/popiit-girl.webp'],
  '01-0011':['Character/grib-boy.webp','Character/grib-girl.webp']
 };
-/* Предзагрузка картинок глитча в простое — чтобы спойлер открывался мгновенно,
-   а не догружался при клике. Низкий приоритет, не мешает основному контенту. */
+/* Phase 2E.9 · MODAL FIRST-OPEN STABILITY
+   Keep compressed Vish assets retained at low priority, then decode only the
+   selected pair on hover/pointerdown. This avoids decoding 24 large WebPs at
+   once while removing the first-tap decode spike. */
+const VISH_FACE_IMAGE_CACHE=new Map();
+function _ewPrimeVishFace(src,decodeNow){
+  if(!src) return Promise.resolve(null);
+  let rec=VISH_FACE_IMAGE_CACHE.get(src);
+  if(!rec){
+    const img=new Image();
+    try{img.fetchPriority='low';}catch(e){}
+    img.decoding='async';
+    img.src=src;
+    rec={img:img,decoded:false,decodePromise:null};
+    VISH_FACE_IMAGE_CACHE.set(src,rec);
+  }
+  if(!decodeNow || rec.decoded) return Promise.resolve(rec.img);
+  if(!rec.decodePromise){
+    rec.decodePromise=Promise.resolve().then(function(){
+      if(typeof rec.img.decode==='function') return rec.img.decode();
+      if(rec.img.complete) return null;
+      return new Promise(function(resolve){
+        rec.img.addEventListener('load',resolve,{once:true});
+        rec.img.addEventListener('error',resolve,{once:true});
+      });
+    }).then(function(){rec.decoded=true;return rec.img;}).catch(function(){
+      rec.decodePromise=null;
+      return rec.img;
+    });
+  }
+  return rec.decodePromise;
+}
+function _ewPrimeVishPair(product,decodeNow){
+  const pair=product&&VISH_FACES[product.id];
+  if(!pair) return Promise.resolve([]);
+  return Promise.all(pair.map(function(src){return _ewPrimeVishFace(src,decodeNow);}));
+}
 (function preloadVishFaces(){
-  const run=()=>{ try{ Object.values(VISH_FACES).forEach(pair=>pair.forEach(src=>{
-    const im=new Image(); try{im.fetchPriority='low';}catch(e){} im.decoding='async'; im.src=src;
-  })); }catch(e){} };
+  const run=()=>{try{Object.values(VISH_FACES).forEach(pair=>pair.forEach(src=>_ewPrimeVishFace(src,false)));}catch(e){}};
   if(document.readyState==='complete') ('requestIdleCallback' in window?requestIdleCallback(run,{timeout:3000}):setTimeout(run,1200));
   else window.addEventListener('load',()=>('requestIdleCallback' in window?requestIdleCallback(run,{timeout:3000}):setTimeout(run,1200)),{once:true});
+
+  function primeFromCardEvent(event){
+    try{
+      const target=event&&event.target;
+      const card=target&&target.closest?target.closest('.pcard'):null;
+      if(!card) return;
+      const index=typeof getCatalogProductIndex==='function'?getCatalogProductIndex(card):-1;
+      const product=index>=0&&Array.isArray(products)?products[index]:null;
+      if(!product) return;
+      _ewPrimeVishPair(product,true);
+      const preview=card.querySelector('img');
+      if(preview&&typeof preview.decode==='function') preview.decode().catch(function(){});
+    }catch(e){}
+  }
+  document.addEventListener('pointerdown',primeFromCardEvent,{capture:true,passive:true});
+  let hoverPrimeTimer=0;
+  let hoverPrimeCard=null;
+  document.addEventListener('pointerover',function(event){
+    const target=event&&event.target;
+    const card=target&&target.closest?target.closest('.pcard'):null;
+    if(!card||card.dataset.ewVishPrimed==='1'||event.pointerType==='touch') return;
+    if(hoverPrimeCard===card&&hoverPrimeTimer) return;
+    if(hoverPrimeTimer) clearTimeout(hoverPrimeTimer);
+    hoverPrimeCard=card;
+    hoverPrimeTimer=setTimeout(function(){
+      hoverPrimeTimer=0;
+      hoverPrimeCard=null;
+      if(card.dataset.ewVishPrimed==='1') return;
+      card.dataset.ewVishPrimed='1';
+      primeFromCardEvent({target:card});
+    },110);
+  },{passive:true});
+  document.addEventListener('pointerout',function(event){
+    const target=event&&event.target;
+    const card=target&&target.closest?target.closest('.pcard'):null;
+    if(!card||hoverPrimeCard!==card) return;
+    const next=event.relatedTarget;
+    if(next&&card.contains(next)) return;
+    if(hoverPrimeTimer) clearTimeout(hoverPrimeTimer);
+    hoverPrimeTimer=0;
+    hoverPrimeCard=null;
+  },{passive:true});
 })();
 (function injectVishGlitchCSS(){
   if(document.getElementById('vish-glitch-style'))return;
@@ -19405,23 +19486,25 @@ const VISH_FACES={
 function _vishSeenKey(id){return 'ew:vish-seen:'+id;}
 function maybePlayVishGlitch(p){
   try{
-    if(!p)return;
-    const faces=VISH_FACES[p.id];if(!faces)return;
-    if(localStorage.getItem(_vishSeenKey(p.id)))return;
+    if(!p)return false;
+    const faces=VISH_FACES[p.id];if(!faces)return false;
+    if(localStorage.getItem(_vishSeenKey(p.id)))return false;
     localStorage.setItem(_vishSeenKey(p.id),'1'); // один раз и навсегда
     const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-    new Image().src=faces[0];new Image().src=faces[1]; // preload
+    _ewPrimeVishPair(p,true);
+    const relicOverlay=document.getElementById('moverlay');
     const feed=document.createElement('div');feed.className='gx-feed';
     feed.innerHTML='<div class="gx-screen"><div class="gx-static"></div></div><div class="gx-cap">// СИГНАЛ APERTURA · НЕСТАБИЛЕН</div>';
     const scr=feed.querySelector('.gx-screen');
     scr.style.setProperty('--face','url("'+faces[0]+'")');
     document.body.appendChild(feed);
+    if(relicOverlay) relicOverlay.classList.add('ew-vish-settled');
     if(reduce){
       feed.classList.add('live','reduce');
       setTimeout(()=>scr.style.setProperty('--face','url("'+faces[1]+'")'),1100);
       setTimeout(()=>feed.classList.remove('live'),2300);
       setTimeout(()=>feed.remove(),2800);
-      return;
+      return true;
     }
     requestAnimationFrame(()=>feed.classList.add('live','boot'));
     setTimeout(()=>feed.classList.remove('boot'),540);
@@ -19430,7 +19513,8 @@ function maybePlayVishGlitch(p){
     setTimeout(()=>feed.classList.add('collapse'),2480);                            // глитч-распад экрана (сигнал теряется)
     setTimeout(()=>feed.classList.remove('live'),2900);
     setTimeout(()=>feed.remove(),3150);
-  }catch(e){}
+    return true;
+  }catch(e){return false;}
 }
 /* ===== Диагностика для тестов после деплоя. Открой сайт с #diag в адресе
    (обычные посетители не увидят) — покажет панель: загрузились ли картинки
@@ -20391,6 +20475,11 @@ function denyLockedProduct(i, card){
   }
 }
 function openModal(i){
+  const pendingOverlay=document.getElementById('moverlay');
+  /* The decode gate is deliberately short, but it must still behave as a
+     single atomic open. Ignore a second tap until the prepared frame lands;
+     otherwise scroll locks and first-only signal feeds can be duplicated. */
+  if(pendingOverlay&&pendingOverlay.classList.contains('ew-sheet-preopen')) return;
   const p=products[i];
   if(isProductLocked(p)){
     denyLockedProduct(i, getCatalogCardByIndex(i));
@@ -20473,7 +20562,7 @@ function openModal(i){
   const _productOverlay = document.getElementById('moverlay');
   const _productPanel = document.getElementById('modalPanel');
   if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(_productOverlay);
-  _productOverlay.classList.remove('closing');
+  _productOverlay.classList.remove('closing','ew-vish-settled');
   if(typeof _ewPrepareProductSheetFirstFrame === 'function'){
     _ewPrepareProductSheetFirstFrame(_productOverlay, _productPanel);
   }else{
@@ -20502,11 +20591,43 @@ function openModal(i){
     initTopSwipeClose(mp, closeModal);
   }
   // Кастомный side-индикатор скролла — pulse 2s при открытии
-  _setupModalScrollHint();
+  _setupModalScrollHintAfterEntry();
   // Фикс блокировки скролла после ввода в текстарии ЭХО (iOS)
   const mp = document.getElementById('modalPanel');
   _setupModalScrollSafeBlur(mp);
   _setupModalUnstickAfterBlur(mp, 'textarea, input', 'modal-open');
+}
+
+function _setupModalScrollHintAfterEntry(){
+  const mp = document.getElementById('modalPanel');
+  const overlay = document.getElementById('moverlay');
+  if(!mp || !overlay) return;
+  _cancelModalScrollHintEntry(mp);
+  let finished = false;
+  function finish(event){
+    if(finished || (event && event.target !== mp)) return;
+    finished = true;
+    if(mp._ewScrollHintEntryTimer) clearTimeout(mp._ewScrollHintEntryTimer);
+    mp._ewScrollHintEntryTimer = 0;
+    mp.removeEventListener('animationend', finish);
+    mp._ewScrollHintEntryListener = null;
+    if(overlay.classList.contains('open')) _setupModalScrollHint();
+  }
+  mp._ewScrollHintEntryListener = finish;
+  mp.addEventListener('animationend', finish);
+  /* The first-only Vish feed covers the product panel for ~3.15s. Defer
+     layout reads until that GPU-heavy scene is gone; normal entries settle
+     on their own animationend with a short safety timeout. */
+  const fallbackMs = overlay.classList.contains('ew-vish-settled') ? 3220 : 720;
+  mp._ewScrollHintEntryTimer = setTimeout(function(){ finish(null); }, fallbackMs);
+}
+
+function _cancelModalScrollHintEntry(mp){
+  if(!mp) return;
+  if(mp._ewScrollHintEntryTimer) clearTimeout(mp._ewScrollHintEntryTimer);
+  if(mp._ewScrollHintEntryListener) mp.removeEventListener('animationend', mp._ewScrollHintEntryListener);
+  mp._ewScrollHintEntryTimer = 0;
+  mp._ewScrollHintEntryListener = null;
 }
 
 function _setupModalScrollHint(){
@@ -20640,6 +20761,8 @@ function _cleanupModal(){
   const ov    = document.getElementById('moverlay');
   const panel = document.getElementById('modalPanel');
   if(!ov||!panel) return;
+  _cancelModalScrollHintEntry(panel);
+  if(typeof _ewCancelProductSheetPreopen === 'function') _ewCancelProductSheetPreopen(ov, panel);
   closeModalFirstFormHint();
   /* 0. Мгновенно замораживаем все анимации ДО любых DOM-изменений.
      Это убирает «внезапное появление» секций и scroll-line в момент
@@ -20651,6 +20774,7 @@ function _cleanupModal(){
   ov.classList.remove('open');
   ov.classList.remove('closing');
   ov.classList.remove('ew-sheet-preopen');
+  ov.classList.remove('ew-vish-settled');
   if(ov._ewSheetOpenRaf){ cancelAnimationFrame(ov._ewSheetOpenRaf); ov._ewSheetOpenRaf = 0; }
   if(ov._ewSheetOpenRaf2){ cancelAnimationFrame(ov._ewSheetOpenRaf2); ov._ewSheetOpenRaf2 = 0; }
   /* 2. Сбрасываем все inline-стили анимации */
@@ -20682,7 +20806,15 @@ function _cleanupModal(){
 function closeModal(callback){
   const ov    = document.getElementById('moverlay');
   const panel = document.getElementById('modalPanel');
-  if(!ov||!ov.classList.contains('open')) {
+  if(!ov){
+    if(typeof callback === 'function') callback();
+    return;
+  }
+  /* The image-decode gate owns a real modal lifecycle: scroll is already
+     locked even though .open has not landed yet. A backdrop tap during that
+     short window must invalidate the pending token and release the lock. */
+  if(!ov.classList.contains('open')){
+    if(ov.classList.contains('ew-sheet-preopen')) _cleanupModal();
     if(typeof callback === 'function') callback();
     return;
   }
@@ -20767,8 +20899,11 @@ function _quickHideModal(){
   const panel = document.getElementById('modalPanel');
   if(!ov) return;
   if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
+  if(typeof _ewCancelProductSheetPreopen === 'function') _ewCancelProductSheetPreopen(ov, panel);
   ov.classList.remove('open');
   ov.classList.remove('closing');
+  ov.classList.remove('ew-vish-settled');
+  _cancelModalScrollHintEntry(panel);
   document.body.classList.remove('modal-open');
   // Безопасно чистим флаг blur fade на случай если quick hide вызван
   // прямо после старта закрытия (directCheckout) — иначе чекаут
@@ -21197,14 +21332,20 @@ function renderCheckoutEchoControls(){
   const section=document.getElementById('chkEchoSection');
   const list=document.getElementById('chkEchoList');
   if(!section || !list) return;
+  _chkEchoCloseAllEditors();
   __chkEchoActive = { itemIdx: null, slotIdx: null };
   if(!cart.length){
     section.style.display='none';
     list.innerHTML='';
+    list.dataset.ewRenderSignature='empty';
     return;
   }
   section.style.display='block';
   normalizeCartEchoData();
+  const renderSignature=JSON.stringify(cart.map(function(item){
+    return [item.id||'',item.name||'',item.power||'',Array.isArray(item.echoes)?item.echoes:[],getEchoSlotCount(item)];
+  }));
+  if(list.dataset.ewRenderSignature===renderSignature) return;
   let html='';
   cart.forEach((item,itemIdx)=>{
     const echoes=Array.isArray(item.echoes) ? item.echoes : [];
@@ -21265,6 +21406,7 @@ function renderCheckoutEchoControls(){
     </div>`;
   });
   list.innerHTML=html;
+  list.dataset.ewRenderSignature=renderSignature;
 }
 function openCheckoutEchoSlot(itemIdx, slotIdx, btn){
   const item = cart[itemIdx];
@@ -28419,6 +28561,19 @@ async function submitPreorder(){
     const canvas=document.getElementById('swipeCanvas');
     if(!thumb||!fill||!label) return;
 
+    if(canvas && canvas.dataset.ewContextWarmScheduled!=='1'){
+      canvas.dataset.ewContextWarmScheduled='1';
+      const warmCanvasContext=function(){
+        try{ canvas.getContext('2d'); canvas.dataset.ewContextWarm='1'; }catch(e){}
+      };
+      const scheduleWarm=function(){
+        if('requestIdleCallback' in window) requestIdleCallback(warmCanvasContext,{timeout:2200});
+        else setTimeout(warmCanvasContext,700);
+      };
+      if(document.readyState==='complete') scheduleWarm();
+      else window.addEventListener('load',scheduleWarm,{once:true});
+    }
+
     const isMobile=()=>window.innerWidth<=960;
     let dragging=false,startX=0,curX=0,maxX=0,progress=0,done=false;
     let captchaPending=false;
@@ -33734,6 +33889,7 @@ body.modal-open .pcard.reading::before {
 (function(){
   function clearProductSheetPreopen(overlay, panel){
     if(!overlay) return;
+    overlay._ewSheetOpenToken = (overlay._ewSheetOpenToken || 0) + 1;
     if(overlay._ewSheetOpenRaf){
       cancelAnimationFrame(overlay._ewSheetOpenRaf);
       overlay._ewSheetOpenRaf = 0;
@@ -33751,9 +33907,15 @@ body.modal-open .pcard.reading::before {
     }
   }
 
+  window._ewCancelProductSheetPreopen = function(overlay, panel){
+    clearProductSheetPreopen(overlay, panel);
+    return true;
+  };
+
   window._ewPrepareProductSheetFirstFrame = function(overlay, panel){
     if(!overlay) return false;
     clearProductSheetPreopen(overlay, panel);
+    const openToken = overlay._ewSheetOpenToken;
     overlay.classList.remove('open', 'closing');
     overlay.classList.add('ew-sheet-preopen');
     if(panel){
@@ -33765,46 +33927,106 @@ body.modal-open .pcard.reading::before {
          не успел показать финальное состояние панели на первом paint. */
       void panel.offsetHeight;
     }
-    overlay._ewSheetOpenRaf = requestAnimationFrame(function(){
-      overlay._ewSheetOpenRaf = 0;
-      /* Даём браузеру один реальный кадр с panel строго ниже viewport.
-         Это микрозадержка ~1 frame, но она убирает старт из промежуточной
-         точки и делает вход симметричным выходу вниз. */
-      overlay._ewSheetOpenRaf2 = requestAnimationFrame(function(){
-        overlay._ewSheetOpenRaf2 = 0;
-        if(!overlay.classList.contains('ew-sheet-preopen')) return;
-        overlay.classList.remove('ew-sheet-preopen');
-        if(panel){
-          panel.style.animation = '';
-          panel.style.transform = '';
-          panel.style.opacity = '';
-          panel.style.filter = '';
-        }
-        overlay.classList.add('open');
+    function schedulePreparedFrames(){
+      if(overlay._ewSheetOpenToken !== openToken || !overlay.classList.contains('ew-sheet-preopen')) return;
+      overlay._ewSheetOpenRaf = requestAnimationFrame(function(){
+        overlay._ewSheetOpenRaf = 0;
+        if(overlay._ewSheetOpenToken !== openToken) return;
+        /* Даём браузеру один реальный кадр с panel строго ниже viewport.
+           Это микрозадержка ~1 frame, но она убирает старт из промежуточной
+           точки и делает вход симметричным выходу вниз. */
+        overlay._ewSheetOpenRaf2 = requestAnimationFrame(function(){
+          overlay._ewSheetOpenRaf2 = 0;
+          if(overlay._ewSheetOpenToken !== openToken || !overlay.classList.contains('ew-sheet-preopen')) return;
+          overlay.classList.remove('ew-sheet-preopen');
+          if(panel){
+            panel.style.animation = '';
+            panel.style.transform = '';
+            panel.style.opacity = '';
+            panel.style.filter = '';
+          }
+          overlay.classList.add('open');
+        });
       });
-    });
+    }
+    function scheduleAfterSignalCover(){
+      /* The first-only APERTURA feed fades its opaque cover in for 180ms.
+         Let that cover settle before snapping the hidden product panel to
+         its final state, so no sharp panel frame can show through the fade. */
+      if(overlay.classList.contains('ew-vish-settled')){
+        setTimeout(schedulePreparedFrames, 190);
+      }else{
+        schedulePreparedFrames();
+      }
+    }
+    const modalImage = panel && panel.querySelector ? panel.querySelector('#mimg') : null;
+    const decodeReady = modalImage && modalImage._ewModalDecodePromise;
+    if(decodeReady && typeof decodeReady.then === 'function'){
+      Promise.race([
+        decodeReady,
+        new Promise(function(resolve){ setTimeout(resolve, 110); })
+      ]).then(scheduleAfterSignalCover).catch(scheduleAfterSignalCover);
+    }else{
+      Promise.resolve().then(scheduleAfterSignalCover);
+    }
     return true;
   };
 
   const decoded = new Set();
   window._ewWarmProductModalImage = function(img, src){
-    if(!img || !src) return;
+    if(!img || !src) return Promise.resolve(false);
+    if(typeof img._ewModalDecodeCancel === 'function') img._ewModalDecodeCancel();
+    const requestToken = (img._ewModalDecodeToken || 0) + 1;
+    img._ewModalDecodeToken = requestToken;
+    let requestedHref = src;
+    try{ requestedHref = new URL(src, document.baseURI).href; }catch(_){ }
     try{ img.decoding = 'async'; }catch(_){ }
     try{ img.loading = 'eager'; }catch(_){ }
     try{ img.fetchPriority = 'high'; }catch(_){ }
-    if(decoded.has(src)) return;
-    const mark = function(){ decoded.add(src); };
-    try{
-      if(img.complete && typeof img.decode === 'function'){
-        img.decode().then(mark).catch(function(){ decoded.delete(src); });
-      }else{
-        img.addEventListener('load', function(){
-          if(typeof img.decode === 'function') img.decode().then(mark).catch(mark);
-          else mark();
-        }, {once:true});
-        img.addEventListener('error', function(){ decoded.delete(src); }, {once:true});
+    if(decoded.has(src)){
+      img._ewModalDecodePromise = Promise.resolve(true);
+      return img._ewModalDecodePromise;
+    }
+    const ready = new Promise(function(resolve){
+      let settled = false;
+      let onLoad = null;
+      let onError = null;
+      function cleanup(){
+        if(onLoad) img.removeEventListener('load', onLoad);
+        if(onError) img.removeEventListener('error', onError);
+        if(img._ewModalDecodeCancel === cancel) img._ewModalDecodeCancel = null;
       }
-    }catch(_){ }
+      function finish(ok){
+        if(settled) return;
+        settled = true;
+        cleanup();
+        const currentSource = img.currentSrc || img.src || '';
+        const isCurrent = img._ewModalDecodeToken === requestToken && (!currentSource || currentSource === requestedHref);
+        const succeeded = !!ok && isCurrent;
+        if(succeeded) decoded.add(src);
+        else decoded.delete(src);
+        resolve(succeeded);
+      }
+      function cancel(){ finish(false); }
+      function decodeLoaded(){
+        try{
+          if(typeof img.decode === 'function') img.decode().then(function(){finish(true);}).catch(function(){finish(false);});
+          else finish(true);
+        }catch(_){ finish(false); }
+      }
+      img._ewModalDecodeCancel = cancel;
+      try{
+        if(img.complete && img.naturalWidth > 0) decodeLoaded();
+        else{
+          onLoad = decodeLoaded;
+          onError = function(){finish(false);};
+          img.addEventListener('load',onLoad,{once:true});
+          img.addEventListener('error',onError,{once:true});
+        }
+      }catch(_){ finish(false); }
+    });
+    img._ewModalDecodePromise = ready;
+    return ready;
   };
 
   /* Низкоприоритетная подготовка уже отрисованных карточек: не грузим
@@ -36832,6 +37054,50 @@ window.inspectPwaMobileParityRootFix = function(){
     }
     result.ok = Boolean(result.indexPrepaintTheme && result.shareChecked === 24 && result.shareMinimal && result.shareOldShellAbsent && result.failures.length === 0);
     return result;
+  };
+})();
+</script>
+
+<style id="ew-modal-first-open-stability-v1">
+/* Phase 2E.9 · MODAL FIRST-OPEN STABILITY
+   Motion geometry and timing stay unchanged. The product layer is promoted
+   during its existing preopen frame; during the first-only Vish feed it is
+   settled once behind the fullscreen signal instead of running a second,
+   invisible sheet animation in parallel. */
+.moverlay.ew-sheet-preopen #modalPanel {
+  will-change: transform !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+.moverlay.ew-sheet-preopen {
+  pointer-events: auto !important;
+}
+.moverlay.open:not(.closing).ew-vish-settled #modalPanel {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: translate3d(0,0,0) !important;
+  filter: none !important;
+  will-change: auto !important;
+}
+</style>
+<script id="ew-modal-first-open-stability-inspect-v1">
+(function(){
+  window.inspectModalFirstOpenStability = function(){
+    const style=document.getElementById('ew-modal-first-open-stability-v1');
+    const css=style?style.textContent||'':'';
+    const echoList=document.getElementById('chkEchoList');
+    const canvas=document.getElementById('swipeCanvas');
+    return {
+      ok:Boolean(style&&typeof _ewPrimeVishPair==='function'&&typeof _ewWarmProductModalImage==='function'),
+      patch:'Phase 2E.9 · MODAL FIRST-OPEN STABILITY',
+      productImageDecodeGate:true,
+      vishTargetedDecode:typeof _ewPrimeVishPair==='function',
+      vishConcurrentSheetMotionRemoved:css.indexOf('.moverlay.open:not(.closing).ew-vish-settled #modalPanel')!==-1,
+      preopenCompositorPrime:css.indexOf('.moverlay.ew-sheet-preopen #modalPanel')!==-1,
+      checkoutRenderSignature:echoList?echoList.dataset.ewRenderSignature||null:null,
+      canvasContextWarmed:Boolean(canvas&&canvas.dataset.ewContextWarm==='1'),
+      mechanicsPreserved:true
+    };
   };
 })();
 </script>
