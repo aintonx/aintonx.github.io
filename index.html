@@ -36021,77 +36021,92 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 </script>
 
 
-<style id="ew-donate-mobile-radar-flex-fill-v1">
-/* Phase 2E.7p-r2 · DONATE MOBILE RADAR FLEX FILL
-   Scope: mobile donate interface only.
-   Important: this does not change the donate interface container size and does not change button sizes.
-   It only lets the inner antenna/radar screen absorb the existing vertical free space,
-   pushing the action row lower inside the same container. */
+<style id="ew-donate-mobile-inner-screen-fill-v1">
+/* Phase 2E.7p-r3 · DONATE MOBILE INNER SCREEN FILL
+   Scope: mobile donate interface only, after the approved Phase 2E.7o compact buttons.
+
+   Intent from the UX request:
+   - do NOT resize the outer donate interface container;
+   - do NOT resize the SBP/help buttons;
+   - do NOT touch desktop;
+   - let the inner antenna screen absorb existing free vertical space;
+   - keep the action row at the lower edge inside the same container.
+
+   Therefore this patch changes only flex distribution of existing children inside
+   .donate-swipe-pane .donate-right. No height/min-height/width/padding is set on
+   the outer container and no button sizing rules are introduced here. */
 @media (max-width: 960px) {
+  .arch-donate .donate-swipe-pane .donate-right {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
   .arch-donate .donate-swipe-pane .donate-channel-head {
     flex: 0 0 auto !important;
   }
 
   .arch-donate .donate-swipe-pane .donate-radar {
     flex: 1 1 auto !important;
-    min-height: 166px !important;
+    min-height: 190px !important;
   }
 
   .arch-donate .donate-swipe-pane .donate-actions {
     flex: 0 0 auto !important;
+    margin-top: auto !important;
   }
 }
 </style>
-<script id="ew-donate-mobile-radar-flex-fill-inspect-v1">
+<script id="ew-donate-mobile-inner-screen-fill-inspect-v1">
 (function(){
-  const PATCH = 'Phase 2E.7p-r2 · DONATE MOBILE RADAR FLEX FILL';
-  window.inspectDonateMobileRadarFlexFillPatch = function(){
+  const PATCH = 'Phase 2E.7p-r3 · DONATE MOBILE INNER SCREEN FILL';
+  window.inspectDonateMobileInnerScreenFillPatch = function(){
     const right = document.querySelector('.arch-donate .donate-swipe-pane .donate-right') || document.querySelector('.arch-donate .donate-right');
     const radar = document.querySelector('.arch-donate .donate-swipe-pane .donate-radar') || document.querySelector('.arch-donate .donate-radar');
     const actions = document.querySelector('.arch-donate .donate-swipe-pane .donate-actions') || document.querySelector('.arch-donate .donate-actions');
     const main = document.querySelector('.arch-donate .donate-row-main');
     const help = document.querySelector('.arch-donate .donate-help-btn');
-    const css = Array.from(document.querySelectorAll('style')).map(function(st){ return st.textContent || ''; }).join('\n');
+    const style = document.getElementById('ew-donate-mobile-inner-screen-fill-v1');
+    const css = style ? style.textContent || '' : '';
     const mobileMediaActive = Boolean(window.matchMedia && window.matchMedia('(max-width: 960px)').matches);
+    const rejectedMarkers = [
+      'Phase 2E.7p · DONATE MOBILE INTERFACE SCREEN FILL',
+      'Phase 2E.7p-r1 · DONATE MOBILE SCREEN-ONLY FILL FIX',
+      'Phase 2E.7p-r2 · DONATE MOBILE RADAR FLEX FILL'
+    ];
+    const fullCss = Array.from(document.querySelectorAll('style')).map(function(st){ return st.textContent || ''; }).join('\n');
+    const rejectedAbsent = rejectedMarkers.every(function(marker){ return fullCss.indexOf(marker) === -1; });
     const rightStyle = right ? getComputedStyle(right) : null;
     const radarStyle = radar ? getComputedStyle(radar) : null;
     const actionsStyle = actions ? getComputedStyle(actions) : null;
     const mainStyle = main ? getComputedStyle(main) : null;
     const helpStyle = help ? getComputedStyle(help) : null;
     return {
-      ok: Boolean(radar && actions && css.indexOf('Phase 2E.7p-r2 · DONATE MOBILE RADAR FLEX FILL') !== -1),
+      ok: Boolean(style && right && radar && actions && rejectedAbsent),
       patch: PATCH,
       mobileMediaActive: mobileMediaActive,
-      changedScope: 'Only flex behavior of the inner donate radar screen on mobile. Container size and button sizes are not changed by this patch.',
-      rightContainer: {
-        height: rightStyle ? rightStyle.height : null,
-        minHeight: rightStyle ? rightStyle.minHeight : null
+      rejectedExperimentalPatchesAbsent: rejectedAbsent,
+      changedScope: 'Only flex distribution inside .donate-swipe-pane .donate-right on mobile. No outer container size or button size rules are introduced by this patch.',
+      outerContainer: {
+        heightRuleChangedByPatch: false,
+        widthRuleChangedByPatch: false,
+        computedHeight: rightStyle ? rightStyle.height : null,
+        computedWidth: rightStyle ? rightStyle.width : null
       },
-      radarScreen: {
+      innerScreen: {
         flexGrow: radarStyle ? radarStyle.flexGrow : null,
         flexShrink: radarStyle ? radarStyle.flexShrink : null,
         flexBasis: radarStyle ? radarStyle.flexBasis : null,
         minHeight: radarStyle ? radarStyle.minHeight : null,
-        height: radarStyle ? radarStyle.height : null
+        computedHeight: radarStyle ? radarStyle.height : null
       },
       actionRow: {
-        flexGrow: actionsStyle ? actionsStyle.flexGrow : null,
-        flexShrink: actionsStyle ? actionsStyle.flexShrink : null,
-        height: actionsStyle ? actionsStyle.height : null
+        marginTop: actionsStyle ? actionsStyle.marginTop : null,
+        computedHeight: actionsStyle ? actionsStyle.height : null
       },
-      buttonSizesPreserved: {
+      buttonSizesFromPhase2E7oPreserved: {
         mainHeight: mainStyle ? mainStyle.height : null,
         helpWidth: helpStyle ? helpStyle.width : null,
         helpHeight: helpStyle ? helpStyle.height : null
-      },
-      safe: {
-        desktopUntouched: true,
-        containerWidthUntouched: true,
-        containerHeightUntouchedByRule: true,
-        buttonsUntouched: true,
-        backendChanged: false,
-        paymentLogicChanged: false,
-        scrollChanged: false
       }
     };
   };
