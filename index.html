@@ -17216,8 +17216,11 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
           </div>
           <div class="donate-actions">
             <!-- СБП — единственный публичный канал добровольной поддержки. -->
-            <button class="donate-row" type="button" onclick="archDonateSBP()">
+            <button class="donate-row donate-row-main" type="button" onclick="archDonateSBP()">
               <span class="donate-row-key">Усилить сигнал через СБП</span>
+            </button>
+            <button class="donate-help-btn" type="button" onclick="archDonateSignalInfo()" aria-label="Что значит усилить сигнал?" title="Что значит усилить сигнал?">
+              <span aria-hidden="true">?</span>
             </button>
           </div>
         </div>
@@ -26385,6 +26388,10 @@ function handleAperturaStatusAction(action, key){
     if(typeof _ewActiveOrderCancelFlow === 'function') _ewActiveOrderCancelFlow();
     return;
   }
+  if(action==='donate-sbp'){
+    if(typeof archDonateSBP === 'function') archDonateSBP();
+    return;
+  }
   if(action==='close'){ closeAperturaStatus(); return; }
   if(action==='copy-relic-code'){ _apCopyCode('Код реликвии'); return; }
   if(action==='copy-echo-code'){ _apCopyCode('Частотный код'); return; }
@@ -26679,6 +26686,30 @@ function _apFillReturnForm(valid){
 /* ── ДОНАТ-БЛОК АРХИТЕКТОРА ──────────────────────────────────────── */
 
 /* ── ДОНАТ-БЛОК АРХИТЕКТОРА ──────────────────────────────────────── */
+function archDonateSignalInfo(){
+  const html = '<div class="ap-status-fields">' +
+    _apStatusRow('Тип сигнала', 'Поддержка канала') +
+    _apStatusRow('Связь с заказом', 'Не создаёт заказ и резерв') +
+    _apStatusRow('Контур', 'Антенна EchoWorld') +
+    _apStatusRow('Статус', 'Доступно как пояснение') +
+  '</div>';
+  if(typeof _renderAperturaStatus === 'function'){
+    _renderAperturaStatus({
+      key: 'donate-signal-info',
+      source: 'donate-help',
+      kicker: '// APERTURA · SIGNAL SUPPORT',
+      title: 'Что значит усилить сигнал?',
+      text: 'Сигнал — это способ поддержать работу EchoWorld без оформления реликвии. Apertura фиксирует его как внешний вклад в стабильность канала: это не заказ, не резерв и не оплата Перехода.',
+      html: html,
+      actions: [
+        {label:'Усилить сигнал через СБП', action:'donate-sbp', primary:true},
+        {label:'Закрыть', action:'close'}
+      ]
+    });
+    return;
+  }
+  showNotif('// Усиление сигнала — поддержка канала EchoWorld без заказа реликвии.');
+}
 function archDonateSBP(){
   if(typeof _renderAperturaStatus === 'function'){
     _renderAperturaStatus({
@@ -35694,6 +35725,103 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
     opacity: 0 !important;
   }
 }
+
+
+/* Phase 2E.7n · DONATE COMPACT HELP ACTION
+   Adds a compact secondary “?” action beside the main SBP signal button.
+   Scope: donate actions only. No modal sizes, scroll-lock, backend, payment or reservation logic changes. */
+.arch-donate .donate-actions {
+  flex-direction: row !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+}
+.arch-donate .donate-row-main {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+.donate-help-btn {
+  font-family: var(--font-code);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--red2);
+  letter-spacing: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 54px;
+  width: 54px;
+  min-width: 54px;
+  min-height: 54px;
+  box-sizing: border-box;
+  border: 1px solid var(--red2);
+  border-radius: var(--radius);
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transform: translate3d(0,0,0) scale(1);
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    box-shadow .2s ease,
+    transform .1s cubic-bezier(.22,1,.36,1),
+    filter .1s ease;
+}
+.donate-help-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(192,40,40,0.08);
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.donate-help-btn span {
+  position: relative;
+  z-index: 1;
+}
+@media (hover:hover) and (pointer:fine) {
+  .donate-help-btn:hover {
+    background: rgba(192,40,40,0.08);
+    border-color: var(--red2);
+    color: var(--red2);
+    box-shadow: 0 0 18px rgba(192,40,40,0.2), inset 0 0 0 1px rgba(192,40,40,0.16);
+  }
+  .donate-help-btn:hover::before { opacity: 1; }
+}
+.donate-help-btn:focus-visible {
+  background: rgba(192,40,40,0.08);
+  border-color: var(--red2);
+  color: var(--red2);
+  box-shadow: 0 0 18px rgba(192,40,40,0.2), inset 0 0 0 1px rgba(192,40,40,0.16);
+  outline: none;
+}
+.donate-help-btn:focus-visible::before { opacity: 1; }
+.donate-help-btn:active {
+  background: rgba(192,40,40,0.08) !important;
+  border-color: var(--red2) !important;
+  color: var(--red2) !important;
+  box-shadow: 0 0 18px rgba(192,40,40,0.2), inset 0 0 0 1px rgba(192,40,40,0.16) !important;
+  filter: none !important;
+  transform: translate3d(0,1px,0) scale(.992) !important;
+  outline: none !important;
+}
+.donate-help-btn:active::before {
+  opacity: 1 !important;
+  background: rgba(192,40,40,0.08) !important;
+}
+@media(max-width:960px) {
+  .arch-donate .donate-actions { gap: 8px !important; }
+  .donate-help-btn {
+    flex-basis: 54px;
+    width: 54px;
+    min-width: 54px;
+    min-height: 54px;
+  }
+}
 </style>
 <script id="ew-desktop-red-cta-hover-press-parity-inspect-v1">
 (function(){
@@ -35721,6 +35849,41 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         attrPayBtn: Boolean(document.querySelector('.attr-pay-btn'))
       },
       visual: 'Same red-outline language as the approved mobile press fix: no solid red fill, no black text, no JS press class.'
+    };
+  };
+})();
+</script>
+
+
+<script id="ew-donate-compact-help-action-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7n · DONATE COMPACT HELP ACTION';
+  window.inspectDonateCompactHelpActionPatch = function(){
+    const actions = document.querySelector('.arch-donate .donate-actions');
+    const main = document.querySelector('.arch-donate .donate-row-main');
+    const help = document.querySelector('.arch-donate .donate-help-btn');
+    const styleText = Array.from(document.querySelectorAll('style')).map(function(st){ return st.textContent || ''; }).join('\n');
+    const actionSource = String(typeof handleAperturaStatusAction === 'function' ? handleAperturaStatusAction.toString() : '');
+    return {
+      ok: Boolean(actions && main && help && typeof archDonateSignalInfo === 'function' && typeof archDonateSBP === 'function' && actionSource.indexOf("donate-sbp") !== -1),
+      patch: PATCH,
+      scope: 'Donate block only: main SBP action plus compact secondary question button.',
+      layout: {
+        actionsDisplay: actions ? getComputedStyle(actions).display : null,
+        actionsFlexDirection: actions ? getComputedStyle(actions).flexDirection : null,
+        helpWidth: help ? getComputedStyle(help).width : null,
+        helpAriaLabel: help ? help.getAttribute('aria-label') : null
+      },
+      modal: {
+        infoFunction: typeof archDonateSignalInfo,
+        sbpActionHandler: actionSource.indexOf("donate-sbp") !== -1
+      },
+      safe: {
+        backendChanged: false,
+        paymentLogicChanged: false,
+        scrollChanged: false,
+        productCardsChanged: false
+      }
     };
   };
 })();
