@@ -33612,5 +33612,77 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
+
+<style id="ew-modal-unified-elevation-v1">
+/* Phase 2D.15 · UNIFIED MODAL ELEVATION
+   Micro-patch: keeps the successful neutral backdrop and all modal motion
+   intact, but gives every modal panel the same soft separation shadow as
+   the product card. This prevents top borders from dissolving into the
+   neutral overlay without changing JS lifecycle, timing, or layout. */
+:root {
+  --ew-modal-elevation-shadow: 0 0 80px rgba(0,0,0,.90), 0 0 0 1px rgba(192,40,40,.12);
+  --ew-modal-elevation-shadow-soft: 0 0 72px rgba(0,0,0,.78), 0 0 0 1px rgba(192,40,40,.12), 0 -18px 46px rgba(0,0,0,.34);
+}
+:root[data-theme="light"] {
+  --ew-modal-elevation-shadow: 0 26px 90px rgba(18,22,45,.22), 0 0 0 1px rgba(192,40,40,.16);
+  --ew-modal-elevation-shadow-soft: 0 24px 82px rgba(18,22,45,.20), 0 0 0 1px rgba(192,40,40,.15), 0 -14px 36px rgba(18,22,45,.10);
+}
+
+/* Same visual elevation language as the product modal. The shadow is not
+   animated here: existing open/close mechanics stay untouched. */
+.chk-modal,
+.legal-modal,
+#returnModal .return-modal,
+.echo-order-modal,
+.ap-console-panel,
+.ap-status-panel {
+  box-shadow: var(--ew-modal-elevation-shadow) !important;
+}
+
+/* Side drawer keeps its directional shadow, but gains the same soft rim so
+   its top/left edge does not merge into the neutral backdrop. */
+.cart-overlay.open .cart-panel,
+.cart-panel.open,
+.cart-panel.cart-opening {
+  box-shadow: -8px 0 40px rgba(0,0,0,.45), 0 0 0 1px rgba(192,40,40,.12) !important;
+}
+
+/* Product modal already had this shadow; keep it explicitly aligned with
+   the shared token without changing its appearance. */
+.modal {
+  box-shadow: var(--ew-modal-elevation-shadow) !important;
+}
+
+/* Mobile/bottom-sheet panels need a stronger top separation because the
+   panel grows from the lower viewport edge over the neutral overlay. */
+@media(max-width:960px){
+  .modal,
+  .chk-modal,
+  .legal-modal,
+  #returnModal .return-modal,
+  .echo-order-modal,
+  .ap-console-panel,
+  .ap-status-panel {
+    box-shadow: var(--ew-modal-elevation-shadow-soft) !important;
+  }
+}
+</style>
+<script id="ew-modal-unified-elevation-js">
+(function(){
+  const PATCH = 'Phase 2D.15 · UNIFIED MODAL ELEVATION';
+  window.inspectUnifiedModalElevation = function(){
+    const root = getComputedStyle(document.documentElement);
+    const sample = document.querySelector('.modal,.chk-modal,.legal-modal,.ap-status-panel,.cart-panel');
+    return {
+      ok: true,
+      patch: PATCH,
+      elevationShadow: root.getPropertyValue('--ew-modal-elevation-shadow').trim(),
+      sampleSelector: sample ? (sample.id ? '#' + sample.id : '.' + Array.from(sample.classList || []).join('.')) : null,
+      sampleBoxShadow: sample ? getComputedStyle(sample).boxShadow : null
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
