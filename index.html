@@ -14,6 +14,7 @@
   try{ saved = localStorage.getItem('ew-theme'); }catch(_){ saved = null; }
   var light = saved ? (saved === 'light') : !(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
   var root = document.documentElement;
+  root.classList.add('ew-first-boot-pending');
   var color = light ? '#e7e9f1' : '#04040a';
   if(light){ root.setAttribute('data-theme','light'); }
   root.style.backgroundColor = color;
@@ -23,6 +24,207 @@
   if(tc){ tc.setAttribute('content', color); }
 }catch(_){}})();
 </script>
+<style id="ew-first-boot-shell-style">
+/* Phase 2E.8c · APERTURA FIRST BOOT SHELL
+   Branded first-paint guard: covers unstable cold-render frames without splitting CSS. */
+html.ew-first-boot-pending,
+html.ew-first-boot-pending body{
+  background:#04040a;
+}
+html[data-theme="light"].ew-first-boot-pending,
+html[data-theme="light"].ew-first-boot-pending body{
+  background:#e7e9f1;
+}
+#ewFirstBoot{
+  position:fixed;
+  inset:0;
+  z-index:2147483000;
+  display:grid;
+  place-items:center;
+  padding:clamp(22px,5vw,54px);
+  background:
+    radial-gradient(circle at 18% 16%, rgba(255,255,255,.08), transparent 30%),
+    radial-gradient(circle at 82% 76%, rgba(227,36,43,.12), transparent 34%),
+    #04040a;
+  color:#f6f4ef;
+  overflow:hidden;
+  opacity:1;
+  visibility:visible;
+  transition:opacity .46s cubic-bezier(.22,1,.36,1), visibility 0s linear 0s;
+  pointer-events:auto;
+}
+html[data-theme="light"] #ewFirstBoot{
+  background:
+    radial-gradient(circle at 18% 16%, rgba(255,255,255,.78), transparent 31%),
+    radial-gradient(circle at 82% 74%, rgba(227,36,43,.10), transparent 35%),
+    #e7e9f1;
+  color:#10131c;
+}
+html.ew-first-boot-ready #ewFirstBoot{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .46s cubic-bezier(.22,1,.36,1), visibility 0s linear .46s;
+}
+#ewFirstBoot::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size:42px 42px;
+  opacity:.22;
+  pointer-events:none;
+}
+html[data-theme="light"] #ewFirstBoot::before{
+  background:
+    linear-gradient(rgba(12,18,30,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12,18,30,.04) 1px, transparent 1px);
+  opacity:.42;
+}
+#ewFirstBoot::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:50%;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(227,36,43,.0), rgba(227,36,43,.65), rgba(104,224,232,.32), transparent);
+  opacity:.7;
+  transform:translateY(-50%);
+  animation:ewBootScan 1.8s cubic-bezier(.22,1,.36,1) infinite;
+  pointer-events:none;
+}
+.ew-boot-card{
+  position:relative;
+  width:min(560px, calc(100vw - 44px));
+  min-height:clamp(268px,42vh,392px);
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  border:1px solid rgba(246,244,239,.18);
+  border-radius:30px;
+  background:rgba(4,4,10,.62);
+  box-shadow:0 28px 90px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  overflow:hidden;
+}
+html[data-theme="light"] .ew-boot-card{
+  background:rgba(247,248,252,.68);
+  border-color:rgba(23,26,38,.13);
+  box-shadow:0 28px 86px rgba(45,52,70,.16), inset 0 1px 0 rgba(255,255,255,.84);
+}
+.ew-boot-card::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:3px;
+  background:linear-gradient(90deg, #e3242b 0%, #e3242b 42%, rgba(104,224,232,.72) 78%, transparent 100%);
+  opacity:.92;
+}
+.ew-boot-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:22px 26px 18px;
+  border-bottom:1px solid rgba(246,244,239,.10);
+  font:600 11px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing:.32em;
+  text-transform:uppercase;
+  color:rgba(246,244,239,.62);
+}
+html[data-theme="light"] .ew-boot-head{
+  border-bottom-color:rgba(18,22,34,.10);
+  color:rgba(18,22,34,.58);
+}
+.ew-boot-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#e3242b;
+  box-shadow:0 0 18px rgba(227,36,43,.8);
+  animation:ewBootPulse 1.45s ease-in-out infinite;
+  flex:0 0 auto;
+}
+.ew-boot-head-left{display:flex;align-items:center;gap:14px;min-width:0;}
+.ew-boot-body{
+  display:grid;
+  place-items:center;
+  padding:32px 28px 34px;
+  text-align:center;
+}
+.ew-boot-title{
+  margin:0;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size:clamp(34px,7vw,62px);
+  line-height:.96;
+  font-weight:800;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+}
+.ew-boot-title span{
+  color:#e3242b;
+  text-shadow:0 0 22px rgba(227,36,43,.24);
+}
+.ew-boot-sub{
+  margin:22px auto 0;
+  max-width:430px;
+  font:500 12px/1.9 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:rgba(246,244,239,.62);
+}
+html[data-theme="light"] .ew-boot-sub{color:rgba(25,29,42,.58);}
+.ew-boot-line{
+  width:min(300px, 58vw);
+  height:2px;
+  margin:24px auto 0;
+  border-radius:999px;
+  background:linear-gradient(90deg, transparent, rgba(227,36,43,.95), rgba(104,224,232,.55), transparent);
+  box-shadow:0 0 18px rgba(227,36,43,.35);
+  transform-origin:left center;
+  animation:ewBootLine 1.28s cubic-bezier(.22,1,.36,1) infinite;
+}
+.ew-boot-foot{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:18px;
+  padding:16px 26px 22px;
+  font:600 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:rgba(246,244,239,.50);
+}
+html[data-theme="light"] .ew-boot-foot{color:rgba(25,29,42,.46);}
+.ew-boot-bars{
+  width:72px;
+  height:34px;
+  flex:0 0 auto;
+  background:repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 9px);
+  opacity:.42;
+}
+@keyframes ewBootPulse{0%,100%{opacity:.65;transform:scale(.86)}50%{opacity:1;transform:scale(1)}}
+@keyframes ewBootLine{0%{transform:scaleX(.18);opacity:.55}55%{transform:scaleX(1);opacity:1}100%{transform:scaleX(.18);opacity:.55}}
+@keyframes ewBootScan{0%{transform:translateY(-190px);opacity:0}18%{opacity:.7}70%{opacity:.42}100%{transform:translateY(190px);opacity:0}}
+@media (max-width: 720px){
+  #ewFirstBoot{padding:18px;background:#e7e9f1;color:#10131c;}
+  html:not([data-theme="light"]) #ewFirstBoot{background:#04040a;color:#f6f4ef;}
+  .ew-boot-card{width:min(430px, calc(100vw - 32px));min-height:clamp(300px,52vh,440px);border-radius:28px;}
+  .ew-boot-head{padding:20px 22px 16px;font-size:10px;letter-spacing:.28em;}
+  .ew-boot-body{padding:34px 24px;}
+  .ew-boot-sub{font-size:10px;letter-spacing:.16em;}
+  .ew-boot-foot{padding:15px 22px 20px;font-size:9px;letter-spacing:.22em;}
+}
+@media (prefers-reduced-motion: reduce){
+  #ewFirstBoot::after,.ew-boot-dot,.ew-boot-line{animation:none;}
+  #ewFirstBoot{transition:opacity .18s ease, visibility 0s linear .18s;}
+}
+</style>
 
 <title>EchoWorld — реликвии из MARKETSPACE</title>
 <meta name="title" content="EchoWorld — реликвии из MARKETSPACE">
@@ -240,8 +442,8 @@
 <link rel="preconnect" href="https://mc.yandex.ru">
 <link rel="dns-prefetch" href="https://yastatic.net">
 
-<!-- Шрифты — display:optional снижает позднюю замену fallback-шрифта и скачки текста на холодной загрузке -->
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Syne+Mono&family=Oxanium:wght@500;600;700&display=optional" rel="stylesheet">
+<!-- Шрифты — display:swap уже в URL, защита от FOUT -->
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Syne+Mono&family=Oxanium:wght@500;600;700&display=swap" rel="stylesheet">
 
 <!-- Безопасность: CSP ограничивает источники скриптов и стилей.
      'unsafe-inline' для script и style необходим — много inline-стилей. -->
@@ -15277,6 +15479,90 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 </head>
 <body>
 <div id="ewSmartCaptchaRoot" aria-hidden="true"></div>
+<div id="ewFirstBoot" role="status" aria-live="polite" aria-label="EchoWorld загружается">
+  <div class="ew-boot-card" aria-hidden="true">
+    <div class="ew-boot-head">
+      <div class="ew-boot-head-left"><span class="ew-boot-dot"></span><span>APERTURA · ENTRY</span></div>
+      <span>STATUS</span>
+    </div>
+    <div class="ew-boot-body">
+      <div>
+        <h1 class="ew-boot-title">Система<br><span>активна</span></h1>
+        <p class="ew-boot-sub">Сигнал стабилизируется · MARKETSPACE отвечает</p>
+        <div class="ew-boot-line"></div>
+      </div>
+    </div>
+    <div class="ew-boot-foot">
+      <span>ECHOWORLD</span>
+      <span class="ew-boot-bars"></span>
+    </div>
+  </div>
+</div>
+<noscript><style>#ewFirstBoot{display:none!important}</style></noscript>
+<script id="ew-first-boot-shell-controller-v1">
+/* Phase 2E.8c · APERTURA FIRST BOOT SHELL
+   Hides the branded boot shell after DOM + fonts are stable, with a short max wait. */
+(function(){
+  var patch = 'Phase 2E.8c · APERTURA FIRST BOOT SHELL';
+  var started = Date.now();
+  var hidden = false;
+  var removed = false;
+  var root = document.documentElement;
+  var MAX_WAIT = 1400;
+  var MIN_SHOW = 560;
+  function afterDom(){
+    if(document.readyState === 'interactive' || document.readyState === 'complete') return Promise.resolve();
+    return new Promise(function(resolve){ document.addEventListener('DOMContentLoaded', resolve, {once:true}); });
+  }
+  function afterFonts(){
+    try{
+      if(document.fonts && document.fonts.ready){
+        return Promise.race([
+          document.fonts.ready,
+          new Promise(function(resolve){ setTimeout(resolve, 900); })
+        ]);
+      }
+    }catch(_){ }
+    return Promise.resolve();
+  }
+  function afterFrames(){
+    return new Promise(function(resolve){
+      requestAnimationFrame(function(){ requestAnimationFrame(resolve); });
+    });
+  }
+  function reveal(){
+    if(hidden) return;
+    hidden = true;
+    var elapsed = Date.now() - started;
+    var wait = Math.max(0, MIN_SHOW - elapsed);
+    setTimeout(function(){
+      root.classList.add('ew-first-boot-ready');
+      root.classList.remove('ew-first-boot-pending');
+      setTimeout(function(){
+        var el = document.getElementById('ewFirstBoot');
+        if(el && el.parentNode){ el.parentNode.removeChild(el); removed = true; }
+      }, 560);
+    }, wait);
+  }
+  Promise.all([afterDom(), afterFonts(), afterFrames()]).then(reveal).catch(reveal);
+  setTimeout(reveal, MAX_WAIT);
+  window.inspectAperturaFirstBootShellPatch = function(){
+    var el = document.getElementById('ewFirstBoot');
+    return {
+      ok: true,
+      patch: patch,
+      pendingClass: root.classList.contains('ew-first-boot-pending'),
+      readyClass: root.classList.contains('ew-first-boot-ready'),
+      shellInDom: !!el,
+      hidden: hidden,
+      removed: removed,
+      timing: { maxWaitMs: MAX_WAIT, minShowMs: MIN_SHOW },
+      fontsApi: !!(document.fonts && document.fonts.ready),
+      scope: 'index.html only. No CSS split, no backend, no checkout/payment/reservation/share logic changes.'
+    };
+  };
+})();
+</script>
 
 <!-- ===== ICON SPRITE · Lucide local symbols (ISC). Logo/favicon are separate brand assets. -->
 <svg id="ew-icons" xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" focusable="false" aria-hidden="true">
@@ -15611,7 +15897,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0001</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/pepe.webp" alt="Редкая лягушка" loading="lazy" decoding="async">
+        <img src="img/pepe.webp" alt="Редкая лягушка" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15636,7 +15922,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0002</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/labubu.webp" alt="Зубастый спутник" loading="lazy" decoding="async">
+        <img src="img/labubu.webp" alt="Зубастый спутник" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15662,7 +15948,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0003</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/akula.webp" alt="Сухопутная акула" loading="lazy" decoding="async">
+        <img src="img/akula.webp" alt="Сухопутная акула" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15687,7 +15973,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0004</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/bobr.webp" alt="Лесной гость" loading="lazy" decoding="async">
+        <img src="img/bobr.webp" alt="Лесной гость" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15712,7 +15998,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0005</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/tamagochi.webp" alt="Карманное существо" loading="lazy" decoding="async">
+        <img src="img/tamagochi.webp" alt="Карманное существо" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15738,7 +16024,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0006</div>
         <div class="pbeacon" data-status="first_form"><div class="pbeacon-dot"></div><span class="pbeacon-txt">В MARKETSPACE</span></div>
-        <img width="900" height="900" src="img/ball.webp" alt="Тёмный оракул" loading="lazy" decoding="async">
+        <img src="img/ball.webp" alt="Тёмный оракул" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15763,7 +16049,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0007</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/spinner.webp" alt="Карманный вихрь" loading="lazy" decoding="async">
+        <img src="img/spinner.webp" alt="Карманный вихрь" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15788,7 +16074,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0008</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/disco-ball.webp" alt="Зеркальный идол" loading="lazy" decoding="async">
+        <img src="img/disco-ball.webp" alt="Зеркальный идол" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15814,7 +16100,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0009</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/utka.webp" alt="Жёлтая горлица" loading="lazy" decoding="async">
+        <img src="img/utka.webp" alt="Жёлтая горлица" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15839,7 +16125,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0010</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/simple-dimple.webp" alt="Карманные соты" loading="lazy" decoding="async">
+        <img src="img/simple-dimple.webp" alt="Карманные соты" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15864,7 +16150,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0011</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/grib.webp" alt="Ночной мухомор" loading="lazy" decoding="async">
+        <img src="img/grib.webp" alt="Ночной мухомор" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -15890,7 +16176,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0012</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img width="900" height="900" src="img/rash.webp" alt="Колючий страж" loading="lazy" decoding="async">
+        <img src="img/rash.webp" alt="Колючий страж" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16248,7 +16534,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
     <div class="modal-scroll-pill" id="modalScrollPill" aria-hidden="true">
       <div class="modal-scroll-pill-thumb" id="modalScrollPillThumb"></div>
     </div>
-    <div class="mimgw"><img id="mimg" width="900" height="900" src="" alt="" loading="eager" decoding="async" fetchpriority="high"></div>
+    <div class="mimgw"><img id="mimg" src="" alt="" loading="eager" decoding="async" fetchpriority="high"></div>
     <div class="mbody">
       <div class="mart" id="mart"></div>
       <h2 class="mname" id="mname"></h2>
@@ -36384,102 +36670,6 @@ window.inspectPwaMobileParityRootFix = function(){
 };
 </script>
 
-
-
-
-<script id="ew-first-load-stability-guard-v1">
-(function(){
-  var PATCH = 'Phase 2E.8b · FIRST LOAD STABILITY GUARD';
-  var state = window.__EW_FIRST_LOAD_STABILITY__ = window.__EW_FIRST_LOAD_STABILITY__ || {
-    patch: PATCH,
-    startedAt: Date.now(),
-    layoutShifts: [],
-    totalCls: 0,
-    fontsReadyAt: null,
-    loadAt: null
-  };
-
-  function shortSelector(node){
-    try{
-      if(!node || node.nodeType !== 1) return null;
-      var el = node;
-      if(el.id) return '#' + el.id;
-      var cls = (el.className && typeof el.className === 'string') ? el.className.trim().split(/\s+/).slice(0,3).join('.') : '';
-      return el.tagName.toLowerCase() + (cls ? '.' + cls : '');
-    }catch(_){ return null; }
-  }
-
-  if('PerformanceObserver' in window){
-    try{
-      var po = new PerformanceObserver(function(list){
-        list.getEntries().forEach(function(entry){
-          if(entry.hadRecentInput) return;
-          var sources = [];
-          try{
-            sources = (entry.sources || []).slice(0,5).map(function(src){
-              return {
-                node: shortSelector(src.node),
-                previousRect: src.previousRect ? {x:Math.round(src.previousRect.x),y:Math.round(src.previousRect.y),w:Math.round(src.previousRect.width),h:Math.round(src.previousRect.height)} : null,
-                currentRect: src.currentRect ? {x:Math.round(src.currentRect.x),y:Math.round(src.currentRect.y),w:Math.round(src.currentRect.width),h:Math.round(src.currentRect.height)} : null
-              };
-            });
-          }catch(_){ sources = []; }
-          state.totalCls = Math.round((state.totalCls + entry.value) * 100000) / 100000;
-          state.layoutShifts.push({
-            value: Math.round(entry.value * 100000) / 100000,
-            startTime: Math.round(entry.startTime),
-            sources: sources
-          });
-          if(state.layoutShifts.length > 30) state.layoutShifts.shift();
-        });
-      });
-      po.observe({type:'layout-shift', buffered:true});
-      state.layoutShiftObserver = true;
-    }catch(e){ state.layoutShiftObserver = false; state.layoutShiftObserverError = e && e.message; }
-  }
-
-  if(document.fonts && document.fonts.ready){
-    try{ document.fonts.ready.then(function(){ state.fontsReadyAt = Date.now(); }); }catch(_){ }
-  }
-  window.addEventListener('load', function(){ state.loadAt = Date.now(); }, {once:true});
-
-  window.inspectFirstLoadStabilityGuard = function(){
-    var fontLink = document.querySelector('link[href*="fonts.googleapis.com/css2"]');
-    var productImages = Array.from(document.querySelectorAll('.pimg img[src^="img/"]'));
-    var modalImg = document.getElementById('mimg');
-    var imagesWithBox = productImages.filter(function(img){ return img.getAttribute('width') && img.getAttribute('height'); }).length;
-    var topShifts = (state.layoutShifts || []).slice().sort(function(a,b){ return b.value - a.value; }).slice(0,8);
-    return {
-      ok: !!(fontLink && /display=optional/.test(fontLink.href) && productImages.length >= 12 && imagesWithBox === productImages.length && state.layoutShiftObserver === true),
-      patch: PATCH,
-      fontDisplay: fontLink ? ((fontLink.href.match(/display=([^&]+)/)||[])[1] || null) : null,
-      resourceHints: {
-        fontsGooglePreconnect: !!document.querySelector('link[rel="preconnect"][href="https://fonts.googleapis.com"]'),
-        fontsGstaticPreconnect: !!document.querySelector('link[rel="preconnect"][href="https://fonts.gstatic.com"][crossorigin]')
-      },
-      productImages: {
-        count: productImages.length,
-        withWidthHeight: imagesWithBox,
-        expectedWidthHeight: '900x900'
-      },
-      modalImage: modalImg ? {width: modalImg.getAttribute('width'), height: modalImg.getAttribute('height'), fetchpriority: modalImg.getAttribute('fetchpriority')} : null,
-      cls: {
-        observer: state.layoutShiftObserver === true,
-        total: Math.round((state.totalCls || 0) * 100000) / 100000,
-        samples: (state.layoutShifts || []).length,
-        topSources: topShifts
-      },
-      timing: {
-        now: Date.now(),
-        startedAt: state.startedAt,
-        fontsReadyAt: state.fontsReadyAt,
-        loadAt: state.loadAt
-      },
-      scope: 'No CSS split. Inline CSS remains in index.html. This patch only stabilizes font loading, reserves product image dimensions, and adds CLS diagnostics.'
-    };
-  };
-})();
-</script>
 
 <script id="ew-share-handoff-parity-inspector-v1">
 (function(){
