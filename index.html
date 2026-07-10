@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#04040a">
+<script id="ew-pwa-standalone-boot">
+/* Phase 2E.7s · PWA STANDALONE VISUAL GUARD
+   Synchronous class before CSS: installed iOS/Android web-apps need safe-area
+   offsets before the first frame, otherwise the fixed mobile header/menu can
+   paint outside the app viewport and then jump back. */
+try{
+  var _ewStandalone = false;
+  try{ _ewStandalone = !!(window.navigator && window.navigator.standalone); }catch(_e1){}
+  try{ _ewStandalone = _ewStandalone || !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); }catch(_e2){}
+  if(_ewStandalone){ document.documentElement.classList.add('ew-standalone-app'); }
+}catch(_e){}
+</script>
 <meta name="color-scheme" content="dark">
 
 <title>EchoWorld — реликвии из MARKETSPACE</title>
@@ -36195,6 +36207,150 @@ window.inspectEchoTitleSignalWordPatch = function(){
   };
 };
 
+</script>
+
+
+
+<!-- Phase 2E.7s · PWA STANDALONE VISUAL GUARD -->
+<style id="ew-pwa-standalone-visual-guard">
+@media (max-width: 960px) {
+  html.ew-standalone-app {
+    --ew-pwa-safe-top: env(safe-area-inset-top, 0px);
+    --ew-pwa-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --ew-pwa-header-h: var(--ew-mobile-header-h, 56px);
+    scroll-padding-top: calc(var(--ew-pwa-header-h) + var(--ew-pwa-safe-top) + 14px) !important;
+  }
+
+  html.ew-standalone-app body {
+    padding-top: calc(var(--ew-pwa-header-h) + var(--ew-pwa-safe-top)) !important;
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+
+  html.ew-standalone-app header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    min-height: calc(var(--ew-pwa-header-h) + var(--ew-pwa-safe-top)) !important;
+    height: calc(var(--ew-pwa-header-h) + var(--ew-pwa-safe-top)) !important;
+    padding-top: var(--ew-pwa-safe-top) !important;
+    transform: translate3d(0,0,0) !important;
+    -webkit-transform: translate3d(0,0,0) !important;
+    will-change: auto !important;
+    contain: layout paint style;
+    overflow: visible !important;
+  }
+
+  html.ew-standalone-app header .header-inner {
+    height: var(--ew-pwa-header-h) !important;
+    min-height: var(--ew-pwa-header-h) !important;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
+  }
+
+  html.ew-standalone-app .mob-burger,
+  html.ew-standalone-app .ws,
+  html.ew-standalone-app .lang-ws {
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  html.ew-standalone-app .mob-nav-overlay {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    min-height: var(--ew-vvh, 100dvh) !important;
+    height: var(--ew-vvh, 100dvh) !important;
+  }
+
+  html.ew-standalone-app .mob-nav {
+    top: 0 !important;
+    bottom: 0 !important;
+    min-height: var(--ew-vvh, 100dvh) !important;
+    height: var(--ew-vvh, 100dvh) !important;
+    padding-top: var(--ew-pwa-safe-top) !important;
+    padding-bottom: var(--ew-pwa-safe-bottom) !important;
+    max-height: var(--ew-vvh, 100dvh) !important;
+  }
+
+  /* Installed app catalog stability: Safari browser chrome is gone in standalone,
+     so keep the mobile carousel cards on one predictable visual system. */
+  html.ew-standalone-app #pgrid {
+    align-items: stretch !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+
+  html.ew-standalone-app #pgrid .pcard {
+    flex: 0 0 min(420px, calc(100vw - 40px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))) !important;
+    width: min(420px, calc(100vw - 40px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))) !important;
+    height: auto !important;
+    min-height: 432px !important;
+    display: grid !important;
+    grid-template-rows: auto 1fr !important;
+  }
+
+  html.ew-standalone-app #pgrid .pbody {
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  html.ew-standalone-app #pgrid .pdesc {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
+  }
+
+  html.ew-standalone-app #pgrid .pfooter {
+    margin-top: auto !important;
+  }
+}
+</style>
+<script id="ew-pwa-standalone-visual-inspect">
+window.inspectPwaStandaloneVisualGuardPatch = function(){
+  var de=document.documentElement;
+  var header=document.querySelector('header');
+  var inner=document.querySelector('header .header-inner');
+  var firstCard=document.querySelector('#pgrid .pcard');
+  var isStandalone=false;
+  try{ isStandalone = !!(navigator && navigator.standalone); }catch(e){}
+  try{ isStandalone = isStandalone || !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); }catch(e){}
+  if(isStandalone && !de.classList.contains('ew-standalone-app')) de.classList.add('ew-standalone-app');
+  function brief(el){
+    if(!el) return null;
+    var cs=getComputedStyle(el);
+    var r=el.getBoundingClientRect();
+    return {
+      rect:[Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height),Math.round(r.bottom)],
+      position:cs.position, height:cs.height, minHeight:cs.minHeight, paddingTop:cs.paddingTop, paddingBottom:cs.paddingBottom,
+      transform:cs.transform, overflowX:cs.overflowX, overflowY:cs.overflowY
+    };
+  }
+  return {
+    ok:true,
+    patch:'Phase 2E.7s · PWA STANDALONE VISUAL GUARD',
+    displayModeStandalone: !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches),
+    navigatorStandalone: !!(navigator && navigator.standalone),
+    standaloneClass: de.classList.contains('ew-standalone-app'),
+    mobileMediaActive: !!(window.matchMedia && window.matchMedia('(max-width: 960px)').matches),
+    safeArea:{
+      top:getComputedStyle(de).getPropertyValue('--ew-pwa-safe-top').trim() || null,
+      bottom:getComputedStyle(de).getPropertyValue('--ew-pwa-safe-bottom').trim() || null
+    },
+    header:brief(header),
+    headerInner:brief(inner),
+    firstCatalogCard:brief(firstCard),
+    scope:'Standalone/mobile only: safe-area header/menu stabilization and installed-app catalog card sizing. Desktop, backend, checkout, payment, reservation and modal logic are untouched.'
+  };
+};
 </script>
 
 </body>
