@@ -34394,343 +34394,55 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 </script>
 
 
-<style id="ew-desktop-polish-v1">
-/* ════════════════════════════════════════════════════════════════
-   Phase 2E.7 · DESKTOP POLISH PASS
-   Desktop-only layer. Mobile/tablet bottom-sheet and touch mechanics stay
-   untouched because every rule is scoped to min-width: 961px.
-   Цель: убрать ощущение "mobile port" на desktop: шире документы,
-   взрослее checkout/return panels, ровнее "Партнёрства", аккуратнее footer.
-   ════════════════════════════════════════════════════════════════ */
+
+<style id="ew-collab-desktop-contact-center-v1">
+/* Phase 2E.7a · PARTNERSHIP CONTACT CENTERING
+   Desktop-only surgical alignment: no new elements, no color/theme changes.
+   The right contact button stack stretches to the height of the left copy
+   and centers itself vertically against it. Mobile keeps the original layout. */
 @media (min-width: 961px) {
-  :root {
-    --ew-desktop-stage: min(1240px, calc(100vw - 96px));
-    --ew-desktop-dialog-wide: min(1120px, calc(100vw - 96px));
-    --ew-desktop-dialog-mid: min(860px, calc(100vw - 96px));
-    --ew-desktop-reading: 76ch;
+  #collab .collab-in {
+    align-items: stretch;
   }
-
-  /* Footer documents are not mobile-sized cards on desktop anymore. */
-  #reqModal,
-  #offerModal,
-  #privacyModal,
-  #returnModal {
-    padding: clamp(28px, 5vw, 72px) !important;
-    align-items: center !important;
-    justify-content: center !important;
+  #collab .collab-in > div:first-child {
+    align-self: start;
   }
-
-  #offerModal .legal-modal,
-  #privacyModal .legal-modal {
-    width: var(--ew-desktop-dialog-wide) !important;
-    max-width: var(--ew-desktop-dialog-wide) !important;
-    max-height: min(88vh, 920px) !important;
-    border-radius: clamp(18px, 1.35vw, 28px) !important;
-    background:
-      radial-gradient(circle at 16% 0%, rgba(192,40,40,.10), transparent 34%),
-      radial-gradient(circle at 86% 100%, rgba(0,200,200,.055), transparent 30%),
-      var(--surface) !important;
-  }
-
-  #reqModal .legal-modal {
-    width: min(780px, calc(100vw - 96px)) !important;
-    max-width: min(780px, calc(100vw - 96px)) !important;
-    max-height: min(86vh, 820px) !important;
-    border-radius: clamp(18px, 1.2vw, 24px) !important;
-  }
-
-  #offerModal .legal-modal-head,
-  #privacyModal .legal-modal-head,
-  #reqModal .legal-modal-head {
-    min-height: 64px !important;
-    padding: 14px 18px 14px 24px !important;
-    background: rgba(4,4,10,.94) !important;
-  }
-
-  #offerModal .legal-modal-label,
-  #privacyModal .legal-modal-label,
-  #reqModal .legal-modal-label {
-    font-size: 9px !important;
-    letter-spacing: .26em !important;
-  }
-
-  #offerModal .legal-modal-body,
-  #privacyModal .legal-modal-body {
-    padding: clamp(32px, 3.4vw, 52px) clamp(44px, 5vw, 76px) 56px !important;
-  }
-
-  #reqModal .legal-modal-body {
-    padding: 34px 42px 42px !important;
-  }
-
-  #offerModal .offer-h1,
-  #privacyModal .offer-h1 {
-    max-width: var(--ew-desktop-reading) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    font-size: clamp(22px, 2.05vw, 30px) !important;
-    letter-spacing: .18em !important;
-  }
-
-  #offerModal .offer-meta,
-  #privacyModal .offer-meta,
-  #offerModal .offer-section,
-  #privacyModal .offer-section,
-  #privacyModal .req-modal-lore {
-    max-width: var(--ew-desktop-reading) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  #offerModal .offer-section,
-  #privacyModal .offer-section {
-    margin-bottom: 32px !important;
-  }
-
-  #offerModal .offer-section p,
-  #privacyModal .offer-section p,
-  #offerModal .offer-section li,
-  #privacyModal .offer-section li {
-    font-size: 13px !important;
-    line-height: 1.92 !important;
-  }
-
-  #offerModal .offer-h2,
-  #privacyModal .offer-h2 {
-    padding-bottom: 10px !important;
-    margin-bottom: 14px !important;
-  }
-
-  /* Checkout / return should feel like real desktop panels, not narrow mobile sheets. */
-  .chk-overlay .chk-modal:not(.ap-status-panel) {
-    width: var(--ew-desktop-dialog-mid) !important;
-    max-width: var(--ew-desktop-dialog-mid) !important;
-    max-height: min(88vh, 860px) !important;
-    border-radius: clamp(18px, 1.2vw, 24px) !important;
-  }
-
-  #returnModal .return-modal {
-    width: min(920px, calc(100vw - 96px)) !important;
-    max-width: min(920px, calc(100vw - 96px)) !important;
-  }
-
-  .chk-modal .chk-head,
-  #returnModal .chk-head {
-    min-height: 62px !important;
-    padding: 14px 22px !important;
-  }
-
-  .chk-modal .chk-body,
-  #returnModal .return-body {
-    padding: 28px 34px 34px !important;
-  }
-
-  /* Партнёрства: полноценная desktop-сцена, контакты центрируются как отдельная панель. */
-  .collab {
-    padding: clamp(84px, 7vw, 124px) 48px !important;
-    background:
-      radial-gradient(circle at 18% 18%, rgba(192,40,40,.12), transparent 36%),
-      radial-gradient(circle at 82% 72%, rgba(0,200,200,.07), transparent 34%),
-      var(--surface) !important;
-    overflow: hidden;
-  }
-
-  .collab::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
-      linear-gradient(180deg, rgba(255,255,255,.025) 1px, transparent 1px);
-    background-size: 72px 72px;
-    mask-image: radial-gradient(circle at 50% 50%, black, transparent 78%);
-    opacity: .28;
-  }
-
-  .collab-in {
-    max-width: var(--ew-desktop-stage) !important;
-    grid-template-columns: minmax(0, 1.08fr) minmax(420px, .72fr) !important;
-    gap: clamp(72px, 8vw, 132px) !important;
-    align-items: center !important;
-    position: relative;
-    z-index: 1;
-  }
-
-  .collab-in > div:first-child {
-    max-width: 760px;
-  }
-
-  .clabel {
-    margin-bottom: 20px !important;
-  }
-
-  .ctitle {
-    font-size: clamp(40px, 4.2vw, 64px) !important;
-    line-height: .96 !important;
-    letter-spacing: -.045em !important;
-    margin-bottom: 24px !important;
-  }
-
-  .cdesc {
-    max-width: 72ch !important;
-    font-size: 12.5px !important;
-    line-height: 2.02 !important;
-    color: var(--white-mid) !important;
-  }
-
-  .clinks {
-    align-self: center !important;
-    justify-self: stretch !important;
-    max-width: 500px !important;
-    width: 100% !important;
-    margin-left: auto !important;
-    padding: 24px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    border: 1px solid rgba(255,255,255,.10) !important;
-    border-radius: clamp(18px, 1.25vw, 24px) !important;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
-      rgba(4,4,10,.34) !important;
-    box-shadow: 0 34px 84px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.055) !important;
-    position: relative;
-  }
-
-  .clinks::before {
-    content: 'КАНАЛЫ СВЯЗИ · APERTURA';
-    display: block;
-    margin: 0 0 6px;
-    font-family: var(--font-code);
-    font-size: 8px;
-    letter-spacing: .24em;
-    color: var(--white-dim);
-    text-transform: uppercase;
-  }
-
-  .clink {
-    min-height: 76px !important;
-    padding: 18px 20px !important;
-    border-radius: var(--radius) !important;
-    background: rgba(4,4,10,.42) !important;
-    border-color: rgba(255,255,255,.085) !important;
-    transform: translateZ(0);
-  }
-
-  .clink-icon {
-    width: 42px !important;
-    height: 42px !important;
-    border-radius: var(--radius-sm) !important;
-    background: rgba(255,255,255,.035) !important;
-  }
-
-  .clink-name {
-    font-size: 10px !important;
-    letter-spacing: .18em !important;
-  }
-
-  .clink-sub {
-    margin-top: 4px !important;
-    font-size: 10.5px !important;
-    letter-spacing: .07em !important;
-  }
-
-  @media (hover:hover) and (pointer:fine) {
-    .clink:hover {
-      transform: translate3d(4px, 0, 0) !important;
-      border-color: rgba(0,200,200,.34) !important;
-      background: rgba(255,255,255,.065) !important;
-      box-shadow: 0 14px 34px rgba(0,0,0,.20) !important;
-    }
-  }
-
-  /* Footer: правовые ссылки становятся нормальной desktop-навигацией, а не строкой в копирайте. */
-  footer {
-    padding: 56px 48px !important;
-  }
-
-  .foot-in {
-    max-width: var(--ew-desktop-stage) !important;
-    gap: 18px !important;
-  }
-
-  .foot-copy {
-    max-width: 960px !important;
-    line-height: 2.05 !important;
-  }
-
-  .foot-legal {
-    display: flex !important;
-    justify-content: center !important;
-    gap: 8px 10px !important;
-    margin: 14px 0 0 !important;
-  }
-
-  .foot-legal-sep {
-    display: none !important;
-  }
-
-  .foot-legal-link {
-    padding: 7px 10px !important;
-    border: 1px solid rgba(255,255,255,.10) !important;
-    border-radius: 999px !important;
-    background: rgba(255,255,255,.025) !important;
-    text-decoration: none !important;
-    transition: border-color .2s ease, color .2s ease, background .2s ease, transform .2s ease !important;
-  }
-
-  @media (hover:hover) and (pointer:fine) {
-    .foot-legal-link:hover {
-      transform: translateY(-1px);
-      background: rgba(0,200,200,.06) !important;
-      border-color: rgba(0,200,200,.28) !important;
-    }
+  #collab .collab-in > .clinks {
+    align-self: stretch;
+    justify-self: stretch;
+    justify-content: center;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
   }
 }
 </style>
-<script id="ew-desktop-polish-inspect-v1">
+
+<script id="ew-collab-desktop-contact-center-inspect">
 (function(){
-  const PATCH = 'Phase 2E.7 · DESKTOP POLISH PASS';
-  function cssOf(sel){
-    const el = document.querySelector(sel);
-    if(!el) return null;
-    const cs = getComputedStyle(el);
+  window.inspectCollabDesktopContactCenterPatch = function(){
+    const style = document.getElementById('ew-collab-desktop-contact-center-v1');
+    const mq = window.matchMedia('(min-width: 961px)');
+    const collab = document.querySelector('#collab .collab-in');
+    const links = document.querySelector('#collab .clinks');
+    const cs = links ? getComputedStyle(links) : null;
     return {
-      selector: sel,
-      width: cs.width,
-      maxWidth: cs.maxWidth,
-      padding: cs.padding,
-      display: cs.display,
-      gridTemplateColumns: cs.gridTemplateColumns,
-      alignItems: cs.alignItems,
-      borderRadius: cs.borderRadius
-    };
-  }
-  window.inspectDesktopPolishPatch = function(){
-    const desktop = !!(window.matchMedia && window.matchMedia('(min-width: 961px)').matches);
-    const style = document.getElementById('ew-desktop-polish-v1');
-    const checks = {
-      stylePresent: !!style,
-      desktopMediaActive: desktop,
-      offerModal: cssOf('#offerModal .legal-modal'),
-      privacyModal: cssOf('#privacyModal .legal-modal'),
-      requisitesModal: cssOf('#reqModal .legal-modal'),
-      checkoutModal: cssOf('#chkModalPanel'),
-      returnModal: cssOf('#returnModalPanel'),
-      collabGrid: cssOf('.collab-in'),
-      collabLinks: cssOf('.clinks'),
-      footerLegal: cssOf('.foot-legal')
-    };
-    return {
-      ok: !!style,
-      patch: PATCH,
-      desktopOnly: 'All layout rules are scoped to @media (min-width: 961px). Mobile CSS is intentionally untouched.',
-      checks
+      ok: Boolean(style && collab && links),
+      patch: 'Phase 2E.7a · PARTNERSHIP CONTACT CENTERING',
+      desktopOnly: 'Rules are scoped to @media (min-width: 961px). Mobile layout is untouched.',
+      themeSafe: 'No colors, backgrounds, borders, shadows, or theme variables are changed.',
+      mobileMediaActive: !mq.matches,
+      desktopMediaActive: mq.matches,
+      clinks: cs ? {
+        display: cs.display,
+        flexDirection: cs.flexDirection,
+        justifyContent: cs.justifyContent,
+        alignSelf: cs.alignSelf,
+        marginTop: cs.marginTop,
+        marginBottom: cs.marginBottom
+      } : null
     };
   };
 })();
 </script>
-
 </body>
 </html>
