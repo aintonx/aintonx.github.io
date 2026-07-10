@@ -35490,5 +35490,312 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
+
+<!-- Phase 2E.7k · DESKTOP BUTTON PRESS PARITY -->
+<style id="ew-desktop-button-press-parity-v1">
+/*
+  Phase 2E.7k · DESKTOP BUTTON PRESS PARITY
+  Scope: desktop/fine-pointer visual feedback only.
+
+  Goal:
+  - bring desktop click/press feedback in line with the already approved
+    mobile touch-active visual language;
+  - do not change button layout, width, height, modal scroll, hover mechanics,
+    backend, payment, reservation, or checkout logic.
+
+  Implementation:
+  - final desktop-only :active overrides mirror the existing mobile active
+    states;
+  - JS adds .ew-desktop-pressing for ~140ms on mouse/trackpad pointerdown so
+    quick desktop clicks are visible like mobile taps.
+*/
+@media (min-width: 961px) and (hover: hover) and (pointer: fine) {
+  .cta-secondary.cta-echo:active,
+  .cta-secondary.cta-echo.ew-desktop-pressing {
+    border-color: var(--cyan) !important;
+    background: rgba(0,200,200,0.06) !important;
+    box-shadow: 0 0 20px rgba(0,200,200,0.16) !important;
+    transform: translate3d(0,1px,0) scale(.992) !important;
+  }
+
+  .cta-primary:active,
+  .cta-primary.ew-desktop-pressing {
+    background: var(--red2) !important;
+    border-color: var(--red2) !important;
+    color: #fff !important;
+    box-shadow: 0 0 30px rgba(192,40,40,0.4) !important;
+    transform: translate3d(0,1px,0) scale(.992) !important;
+  }
+
+  .cta-secondary:active,
+  .cta-secondary.ew-desktop-pressing {
+    border-color: var(--cyan) !important;
+    color: var(--cyan) !important;
+    background: rgba(0,200,200,0.08) !important;
+    box-shadow: 0 0 18px rgba(0,200,200,0.2), inset 0 0 0 1px rgba(0,200,200,0.16) !important;
+    transform: translate3d(0,1px,0) scale(.992) !important;
+  }
+
+  .hbtn:active,
+  .hbtn.ew-desktop-pressing {
+    border-color: var(--cyan) !important;
+    color: var(--cyan) !important;
+    box-shadow: 0 0 12px var(--cyan-glow) !important;
+  }
+
+  .hbtn.danger:active,
+  .hbtn.danger.ew-desktop-pressing {
+    border-color: var(--red2) !important;
+    color: var(--red2) !important;
+  }
+
+  .pbtn:active,
+  .pbtn.ew-desktop-pressing {
+    background: var(--red2) !important;
+    box-shadow: 0 0 20px rgba(192,40,40,0.4) !important;
+    transform: translate3d(0,1px,0) scale(.992) !important;
+  }
+
+  .pbtn:active::after,
+  .pbtn.ew-desktop-pressing::after { left: 100% !important; }
+
+  .sbtn:active,
+  .sbtn.ew-desktop-pressing,
+  .pbtn.sbtn:active,
+  .pbtn.sbtn.ew-desktop-pressing {
+    background: transparent !important;
+    border-color: var(--border2) !important;
+    color: var(--white-dim) !important;
+    box-shadow: none !important;
+  }
+
+  .cart-empty-btn:active,
+  .cart-empty-btn.ew-desktop-pressing {
+    background: var(--cyan-dim) !important;
+    box-shadow: 0 0 16px var(--cyan-glow) !important;
+  }
+
+  .cart-checkout-btn:active,
+  .cart-checkout-btn.ew-desktop-pressing,
+  .chk-pay-btn:active,
+  .chk-pay-btn.ew-desktop-pressing,
+  #preorderBtn:active,
+  #preorderBtn.ew-desktop-pressing {
+    background: var(--red2) !important;
+    border-color: var(--red2) !important;
+    color: #fff !important;
+    box-shadow: 0 0 24px rgba(192,40,40,0.4) !important;
+  }
+
+  .echo-submit:active,
+  .echo-submit.ew-desktop-pressing {
+    background: rgba(0,200,200,0.18) !important;
+    box-shadow: 0 0 0 1px var(--cyan), 0 6px 22px var(--cyan-glow) !important;
+  }
+
+  .return-submit:active:not(:disabled),
+  .return-submit.ew-desktop-pressing:not(:disabled) {
+    background: rgba(192,40,40,0.1) !important;
+    box-shadow: 0 0 18px rgba(192,40,40,0.22), inset 0 0 0 1px rgba(192,40,40,0.16) !important;
+  }
+
+  .cookie-banner-ok:active,
+  .cookie-banner-ok.ew-desktop-pressing {
+    background: rgba(192,40,40,0.22) !important;
+    border-color: var(--red2) !important;
+    box-shadow: 0 0 12px rgba(192,40,40,0.3) !important;
+    color: #fff !important;
+  }
+
+  .btn-primary:active,
+  .btn-primary.ew-desktop-pressing {
+    background: var(--red-hi) !important;
+    border-color: var(--red-hi) !important;
+    box-shadow: 0 0 0 1px rgba(230,56,56,0.35), 0 12px 36px rgba(192,40,40,0.30) !important;
+  }
+
+  .btn-cyan:active,
+  .btn-cyan.ew-desktop-pressing {
+    background: rgba(0,200,200,0.08) !important;
+    color: var(--cyan-hi) !important;
+    border-color: var(--cyan) !important;
+    box-shadow: var(--shadow-cyan) !important;
+  }
+
+  .btn-ghost:active,
+  .btn-ghost.ew-desktop-pressing {
+    background: var(--surface-hi) !important;
+    color: var(--ink) !important;
+    border-color: var(--ink-4) !important;
+  }
+
+  .echo-pane-cta:active,
+  .echo-pane-cta.ew-desktop-pressing {
+    background: rgba(0,200,200,0.08) !important;
+    box-shadow: 0 0 18px rgba(0,200,200,0.2), inset 0 0 0 1px rgba(0,200,200,0.16) !important;
+    transform: translate3d(0,1px,0) scale(.992) !important;
+  }
+
+  .pre-pane-cta:active,
+  .pre-pane-cta.ew-desktop-pressing {
+    background: var(--red2) !important;
+    border-color: var(--red2) !important;
+    color: #fff !important;
+    box-shadow: 0 0 30px rgba(192,40,40,0.4) !important;
+    transform: translate3d(0,1px,0) scale(.992) !important;
+  }
+
+  .echo-voice-retry:active,
+  .echo-voice-retry.ew-desktop-pressing {
+    border-color: var(--red2) !important;
+    color: var(--red2) !important;
+    box-shadow: 0 0 10px rgba(192,40,40,0.16) !important;
+  }
+
+  .ap-gate-submit:active,
+  .ap-gate-submit.ew-desktop-pressing,
+  .ap-test-btn:active,
+  .ap-test-btn.ew-desktop-pressing {
+    border-color: var(--cyan) !important;
+    color: var(--white) !important;
+    transform: translate3d(0,-1px,0) !important;
+  }
+
+  .attr-pay-btn:active,
+  .attr-pay-btn.ew-desktop-pressing {
+    border-color: var(--white-dim) !important;
+    color: var(--white-mid) !important;
+    box-shadow: 0 0 14px rgba(255,255,255,.04) !important;
+  }
+
+  .attr-pay-btn:active::before,
+  .attr-pay-btn.ew-desktop-pressing::before { transform: translateX(100%) !important; }
+
+  .clink:active,
+  .clink.ew-desktop-pressing {
+    border-color: var(--border2) !important;
+    background: var(--surface2) !important;
+  }
+
+  .clink:active::before,
+  .clink.ew-desktop-pressing::before { transform: scaleY(1) !important; }
+
+  .clink:active .clink-arr,
+  .clink.ew-desktop-pressing .clink-arr,
+  .clink-copy:active .clink-copy-ico svg,
+  .clink-copy.ew-desktop-pressing .clink-copy-ico svg { color: var(--cyan) !important; }
+
+  .ap-status-panel .ap-status-action:active,
+  .ap-status-panel .ap-status-action.ap-pressing,
+  .ap-status-panel .ap-status-action.ew-desktop-pressing,
+  .ap-console-overlay[data-status-key] .ap-status-action:active,
+  .ap-console-overlay[data-status-key] .ap-status-action.ap-pressing,
+  .ap-console-overlay[data-status-key] .ap-status-action.ew-desktop-pressing,
+  .ap-console-overlay[data-status-key$="-success"] .ap-status-action:active,
+  .ap-console-overlay[data-status-key$="-success"] .ap-status-action.ap-pressing,
+  .ap-console-overlay[data-status-key$="-success"] .ap-status-action.ew-desktop-pressing {
+    background: rgba(0,200,200,.06) !important;
+    border-color: var(--cyan) !important;
+    color: var(--cyan) !important;
+    box-shadow: 0 0 20px rgba(0,200,200,.16) !important;
+    transform: translate3d(0,1px,0) scale(.992) !important;
+    filter: none !important;
+  }
+
+  .ap-status-panel .ap-status-action.primary:active,
+  .ap-status-panel .ap-status-action.primary.ap-pressing,
+  .ap-status-panel .ap-status-action.primary.ew-desktop-pressing,
+  .ap-console-overlay[data-status-key] .ap-status-action.primary:active,
+  .ap-console-overlay[data-status-key] .ap-status-action.primary.ap-pressing,
+  .ap-console-overlay[data-status-key] .ap-status-action.primary.ew-desktop-pressing,
+  .ap-console-overlay[data-status-key$="-success"] .ap-status-action.primary:active,
+  .ap-console-overlay[data-status-key$="-success"] .ap-status-action.primary.ap-pressing,
+  .ap-console-overlay[data-status-key$="-success"] .ap-status-action.primary.ew-desktop-pressing {
+    background: var(--red2) !important;
+    border-color: var(--red2) !important;
+    color: #fff !important;
+    box-shadow: 0 0 30px rgba(192,40,40,.40) !important;
+    transform: translate3d(0,1px,0) scale(.992) !important;
+    filter: none !important;
+  }
+}
+</style>
+<script id="ew-desktop-button-press-parity-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7k · DESKTOP BUTTON PRESS PARITY';
+  const PRESS_CLASS = 'ew-desktop-pressing';
+  const PRESS_SELECTOR = [
+    '.cta-primary', '.cta-secondary', '.hbtn', '.pbtn', '.sbtn',
+    '.cart-empty-btn', '.cart-checkout-btn', '.chk-pay-btn', '#preorderBtn',
+    '.echo-submit', '.return-submit', '.cookie-banner-ok', '.btn-primary',
+    '.btn-cyan', '.btn-ghost', '.echo-pane-cta', '.pre-pane-cta',
+    '.echo-voice-retry', '.ap-gate-submit', '.ap-test-btn', '.attr-pay-btn',
+    '.clink', '.clink-copy', '.ap-status-action'
+  ].join(',');
+
+  const isDesktopFine = () => Boolean(
+    window.matchMedia &&
+    window.matchMedia('(min-width: 961px)').matches &&
+    window.matchMedia('(hover: hover)').matches &&
+    window.matchMedia('(pointer: fine)').matches
+  );
+
+  function clearPress(el){
+    if(!el) return;
+    el.classList.remove(PRESS_CLASS);
+    if(el.__ewDesktopPressTimer){
+      clearTimeout(el.__ewDesktopPressTimer);
+      el.__ewDesktopPressTimer = null;
+    }
+  }
+
+  document.addEventListener('pointerdown', function(ev){
+    try{
+      if(!isDesktopFine()) return;
+      if(ev.pointerType && ev.pointerType !== 'mouse' && ev.pointerType !== 'pen') return;
+      const target = ev.target && ev.target.closest ? ev.target.closest(PRESS_SELECTOR) : null;
+      if(!target || target.disabled || target.getAttribute('aria-disabled') === 'true') return;
+      target.classList.add(PRESS_CLASS);
+      if(target.__ewDesktopPressTimer) clearTimeout(target.__ewDesktopPressTimer);
+      target.__ewDesktopPressTimer = setTimeout(function(){ clearPress(target); }, 160);
+    }catch(_){ }
+  }, true);
+
+  ['pointerup','pointercancel','pointerleave','blur'].forEach(function(type){
+    document.addEventListener(type, function(ev){
+      try{
+        const target = ev.target && ev.target.closest ? ev.target.closest('.' + PRESS_CLASS) : null;
+        if(target) clearPress(target);
+      }catch(_){ }
+    }, true);
+  });
+
+  window.inspectDesktopButtonPressParityPatch = function(){
+    const style = document.getElementById('ew-desktop-button-press-parity-v1');
+    const script = document.getElementById('ew-desktop-button-press-parity-inspect-v1');
+    const sample = document.querySelector(PRESS_SELECTOR);
+    return {
+      ok: Boolean(style && script),
+      patch: PATCH,
+      desktopMediaActive: isDesktopFine(),
+      pressClass: PRESS_CLASS,
+      selectorCount: PRESS_SELECTOR.split(',').length,
+      sampleButtonFound: Boolean(sample),
+      model: 'Desktop :active and pointerdown feedback mirrors the existing mobile touch-active visual language.',
+      scope: 'Desktop/fine-pointer visual feedback only.',
+      notChanged: [
+        'mobile active rules',
+        'button layout/width/height',
+        'modal size',
+        'modal scroll',
+        'hover availability',
+        'backend',
+        'checkout/payment/reservation logic'
+      ]
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
