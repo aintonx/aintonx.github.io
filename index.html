@@ -3,19 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<script id="ew-pwa-mobile-parity-boot">
-/* Phase 2E.7s-r1 · PWA MOBILE VISUAL PARITY
-   Mark installed/standalone launches before CSS paints. The class is used only
-   to force the installed web-app back onto the normal mobile visual rules,
-   not to introduce separate PWA card/header footprints. */
-(function(){
-  var isPwa = false;
-  try { isPwa = !!(window.navigator && window.navigator.standalone); } catch(e) {}
-  try { isPwa = isPwa || !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); } catch(e) {}
-  try { isPwa = isPwa || !!(window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches); } catch(e) {}
-  if(isPwa) document.documentElement.classList.add('ew-pwa-mobile-parity');
-})();
-</script>
 <meta name="theme-color" content="#04040a">
 <meta name="color-scheme" content="dark">
 
@@ -171,7 +158,25 @@
 <meta name="apple-mobile-web-app-title" content="EchoWorld">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<script id="ew-pwa-mobile-root-detect">
+(function(){
+  try{
+    var doc = document.documentElement;
+    var standalone = false;
+    try{
+      standalone = !!(
+        (window.matchMedia && (
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.matchMedia('(display-mode: fullscreen)').matches
+        )) ||
+        (window.navigator && window.navigator.standalone === true)
+      );
+    }catch(_){ standalone = !!(window.navigator && window.navigator.standalone === true); }
+    if(standalone) doc.classList.add('ew-pwa-mobile-shell');
+  }catch(_){ }
+})();
+</script>
 <script>
   /* EchoWorld brand icons: only browser-tab favicon follows the site theme.
      Apple Touch Icon and manifest stay static because iOS/Safari cache them aggressively. */
@@ -15157,6 +15162,99 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
   };
 })();
 </script>
+
+
+<style id="ew-pwa-mobile-root-fix-style">
+/* ══════════════════════════════════════════════════════════════════
+   Phase 2E.7s-r2 · PWA MOBILE PARITY ROOT FIX
+   Root cause: iOS black-translucent status bar puts standalone content under
+   the status bar; older safe-area header rules then create a different shell
+   from normal mobile Safari. PWA should reuse accepted mobile metrics.
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 960px) {
+  html.ew-pwa-mobile-shell {
+    --ew-mobile-header-h: 56px;
+    --ew-safe-top: 0px;
+    --ew-safe-bottom: 0px;
+  }
+  html.ew-pwa-mobile-shell,
+  html.ew-pwa-mobile-shell body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  html.ew-pwa-mobile-shell body {
+    padding-top: var(--ew-mobile-header-h) !important;
+  }
+  html.ew-pwa-mobile-shell header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: var(--ew-mobile-header-h) !important;
+    min-height: var(--ew-mobile-header-h) !important;
+    padding-top: 0 !important;
+    transform: translate3d(0,0,0) !important;
+    -webkit-transform: translate3d(0,0,0) !important;
+    will-change: auto !important;
+    box-sizing: border-box !important;
+  }
+  html.ew-pwa-mobile-shell header .header-inner {
+    height: var(--ew-mobile-header-h) !important;
+    min-height: var(--ew-mobile-header-h) !important;
+    box-sizing: border-box !important;
+  }
+  html.ew-pwa-mobile-shell .mob-nav-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+  }
+  html.ew-pwa-mobile-shell .mob-nav {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    transform: translate3d(100%,0,0) !important;
+    -webkit-transform: translate3d(100%,0,0) !important;
+  }
+  html.ew-pwa-mobile-shell .mob-nav.open {
+    transform: translate3d(0,0,0) !important;
+    -webkit-transform: translate3d(0,0,0) !important;
+  }
+  /* PWA catalog must use the already-approved mobile carousel footprint. */
+  html.ew-pwa-mobile-shell .pgrid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 12px !important;
+    padding: 0 20px 14px !important;
+    touch-action: auto !important;
+    overscroll-behavior-x: contain !important;
+  }
+  html.ew-pwa-mobile-shell .pgrid::-webkit-scrollbar { display: none !important; }
+  html.ew-pwa-mobile-shell .pcard {
+    flex: 0 0 calc(100vw - 40px) !important;
+    max-width: 420px !important;
+    scroll-snap-align: center !important;
+    border-left: 1px solid var(--border) !important;
+    border-right: 1px solid var(--border) !important;
+  }
+  html.ew-pwa-mobile-shell .pimg {
+    height: 180px !important;
+    aspect-ratio: auto !important;
+    max-height: none !important;
+  }
+}
+</style>
 
 </head>
 <body>
@@ -36211,149 +36309,59 @@ window.inspectEchoTitleSignalWordPatch = function(){
 </script>
 
 
-<!-- Phase 2E.7s-r1 · PWA MOBILE VISUAL PARITY -->
-<style id="ew-pwa-mobile-visual-parity">
-@media (max-width: 960px) {
-  html.ew-pwa-mobile-parity,
-  html.ew-pwa-mobile-parity body {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-  }
-
-  /* Installed web-app must reuse the normal mobile header geometry.
-     No special PWA header/card footprint is introduced here. */
-  html.ew-pwa-mobile-parity header {
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    transform: translate3d(0,0,0) !important;
-    -webkit-transform: translate3d(0,0,0) !important;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-  html.ew-pwa-mobile-parity header .header-inner {
-    height: var(--ew-header-h, 56px) !important;
-  }
-
-  /* Mobile menu: same visual as mobile browser, but transform is locked before
-     opening so the first standalone open cannot flash outside the viewport. */
-  html.ew-pwa-mobile-parity .mob-nav-overlay {
-    inset: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-height: var(--ew-vvh, 100dvh) !important;
-    height: var(--ew-vvh, 100dvh) !important;
-    overflow: hidden !important;
-  }
-  html.ew-pwa-mobile-parity .mob-nav {
-    right: 0 !important;
-    left: auto !important;
-    width: min(300px, 88vw) !important;
-    max-width: 100vw !important;
-    transform: translate3d(100%,0,0) !important;
-    -webkit-transform: translate3d(100%,0,0) !important;
-    transition: transform .42s cubic-bezier(.22,1,.36,1) !important;
-    contain: paint;
-  }
-  html.ew-pwa-mobile-parity .mob-nav.open {
-    transform: translate3d(0,0,0) !important;
-    -webkit-transform: translate3d(0,0,0) !important;
-  }
-  @media (max-width: 375px) {
-    html.ew-pwa-mobile-parity .mob-nav { width: 100% !important; }
-  }
-
-  /* Catalog cards: explicit browser-mobile parity. This deliberately resets the
-     failed standalone special card footprint and repeats the accepted mobile
-     carousel sizing instead of inventing PWA-only sizes. */
-  html.ew-pwa-mobile-parity #pgrid {
-    display: flex !important;
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    scroll-snap-type: x mandatory !important;
-    -webkit-overflow-scrolling: touch !important;
-    gap: 12px !important;
-    padding: 0 20px 14px !important;
-    touch-action: auto !important;
-    overscroll-behavior-x: contain !important;
-  }
-  html.ew-pwa-mobile-parity #pgrid .pcard {
-    flex: 0 0 calc(100vw - 40px) !important;
-    width: auto !important;
-    max-width: 420px !important;
-    min-height: 0 !important;
-    height: auto !important;
-    scroll-snap-align: center !important;
-    border-left: 1px solid var(--border) !important;
-    border-right: 1px solid var(--border) !important;
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto auto !important;
-  }
-  html.ew-pwa-mobile-parity #pgrid .pimg {
-    height: 180px !important;
-    aspect-ratio: auto !important;
-    max-height: none !important;
-  }
-  html.ew-pwa-mobile-parity #pgrid .pbody {
-    padding: 14px 16px 16px !important;
-    display: block !important;
-    min-height: 0 !important;
-  }
-  html.ew-pwa-mobile-parity #pgrid .pdesc {
-    min-height: unset !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 2 !important;
-    -webkit-box-orient: vertical !important;
-    overflow: hidden !important;
-    margin-bottom: 10px !important;
-  }
-  html.ew-pwa-mobile-parity #pgrid .pfooter {
-    flex-wrap: nowrap !important;
-    padding-top: 12px !important;
-    margin-top: 0 !important;
-  }
-  html.ew-pwa-mobile-parity #pgrid .pbtn {
-    width: auto !important;
-    min-width: 124px !important;
-    text-align: center !important;
-  }
-}
-</style>
-<script id="ew-pwa-mobile-visual-parity-inspect">
-window.inspectPwaMobileVisualParityPatch = function(){
-  var de=document.documentElement;
-  var standalone=false, fullscreen=false, navStandalone=false;
-  try{ navStandalone=!!(navigator && navigator.standalone); }catch(e){}
-  try{ standalone=!!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); }catch(e){}
-  try{ fullscreen=!!(window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches); }catch(e){}
-  var card=document.querySelector('#pgrid .pcard');
-  var nav=document.querySelector('.mob-nav');
-  var csCard=card ? getComputedStyle(card) : null;
-  var csNav=nav ? getComputedStyle(nav) : null;
+<script id="ew-pwa-mobile-root-fix-inspect">
+window.inspectPwaMobileParityRootFix = function(){
+  var root = document.documentElement;
+  var standaloneByDisplayMode = false;
+  var fullscreenByDisplayMode = false;
+  try{
+    standaloneByDisplayMode = !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    fullscreenByDisplayMode = !!(window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches);
+  }catch(_){ }
+  var standaloneByNavigator = !!(window.navigator && window.navigator.standalone === true);
+  var mobileMediaActive = false;
+  try{ mobileMediaActive = !!(window.matchMedia && window.matchMedia('(max-width: 960px)').matches); }catch(_){ mobileMediaActive = window.innerWidth <= 960; }
+  var header = document.querySelector('header');
+  var inner = document.querySelector('header .header-inner');
+  var menu = document.querySelector('.mob-nav');
+  var card = document.querySelector('#pgrid .pcard, .pgrid .pcard');
+  var grid = document.querySelector('#pgrid, .pgrid');
+  var cs = function(el){ return el ? getComputedStyle(el) : null; };
+  var headerCS = cs(header);
+  var innerCS = cs(inner);
+  var menuCS = cs(menu);
+  var cardCS = cs(card);
+  var gridCS = cs(grid);
   return {
-    ok:true,
-    patch:'Phase 2E.7s-r1 · PWA MOBILE VISUAL PARITY',
-    displayModeStandalone:standalone,
-    displayModeFullscreen:fullscreen,
-    navigatorStandalone:navStandalone,
-    parityClass:de.classList.contains('ew-pwa-mobile-parity'),
-    mobileMediaActive: !!(window.matchMedia && window.matchMedia('(max-width: 960px)').matches),
-    cardParity: card ? {
-      flexBasis: csCard.flexBasis,
-      maxWidth: csCard.maxWidth,
-      minHeight: csCard.minHeight,
-      height: csCard.height
-    } : null,
-    navParity: nav ? {
-      width: csNav.width,
-      transform: csNav.transform,
-      contain: csNav.contain
-    } : null,
-    note:'Installed web-app mode reuses normal mobile visual metrics. No standalone-only card/header footprint is introduced.'
+    ok: true,
+    patch: 'Phase 2E.7s-r2 · PWA MOBILE PARITY ROOT FIX',
+    detected: {
+      standaloneByDisplayMode: standaloneByDisplayMode,
+      fullscreenByDisplayMode: fullscreenByDisplayMode,
+      standaloneByNavigator: standaloneByNavigator,
+      parityClass: root.classList.contains('ew-pwa-mobile-shell'),
+      mobileMediaActive: mobileMediaActive
+    },
+    viewport: {
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      visualViewportHeight: window.visualViewport ? Math.round(window.visualViewport.height) : null,
+      ewVvh: getComputedStyle(root).getPropertyValue('--ew-vvh').trim() || null
+    },
+    checks: {
+      appleStatusBar: (document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')||{}).content || null,
+      headerPaddingTop: headerCS ? headerCS.paddingTop : null,
+      headerHeight: headerCS ? headerCS.height : null,
+      headerInnerHeight: innerCS ? innerCS.height : null,
+      menuTransform: menuCS ? menuCS.transform : null,
+      gridDisplay: gridCS ? gridCS.display : null,
+      cardFlexBasis: cardCS ? cardCS.flexBasis : null,
+      cardMaxWidth: cardCS ? cardCS.maxWidth : null,
+      cardImageHeight: (document.querySelector('.pimg') ? getComputedStyle(document.querySelector('.pimg')).height : null),
+      noDesktopTouch: !mobileMediaActive || root.classList.contains('ew-pwa-mobile-shell') === ((standaloneByDisplayMode || fullscreenByDisplayMode || standaloneByNavigator) && mobileMediaActive),
+      mobileMenuInitialTransformStable: !!menuCS,
+      catalogUsesMobileFootprint: !!(gridCS && cardCS && gridCS.display === 'flex' && /calc\(100vw - 40px\)|auto/.test(cardCS.flexBasis + ''))
+    }
   };
 };
 </script>
