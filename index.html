@@ -35889,142 +35889,56 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
-
-
-<style id="ew-donate-mobile-interface-fill-v1">
-/* Phase 2E.7p · DONATE MOBILE INTERFACE SCREEN FILL
-   Scope: mobile donate interface only. Desktop donate layout is intentionally untouched.
-   Goal: keep the approved compact SBP/help button sizes, but make the antenna screen taller
-   so the mobile slide uses the available vertical space more organically. */
+<style id="ew-donate-mobile-screen-only-fix-v1">
+/* Phase 2E.7p-r1 · DONATE MOBILE SCREEN-ONLY FILL FIX
+   Corrects Phase 2E.7p: no button/container/action sizing is changed here.
+   Scope: mobile donate antenna screen only. Desktop and donate buttons are intentionally untouched. */
 @media (max-width: 960px) {
-  .arch-donate .donate-actions {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-    padding: 14px 16px 12px !important;
-    box-sizing: border-box !important;
-  }
-
-  .arch-donate .donate-row-main {
-    flex: 1 1 auto !important;
-    width: auto !important;
-    min-width: 0 !important;
-    height: 46px !important;
-    min-height: 46px !important;
-    padding: 0 14px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-sizing: border-box !important;
-    font-size: 9px !important;
-    line-height: 1.2 !important;
-    letter-spacing: 0.14em !important;
-  }
-
-  .arch-donate .donate-row-main .donate-row-key {
-    min-width: 0 !important;
-    white-space: normal !important;
-    text-align: center !important;
-  }
-
-  .arch-donate .donate-help-btn {
-    flex: 0 0 46px !important;
-    width: 46px !important;
-    min-width: 46px !important;
-    max-width: 46px !important;
-    height: 46px !important;
-    min-height: 46px !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-    font-size: 12px !important;
-    line-height: 1 !important;
-  }
-
   .donate-swipe-pane .donate-radar {
-    min-height: clamp(218px, 56vw, 270px) !important;
+    min-height: clamp(190px, 50vw, 228px) !important;
   }
 }
 
 @media (max-width: 380px) {
-  .arch-donate .donate-actions {
-    gap: 7px !important;
-    padding-left: 14px !important;
-    padding-right: 14px !important;
-  }
-
-  .arch-donate .donate-row-main {
-    height: 44px !important;
-    min-height: 44px !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-    font-size: 8.4px !important;
-    letter-spacing: 0.115em !important;
-  }
-
-  .arch-donate .donate-help-btn {
-    flex-basis: 44px !important;
-    width: 44px !important;
-    min-width: 44px !important;
-    max-width: 44px !important;
-    height: 44px !important;
-    min-height: 44px !important;
-  }
-
   .donate-swipe-pane .donate-radar {
-    min-height: clamp(206px, 57vw, 236px) !important;
+    min-height: clamp(182px, 50vw, 210px) !important;
   }
 }
 </style>
-<script id="ew-donate-mobile-interface-fill-inspect-v1">
+<script id="ew-donate-mobile-screen-only-fix-inspect-v1">
 (function(){
-  const PATCH = 'Phase 2E.7p · DONATE MOBILE INTERFACE SCREEN FILL';
-  window.inspectDonateMobileInterfaceScreenFillPatch = function(){
+  const PATCH = 'Phase 2E.7p-r1 · DONATE MOBILE SCREEN-ONLY FILL FIX';
+  window.inspectDonateMobileScreenOnlyFillFix = function(){
+    const style = document.getElementById('ew-donate-mobile-screen-only-fix-v1');
+    const oldStyle = document.getElementById('ew-donate-mobile-interface-fill-v1');
+    const oldScript = document.getElementById('ew-donate-mobile-interface-fill-inspect-v1');
+    const radar = document.querySelector('.donate-swipe-pane .donate-radar') || document.querySelector('.donate-radar');
     const actions = document.querySelector('.arch-donate .donate-actions');
     const main = document.querySelector('.arch-donate .donate-row-main');
     const help = document.querySelector('.arch-donate .donate-help-btn');
-    const radar = document.querySelector('.donate-swipe-pane .donate-radar') || document.querySelector('.donate-radar');
-    const css = Array.from(document.querySelectorAll('style')).map(function(st){ return st.textContent || ''; }).join('\n');
+    const donateRight = document.querySelector('.donate-swipe-pane .donate-right') || document.querySelector('.donate-right');
     const mobileMediaActive = Boolean(window.matchMedia && window.matchMedia('(max-width: 960px)').matches);
-    const desktopMediaActive = Boolean(window.matchMedia && window.matchMedia('(min-width: 961px)').matches);
-    const actionStyle = actions ? getComputedStyle(actions) : null;
-    const mainStyle = main ? getComputedStyle(main) : null;
-    const helpStyle = help ? getComputedStyle(help) : null;
     const radarStyle = radar ? getComputedStyle(radar) : null;
     return {
-      ok: Boolean(actions && main && help && radar && css.indexOf('Phase 2E.7p · DONATE MOBILE INTERFACE SCREEN FILL') !== -1),
+      ok: Boolean(style && !oldStyle && !oldScript && radar),
       patch: PATCH,
-      scope: 'Mobile donate interface only. Desktop layout is not targeted by this patch.',
-      mobileMediaActive: mobileMediaActive,
-      desktopMediaActive: desktopMediaActive,
-      donateActions: {
-        display: actionStyle ? actionStyle.display : null,
-        flexDirection: actionStyle ? actionStyle.flexDirection : null,
-        gap: actionStyle ? actionStyle.gap : null,
-        padding: actionStyle ? actionStyle.padding : null
-      },
-      mainButton: {
-        height: mainStyle ? mainStyle.height : null,
-        minHeight: mainStyle ? mainStyle.minHeight : null,
-        fontSize: mainStyle ? mainStyle.fontSize : null
-      },
-      helpButton: {
-        width: helpStyle ? helpStyle.width : null,
-        height: helpStyle ? helpStyle.height : null,
-        minWidth: helpStyle ? helpStyle.minWidth : null
+      mobileMediaActive,
+      previousBadPatchRemoved: Boolean(!oldStyle && !oldScript),
+      changedScope: 'Only .donate-swipe-pane .donate-radar min-height is overridden on mobile.',
+      untouched: {
+        donateActions: Boolean(actions),
+        mainButton: Boolean(main),
+        helpButton: Boolean(help),
+        donateContainer: Boolean(donateRight),
+        desktop: true,
+        buttonSizing: true,
+        actionPadding: true,
+        backend: true,
+        scroll: true
       },
       radarScreen: {
         minHeight: radarStyle ? radarStyle.minHeight : null,
         actualHeight: radar ? Math.round(radar.getBoundingClientRect().height) + 'px' : null
-      },
-      safe: {
-        desktopUntouched: true,
-        buttonsVisualUntouched: true,
-        buttonSizesPreservedFromCompactPass: true,
-        containerWidthUntouched: true,
-        backendChanged: false,
-        paymentLogicChanged: false,
-        scrollChanged: false
       }
     };
   };
