@@ -200,6 +200,7 @@
 <link rel="dns-prefetch" href="https://suggestions.dadata.ru">
 <link rel="preconnect" href="https://smartcaptcha.cloud.yandex.ru">
 <link rel="dns-prefetch" href="https://functions.yandexcloud.net">
+<link rel="preconnect" href="https://functions.yandexcloud.net" crossorigin>
 <link rel="preconnect" href="https://mc.yandex.ru">
 <link rel="dns-prefetch" href="https://yastatic.net">
 
@@ -33956,6 +33957,231 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         denied: (typeof APERTURA_STATUS_STATES !== 'undefined' && !!APERTURA_STATUS_STATES['order-cancel-denied'])
       }
     };
+  };
+})();
+</script>
+
+
+<style id="ew-interaction-stability-guard-v1">
+/* Phase 2E.4 · INTERACTION STABILITY GUARD
+   Non-functional UI/performance layer: no business logic changes, no modal
+   motion changes. Gives immediate feedback on slow network actions and
+   coalesces repeated clicks so bad network conditions do not create duplicate
+   requests or frozen-looking buttons. */
+.ap-status-action.ew-action-pending,
+.ap-status-action[aria-busy="true"]{
+  position:relative;
+  pointer-events:none;
+  opacity:.72;
+  transform:translateY(0) !important;
+}
+.ap-status-action.ew-action-pending::after,
+.ap-status-action[aria-busy="true"]::after{
+  content:'';
+  width:14px;
+  height:14px;
+  margin-left:9px;
+  border-radius:50%;
+  border:1px solid currentColor;
+  border-top-color:transparent;
+  display:inline-block;
+  vertical-align:-2px;
+  animation:ewActionSpin .72s linear infinite;
+}
+#apStatusOverlay.ew-network-action-busy .ap-status-action:not(.ew-action-pending){
+  opacity:.72;
+}
+@keyframes ewActionSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){
+  .ap-status-action.ew-action-pending::after,
+  .ap-status-action[aria-busy="true"]::after{animation:none}
+}
+</style>
+<script id="ew-interaction-stability-guard-js">
+(function(){
+  const PATCH = 'Phase 2E.4 · INTERACTION STABILITY GUARD';
+  const state = window.__EW_PERF_GUARD__ = window.__EW_PERF_GUARD__ || {
+    patch: PATCH,
+    pending: {},
+    lastActions: [],
+    stats: {
+      started: 0,
+      completed: 0,
+      failed: 0,
+      coalesced: 0,
+      busyMarks: 0,
+      idleQueued: 0,
+      longTasks: 0,
+      longTaskTotalMs: 0
+    }
+  };
+  state.patch = PATCH;
+
+  function now(){ return (performance && performance.now) ? performance.now() : Date.now(); }
+  function actionId(action){
+    try{
+      const rec = typeof _ewActiveOrderRead === 'function' ? _ewActiveOrderRead() : null;
+      const id = rec && (rec.order_id || rec.reservation_id || rec.relic_code || rec.product_id);
+      return String(action || 'action') + ':' + String(id || 'global');
+    }catch(_){ return String(action || 'action') + ':global'; }
+  }
+  function pushLog(item){
+    try{
+      state.lastActions.push(item);
+      if(state.lastActions.length > 12) state.lastActions.splice(0, state.lastActions.length - 12);
+    }catch(_){ }
+  }
+  function activeStatusOverlay(){ return document.getElementById('apStatusOverlay'); }
+  function markBusy(action){
+    state.stats.busyMarks += 1;
+    const ov = activeStatusOverlay();
+    if(ov){
+      ov.classList.add('ew-network-action-busy');
+      ov.setAttribute('aria-busy','true');
+      ov.dataset.networkAction = String(action || '');
+    }
+    const el = document.activeElement;
+    if(el && el.classList && el.classList.contains('ap-status-action')){
+      el.classList.add('ew-action-pending');
+      el.setAttribute('aria-busy','true');
+    }
+  }
+  function clearBusy(action){
+    const ov = activeStatusOverlay();
+    if(ov){
+      ov.classList.remove('ew-network-action-busy');
+      ov.removeAttribute('aria-busy');
+      if(!action || ov.dataset.networkAction === String(action)) delete ov.dataset.networkAction;
+    }
+    document.querySelectorAll('.ap-status-action.ew-action-pending,[aria-busy="true"].ap-status-action').forEach(function(btn){
+      btn.classList.remove('ew-action-pending');
+      btn.removeAttribute('aria-busy');
+    });
+  }
+  window._ewMarkNetworkActionBusy = markBusy;
+  window._ewClearNetworkActionBusy = clearBusy;
+
+  function runOnce(key, factory, meta){
+    key = String(key || 'default');
+    meta = meta || {};
+    if(state.pending[key]){
+      state.stats.coalesced += 1;
+      pushLog({type:'coalesced', key:key, action:meta.action || '', at:Date.now()});
+      markBusy(meta.action || key);
+      return state.pending[key];
+    }
+    state.stats.started += 1;
+    markBusy(meta.action || key);
+    const startedAt = now();
+    const promise = Promise.resolve().then(factory).then(function(value){
+      state.stats.completed += 1;
+      pushLog({type:'completed', key:key, action:meta.action || '', ms:Math.round(now()-startedAt), at:Date.now()});
+      return value;
+    }).catch(function(error){
+      state.stats.failed += 1;
+      pushLog({type:'failed', key:key, action:meta.action || '', ms:Math.round(now()-startedAt), error:String(error && (error.message || error.code) || error || ''), at:Date.now()});
+      throw error;
+    }).finally(function(){
+      if(state.pending[key] === promise) delete state.pending[key];
+      clearBusy(meta.action || key);
+    });
+    state.pending[key] = promise;
+    return promise;
+  }
+  window._ewRunNetworkActionOnce = runOnce;
+
+  /* Idle scheduler for non-critical work. This intentionally does not replace
+     mission-critical checkout/payment calls; it gives future patches a safe
+     queue for low-priority decoding/diagnostics without blocking clicks. */
+  window._ewScheduleIdle = window._ewScheduleIdle || function(fn, opts){
+    opts = opts || {};
+    state.stats.idleQueued += 1;
+    const timeout = Number(opts.timeout || 1500);
+    if(typeof fn !== 'function') return 0;
+    if('requestIdleCallback' in window){
+      return requestIdleCallback(function(deadline){
+        try{ fn(deadline); }catch(err){ console.warn('EchoWorld idle task failed:', err); }
+      }, {timeout:timeout});
+    }
+    return setTimeout(function(){
+      try{ fn({didTimeout:true, timeRemaining:function(){return 0;}}); }catch(err){ console.warn('EchoWorld idle task failed:', err); }
+    }, Math.min(timeout, Number(opts.delay || 260)));
+  };
+
+  try{
+    if('PerformanceObserver' in window){
+      const po = new PerformanceObserver(function(list){
+        list.getEntries().forEach(function(entry){
+          state.stats.longTasks += 1;
+          state.stats.longTaskTotalMs += Math.round(entry.duration || 0);
+        });
+      });
+      po.observe({entryTypes:['longtask']});
+      state.longTaskObserver = true;
+    }
+  }catch(_){ state.longTaskObserver = false; }
+
+  function wrapAction(name, actionName){
+    const original = window[name];
+    if(typeof original !== 'function' || original.__ewPerfGuardWrapped) return false;
+    const wrapped = function(){
+      const args = arguments;
+      const ctx = this;
+      return runOnce(actionId(actionName), function(){ return original.apply(ctx, args); }, {action:actionName});
+    };
+    wrapped.__ewPerfGuardWrapped = true;
+    wrapped.__ewPerfGuardOriginal = original;
+    window[name] = wrapped;
+    return true;
+  }
+
+  const wrapped = {
+    payment: wrapAction('_ewActiveOrderGoPayment','order-pay'),
+    status: wrapAction('_ewActiveOrderCheckStatus','order-check-status'),
+    cancel: wrapAction('_ewActiveOrderCancelFlow','order-cancel-confirm')
+  };
+
+  const oldHandle = window.handleAperturaStatusAction;
+  if(typeof oldHandle === 'function' && !oldHandle.__ewPerfGuardWrapped){
+    const guardedHandle = function(action, key){
+      if(action === 'order-pay' || action === 'order-check-status' || action === 'order-cancel-confirm'){
+        markBusy(action);
+      }
+      return oldHandle.apply(this, arguments);
+    };
+    guardedHandle.__ewPerfGuardWrapped = true;
+    guardedHandle.__ewPerfGuardOriginal = oldHandle;
+    window.handleAperturaStatusAction = guardedHandle;
+  }
+
+  window.inspectEchoWorldPerformanceGuard = function(){
+    const links = Array.from(document.querySelectorAll('link[rel="preconnect"],link[rel="dns-prefetch"]'));
+    return {
+      ok: true,
+      patch: PATCH,
+      resourceHints: {
+        yandexPreconnect: !!document.querySelector('link[rel="preconnect"][href="https://functions.yandexcloud.net"]'),
+        yandexDnsPrefetch: !!document.querySelector('link[rel="dns-prefetch"][href*="functions.yandexcloud.net"]'),
+        all: links.map(function(l){ return {rel:l.rel, href:l.href, crossOrigin:l.crossOrigin || ''}; })
+      },
+      wrapped: wrapped,
+      idleScheduler: typeof window._ewScheduleIdle,
+      requestIdleCallback: 'requestIdleCallback' in window,
+      pendingKeys: Object.keys(state.pending),
+      stats: Object.assign({}, state.stats),
+      lastActions: state.lastActions.slice(-8),
+      longTaskObserver: !!state.longTaskObserver
+    };
+  };
+
+  window.testEchoWorldPerformanceGuardCoalescing = function(){
+    const before = state.stats.coalesced;
+    let calls = 0;
+    const p1 = runOnce('self-test', function(){ calls += 1; return new Promise(function(resolve){ setTimeout(function(){ resolve('ok'); }, 80); }); }, {action:'self-test'});
+    const p2 = runOnce('self-test', function(){ calls += 1; return Promise.resolve('duplicate'); }, {action:'self-test'});
+    return Promise.all([p1,p2]).then(function(values){
+      return {ok:calls === 1 && values[0] === 'ok' && values[1] === 'ok', calls:calls, values:values, coalescedDelta:state.stats.coalesced - before};
+    });
   };
 })();
 </script>
