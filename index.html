@@ -36020,5 +36020,91 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
+
+<style id="ew-donate-mobile-radar-action-transfer-v1">
+/* Phase 2E.7p-r4 · DONATE MOBILE RADAR/ACTION SPACE TRANSFER
+   Mobile-only correction after returning to Phase 2E.7o.
+
+   Goal from the marked screenshot:
+   - keep the outer donate interface container the same size;
+   - keep the compact SBP/help button sizes from Phase 2E.7o;
+   - extend only the inner antenna/radar window downward;
+   - move the action row lower by transferring the existing empty action reserve
+     into the radar window.
+
+   Implementation detail:
+   Phase 2E.7c left a mobile min-height reserve on #archDonate .donate-actions
+   (108px / 104px on narrow screens). Phase 2E.7o made the real buttons compact.
+   This patch does not add height to the container. It moves the same reserve:
+   +36px to the radar, -36px from actions on normal mobile;
+   +34px to the radar, -34px from actions on narrow mobile. */
+@media (max-width: 960px) {
+  #archDonate .donate-swipe-pane .donate-radar {
+    min-height: 187px !important;
+  }
+
+  #archDonate .donate-actions {
+    min-height: 72px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  #archDonate .donate-swipe-pane .donate-radar {
+    min-height: 192px !important;
+  }
+
+  #archDonate .donate-actions {
+    min-height: 70px !important;
+  }
+}
+</style>
+<script id="ew-donate-mobile-radar-action-transfer-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7p-r4 · DONATE MOBILE RADAR/ACTION SPACE TRANSFER';
+  window.inspectDonateMobileRadarActionTransferPatch = function(){
+    const style = document.getElementById('ew-donate-mobile-radar-action-transfer-v1');
+    const donate = document.getElementById('archDonate');
+    const right = donate ? donate.querySelector('.donate-swipe-pane .donate-right') : null;
+    const radar = donate ? donate.querySelector('.donate-swipe-pane .donate-radar') : null;
+    const actions = donate ? donate.querySelector('.donate-actions') : null;
+    const main = donate ? donate.querySelector('.donate-row-main') : null;
+    const help = donate ? donate.querySelector('.donate-help-btn') : null;
+    const mobile = Boolean(window.matchMedia && window.matchMedia('(max-width: 960px)').matches);
+    const narrow = Boolean(window.matchMedia && window.matchMedia('(max-width: 380px)').matches);
+    const rightStyle = right ? getComputedStyle(right) : null;
+    const radarStyle = radar ? getComputedStyle(radar) : null;
+    const actionStyle = actions ? getComputedStyle(actions) : null;
+    const mainStyle = main ? getComputedStyle(main) : null;
+    const helpStyle = help ? getComputedStyle(help) : null;
+    return {
+      ok: Boolean(style && donate && radar && actions && main && help),
+      patch: PATCH,
+      mobileMediaActive: mobile,
+      narrowMediaActive: narrow,
+      changedScope: 'Only mobile min-height transfer: radar grows by the same amount that the action reserve shrinks. No outer donate-right height/width or button size rules are introduced.',
+      outerContainer: {
+        heightRuleIntroducedByPatch: false,
+        widthRuleIntroducedByPatch: false,
+        computedHeight: rightStyle ? rightStyle.height : null,
+        computedWidth: rightStyle ? rightStyle.width : null
+      },
+      radar: {
+        minHeight: radarStyle ? radarStyle.minHeight : null,
+        expectedMobileMinHeight: narrow ? '192px' : '187px'
+      },
+      actions: {
+        minHeight: actionStyle ? actionStyle.minHeight : null,
+        expectedMobileMinHeight: narrow ? '70px' : '72px'
+      },
+      buttonsPreservedFromPhase2E7o: {
+        mainHeight: mainStyle ? mainStyle.height : null,
+        helpWidth: helpStyle ? helpStyle.width : null,
+        helpHeight: helpStyle ? helpStyle.height : null
+      }
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
