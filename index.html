@@ -35890,10 +35890,12 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 </script>
 
 
-<style id="ew-donate-mobile-compact-actions-v1">
-/* Phase 2E.7o · DONATE MOBILE COMPACT ACTIONS
-   Scope: mobile/touch donate actions only. Desktop donate layout is intentionally untouched.
-   Fixes the oversized mobile SBP/help button row introduced by the compact help action. */
+
+<style id="ew-donate-mobile-interface-fill-v1">
+/* Phase 2E.7p · DONATE MOBILE INTERFACE SCREEN FILL
+   Scope: mobile donate interface only. Desktop donate layout is intentionally untouched.
+   Goal: keep the approved compact SBP/help button sizes, but make the antenna screen taller
+   so the mobile slide uses the available vertical space more organically. */
 @media (max-width: 960px) {
   .arch-donate .donate-actions {
     display: flex !important;
@@ -35938,6 +35940,10 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
     font-size: 12px !important;
     line-height: 1 !important;
   }
+
+  .donate-swipe-pane .donate-radar {
+    min-height: clamp(218px, 56vw, 270px) !important;
+  }
 }
 
 @media (max-width: 380px) {
@@ -35964,27 +35970,31 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
     height: 44px !important;
     min-height: 44px !important;
   }
+
+  .donate-swipe-pane .donate-radar {
+    min-height: clamp(206px, 57vw, 236px) !important;
+  }
 }
 </style>
-<script id="ew-donate-mobile-compact-actions-inspect-v1">
+<script id="ew-donate-mobile-interface-fill-inspect-v1">
 (function(){
-  const PATCH = 'Phase 2E.7o · DONATE MOBILE COMPACT ACTIONS';
-  window.inspectDonateMobileCompactActionsPatch = function(){
+  const PATCH = 'Phase 2E.7p · DONATE MOBILE INTERFACE SCREEN FILL';
+  window.inspectDonateMobileInterfaceScreenFillPatch = function(){
     const actions = document.querySelector('.arch-donate .donate-actions');
     const main = document.querySelector('.arch-donate .donate-row-main');
     const help = document.querySelector('.arch-donate .donate-help-btn');
-    const echoSubmit = document.querySelector('.echo-submit');
+    const radar = document.querySelector('.donate-swipe-pane .donate-radar') || document.querySelector('.donate-radar');
     const css = Array.from(document.querySelectorAll('style')).map(function(st){ return st.textContent || ''; }).join('\n');
     const mobileMediaActive = Boolean(window.matchMedia && window.matchMedia('(max-width: 960px)').matches);
     const desktopMediaActive = Boolean(window.matchMedia && window.matchMedia('(min-width: 961px)').matches);
     const actionStyle = actions ? getComputedStyle(actions) : null;
     const mainStyle = main ? getComputedStyle(main) : null;
     const helpStyle = help ? getComputedStyle(help) : null;
-    const echoStyle = echoSubmit ? getComputedStyle(echoSubmit) : null;
+    const radarStyle = radar ? getComputedStyle(radar) : null;
     return {
-      ok: Boolean(actions && main && help && css.indexOf('Phase 2E.7o · DONATE MOBILE COMPACT ACTIONS') !== -1),
+      ok: Boolean(actions && main && help && radar && css.indexOf('Phase 2E.7p · DONATE MOBILE INTERFACE SCREEN FILL') !== -1),
       patch: PATCH,
-      scope: 'Mobile donate actions only. Desktop styles are not targeted by this patch.',
+      scope: 'Mobile donate interface only. Desktop layout is not targeted by this patch.',
       mobileMediaActive: mobileMediaActive,
       desktopMediaActive: desktopMediaActive,
       donateActions: {
@@ -35996,21 +36006,22 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
       mainButton: {
         height: mainStyle ? mainStyle.height : null,
         minHeight: mainStyle ? mainStyle.minHeight : null,
-        fontSize: mainStyle ? mainStyle.fontSize : null,
-        letterSpacing: mainStyle ? mainStyle.letterSpacing : null
+        fontSize: mainStyle ? mainStyle.fontSize : null
       },
       helpButton: {
         width: helpStyle ? helpStyle.width : null,
         height: helpStyle ? helpStyle.height : null,
         minWidth: helpStyle ? helpStyle.minWidth : null
       },
-      reference: {
-        echoSubmitHeight: echoStyle ? echoStyle.height : null,
-        echoSubmitPadding: echoStyle ? echoStyle.padding : null
+      radarScreen: {
+        minHeight: radarStyle ? radarStyle.minHeight : null,
+        actualHeight: radar ? Math.round(radar.getBoundingClientRect().height) + 'px' : null
       },
       safe: {
         desktopUntouched: true,
-        visualOnly: true,
+        buttonsVisualUntouched: true,
+        buttonSizesPreservedFromCompactPass: true,
+        containerWidthUntouched: true,
         backendChanged: false,
         paymentLogicChanged: false,
         scrollChanged: false
