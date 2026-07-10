@@ -34975,5 +34975,133 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
+
+<style id="ew-desktop-modal-scroll-recovery-v1">
+/* ════════════════════════════════════════════════════════════════
+   Phase 2E.7f · DESKTOP MODAL SCROLL RECOVERY
+   Коррекция после adaptive-height pass.
+
+   Причина: предыдущий desktop-only слой сделал панель flex-контейнером с
+   overflow:hidden и перенёс скролл внутрь body. Это ломало существующий
+   scroll-lock v5: в списке разрешённых скроллеров уже есть реальные панели
+   (.chk-modal, #returnModalPanel, .ap-console-panel, .ap-status-panel),
+   а не все вложенные body. Возвращаем desktop-скролл туда, где он был
+   архитектурно ожидаемым: на саму панель. Футерные legal-модалки оставляем
+   на их штатной схеме: .legal-modal-body scrolls inside panel.
+
+   Product card modal намеренно исключён. Мобильные правила не трогаем.
+   Цвета, фоны, рамки, тени и theme variables не меняются. */
+@media (min-width: 961px) {
+  #chkModalPanel,
+  #echoOrderModal,
+  #returnModalPanel,
+  #apConsoleGatePanel,
+  #apConsolePanel,
+  #apStatusPanel,
+  #swipeOverlay .swipe-overlay-card {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #chkModalPanel .chk-body,
+  #echoOrderModal .chk-body,
+  #returnModalPanel .return-body,
+  #returnModal .return-body,
+  #apConsoleGatePanel .ap-console-body,
+  #apConsolePanel .ap-console-body,
+  #apStatusPanel .ap-status-body {
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+
+  #reqModal .legal-modal,
+  #offerModal .legal-modal,
+  #privacyModal .legal-modal {
+    overflow: hidden !important;
+  }
+
+  #reqModal .legal-modal-body,
+  #offerModal .legal-modal-body,
+  #privacyModal .legal-modal-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+</style>
+<script id="ew-desktop-modal-scroll-recovery-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7f · DESKTOP MODAL SCROLL RECOVERY';
+  const panelSelectors = [
+    ['checkout', '#chkModalPanel'],
+    ['echoOrder', '#echoOrderModal'],
+    ['return', '#returnModalPanel'],
+    ['architectGate', '#apConsoleGatePanel'],
+    ['architectConsole', '#apConsolePanel'],
+    ['aperturaStatus', '#apStatusPanel'],
+    ['swipeOverlay', '#swipeOverlay .swipe-overlay-card']
+  ];
+  const bodySelectors = [
+    ['checkoutBody', '#chkModalPanel .chk-body'],
+    ['echoOrderBody', '#echoOrderModal .chk-body'],
+    ['returnBody', '#returnModalPanel .return-body'],
+    ['architectGateBody', '#apConsoleGatePanel .ap-console-body'],
+    ['architectConsoleBody', '#apConsolePanel .ap-console-body'],
+    ['aperturaStatusBody', '#apStatusPanel .ap-status-body']
+  ];
+  const legalSelectors = [
+    ['requisitesBody', '#reqModal .legal-modal-body'],
+    ['offerBody', '#offerModal .legal-modal-body'],
+    ['privacyBody', '#privacyModal .legal-modal-body']
+  ];
+
+  function read(name, selector){
+    const el = document.querySelector(selector);
+    if(!el) return { name, selector, found:false };
+    const cs = getComputedStyle(el);
+    return {
+      name,
+      selector,
+      found: true,
+      overflowX: cs.overflowX,
+      overflowY: cs.overflowY,
+      flex: cs.flex,
+      minHeight: cs.minHeight,
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+      canScroll: el.scrollHeight > el.clientHeight + 1
+    };
+  }
+
+  window.inspectDesktopModalScrollRecoveryPatch = function(){
+    const style = document.getElementById('ew-desktop-modal-scroll-recovery-v1');
+    const txt = style ? style.textContent : '';
+    const desktop = !!(window.matchMedia && window.matchMedia('(min-width: 961px)').matches);
+    const panels = panelSelectors.map(function(def){ return read(def[0], def[1]); });
+    const bodies = bodySelectors.map(function(def){ return read(def[0], def[1]); });
+    const legalBodies = legalSelectors.map(function(def){ return read(def[0], def[1]); });
+    const productExcluded = !/#modalPanel|\.moverlay\s+\.modal/.test(txt);
+    const panelRulesOk = txt.indexOf('overflow-y: auto !important') !== -1 && txt.indexOf('overflow: visible !important') !== -1;
+    const allPanelsFound = panels.every(function(p){ return p.found; });
+    return {
+      ok: Boolean(style && productExcluded && panelRulesOk && allPanelsFound),
+      patch: PATCH,
+      desktopMediaActive: desktop,
+      reason: 'Restores desktop modal scrolling to the already whitelisted panel scrollers; legal footer modals keep body scrolling.',
+      productCardModalExcluded: productExcluded,
+      themeSafe: 'No color, background, border, shadow, or theme-variable rules are introduced by this patch.',
+      panels,
+      bodies,
+      legalBodies
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
