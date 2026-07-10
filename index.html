@@ -35393,5 +35393,102 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 </script>
 
 
+
+<!-- Phase 2E.7j · DESKTOP CHECKOUT AUTOFILL SCROLL GUARD FIX -->
+<style id="ew-desktop-checkout-autofill-scroll-fix-v1">
+/*
+  Phase 2E.7j · DESKTOP CHECKOUT AUTOFILL SCROLL GUARD FIX
+  Scope: desktop checkout/form scroll stability after browser autofill.
+
+  Fix:
+  - desktop checkout panels opt out of browser scroll anchoring, because autofill
+    can change field rendering and make Chromium/Yandex try to preserve an anchor
+    while the user is already scrolling;
+  - no overflow, max-height, panel size, color, background, border, shadow,
+    backend, checkout/payment/reservation logic changes.
+*/
+@media (min-width: 961px) {
+  #chkModalPanel,
+  #chkBody,
+  #echoOrderModal,
+  #echoOrderBody,
+  #returnModalPanel,
+  #returnModal .return-body {
+    overflow-anchor: none;
+  }
+}
+</style>
+<script id="ew-desktop-checkout-autofill-scroll-fix-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7j · DESKTOP CHECKOUT AUTOFILL SCROLL GUARD FIX';
+
+  const previousNameAutofillScrollGuard = window._setupNameAutofillScrollGuard;
+
+  /*
+    Desktop fix: the old guard was designed for iOS Contact AutoFill. On desktop
+    it could bind a scroll listener after autofill and keep returning scrollTop
+    to the pre-autofill anchor for ~700ms. That feels like the form is fighting
+    the user's wheel/trackpad scroll. Keep the guard only for coarse pointers
+    where it was originally needed; desktop/fine-pointer forms stay native.
+  */
+  window._setupNameAutofillScrollGuard = function(nameInput, panel){
+    const coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    if(!coarse){
+      if(nameInput) nameInput.dataset.nameScrollGuardDesktopSkipped = '1';
+      return;
+    }
+    if(typeof previousNameAutofillScrollGuard === 'function'){
+      return previousNameAutofillScrollGuard(nameInput, panel);
+    }
+  };
+
+  function read(selector){
+    const el = document.querySelector(selector);
+    if(!el) return { selector, found:false };
+    const cs = getComputedStyle(el);
+    return {
+      selector,
+      found: true,
+      overflowAnchor: cs.overflowAnchor || '(unsupported)',
+      overflowY: cs.overflowY,
+      maxHeight: cs.maxHeight,
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight
+    };
+  }
+
+  window.inspectDesktopCheckoutAutofillScrollGuardFix = function(){
+    const style = document.getElementById('ew-desktop-checkout-autofill-scroll-fix-v1');
+    const script = document.getElementById('ew-desktop-checkout-autofill-scroll-fix-inspect-v1');
+    const desktop = !!(window.matchMedia && window.matchMedia('(min-width: 961px)').matches);
+    const coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    const name = document.getElementById('chkName');
+    return {
+      ok: Boolean(style && script && typeof window._setupNameAutofillScrollGuard === 'function'),
+      patch: PATCH,
+      desktopMediaActive: desktop,
+      pointerCoarse: coarse,
+      model: 'Desktop/fine-pointer uses native form scroll after autofill; iOS/coarse-pointer keeps the existing antifill jump guard.',
+      checkoutAutofillGuardDesktopSkipped: name ? name.dataset.nameScrollGuardDesktopSkipped === '1' : null,
+      overflowAnchor: {
+        checkoutPanel: read('#chkModalPanel'),
+        checkoutBody: read('#chkBody'),
+        echoOrderPanel: read('#echoOrderModal'),
+        returnPanel: read('#returnModalPanel')
+      },
+      scrollSafe: 'No overflow, max-height, scroll-lock, touch, or panel sizing rules are changed by this patch.',
+      themeSafe: 'No colors, backgrounds, borders, shadows, or theme variables are changed.',
+      notChanged: [
+        'modal sizes',
+        'modal action grid',
+        'mobile scroll guards',
+        'checkout submission logic',
+        'payment/reservation/backend logic'
+      ]
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
