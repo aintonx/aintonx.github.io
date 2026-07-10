@@ -35491,6 +35491,92 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 </script>
 
 
+
+<!-- Phase 2E.7l · MOBILE RED OUTLINE PRESS FIX -->
+<style id="ew-mobile-red-outline-press-fix-v1">
+/*
+  Phase 2E.7l · MOBILE RED OUTLINE PRESS FIX
+  Scope: mobile/touch press feedback only.
+
+  Goal: remove the solid red pressed fill from the four approved CTA families
+  and reuse the same soft-outline press language as the HERO secondary CTA
+  “Что здесь происходит?”, with cyan replaced by the site red accent.
+*/
+@media (max-width: 960px), (hover: none), (pointer: coarse) {
+  #preorderBtn:active,
+  .pre-pane-cta:active,
+  .arch-swipe-pane > .pre-pane-cta:active,
+  .arch-donate .pre-pane-cta:active,
+  .donate-row:active,
+  .attr-pay-btn:active {
+    background: rgba(192,40,40,0.08) !important;
+    border-color: var(--red2) !important;
+    color: var(--red2) !important;
+    box-shadow: 0 0 18px rgba(192,40,40,0.2), inset 0 0 0 1px rgba(192,40,40,0.16) !important;
+    filter: none !important;
+    transform: translate3d(0,1px,0) scale(.992) !important;
+  }
+
+  .pre-pane-cta:active .pre-pane-cta-label,
+  .arch-swipe-pane > .pre-pane-cta:active .pre-pane-cta-label,
+  .arch-donate .pre-pane-cta:active .pre-pane-cta-label,
+  .donate-row:active .donate-row-key,
+  .donate-row:active .donate-row-label,
+  .donate-row:active .donate-row-val,
+  .donate-row:active .donate-row-icon {
+    color: var(--red2) !important;
+  }
+
+  .pre-pane-cta:active .pre-pane-cta-arrow,
+  .arch-swipe-pane > .pre-pane-cta:active .pre-pane-cta-arrow,
+  .arch-donate .pre-pane-cta:active .pre-pane-cta-arrow {
+    background: var(--red2) !important;
+  }
+
+  .pre-pane-cta:active .pre-pane-cta-arrow::after,
+  .arch-swipe-pane > .pre-pane-cta:active .pre-pane-cta-arrow::after,
+  .arch-donate .pre-pane-cta:active .pre-pane-cta-arrow::after {
+    border-top-color: var(--red2) !important;
+    border-right-color: var(--red2) !important;
+  }
+
+  .donate-row:active::before {
+    opacity: 1 !important;
+    background: rgba(192,40,40,0.08) !important;
+  }
+
+  .attr-pay-btn:active::before {
+    transform: none !important;
+    opacity: 0 !important;
+  }
+}
+</style>
+<script id="ew-mobile-red-outline-press-fix-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7l · MOBILE RED OUTLINE PRESS FIX';
+  window.inspectMobileRedOutlinePressFix = function(){
+    const style = document.getElementById('ew-mobile-red-outline-press-fix-v1');
+    const script = document.getElementById('ew-mobile-red-outline-press-fix-inspect-v1');
+    const mobileMediaActive = Boolean(window.matchMedia && window.matchMedia('(max-width: 960px)').matches);
+    const touchMediaActive = Boolean(window.matchMedia && (window.matchMedia('(hover: none)').matches || window.matchMedia('(pointer: coarse)').matches));
+    return {
+      ok: Boolean(style && script),
+      patch: PATCH,
+      scope: 'mobile/touch press feedback only',
+      mobileMediaActive: mobileMediaActive,
+      touchMediaActive: touchMediaActive,
+      targetButtons: {
+        preorderBtn: Boolean(document.querySelector('#preorderBtn')),
+        prePaneCta: Boolean(document.querySelector('.pre-pane-cta')),
+        donateRow: Boolean(document.querySelector('.donate-row')),
+        attrPayBtn: Boolean(document.querySelector('.attr-pay-btn'))
+      },
+      visual: 'Same soft outline press as HERO secondary CTA, with cyan replaced by var(--red2). No solid red pressed fill.'
+    };
+  };
+})();
+</script>
+
 <!-- Phase 2E.7k-r1 · DESKTOP BUTTON PRESS PARITY SAFE FIX -->
 <style id="ew-desktop-button-press-parity-safe-v1">
 /*
