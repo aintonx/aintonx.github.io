@@ -17217,9 +17217,8 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
           <div class="donate-actions">
             <!-- СБП — единственный публичный канал добровольной поддержки. -->
             <button class="donate-row" type="button" onclick="archDonateSBP()">
-              <span class="donate-row-key">Усилить сигнал через СБП<span class="donate-star" aria-hidden="true">*</span></span>
+              <span class="donate-row-key">Усилить сигнал через СБП</span>
             </button>
-            <p class="donate-legal-note"><span class="donate-star" aria-hidden="true">*</span> Добровольная поддержка проекта. Не оплата заказа.</p>
           </div>
         </div>
       </div>
@@ -24984,6 +24983,12 @@ const APERTURA_STATUS_STATES = {
     actions: [{label:'Проверить статус', action:'order-check-status', primary:true}, {label:'Отказаться от покупки', action:'order-cancel-ask'}, {label:'Связаться с Архитектором', action:'contact'}]
   },
 
+  'donate-sbp-channel': {
+    title: 'Канал СБП готовится.',
+    text: 'Apertura откроет окно поддержки после подключения СБП-канала. Это не оплата заказа: реликвии и Эхо оформляются только через отдельный цикл заказа.',
+    actions: [{label:'Понятно', action:'close', primary:true}, {label:'Связаться с Архитектором', action:'contact'}]
+  },
+
   'order-fixed': {
     title: 'Заказ зафиксирован.',
     text: 'Apertura удерживает реликвию для вашего цикла. Следующий шаг — подтверждение оплаты.',
@@ -26675,7 +26680,24 @@ function _apFillReturnForm(valid){
 
 /* ── ДОНАТ-БЛОК АРХИТЕКТОРА ──────────────────────────────────────── */
 function archDonateSBP(){
-  showNotif('// СБП — канал добровольной поддержки в разработке. Это не оплата заказа.');
+  if(typeof _renderAperturaStatus === 'function'){
+    _renderAperturaStatus({
+      key: 'donate-sbp-channel',
+      source: 'donate-sbp',
+      kicker: '// APERTURA · SIGNAL SUPPORT',
+      title: APERTURA_STATUS_STATES['donate-sbp-channel'].title,
+      text: APERTURA_STATUS_STATES['donate-sbp-channel'].text,
+      html: '<div class="ap-status-fields">' +
+        _apStatusRow('Канал', 'СБП') +
+        _apStatusRow('Назначение', 'Поддержка проекта') +
+        _apStatusRow('Статус', 'Ожидает подключения') +
+        _apStatusRow('Заказ', 'Не связан с заказом') +
+      '</div>',
+      actions: APERTURA_STATUS_STATES['donate-sbp-channel'].actions
+    });
+    return;
+  }
+  showNotif('// СБП — канал поддержки готовится. Это не оплата заказа.');
 }
 
 /* ── APERTURA WORLD CARD — клик по закрытой вселенной ── */
@@ -34593,6 +34615,75 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         linksGridRow: linkStyles ? linkStyles.gridRowStart + ' / ' + linkStyles.gridRowEnd : null,
         linksAlignSelf: linkStyles ? linkStyles.alignSelf : null,
         linksJustifyContent: linkStyles ? linkStyles.justifyContent : null
+      }
+    };
+  };
+})();
+</script>
+
+
+<style id="ew-donate-sbp-apertura-modal-v1">
+/* ════════════════════════════════════════════════════════════════
+   Phase 2E.7c · DONATE SBP APERTURA MODAL
+   Точечно: в донате остаётся одна СБП-кнопка без звёздочки и сноски;
+   клик открывает существующий APERTURA STATUS-layer. Цвета/темы не меняем.
+   Мобильное нижнее выравнивание CTA сохраняется через высоту action-зоны.
+   ════════════════════════════════════════════════════════════════ */
+#archDonate .donate-star,
+#archDonate .donate-legal-note {
+  display: none !important;
+}
+#archDonate .donate-actions {
+  justify-content: center;
+}
+@media (max-width: 960px) {
+  #archDonate .donate-actions {
+    min-height: 108px !important;
+    box-sizing: border-box;
+  }
+  #archDonate .pre-pane-cta {
+    margin-top: auto !important;
+    top: 0 !important;
+  }
+}
+@media (max-width: 380px) {
+  #archDonate .donate-actions {
+    min-height: 104px !important;
+  }
+}
+</style>
+<script id="ew-donate-sbp-apertura-modal-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7c · DONATE SBP APERTURA MODAL';
+  window.inspectDonateSbpAperturaModalPatch = function(){
+    const donate = document.getElementById('archDonate');
+    const btn = donate ? donate.querySelector('.donate-row') : null;
+    const note = donate ? donate.querySelector('.donate-legal-note') : null;
+    const actions = donate ? donate.querySelector('.donate-actions') : null;
+    const cta = donate ? donate.querySelector('.pre-pane-cta') : null;
+    const state = typeof APERTURA_STATUS_STATES !== 'undefined' ? APERTURA_STATUS_STATES['donate-sbp-channel'] : null;
+    const actionStyles = actions ? getComputedStyle(actions) : null;
+    const ctaStyles = cta ? getComputedStyle(cta) : null;
+    const mobile = !!(window.matchMedia && window.matchMedia('(max-width: 960px)').matches);
+    return {
+      ok: Boolean(donate && btn && !note && state && typeof archDonateSBP === 'function'),
+      patch: PATCH,
+      scope: 'Donate block only. Uses existing APERTURA STATUS modal layer; no new section elements.',
+      themeSafe: 'No color, background, border, shadow, or theme-variable rules are introduced by this patch.',
+      mobileMediaActive: mobile,
+      donateButton: {
+        text: btn ? btn.textContent.trim() : null,
+        hasStar: !!(btn && btn.querySelector('.donate-star')),
+        onclick: btn ? btn.getAttribute('onclick') : null
+      },
+      legalNoteRemoved: !note,
+      apertureStatusState: state ? {
+        title: state.title,
+        actions: (state.actions || []).map(function(a){ return a.label; })
+      } : null,
+      mobileAlignmentGuard: {
+        donateActionsMinHeight: actionStyles ? actionStyles.minHeight : null,
+        ctaMarginTop: ctaStyles ? ctaStyles.marginTop : null
       }
     };
   };
