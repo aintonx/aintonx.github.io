@@ -35301,5 +35301,97 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
+
+<!-- Phase 2E.7i · APERTURA STATUS BUSY DOT REMOVAL -->
+<style id="ew-ap-status-busy-dot-removal-v1">
+/*
+  Phase 2E.7i · APERTURA STATUS BUSY DOT REMOVAL
+  Scope: APERTURA STATUS network action buttons only.
+
+  Goal:
+  - remove the circular busy spinner that appears inside "Перейти к оплате" and similar APERTURA STATUS buttons;
+  - keep aria-busy / pending state and duplicate-click protection intact;
+  - prevent visual size changes caused by the injected ::after pseudo-element;
+  - no modal size, scroll, mobile, theme, backend, checkout, payment or reservation logic changes.
+*/
+.ap-status-action.ew-action-pending::after,
+.ap-status-action[aria-busy="true"]::after {
+  content: none !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin-left: 0 !important;
+  border: 0 !important;
+  animation: none !important;
+}
+</style>
+<script id="ew-ap-status-busy-dot-removal-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7i · APERTURA STATUS BUSY DOT REMOVAL';
+
+  function cssText(){
+    const el = document.getElementById('ew-ap-status-busy-dot-removal-v1');
+    return el ? String(el.textContent || '') : '';
+  }
+
+  function pseudoSample(){
+    const btn = document.createElement('button');
+    btn.className = 'ap-status-action ew-action-pending';
+    btn.setAttribute('aria-busy', 'true');
+    btn.textContent = 'Перейти к оплате';
+    btn.style.position = 'absolute';
+    btn.style.left = '-9999px';
+    btn.style.top = '-9999px';
+    document.body.appendChild(btn);
+    const ps = getComputedStyle(btn, '::after');
+    const out = {
+      content: ps.content,
+      display: ps.display,
+      width: ps.width,
+      height: ps.height,
+      marginLeft: ps.marginLeft,
+      animationName: ps.animationName
+    };
+    btn.remove();
+    return out;
+  }
+
+  window.inspectAperturaStatusBusyDotRemovalPatch = function(){
+    const txt = cssText();
+    const pseudo = pseudoSample();
+    const pseudoHidden = (
+      pseudo.display === 'none' ||
+      pseudo.content === 'none' ||
+      pseudo.content === 'normal'
+    );
+    return {
+      ok: Boolean(
+        txt &&
+        txt.indexOf('.ap-status-action.ew-action-pending::after') !== -1 &&
+        txt.indexOf('content: none') !== -1 &&
+        txt.indexOf('display: none') !== -1 &&
+        pseudoHidden
+      ),
+      patch: PATCH,
+      scope: 'Only the APERTURA STATUS busy ::after spinner is suppressed.',
+      busyStateSafe: 'aria-busy, ew-action-pending, duplicate-click protection and request coalescing are preserved.',
+      layoutSafe: 'The injected pseudo-element no longer adds width, margin, border, or animation inside the button.',
+      notChanged: [
+        'button text',
+        'APERTURA STATUS engine',
+        'modal size',
+        'modal scroll',
+        'mobile layout',
+        'theme colors/backgrounds/borders/shadows',
+        'backend',
+        'checkout/payment/reservation logic'
+      ],
+      pseudo
+    };
+  };
+})();
+</script>
+
+
 </body>
 </html>
