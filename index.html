@@ -34282,5 +34282,116 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
+
+<style id="ew-modal-opening-tempo-test-v1">
+/* Phase 2E.6 · MODAL OPENING TEMPO TEST
+   Тестовый микропатч после Phase 2E.5: вход sheet-модалок делаем
+   чуть медленнее и мягче, чтобы убрать ощущение вспышки светлой грани
+   при открытии. Не возвращаем blur/scale/fade панели и не меняем JS,
+   checkout/backend/APERTURA STATUS/scroll/touch механику. */
+@media (max-width: 960px) {
+  :root {
+    --ew-tg-sheet-in: .56s;
+    --ew-tg-sheet-out: .38s;
+    --ew-tg-sheet-ease-in: cubic-bezier(.16, .82, .22, 1);
+    --ew-tg-sheet-ease-out: cubic-bezier(.28, 0, .45, 1);
+    --ew-tg-backdrop-in: .28s;
+    --ew-tg-backdrop-out: .24s;
+    --ew-sheet-smooth-in: .56s;
+    --ew-sheet-smooth-out: .38s;
+    --ew-sheet-smooth-ease-in: cubic-bezier(.16, .82, .22, 1);
+    --ew-sheet-smooth-ease-out: cubic-bezier(.28, 0, .45, 1);
+  }
+
+  .moverlay.open .modal,
+  .chk-overlay.open .chk-modal,
+  #reqModal.open .legal-modal,
+  #offerModal.open .legal-modal,
+  #privacyModal.open .legal-modal {
+    animation-duration: var(--ew-tg-sheet-in) !important;
+    animation-timing-function: var(--ew-tg-sheet-ease-in) !important;
+    will-change: transform !important;
+  }
+
+  .moverlay.closing .modal,
+  .chk-overlay.closing .chk-modal,
+  #reqModal.closing .legal-modal,
+  #offerModal.closing .legal-modal,
+  #privacyModal.closing .legal-modal {
+    animation-duration: var(--ew-tg-sheet-out) !important;
+    animation-timing-function: var(--ew-tg-sheet-ease-out) !important;
+    will-change: transform !important;
+  }
+
+  .moverlay.open::before,
+  .chk-overlay.open::before,
+  #reqModal.open::before,
+  #offerModal.open::before,
+  #privacyModal.open::before {
+    animation-duration: var(--ew-tg-backdrop-in) !important;
+    animation-timing-function: cubic-bezier(.2, .72, .28, 1) !important;
+  }
+
+  .moverlay.closing::before,
+  .chk-overlay.closing::before,
+  #reqModal.closing::before,
+  #offerModal.closing::before,
+  #privacyModal.closing::before {
+    animation-duration: var(--ew-tg-backdrop-out) !important;
+    animation-timing-function: cubic-bezier(.28, 0, .45, 1) !important;
+  }
+
+  .moverlay.ew-sheet-preopen #modalPanel,
+  .moverlay:not(.open):not(.closing) #modalPanel,
+  .chk-overlay:not(.open):not(.closing) .chk-modal,
+  #reqModal:not(.open):not(.closing) .legal-modal,
+  #offerModal:not(.open):not(.closing) .legal-modal,
+  #privacyModal:not(.open):not(.closing) .legal-modal {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: translate3d(0, var(--ew-product-sheet-start-y, var(--ew-sheet-start-y, 112%)), 0) !important;
+  }
+}
+</style>
+<script id="ew-modal-opening-tempo-test-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.6 · MODAL OPENING TEMPO TEST';
+  window.inspectModalOpeningTempoTest = function(){
+    const mobile = !!(window.matchMedia && window.matchMedia('(max-width: 960px)').matches);
+    const root = getComputedStyle(document.documentElement);
+    const readPanel = function(sel){
+      const el = document.querySelector(sel);
+      if(!el) return null;
+      const cs = getComputedStyle(el);
+      return {
+        animationName: cs.animationName,
+        animationDuration: cs.animationDuration,
+        animationTimingFunction: cs.animationTimingFunction,
+        transform: cs.transform,
+        filter: cs.filter,
+        willChange: cs.willChange
+      };
+    };
+    return {
+      ok: true,
+      patch: PATCH,
+      mobileMediaActive: mobile,
+      vars: {
+        sheetIn: root.getPropertyValue('--ew-tg-sheet-in').trim(),
+        sheetOut: root.getPropertyValue('--ew-tg-sheet-out').trim(),
+        backdropIn: root.getPropertyValue('--ew-tg-backdrop-in').trim(),
+        backdropOut: root.getPropertyValue('--ew-tg-backdrop-out').trim(),
+        smoothIn: root.getPropertyValue('--ew-sheet-smooth-in').trim(),
+        smoothOut: root.getPropertyValue('--ew-sheet-smooth-out').trim()
+      },
+      productModal: readPanel('#modalPanel'),
+      checkoutModal: readPanel('#chkModalPanel'),
+      legalModal: readPanel('.legal-modal'),
+      note: 'Test patch: slower mobile opening and softer backdrop, transform-only panel motion preserved.'
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
