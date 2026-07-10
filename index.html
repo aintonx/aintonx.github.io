@@ -9977,6 +9977,7 @@ input, select, textarea {
   word-break: keep-all;
 }
 .echo-title span { color: var(--cyan); }
+.echo-title .echo-signal-word { color: var(--white); }
 .echo-lead {
   font-family: var(--font-code);
   font-size: 11px;
@@ -15800,7 +15801,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="echo-kicker-dot"></div>
         <span>// ЭХО · СИСТЕМА АПЕРТУРА</span>
       </div>
-      <h2 class="echo-title">Отправить <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>
+      <h2 class="echo-title">Отправить <span class="echo-signal-word">сигнал</span> <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>
       <p class="echo-lead">
         7 слов или 3 секунды голоса. Эхо можно отправить отдельно —
         не покупая реликвию. Виш произнесёт ваши слова в одном из будущих
@@ -18059,7 +18060,7 @@ function inspectPatch6CopyStates(){
     echoSlotFilledCaption: html.includes("has ? 'Эхо' : 'пусто'") || bodyText.includes('Эхо'),
     echoEmptyGrammar: html.includes('Эхо пусто.'),
     echoSlotHint: html.includes('Чем выше Мощь, тем больше слотов Эхо откроется для ваших слов.'),
-    echoCtaCaps: html.includes('<h2 class="echo-title">Отправить <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>'),
+    echoCtaCaps: html.includes('<h2 class="echo-title">Отправить <span class="echo-signal-word">сигнал</span> <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>'),
     consentNoCaps: !html.includes('ПОДТВЕР' + 'ДИТЕ ОБРАБОТКУ ДАННЫХ')
   };
   Object.keys(requiredCopy).forEach(key => { if(!requiredCopy[key]) issues.push('missing-copy-' + key); });
@@ -36172,6 +36173,28 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
     };
   };
 })();
+
+window.inspectEchoTitleSignalWordPatch = function(){
+  const title = document.querySelector('.echo-title');
+  const signal = document.querySelector('.echo-title .echo-signal-word');
+  const echo = title ? Array.from(title.querySelectorAll('span')).find(el => (el.textContent || '').trim() === 'Эхо') : null;
+  const csTitle = title ? getComputedStyle(title) : null;
+  const csSignal = signal ? getComputedStyle(signal) : null;
+  const csEcho = echo ? getComputedStyle(echo) : null;
+  return {
+    ok: !!(title && signal && echo && /Отправить\s+сигнал\s+Эхо/.test((title.textContent || '').replace(/\s+/g, ' '))),
+    patch: 'Phase 2E.7r · ECHO TITLE SIGNAL WORD',
+    text: title ? (title.textContent || '').replace(/\s+/g, ' ').trim() : null,
+    signalWord: signal ? signal.textContent : null,
+    colors: {
+      title: csTitle ? csTitle.color : null,
+      signal: csSignal ? csSignal.color : null,
+      echo: csEcho ? csEcho.color : null
+    },
+    layoutSafe: 'Only the Echo title copy and inline signal-word color override were changed. No layout, sizes, mobile/desktop media rules, backend, payment, reservation or scroll logic changes.'
+  };
+};
+
 </script>
 
 </body>
