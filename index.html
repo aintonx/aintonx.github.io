@@ -34834,5 +34834,146 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
   };
 })();
 </script>
+
+
+<style id="ew-desktop-modal-adaptive-height-v1">
+/* ════════════════════════════════════════════════════════════════
+   Phase 2E.7e · DESKTOP MODAL ADAPTIVE HEIGHT FIX
+   Коррекция после unified desktop modal pass.
+
+   Цель: сохранить общий desktop-визуал и одинаковую ширину модалок,
+   но НЕ фиксировать высоту. Высота должна расти по контенту и
+   ограничиваться max-height viewport; при переполнении скроллится тело
+   модалки, а не ломается форма checkout.
+
+   Product card modal намеренно исключён.
+   Мобильные правила не трогаем. Цвета, фоны, рамки, тени и theme variables
+   не меняются. */
+@media (min-width: 961px) {
+  :root {
+    --ew-desktop-modal-width: var(--ew-footer-modal-width, min(860px, calc(100vw - 96px)));
+    --ew-desktop-modal-max-height-vh: min(86vh, 760px);
+    --ew-desktop-modal-max-height-dvh: min(86dvh, 760px);
+  }
+
+  #chkModalPanel,
+  #echoOrderModal,
+  #returnModalPanel,
+  #returnModal .return-modal,
+  #reqModal .legal-modal,
+  #offerModal .legal-modal,
+  #privacyModal .legal-modal,
+  #apConsoleGatePanel,
+  #apConsolePanel,
+  #apStatusPanel,
+  #swipeOverlay .swipe-overlay-card {
+    width: var(--ew-desktop-modal-width) !important;
+    max-width: var(--ew-desktop-modal-width) !important;
+    min-width: var(--ew-desktop-modal-width) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: var(--ew-desktop-modal-max-height-vh) !important;
+    max-height: var(--ew-desktop-modal-max-height-dvh) !important;
+    box-sizing: border-box !important;
+  }
+
+  #chkModalPanel,
+  #echoOrderModal,
+  #returnModalPanel,
+  #returnModal .return-modal,
+  #reqModal .legal-modal,
+  #offerModal .legal-modal,
+  #privacyModal .legal-modal,
+  #apConsoleGatePanel,
+  #apConsolePanel,
+  #apStatusPanel {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  #chkModalPanel .chk-body,
+  #echoOrderModal .chk-body,
+  #returnModalPanel .return-body,
+  #returnModal .return-body,
+  #reqModal .legal-modal-body,
+  #offerModal .legal-modal-body,
+  #privacyModal .legal-modal-body,
+  #apConsoleGatePanel .ap-console-body,
+  #apConsolePanel .ap-console-body,
+  #apStatusPanel .ap-status-body,
+  #swipeOverlay .swipe-overlay-card {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #apConsoleGatePanel .ap-gate-body {
+    justify-content: flex-start !important;
+  }
+}
+</style>
+<script id="ew-desktop-modal-adaptive-height-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7e · DESKTOP MODAL ADAPTIVE HEIGHT FIX';
+  const modalDefs = [
+    ['checkout', '#chkModalPanel'],
+    ['echoOrder', '#echoOrderModal'],
+    ['return', '#returnModalPanel'],
+    ['requisites', '#reqModal .legal-modal'],
+    ['offer', '#offerModal .legal-modal'],
+    ['privacy', '#privacyModal .legal-modal'],
+    ['architectGate', '#apConsoleGatePanel'],
+    ['architectConsole', '#apConsolePanel'],
+    ['aperturaStatus', '#apStatusPanel'],
+    ['swipeOverlay', '#swipeOverlay .swipe-overlay-card']
+  ];
+  function styleText(){
+    const s = document.getElementById('ew-desktop-modal-adaptive-height-v1');
+    return s ? s.textContent : '';
+  }
+  function readPanel(name, selector){
+    const el = document.querySelector(selector);
+    if(!el) return { name, selector, found:false };
+    const cs = getComputedStyle(el);
+    return {
+      name,
+      selector,
+      found:true,
+      width: cs.width,
+      maxWidth: cs.maxWidth,
+      height: cs.height,
+      maxHeight: cs.maxHeight,
+      overflowY: cs.overflowY
+    };
+  }
+  window.inspectDesktopModalAdaptiveHeightPatch = function(){
+    const txt = styleText();
+    const desktop = window.matchMedia('(min-width: 961px)').matches;
+    const product = document.querySelector('#modalPanel');
+    const productCS = product ? getComputedStyle(product) : null;
+    return {
+      ok: !!txt && txt.indexOf('height: auto !important') !== -1 && !/#modalPanel\s*,|#modalPanel\s*\{|\.moverlay\s+\.modal\s*[,\{]/.test(txt),
+      patch: PATCH,
+      desktopMediaActive: desktop,
+      productCardModalExcluded: !/#modalPanel\s*,|#modalPanel\s*\{|\.moverlay\s+\.modal\s*[,\{]/.test(txt),
+      model: 'Same desktop width, adaptive content height, max-height viewport cap, internal body scroll for long content.',
+      fixedHeightRemovedByOverride: txt.indexOf('height: auto !important') !== -1,
+      checkoutScrollRestoredByOverride: txt.indexOf('#chkModalPanel .chk-body') !== -1 && txt.indexOf('overflow-y: auto !important') !== -1,
+      themeSafe: 'No color, background, border, shadow, or theme-variable rules are introduced by this patch.',
+      panels: modalDefs.map(function(def){ return readPanel(def[0], def[1]); }),
+      productCard: product ? {
+        found: true,
+        width: productCS.width,
+        maxWidth: productCS.maxWidth,
+        note: 'Product card is intentionally not targeted by this patch.'
+      } : { found:false }
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
