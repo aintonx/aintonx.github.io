@@ -35160,5 +35160,146 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
+
+<!-- Phase 2E.7h · DESKTOP MODAL ACTION GRID -->
+<style id="ew-desktop-modal-action-grid-v1">
+/*
+  Phase 2E.7h · DESKTOP MODAL ACTION GRID
+  Scope: desktop-only action button layout inside modal / overlay panels.
+
+  Goal:
+  - action buttons should fill the available modal action zone instead of clustering left;
+  - product card buttons are intentionally excluded;
+  - mobile layout is untouched;
+  - no backend / checkout / payment / reservation logic changes;
+  - no color, background, border, shadow, theme-variable, scroll, width/height modal-panel changes.
+*/
+@media (min-width: 961px) {
+  :root {
+    --ew-modal-action-min-height: 52px;
+    --ew-modal-action-gap: 12px;
+  }
+
+  #apStatusPanel .ap-status-actions {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+    gap: var(--ew-modal-action-gap) !important;
+    width: 100% !important;
+    margin-top: 18px !important;
+    align-items: stretch !important;
+  }
+
+  #apStatusPanel .ap-status-action,
+  #apConsoleGatePanel .ap-gate-submit,
+  #apConsolePanel .ap-test-btn,
+  #echoOrderModal .echo-order-submit,
+  #returnModalPanel .return-submit,
+  #cartPanel .cart-empty-btn,
+  #cartPanel .cart-checkout-btn {
+    width: 100% !important;
+    min-height: var(--ew-modal-action-min-height) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    line-height: 1.35 !important;
+    white-space: normal !important;
+    box-sizing: border-box !important;
+  }
+
+  #chkModalPanel .swipe-confirm {
+    width: 100% !important;
+    min-height: var(--ew-modal-action-min-height) !important;
+    box-sizing: border-box !important;
+  }
+
+  #echoOrderModal .echo-order-submit-wrap {
+    display: grid !important;
+    width: 100% !important;
+  }
+
+  #apConsoleGatePanel .ap-gate-body {
+    align-items: stretch !important;
+  }
+
+  #apConsolePanel .ap-test-grid {
+    align-items: stretch !important;
+  }
+
+  #apConsolePanel .ap-test {
+    align-content: start !important;
+  }
+
+  #apConsolePanel .ap-test-btn {
+    align-self: stretch !important;
+  }
+}
+</style>
+<script id="ew-desktop-modal-action-grid-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7h · DESKTOP MODAL ACTION GRID';
+
+  function cssText(){
+    const el = document.getElementById('ew-desktop-modal-action-grid-v1');
+    return el ? String(el.textContent || '') : '';
+  }
+
+  function read(selector){
+    const el = document.querySelector(selector);
+    if(!el) return { selector, found: false };
+    const cs = getComputedStyle(el);
+    return {
+      selector,
+      found: true,
+      display: cs.display,
+      width: cs.width,
+      minHeight: cs.minHeight,
+      justifyContent: cs.justifyContent,
+      alignItems: cs.alignItems,
+      textAlign: cs.textAlign,
+      boxSizing: cs.boxSizing
+    };
+  }
+
+  window.inspectDesktopModalActionGridPatch = function(){
+    const txt = cssText();
+    const mq = window.matchMedia ? window.matchMedia('(min-width: 961px)') : {matches:false};
+    return {
+      ok: Boolean(
+        txt &&
+        txt.indexOf('#apStatusPanel .ap-status-actions') !== -1 &&
+        txt.indexOf('#modalPanel') === -1 &&
+        txt.indexOf('.mfooter-btns') === -1
+      ),
+      patch: PATCH,
+      desktopMediaActive: !!mq.matches,
+      mobileSafe: 'All rules are scoped to @media (min-width: 961px).',
+      productCardModalExcluded: txt.indexOf('#modalPanel') === -1 && txt.indexOf('.mfooter-btns') === -1,
+      themeSafe: 'No color, background, border, shadow, or theme-variable rules are introduced by this patch.',
+      scrollSafe: 'No overflow, max-height, scroll-lock, touch, or panel sizing rules are changed by this patch.',
+      coveredActionZones: [
+        'APERTURA STATUS actions',
+        'Architect Console Gate submit',
+        'Architect Console test buttons',
+        'Echo order submit',
+        'Return submit',
+        'Checkout swipe CTA',
+        'Cart panel actions'
+      ],
+      samples: {
+        apStatusActions: read('#apStatusPanel .ap-status-actions'),
+        apStatusAction: read('#apStatusPanel .ap-status-action'),
+        architectGateSubmit: read('#apConsoleGatePanel .ap-gate-submit'),
+        architectConsoleTestButton: read('#apConsolePanel .ap-test-btn'),
+        echoOrderSubmit: read('#echoOrderModal .echo-order-submit'),
+        returnSubmit: read('#returnModalPanel .return-submit'),
+        checkoutSwipe: read('#chkModalPanel .swipe-confirm'),
+        cartCheckout: read('#cartPanel .cart-checkout-btn')
+      }
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
