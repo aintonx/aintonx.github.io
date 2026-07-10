@@ -19485,6 +19485,18 @@ function _ewProductReservationUiState(p){
   }
   return null;
 }
+function _ewReservedRelicClickNotice(p, reservationState){
+  if(!reservationState || reservationState.kind !== 'global') return false;
+  const title = String(p && (p.name || p.title) || 'Реликвия').trim();
+  const time = reservationState.countdown && reservationState.countdown.text ? (' Осталось: ' + reservationState.countdown.text + '.') : '';
+  const msg = '// ' + title + ' сейчас в резерве.' + time + ' Если цикл не подтвердится, она вернётся в поток.';
+  if(typeof showNotif === 'function'){
+    showNotif(msg, {contextual:true, overOverlay:true});
+    return true;
+  }
+  return false;
+}
+
 function _ewModalOrderButtonsHtml(p, fallbackOrderable){
   const reservation = _ewProductReservationUiState(p);
   if(reservation && reservation.kind === 'self'){
@@ -19743,6 +19755,7 @@ function openModal(i){
   const statusLabel=getProductStatusLabel(p);
   const blockLabel=getProductOrderBlockLabel(p);
   const orderable=isProductOrderable(p);
+  const preOpenReservationState = (typeof _ewProductReservationUiState === 'function') ? _ewProductReservationUiState(p) : null;
   cur=p;echoChecked=false;
   try { updateRelicShareMeta(p); } catch(e){ console.warn('shareMeta:', e); }
   // Сброс блока подписи Маркером — новая карточка = чистое состояние
@@ -19829,6 +19842,9 @@ function openModal(i){
   try{ maybePlayVishGlitch(p); }catch(e){}
   _hideAllNotifs();
   _closeWorldDrop();
+  if(preOpenReservationState && preOpenReservationState.kind === 'global'){
+    setTimeout(function(){ _ewReservedRelicClickNotice(p, preOpenReservationState); }, 90);
+  }
   const artHead=document.getElementById('martHead');
   if(artHead) artHead.textContent='// ART. '+p.id;
   if(window.innerWidth<=960){
@@ -25426,9 +25442,17 @@ function _ewActiveOrderRead(){
     return rec;
   }catch(_){ return null; }
 }
+function _ewClearCheckoutTransientState(){
+  try{ sessionStorage.removeItem(EW_CHECKOUT_RESERVATION_STORAGE_KEY); }catch(_){ }
+  try{ sessionStorage.removeItem(EW_CHECKOUT_ORDER_STORAGE_KEY); }catch(_){ }
+  try{ localStorage.removeItem(EW_CHECKOUT_RESERVATION_STORAGE_KEY); }catch(_){ }
+  try{ delete window.__EW_LAST_CHECKOUT_RESERVATION__; }catch(_){ window.__EW_LAST_CHECKOUT_RESERVATION__ = null; }
+  try{ delete window.__EW_LAST_CHECKOUT_ORDER__; }catch(_){ window.__EW_LAST_CHECKOUT_ORDER__ = null; }
+}
 function _ewActiveOrderClear(){
   try{ localStorage.removeItem(EW_ACTIVE_ORDER_STORAGE_KEY); }catch(_){ }
   try{ delete window.__EW_ACTIVE_ORDER__; }catch(_){ window.__EW_ACTIVE_ORDER__ = null; }
+  if(typeof _ewClearCheckoutTransientState === 'function') _ewClearCheckoutTransientState();
 }
 function _ewActiveOrderExpiredNoticeId(rec){
   rec = rec || {};
@@ -25631,6 +25655,48 @@ async function _ewActiveOrderCreatePayment(rec){
 function _ewShouldShowActiveOrderToast(){
   return !(typeof _ewIsApStatusSceneActive === 'function' && _ewIsApStatusSceneActive());
 }
+function _ewQuickHideCheckoutForAperturaStatus(){
+  const ov = document.getElementById('chkOverlay');
+  if(!ov || !ov.classList.contains('open')) return false;
+  const panel = document.getElementById('chkModalPanel');
+  if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
+  ov.classList.remove('open','closing');
+  ov.style.pointerEvents = '';
+  document.body.classList.remove('chk-open','_blur-fading','scroll-restoring');
+  /* Передаём существующий scroll-lock от checkout к APERTURA STATUS.
+     Если просто тихо спрятать checkout без unlock, статус потом должен
+     корректно отпустить lock при закрытии. */
+  try{
+    if(typeof _scrollLockCount !== 'undefined' && _scrollLockCount > 0){
+      document.body.dataset.apConsoleLocked = '1';
+      document.body.classList.add('ap-console-open');
+    }
+  }catch(_){ }
+  if(panel){
+    panel.style.animation = '';
+    panel.style.opacity = '';
+    panel.style.transform = '';
+    panel.style.filter = '';
+    panel.classList.remove('cart-opening','cart-closing');
+    delete panel.dataset.topSwipeInit;
+  }
+  return true;
+}
+function _ewShowActiveOrderStatusAfterCheckout(rec, opts){
+  opts = opts || {};
+  const hiddenCheckout = _ewQuickHideCheckoutForAperturaStatus();
+  const show = function(){
+    if(typeof showActiveOrderStatus === 'function') showActiveOrderStatus(rec, opts);
+    else if(typeof showAperturaStatus === 'function') showAperturaStatus('order-fixed', {source: opts.source || 'checkout-order'});
+  };
+  if(hiddenCheckout){
+    requestAnimationFrame(function(){ requestAnimationFrame(show); });
+  }else{
+    show();
+  }
+  return true;
+}
+
 async function _ewActiveOrderGoPayment(){
   const rec = _ewActiveOrderRead();
   if(!rec){ showActiveOrderStatus(null); return; }
@@ -25713,7 +25779,7 @@ async function _ewActiveOrderCancelFlow(){
     showActiveOrderStatus(rec, {key:'order-canceling', source:'order-cancel'});
     const result = await _ewActiveOrderCancel(rec);
     _ewActiveOrderClear();
-    try{ localStorage.removeItem('ew:checkout-reservation:v1'); }catch(_){ }
+    if(typeof _ewClearCheckoutTransientState === 'function') _ewClearCheckoutTransientState();
     try{ if(typeof refreshEchoWorldCatalog === 'function') refreshEchoWorldCatalog({manual:false}); }catch(_){ }
     showAperturaStatus('order-canceled', {source:'order-cancel', html: _ewActiveOrderStatusHtml(rec)});
     return result;
@@ -27087,7 +27153,8 @@ function selectGender(el, g){
       const activeOrder = (typeof _ewActiveOrderStoreFromCheckout === 'function')
         ? _ewActiveOrderStoreFromCheckout(checkoutOrder, reservation, orderPayload)
         : null;
-      if(typeof showActiveOrderStatus === 'function') showActiveOrderStatus(activeOrder || checkoutOrder, {key:'order-fixed', source:'checkout-order'});
+      if(typeof _ewShowActiveOrderStatusAfterCheckout === 'function') _ewShowActiveOrderStatusAfterCheckout(activeOrder || checkoutOrder, {key:'order-fixed', source:'checkout-order'});
+      else if(typeof showActiveOrderStatus === 'function') showActiveOrderStatus(activeOrder || checkoutOrder, {key:'order-fixed', source:'checkout-order'});
       else showNotif('// Apertura: заказ зафиксирован. Следующий шаг — платёжный канал ЮKassa.', {contextual:true});
     }catch(error){
       console.warn('checkout reservation failed:', error);
@@ -33863,6 +33930,17 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
    actions and exposes a diagnostic helper. */
 (function(){
   const PATCH = 'Phase 2E.1 · ACTIVE ORDER CANCEL FLOW';
+  window.inspectCheckoutStatusReturnPatch = function(){
+    return {
+      ok: typeof _ewClearCheckoutTransientState === 'function' &&
+          typeof _ewQuickHideCheckoutForAperturaStatus === 'function' &&
+          typeof _ewShowActiveOrderStatusAfterCheckout === 'function' &&
+          typeof _ewReservedRelicClickNotice === 'function',
+      patch: 'Phase 2E.3 · CHECKOUT STATUS RETURN + RESERVED CLICK NOTICE',
+      activeOrder: typeof _ewActiveOrderRead === 'function' ? _ewActiveOrderRead() : null,
+      checkoutOpen: !!(document.getElementById('chkOverlay') && document.getElementById('chkOverlay').classList.contains('open'))
+    };
+  };
   window.inspectActiveOrderCancelFlow = function(){
     const rec = typeof _ewActiveOrderRead === 'function' ? _ewActiveOrderRead() : null;
     return {
