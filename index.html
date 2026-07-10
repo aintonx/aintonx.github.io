@@ -25731,6 +25731,55 @@ async function _ewActiveOrderCancelFlow(){
     showAperturaStatus('architect-help', {source:'order-cancel'});
   }
 }
+/* Phase 2E.2 · RETURN POSITION + ONCE ACTIVE ORDER RESTORE
+   Авто-напоминание об активном заказе не должно перехватывать reload-
+   восстановление позиции и не должно повторяться на каждом входе. */
+const EW_ACTIVE_ORDER_RESTORE_NOTICE_KEY = 'ew:active-order-restore-notice:v1';
+function _ewActiveOrderRestoreNoticeId(rec){
+  if(!rec) return '';
+  return String(rec.order_id || rec.reservation_id || rec.relic_code || rec.product_id || '').trim();
+}
+function _ewActiveOrderRestoreNoticeStore(){
+  try{
+    const raw = localStorage.getItem(EW_ACTIVE_ORDER_RESTORE_NOTICE_KEY) || '{}';
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  }catch(_){ return {}; }
+}
+function _ewActiveOrderRestoreNoticeSeen(rec){
+  const id = _ewActiveOrderRestoreNoticeId(rec);
+  if(!id) return false;
+  const store = _ewActiveOrderRestoreNoticeStore();
+  return !!store[id];
+}
+function _ewActiveOrderRestoreNoticeMark(rec){
+  const id = _ewActiveOrderRestoreNoticeId(rec);
+  if(!id) return;
+  try{
+    const store = _ewActiveOrderRestoreNoticeStore();
+    store[id] = Date.now();
+    const keys = Object.keys(store).sort(function(a,b){ return (store[b] || 0) - (store[a] || 0); });
+    keys.slice(24).forEach(function(k){ delete store[k]; });
+    localStorage.setItem(EW_ACTIVE_ORDER_RESTORE_NOTICE_KEY, JSON.stringify(store));
+  }catch(_){ }
+}
+function _ewWaitForScrollRestoreReady(done, fallbackMs){
+  let called = false;
+  function finish(){
+    if(called) return;
+    called = true;
+    try{ window.removeEventListener('ew:scroll-restore-done', finish); }catch(_){ }
+    done();
+  }
+  try{
+    if(!window.__EW_SCROLL_RESTORE_ACTIVE__){
+      setTimeout(finish, 0);
+      return;
+    }
+    window.addEventListener('ew:scroll-restore-done', finish, {once:true});
+    setTimeout(finish, Math.max(800, Number(fallbackMs || 2600) || 2600));
+  }catch(_){ setTimeout(finish, 0); }
+}
 function bootActiveOrderStatusRestore(){
   const rec = _ewActiveOrderRead();
   if(!rec) return;
@@ -25738,10 +25787,12 @@ function bootActiveOrderStatusRestore(){
     _ewActiveOrderClear();
     return;
   }
+  let isPaymentReturn = false;
   try{
     const url = new URL(location.href);
     if(url.searchParams.has('signal')) return;
-    if(String(url.searchParams.get('payment') || '').toLowerCase() === 'return'){
+    isPaymentReturn = String(url.searchParams.get('payment') || '').toLowerCase() === 'return';
+    if(isPaymentReturn){
       setTimeout(function(){
         if(typeof _ewActiveOrderCheckStatus === 'function') _ewActiveOrderCheckStatus();
         else showActiveOrderStatus(rec, {source:'payment-return'});
@@ -25750,19 +25801,23 @@ function bootActiveOrderStatusRestore(){
     }
     if(typeof RELIC_DEEP_LINK_PARAM !== 'undefined' && url.searchParams.has(RELIC_DEEP_LINK_PARAM)) return;
   }catch(_){ }
+  if(_ewActiveOrderRestoreNoticeSeen(rec)) return;
   setTimeout(function(){
-    const ov = document.getElementById('apStatusOverlay');
-    if(ov && ov.classList.contains('is-mounted')) return;
-    if(rec.status_token && typeof _ewActiveOrderFetchStatus === 'function'){
-      _ewActiveOrderFetchStatus(rec)
-        .then(function(fresh){ showActiveOrderStatus(fresh, {source:'active-order-restore'}); })
-        .catch(function(error){
-          console.warn('active order restore status check failed:', error);
-          showActiveOrderStatus(rec, {source:'active-order-restore'});
-        });
-      return;
-    }
-    showActiveOrderStatus(rec, {source:'active-order-restore'});
+    _ewWaitForScrollRestoreReady(function(){
+      const ov = document.getElementById('apStatusOverlay');
+      if(ov && ov.classList.contains('is-mounted')) return;
+      _ewActiveOrderRestoreNoticeMark(rec);
+      if(rec.status_token && typeof _ewActiveOrderFetchStatus === 'function'){
+        _ewActiveOrderFetchStatus(rec)
+          .then(function(fresh){ showActiveOrderStatus(fresh, {source:'active-order-restore'}); })
+          .catch(function(error){
+            console.warn('active order restore status check failed:', error);
+            showActiveOrderStatus(rec, {source:'active-order-restore'});
+          });
+        return;
+      }
+      showActiveOrderStatus(rec, {source:'active-order-restore'});
+    }, 2600);
   }, 760);
 }
 (function setupActiveOrderStatusRestore(){
@@ -25821,6 +25876,19 @@ function inspectYooKassaFrontendReadiness(){
 
 try{ window.inspectActiveOrderStatusPatch = inspectActiveOrderStatusPatch; }catch(_){ }
 try{ window.inspectYooKassaFrontendReadiness = inspectYooKassaFrontendReadiness; }catch(_){ }
+function inspectReturnPositionAndOnceRestore(){
+  const rec = typeof _ewActiveOrderRead === 'function' ? _ewActiveOrderRead() : null;
+  return {
+    ok: true,
+    patch: 'Phase 2E.2 · RETURN POSITION + ONCE ACTIVE ORDER RESTORE',
+    scrollRestoration: (function(){ try{ return history.scrollRestoration; }catch(_){ return ''; } })(),
+    scrollRestoreActive: !!window.__EW_SCROLL_RESTORE_ACTIVE__,
+    activeOrder: rec,
+    restoreNoticeSeen: rec && typeof _ewActiveOrderRestoreNoticeSeen === 'function' ? _ewActiveOrderRestoreNoticeSeen(rec) : null,
+    restoreNoticeKey: typeof EW_ACTIVE_ORDER_RESTORE_NOTICE_KEY !== 'undefined' ? EW_ACTIVE_ORDER_RESTORE_NOTICE_KEY : ''
+  };
+}
+try{ window.inspectReturnPositionAndOnceRestore = inspectReturnPositionAndOnceRestore; }catch(_){ }
 function _apFirstFormStatusRow(){
   return `
     <div class="ap-status-row ap-first-form-row" id="apFirstFormRow" role="button" tabindex="0" aria-expanded="false" aria-label="Статус реликвии: В MARKETSPACE. Нажмите, чтобы открыть расшифровку статуса." onclick="toggleFirstFormTip(event)" onkeydown="handleFirstFormTipKey(event)">
@@ -30550,6 +30618,7 @@ function acceptCookies(){
     var fresh=!!(rec && rec.key === pageKey() && isFinite(rec.y) && Date.now() - (rec.t || 0) <= 30*60*1000);
     if((nt !== 'reload' && nt !== 'back_forward') || !fresh || rec.y <= 80) return;
     restoring=true;
+    try{ window.__EW_SCROLL_RESTORE_ACTIVE__ = true; }catch(e){}
     var prevSB=html.style.scrollBehavior;
     html.style.scrollBehavior='auto';
     function target(){
@@ -30562,6 +30631,10 @@ function acceptCookies(){
     function finish(){
       html.style.scrollBehavior=prevSB;
       restoring=false;
+      try{
+        window.__EW_SCROLL_RESTORE_ACTIVE__ = false;
+        window.dispatchEvent(new CustomEvent('ew:scroll-restore-done'));
+      }catch(e){}
       save(true);
     }
     var userTouched=false;
