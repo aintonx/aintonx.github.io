@@ -15048,6 +15048,102 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
   };
 })();
 </script>
+
+
+<style id="ew-modal-frame-smoothing-v1">
+/* Phase 2E.5 · TELEGRAM-LIKE MODAL FRAME SMOOTHING
+   Цель: убрать ощущение "смаза" / dropped frames на мобильном открытии
+   и закрытии sheet-модалок. Не меняет JS lifecycle, scroll-lock, touch,
+   checkout/backend/APERTURA STATUS. Только визуальный таймлайн product /
+   checkout / legal sheets на mobile: transform-only, без filter blur,
+   scale и fade панели. */
+:root {
+  --ew-sheet-smooth-in: .30s;
+  --ew-sheet-smooth-out: .24s;
+  --ew-sheet-smooth-ease-in: cubic-bezier(.22, 1, .36, 1);
+  --ew-sheet-smooth-ease-out: cubic-bezier(.32, 0, .67, 0);
+}
+
+@media (max-width: 960px) {
+  .modal,
+  .chk-modal,
+  .legal-modal {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform !important;
+  }
+
+  .moverlay.open .modal,
+  .chk-overlay.open .chk-modal,
+  #reqModal.open .legal-modal,
+  #offerModal.open .legal-modal,
+  #privacyModal.open .legal-modal {
+    animation: ewSmoothSheetIn var(--ew-sheet-smooth-in) var(--ew-sheet-smooth-ease-in) both !important;
+  }
+
+  .moverlay.closing .modal,
+  .chk-overlay.closing .chk-modal,
+  #reqModal.closing .legal-modal,
+  #offerModal.closing .legal-modal,
+  #privacyModal.closing .legal-modal {
+    animation: ewSmoothSheetOut var(--ew-sheet-smooth-out) var(--ew-sheet-smooth-ease-out) forwards !important;
+  }
+
+  @keyframes ewSmoothSheetIn {
+    0% {
+      opacity: 1;
+      transform: translate3d(0, 100%, 0);
+    }
+    100% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes ewSmoothSheetOut {
+    0% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      opacity: 1;
+      transform: translate3d(0, calc(100% + 16px), 0);
+    }
+  }
+}
+</style>
+<script id="ew-modal-frame-smoothing-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.5 · TELEGRAM-LIKE MODAL FRAME SMOOTHING';
+  window.inspectModalFrameSmoothingPatch = function(){
+    const isMobile = !!(window.matchMedia && window.matchMedia('(max-width: 960px)').matches);
+    const modal = document.querySelector('.modal');
+    const checkout = document.querySelector('.chk-modal');
+    const legal = document.querySelector('.legal-modal');
+    const get = el => {
+      if(!el) return null;
+      const cs = getComputedStyle(el);
+      return {
+        animationName: cs.animationName,
+        animationDuration: cs.animationDuration,
+        willChange: cs.willChange,
+        filter: cs.filter,
+        backfaceVisibility: cs.backfaceVisibility
+      };
+    };
+    return {
+      ok: true,
+      patch: PATCH,
+      mobileMediaActive: isMobile,
+      productModal: get(modal),
+      checkoutModal: get(checkout),
+      legalModal: get(legal),
+      note: 'Mobile sheet animations are transform-only: no filter blur, no scale, no panel fade.'
+    };
+  };
+})();
+</script>
+
 </head>
 <body>
 <div id="ewSmartCaptchaRoot" aria-hidden="true"></div>
