@@ -36106,5 +36106,73 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
+
+<style id="ew-donate-mobile-antenna-micro-scale-v1">
+/* Phase 2E.7q · DONATE MOBILE ANTENNA MICRO SCALE
+   Current donate layout is fixed. This patch scales only the antenna SVG
+   inside the existing mobile radar window. No radar/container/button sizing,
+   padding, action row, desktop, scroll, backend, or payment logic changes. */
+@media (min-width: 381px) and (max-width: 960px) {
+  #archDonate .donate-swipe-pane .donate-ant {
+    width: 122px !important;
+    height: 122px !important;
+    min-width: 122px !important;
+    min-height: 122px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  #archDonate .donate-swipe-pane .donate-ant {
+    width: 118px !important;
+    height: 118px !important;
+    min-width: 118px !important;
+    min-height: 118px !important;
+  }
+}
+</style>
+<script id="ew-donate-mobile-antenna-micro-scale-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7q · DONATE MOBILE ANTENNA MICRO SCALE';
+  window.inspectDonateMobileAntennaMicroScalePatch = function(){
+    const style = document.getElementById('ew-donate-mobile-antenna-micro-scale-v1');
+    const donate = document.getElementById('archDonate');
+    const ant = donate ? donate.querySelector('.donate-swipe-pane .donate-ant') : null;
+    const radar = donate ? donate.querySelector('.donate-swipe-pane .donate-radar') : null;
+    const actions = donate ? donate.querySelector('.donate-actions') : null;
+    const main = donate ? donate.querySelector('.donate-row-main') : null;
+    const help = donate ? donate.querySelector('.donate-help-btn') : null;
+    const mobile = Boolean(window.matchMedia && window.matchMedia('(max-width: 960px)').matches);
+    const narrow = Boolean(window.matchMedia && window.matchMedia('(max-width: 380px)').matches);
+    const antStyle = ant ? getComputedStyle(ant) : null;
+    const radarStyle = radar ? getComputedStyle(radar) : null;
+    const actionStyle = actions ? getComputedStyle(actions) : null;
+    const mainStyle = main ? getComputedStyle(main) : null;
+    const helpStyle = help ? getComputedStyle(help) : null;
+    return {
+      ok: Boolean(style && donate && ant),
+      patch: PATCH,
+      mobileMediaActive: mobile,
+      narrowMediaActive: narrow,
+      changedScope: 'Only the mobile donate antenna SVG width/height is overridden. Container, radar window, actions, buttons, desktop, scroll and logic are untouched.',
+      antenna: {
+        width: antStyle ? antStyle.width : null,
+        height: antStyle ? antStyle.height : null,
+        expectedMobileSize: narrow ? '118px' : '122px',
+        animation: antStyle ? antStyle.animationName : null
+      },
+      untouchedByPatch: {
+        radarMinHeight: radarStyle ? radarStyle.minHeight : null,
+        actionsMinHeight: actionStyle ? actionStyle.minHeight : null,
+        mainButtonHeight: mainStyle ? mainStyle.height : null,
+        helpButtonWidth: helpStyle ? helpStyle.width : null,
+        desktopTargeted: false,
+        buttonsChanged: false,
+        containerChanged: false
+      }
+    };
+  };
+})();
+</script>
+
 </body>
 </html>
