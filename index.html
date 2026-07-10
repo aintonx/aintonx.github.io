@@ -34690,5 +34690,149 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 </script>
 
+
+
+<style id="ew-desktop-modal-unity-v1">
+/* ════════════════════════════════════════════════════════════════
+   Phase 2E.7d · DESKTOP MODAL UNITY PASS
+   Точечно приводим все НЕ product-card модалки на desktop к footprint
+   футерных модалок. Мобильные правила не трогаем. Карточка реликвии
+   (.moverlay .modal / #modalPanel) намеренно исключена.
+
+   Покрыто:
+   - checkout заказа реликвии
+   - форма заказа Эхо
+   - возврат реликвии
+   - реквизиты / оферта / политика
+   - Architect gate / Architect console
+   - APERTURA STATUS: оплата, статусы заказа, аварийные уведомления
+   - служебный swipe overlay
+
+   Без изменений: цвета, фоны, рамки, тени, theme variables, backend,
+   checkout/payment/reservation logic, scroll/touch/hover mechanics. */
+@media (min-width: 961px) {
+  :root {
+    --ew-unified-desktop-modal-width: var(--ew-footer-modal-width, min(860px, calc(100vw - 96px)));
+    --ew-unified-desktop-modal-height-vh: var(--ew-footer-modal-height-vh, min(720px, calc(100vh - 96px)));
+    --ew-unified-desktop-modal-height-dvh: var(--ew-footer-modal-height-dvh, min(720px, calc(100dvh - 96px)));
+  }
+
+  #chkModalPanel,
+  #echoOrderModal,
+  #returnModalPanel,
+  #reqModal .legal-modal,
+  #offerModal .legal-modal,
+  #privacyModal .legal-modal,
+  #apConsoleGatePanel,
+  #apConsolePanel,
+  #apStatusPanel,
+  #swipeOverlay .swipe-overlay-card {
+    width: var(--ew-unified-desktop-modal-width) !important;
+    max-width: var(--ew-unified-desktop-modal-width) !important;
+    min-width: var(--ew-unified-desktop-modal-width) !important;
+    height: var(--ew-unified-desktop-modal-height-vh) !important;
+    max-height: var(--ew-unified-desktop-modal-height-vh) !important;
+    height: var(--ew-unified-desktop-modal-height-dvh) !important;
+    max-height: var(--ew-unified-desktop-modal-height-dvh) !important;
+    min-height: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #chkModalPanel,
+  #echoOrderModal,
+  #returnModalPanel,
+  #apConsoleGatePanel,
+  #apConsolePanel,
+  #apStatusPanel {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  #chkModalPanel .chk-body,
+  #echoOrderModal .chk-body,
+  #returnModalPanel .return-body,
+  #apConsoleGatePanel .ap-console-body,
+  #apConsolePanel .ap-console-body,
+  #apStatusPanel .ap-status-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #apConsoleGatePanel .ap-gate-body {
+    justify-content: center;
+  }
+
+  #apConsolePanel .ap-console-sections {
+    min-height: 0;
+  }
+}
+</style>
+<script id="ew-desktop-modal-unity-inspect-v1">
+(function(){
+  const PATCH = 'Phase 2E.7d · DESKTOP MODAL UNITY PASS';
+  const modalDefs = [
+    ['checkout', '#chkModalPanel'],
+    ['echoOrder', '#echoOrderModal'],
+    ['return', '#returnModalPanel'],
+    ['requisites', '#reqModal .legal-modal'],
+    ['offer', '#offerModal .legal-modal'],
+    ['privacy', '#privacyModal .legal-modal'],
+    ['architectGate', '#apConsoleGatePanel'],
+    ['architectConsole', '#apConsolePanel'],
+    ['aperturaStatus', '#apStatusPanel'],
+    ['swipeOverlay', '#swipeOverlay .swipe-overlay-card']
+  ];
+
+  function readPanel(name, selector){
+    const el = document.querySelector(selector);
+    if(!el) return {name, selector, found:false};
+    const cs = getComputedStyle(el);
+    return {
+      name,
+      selector,
+      found: true,
+      width: cs.width,
+      height: cs.height,
+      maxWidth: cs.maxWidth,
+      maxHeight: cs.maxHeight,
+      minWidth: cs.minWidth,
+      display: cs.display,
+      flexDirection: cs.flexDirection,
+      overflowY: cs.overflowY,
+      boxSizing: cs.boxSizing
+    };
+  }
+
+  window.inspectDesktopModalUnityPatch = function(){
+    const style = document.getElementById('ew-desktop-modal-unity-v1');
+    const desktop = !!(window.matchMedia && window.matchMedia('(min-width: 961px)').matches);
+    const root = getComputedStyle(document.documentElement);
+    const panels = modalDefs.map(function(def){ return readPanel(def[0], def[1]); });
+    const foundPanels = panels.filter(function(p){ return p.found; });
+    const footprints = Array.from(new Set(foundPanels.map(function(p){ return p.width + ' × ' + p.height; })));
+    const styleText = style ? style.textContent : '';
+    return {
+      ok: Boolean(style && foundPanels.length === modalDefs.length && footprints.length <= 1),
+      patch: PATCH,
+      desktopMediaActive: desktop,
+      scope: 'Desktop-only @media (min-width: 961px). Product card modal #modalPanel is intentionally excluded.',
+      themeSafe: 'No color, background, border, shadow, or theme-variable rules are introduced by this patch.',
+      productCardModalExcluded: !/#modalPanel|\.moverlay\s+\.modal/.test(styleText),
+      unifiedVars: {
+        width: root.getPropertyValue('--ew-unified-desktop-modal-width').trim(),
+        heightVh: root.getPropertyValue('--ew-unified-desktop-modal-height-vh').trim(),
+        heightDvh: root.getPropertyValue('--ew-unified-desktop-modal-height-dvh').trim()
+      },
+      panels,
+      sameRenderedFootprint: footprints.length <= 1,
+      renderedFootprints: footprints
+    };
+  };
+})();
+</script>
 </body>
 </html>
