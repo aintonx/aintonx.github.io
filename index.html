@@ -25,8 +25,8 @@
 }catch(_){}})();
 </script>
 <style id="ew-first-boot-shell-style">
-/* Phase 2E.8c-r2 · APERTURA FIRST BOOT SHELL · segmented system loader
-   Head-mounted boot shell: paints before the late body so cold opens do not expose blank/unstable frames. */
+/* Phase 2E.8e · APERTURA BOOT SHELL CODEX FIX
+   Self-contained first-visit overlay. The full site CSS stays inline and untouched. */
 html.ew-first-boot-pending,
 html.ew-first-boot-pending body{
   background:#04040a;
@@ -35,28 +35,34 @@ html[data-theme="light"].ew-first-boot-pending,
 html[data-theme="light"].ew-first-boot-pending body{
   background:#e7e9f1;
 }
+#ewFirstBoot,
+#ewFirstBoot *{
+  box-sizing:border-box;
+}
 #ewFirstBoot{
   position:fixed;
   inset:0;
   z-index:2147483000;
   display:grid;
   place-items:center;
-  padding:clamp(20px,5vw,52px);
+  padding:clamp(18px,5vw,48px);
   background:
-    radial-gradient(circle at 50% 42%, rgba(227,36,43,.13), transparent 34%),
-    linear-gradient(180deg, rgba(255,255,255,.035), transparent 44%),
+    radial-gradient(circle at 50% 46%, rgba(227,36,43,.10), transparent 31%),
+    linear-gradient(180deg, rgba(255,255,255,.028), transparent 42%),
     #04040a;
   color:#f6f4ef;
   overflow:hidden;
   opacity:1;
   visibility:visible;
   pointer-events:auto;
-  animation:ewBootShellIn .28s steps(2,end) both;
+  isolation:isolate;
+  contain:layout paint style;
+  animation:ewBootShellIn .22s steps(2,end) both;
 }
 html[data-theme="light"] #ewFirstBoot{
   background:
-    radial-gradient(circle at 50% 42%, rgba(227,36,43,.10), transparent 35%),
-    linear-gradient(180deg, rgba(255,255,255,.72), transparent 48%),
+    radial-gradient(circle at 50% 46%, rgba(227,36,43,.075), transparent 32%),
+    linear-gradient(180deg, rgba(255,255,255,.70), transparent 46%),
     #e7e9f1;
   color:#10131c;
 }
@@ -65,30 +71,31 @@ html[data-theme="light"] #ewFirstBoot{
   position:absolute;
   inset:0;
   background:
-    linear-gradient(rgba(255,255,255,.042) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.032) 1px, transparent 1px);
-  background-size:44px 44px;
-  opacity:.16;
+    linear-gradient(rgba(255,255,255,.034) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.026) 1px, transparent 1px);
+  background-size:40px 40px;
+  opacity:.14;
   pointer-events:none;
 }
 html[data-theme="light"] #ewFirstBoot::before{
   background:
-    linear-gradient(rgba(12,18,30,.042) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(12,18,30,.036) 1px, transparent 1px);
-  opacity:.30;
+    linear-gradient(rgba(12,18,30,.036) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12,18,30,.030) 1px, transparent 1px);
+  opacity:.24;
 }
 #ewFirstBoot::after{
   content:"";
   position:absolute;
   inset:0;
-  background:rgba(255,255,255,.36);
+  background:rgba(255,255,255,.32);
   opacity:0;
   mix-blend-mode:screen;
   pointer-events:none;
-  animation:ewBootSystemFlash .42s steps(2,end) both;
+  animation:ewBootSystemFlash .30s steps(2,end) both;
 }
 #ewFirstBoot.ew-boot-closing{
-  animation:ewBootShellOut .38s steps(3,end) forwards;
+  pointer-events:none;
+  animation:ewBootShellOut .28s steps(3,end) forwards;
 }
 html.ew-first-boot-ready #ewFirstBoot{
   opacity:0;
@@ -97,107 +104,109 @@ html.ew-first-boot-ready #ewFirstBoot{
 }
 .ew-boot-card{
   position:relative;
-  width:min(448px, calc(100vw - 42px));
-  border:1px solid rgba(246,244,239,.16);
-  border-radius:28px;
-  background:rgba(4,4,10,.68);
-  box-shadow:0 26px 86px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.07);
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
+  width:min(392px, calc(100vw - 36px));
+  border:1px solid rgba(246,244,239,.17);
+  border-radius:12px;
+  background:rgba(7,7,13,.94);
+  box-shadow:0 18px 54px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.055);
   overflow:hidden;
   transform:translateZ(0);
-  animation:ewBootCardIn .36s cubic-bezier(.22,1,.36,1) both, ewBootCardGlitch 2.4s steps(1,end) infinite .45s;
+  animation:ewBootCardIn .26s cubic-bezier(.22,1,.36,1) both;
 }
 html[data-theme="light"] .ew-boot-card{
-  background:rgba(247,248,252,.72);
-  border-color:rgba(23,26,38,.13);
-  box-shadow:0 26px 82px rgba(45,52,70,.16), inset 0 1px 0 rgba(255,255,255,.86);
+  background:rgba(247,248,252,.96);
+  border-color:rgba(23,26,38,.15);
+  box-shadow:0 18px 48px rgba(45,52,70,.14), inset 0 1px 0 rgba(255,255,255,.90);
 }
 .ew-boot-card::before{
   content:"";
   position:absolute;
   inset:0;
-  background:repeating-linear-gradient(180deg, rgba(255,255,255,.055) 0 1px, transparent 1px 7px);
-  opacity:.08;
+  background:repeating-linear-gradient(180deg, rgba(255,255,255,.045) 0 1px, transparent 1px 8px);
+  opacity:.06;
   pointer-events:none;
 }
-html[data-theme="light"] .ew-boot-card::before{opacity:.12;}
+html[data-theme="light"] .ew-boot-card::before{opacity:.09;}
 .ew-boot-card::after{
   content:"";
   position:absolute;
   left:0;
   right:0;
   top:0;
-  height:2px;
-  background:linear-gradient(90deg, #e3242b, rgba(227,36,43,.76), rgba(74,217,133,.72), transparent);
-  opacity:.92;
+  height:1px;
+  background:linear-gradient(90deg, #e3242b 0%, #ed622f 30%, #b6bd49 60%, #36df9a 100%);
+  opacity:.86;
   pointer-events:none;
 }
 .ew-boot-inner{
   position:relative;
   z-index:1;
-  padding:24px 24px 22px;
+  padding:20px 20px 18px;
 }
 .ew-boot-kicker{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:16px;
-  margin:0 0 26px;
-  font:700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  letter-spacing:.30em;
+  gap:14px;
+  margin:0 0 20px;
+  font:700 9px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing:.26em;
   text-transform:uppercase;
   color:rgba(246,244,239,.54);
 }
 html[data-theme="light"] .ew-boot-kicker{color:rgba(18,22,34,.56);}
 .ew-boot-led{
-  width:8px;
-  height:8px;
+  width:6px;
+  height:6px;
   border-radius:50%;
   background:#e3242b;
-  box-shadow:0 0 18px rgba(227,36,43,.82);
+  box-shadow:0 0 10px rgba(227,36,43,.68);
   flex:0 0 auto;
+  transition:background-color .16s linear, box-shadow .16s linear;
 }
 .ew-boot-main{
   text-align:center;
-  padding:4px 0 2px;
+  padding:2px 0 0;
 }
 .ew-boot-title{
   margin:0;
-  font:800 clamp(17px,4.4vw,24px)/1.08 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  letter-spacing:.18em;
+  font:800 clamp(15px,4vw,19px)/1.15 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing:.14em;
   text-transform:uppercase;
   color:rgba(246,244,239,.92);
 }
 html[data-theme="light"] .ew-boot-title{color:rgba(15,19,30,.90);}
-.ew-boot-title strong{
-  color:#e3242b;
-  font-weight:900;
-  text-shadow:0 0 18px rgba(227,36,43,.24);
-}
 .ew-boot-segments{
-  width:min(318px, 70vw);
-  margin:22px auto 0;
+  width:min(304px, 72vw);
+  margin:18px auto 0;
   display:grid;
   grid-template-columns:repeat(10, 1fr);
-  gap:5px;
+  gap:4px;
   align-items:center;
 }
 .ew-boot-seg{
+  position:relative;
   display:block;
-  height:11px;
-  border-radius:3px;
-  background:rgba(246,244,239,.12);
-  opacity:.52;
-  transform:scaleY(.72);
-  transition:background-color .14s linear, opacity .14s linear, transform .14s cubic-bezier(.22,1,.36,1), box-shadow .14s linear;
+  height:12px;
+  border-radius:2px;
+  background:rgba(246,244,239,.10);
+  overflow:hidden;
 }
-html[data-theme="light"] .ew-boot-seg{background:rgba(15,19,30,.12);}
-.ew-boot-seg.is-on{
-  opacity:1;
-  transform:scaleY(1);
+html[data-theme="light"] .ew-boot-seg{background:rgba(15,19,30,.105);}
+.ew-boot-seg::before{
+  content:"";
+  position:absolute;
+  inset:2px;
+  border-radius:1px;
   background:var(--ew-seg-color);
-  box-shadow:0 0 13px color-mix(in srgb, var(--ew-seg-color) 48%, transparent);
+  opacity:.18;
+  transform:scaleX(0);
+  transform-origin:left center;
+  transition:transform .13s cubic-bezier(.22,1,.36,1), opacity .13s linear;
+}
+.ew-boot-seg.is-on::before{
+  opacity:1;
+  transform:scaleX(1);
 }
 .ew-boot-seg:nth-child(1){--ew-seg-color:#e3242b;}
 .ew-boot-seg:nth-child(2){--ew-seg-color:#e9432d;}
@@ -210,47 +219,61 @@ html[data-theme="light"] .ew-boot-seg{background:rgba(15,19,30,.12);}
 .ew-boot-seg:nth-child(9){--ew-seg-color:#4ade8a;}
 .ew-boot-seg:nth-child(10){--ew-seg-color:#36df9a;}
 .ew-boot-status{
-  margin:16px 0 0;
+  margin:13px 0 0;
   min-height:13px;
-  font:700 10px/1.25 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  letter-spacing:.22em;
+  font:700 9px/1.25 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing:.18em;
   text-transform:uppercase;
   color:rgba(246,244,239,.48);
 }
 html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
 .ew-boot-card.is-complete .ew-boot-status{color:rgba(54,223,154,.86);}
-@keyframes ewBootSystemFlash{0%{opacity:.38}42%{opacity:0}58%{opacity:.18}100%{opacity:0}}
-@keyframes ewBootShellIn{0%{opacity:0;filter:contrast(1.25) saturate(1.3)}55%{opacity:1;filter:contrast(1.08) saturate(1.08)}100%{opacity:1;filter:none}}
-@keyframes ewBootShellOut{0%{opacity:1;filter:none;transform:translateX(0)}22%{opacity:.92;filter:contrast(1.22);transform:translateX(-2px)}44%{opacity:.82;clip-path:inset(2% 0 0 0);transform:translateX(2px)}72%{opacity:.45;clip-path:inset(0 0 8% 0);transform:translateX(-1px)}100%{opacity:0;clip-path:inset(48% 0 48% 0);filter:contrast(1.3)}}
-@keyframes ewBootCardIn{0%{opacity:0;transform:translateY(8px) scale(.985)}55%{opacity:1;transform:translateY(-1px) scale(1.002)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes ewBootCardGlitch{0%,88%,100%{transform:translateX(0)}90%{transform:translateX(-1px)}91%{transform:translateX(2px)}92%{transform:translateX(0)}}
+.ew-boot-card.is-complete .ew-boot-led{
+  background:#36df9a;
+  box-shadow:0 0 10px rgba(54,223,154,.62);
+}
+@keyframes ewBootSystemFlash{0%{opacity:.34}45%{opacity:0}62%{opacity:.11}100%{opacity:0}}
+@keyframes ewBootShellIn{0%{opacity:.16;filter:brightness(1.32) contrast(1.14)}48%{opacity:1;filter:brightness(1.04)}100%{opacity:1;filter:none}}
+@keyframes ewBootShellOut{0%{opacity:1;filter:none;transform:translateX(0)}24%{opacity:.94;filter:contrast(1.12);transform:translateX(-1px)}42%{opacity:.80;clip-path:inset(2% 0 0 0);transform:translateX(1px)}70%{opacity:.38;clip-path:inset(0 0 7% 0);transform:translateX(0)}100%{opacity:0;clip-path:inset(49% 0 49% 0);filter:contrast(1.16)}}
+@keyframes ewBootCardIn{0%{opacity:0;transform:translateY(5px) scale(.992)}58%{opacity:1;transform:translateY(-1px)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @media (max-width:720px){
-  #ewFirstBoot{padding:18px;}
-  .ew-boot-card{width:min(390px, calc(100vw - 32px));border-radius:26px;}
-  .ew-boot-inner{padding:22px 20px 20px;}
-  .ew-boot-kicker{margin-bottom:24px;font-size:9px;letter-spacing:.26em;}
-  .ew-boot-title{font-size:clamp(16px,4.8vw,21px);letter-spacing:.16em;}
-  .ew-boot-segments{width:min(292px, 74vw);gap:4px;margin-top:20px;}
-  .ew-boot-seg{height:10px;border-radius:3px;}
-  .ew-boot-status{font-size:9px;letter-spacing:.20em;}
+  #ewFirstBoot{padding:16px;}
+  .ew-boot-card{width:min(360px, calc(100vw - 28px));border-radius:10px;}
+  .ew-boot-inner{padding:18px 17px 17px;}
+  .ew-boot-kicker{margin-bottom:18px;font-size:8px;letter-spacing:.23em;}
+  .ew-boot-title{font-size:clamp(14px,4.2vw,18px);letter-spacing:.12em;}
+  .ew-boot-segments{width:min(286px, 76vw);gap:3px;margin-top:17px;}
+  .ew-boot-seg{height:11px;}
+  .ew-boot-status{font-size:8px;letter-spacing:.16em;}
 }
 @media (prefers-reduced-motion: reduce){
   #ewFirstBoot,.ew-boot-card,#ewFirstBoot::after{animation:none!important;}
-  .ew-boot-seg{transition:none!important;}
+  #ewFirstBoot.ew-boot-closing{opacity:0!important;}
+  .ew-boot-seg::before,.ew-boot-led{transition:none!important;}
 }
 </style>
-<script id="ew-first-boot-shell-injector-r2">
-/* Phase 2E.8c-r2 · APERTURA FIRST BOOT SHELL REFINEMENT
-   Injects the boot shell from <head> so it can paint before the late <body> markup. */
+<script id="ew-first-boot-shell-codex-fix">
+/* Phase 2E.8e · APERTURA BOOT SHELL CODEX FIX
+   Early overlay only: no CSS split, body hold, backend, product, modal, or PWA changes. */
 (function(){
-  var patch = 'Phase 2E.8c-r2 · APERTURA FIRST BOOT SHELL REFINEMENT';
+  var patch = 'Phase 2E.8e · APERTURA BOOT SHELL CODEX FIX';
   var root = document.documentElement;
-  var started = (window.performance && performance.now) ? performance.now() : Date.now();
-  var KEY = 'ew:first-boot-shell:r2:shown';
+  function clockNow(){
+    return (window.performance && performance.now) ? performance.now() : Date.now();
+  }
+  var started = clockNow();
+  var KEY = 'ew:first-boot-shell:2e8e:shown';
   var MAX_WAIT = 1500;
-  var MIN_SHOW = 520;
-  var SEGMENT_FAST_MS = 58;
-  var hidden = false;
+  var MIN_SHOW = 580;
+  var FONT_WAIT = 680;
+  var SEGMENT_FAST_MS = 62;
+  var FINAL_SEGMENT_MS = 56;
+  var EXIT_MS = 280;
+  var EXIT_CLEANUP_MS = EXIT_MS + 40;
+  var FRAME_FALLBACK_MS = 96;
+  var FIRST_PAINT_FALLBACK_MS = 180;
+  var WATCHDOG_AT = MAX_WAIT - EXIT_CLEANUP_MS - FINAL_SEGMENT_MS - FRAME_FALLBACK_MS;
+  var finishing = false;
   var removed = false;
   var progress = 0;
   var storeOk = true;
@@ -262,7 +285,27 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   var alreadyShown = false;
   try{ alreadyShown = localStorage.getItem(KEY) === '1'; }catch(_){ storeOk = false; alreadyShown = false; }
   var shouldShow = force || !alreadyShown;
-  window.__EW_FIRST_BOOT_R2__ = {
+  window.inspectAperturaBootShellCodexFix = function(){
+    return {
+      ok: true,
+      patch: patch,
+      fullCssSplitAbsent: true,
+      bootShellFound: !!document.getElementById('ew-first-boot-shell-style') && !!document.getElementById('ew-first-boot-shell-codex-fix'),
+      segments: 10,
+      beamRemoved: true,
+      firstVisitOnly: true,
+      controls: {
+        force: '?boot=1',
+        reset: '?boot=reset'
+      },
+      timing: {
+        minShowMs: MIN_SHOW,
+        maxWaitMs: MAX_WAIT
+      }
+    };
+  };
+  window.inspectAperturaFirstBootShellRefinementPatch = window.inspectAperturaBootShellCodexFix;
+  var bootState = {
     patch: patch,
     key: KEY,
     shouldShow: shouldShow,
@@ -271,26 +314,14 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
     storeOk: storeOk,
     startedAt: started,
     progress: progress,
-    hidden: hidden,
+    finishing: finishing,
     removed: removed
   };
+  window.__EW_FIRST_BOOT_2E8E__ = bootState;
+  window.__EW_FIRST_BOOT_R2__ = bootState;
   if(!shouldShow){
     root.classList.remove('ew-first-boot-pending');
     root.classList.add('ew-first-boot-skip');
-    window.inspectAperturaFirstBootShellRefinementPatch = function(){
-      return {
-        ok: true,
-        patch: patch,
-        firstVisitOnly: true,
-        skippedBecauseAlreadyShown: !force && alreadyShown,
-        shellInDom: !!document.getElementById('ewFirstBoot'),
-        segments: 0,
-        progress: 0,
-        beamRemoved: true,
-        headInjected: true,
-        whiteScreenMitigation: 'Skipped on repeat visit; use ?boot=1 to preview or ?boot=reset to clear the first-visit flag.'
-      };
-    };
     return;
   }
   root.classList.add('ew-first-boot-pending','ew-first-boot-active');
@@ -298,12 +329,12 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   el.id = 'ewFirstBoot';
   el.setAttribute('role','status');
   el.setAttribute('aria-live','polite');
-  el.setAttribute('aria-label','Apertura стабилизирует загрузку EchoWorld');
+  el.setAttribute('aria-label','Apertura: сигнал стабилизируется');
   el.innerHTML = '<div class="ew-boot-card" aria-hidden="true">'+
     '<div class="ew-boot-inner">'+
       '<div class="ew-boot-kicker"><span>APERTURA · ENTRY</span><span class="ew-boot-led"></span></div>'+
       '<div class="ew-boot-main">'+
-        '<h1 class="ew-boot-title">Стабилизация <strong>сигнала</strong></h1>'+
+        '<p class="ew-boot-title">Сигнал стабилизируется</p>'+
         '<div class="ew-boot-segments" aria-hidden="true">'+
           '<span class="ew-boot-seg"></span><span class="ew-boot-seg"></span><span class="ew-boot-seg"></span><span class="ew-boot-seg"></span><span class="ew-boot-seg"></span>'+
           '<span class="ew-boot-seg"></span><span class="ew-boot-seg"></span><span class="ew-boot-seg"></span><span class="ew-boot-seg"></span><span class="ew-boot-seg"></span>'+
@@ -323,9 +354,13 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
     segments.forEach(function(seg, i){ seg.classList.toggle('is-on', i < progress); });
     if(status){ status.textContent = progress + '/10 · MARKETSPACE'; }
     if(card){ card.classList.toggle('is-complete', progress >= 10); }
-    if(window.__EW_FIRST_BOOT_R2__){ window.__EW_FIRST_BOOT_R2__.progress = progress; }
+    bootState.progress = progress;
   }
   setProgress(1);
+  var firstPaintAt = 0;
+  var firstPaintReady = afterFrames(FIRST_PAINT_FALLBACK_MS).then(function(){
+    firstPaintAt = clockNow();
+  });
   var fastTimer = setInterval(function(){
     if(progress < 8){ setProgress(progress + 1); }
     else{ clearInterval(fastTimer); }
@@ -337,70 +372,72 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   function afterFonts(){
     try{
       if(document.fonts && document.fonts.ready){
-        return Promise.race([document.fonts.ready, new Promise(function(resolve){ setTimeout(resolve, 880); })]);
+        return Promise.race([document.fonts.ready, new Promise(function(resolve){ setTimeout(resolve, FONT_WAIT); })]);
       }
     }catch(_){ }
     return Promise.resolve();
   }
-  function afterFrames(){
+  function afterFrames(fallbackMs){
     return new Promise(function(resolve){
-      requestAnimationFrame(function(){ requestAnimationFrame(resolve); });
+      var settled = false;
+      var timer = null;
+      function finish(){
+        if(settled) return;
+        settled = true;
+        if(timer){ clearTimeout(timer); }
+        resolve();
+      }
+      timer = setTimeout(finish, Math.max(32, fallbackMs || FRAME_FALLBACK_MS));
+      if(typeof requestAnimationFrame !== 'function'){ finish(); return; }
+      requestAnimationFrame(function(){ requestAnimationFrame(finish); });
     });
   }
   function markShown(){
     try{ localStorage.setItem(KEY, '1'); }catch(_){ }
   }
+  function removeShell(){
+    if(removed) return;
+    if(el && el.parentNode){ el.parentNode.removeChild(el); }
+    removed = true;
+    root.classList.add('ew-first-boot-ready');
+    root.classList.remove('ew-first-boot-active','ew-first-boot-pending');
+    bootState.removed = true;
+  }
+  function startExit(){
+    markShown();
+    root.classList.remove('ew-first-boot-pending');
+    if(el){ el.classList.add('ew-boot-closing'); }
+    var reduceMotion = false;
+    try{ reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(_){ }
+    if(reduceMotion){ removeShell(); return; }
+    setTimeout(removeShell, EXIT_CLEANUP_MS);
+  }
   function reveal(){
-    if(hidden) return;
-    hidden = true;
-    if(window.__EW_FIRST_BOOT_R2__){ window.__EW_FIRST_BOOT_R2__.hidden = true; }
-    clearInterval(fastTimer);
-    function close(){
-      var elapsed = ((window.performance && performance.now) ? performance.now() : Date.now()) - started;
-      var wait = Math.max(0, MIN_SHOW - elapsed);
+    if(finishing) return;
+    finishing = true;
+    bootState.finishing = true;
+    function finishProgressAfter(wait){
       setTimeout(function(){
-        setProgress(10);
-        markShown();
-        root.classList.add('ew-first-boot-ready');
-        root.classList.remove('ew-first-boot-pending');
-        if(el){ el.classList.add('ew-boot-closing'); }
+        clearInterval(fastTimer);
+        if(progress < 9){ setProgress(9); }
         setTimeout(function(){
-          if(el && el.parentNode){ el.parentNode.removeChild(el); }
-          removed = true;
-          root.classList.remove('ew-first-boot-active');
-          if(window.__EW_FIRST_BOOT_R2__){ window.__EW_FIRST_BOOT_R2__.removed = true; }
-        }, 440);
+          setProgress(10);
+          afterFrames(FRAME_FALLBACK_MS).then(startExit).catch(startExit);
+        }, progress < 10 ? FINAL_SEGMENT_MS : 0);
       }, wait);
     }
-    if(progress < 9){ setProgress(9); setTimeout(function(){ setProgress(10); close(); }, 82); }
-    else{ setProgress(10); close(); }
+    firstPaintReady.then(function(){
+      finishProgressAfter(Math.max(0, MIN_SHOW - (clockNow() - firstPaintAt)));
+    }).catch(function(){
+      firstPaintAt = clockNow();
+      finishProgressAfter(MIN_SHOW);
+    });
   }
-  Promise.all([afterDom(), afterFonts(), afterFrames()]).then(reveal).catch(reveal);
-  setTimeout(reveal, MAX_WAIT);
-  window.inspectAperturaFirstBootShellRefinementPatch = function(){
-    var shell = document.getElementById('ewFirstBoot');
-    var on = shell ? shell.querySelectorAll('.ew-boot-seg.is-on').length : progress;
-    return {
-      ok: true,
-      patch: patch,
-      firstVisitOnly: true,
-      storageKey: KEY,
-      forced: force,
-      alreadyShownBeforeThisLoad: alreadyShown,
-      storeOk: storeOk,
-      shellInDom: !!shell,
-      pendingClass: root.classList.contains('ew-first-boot-pending'),
-      readyClass: root.classList.contains('ew-first-boot-ready'),
-      hidden: hidden,
-      removed: removed,
-      segments: 10,
-      progress: on,
-      beamRemoved: true,
-      headInjected: true,
-      timing: { maxWaitMs: MAX_WAIT, minShowMs: MIN_SHOW, fastSegmentMs: SEGMENT_FAST_MS },
-      notes: 'Progress fills segments themselves from red to green, then reveals the site after DOM/fonts/frame readiness or max wait.'
-    };
-  };
+  function fallbackReveal(){
+    afterDom().then(reveal).catch(reveal);
+  }
+  afterDom().then(afterFonts).then(reveal).catch(fallbackReveal);
+  setTimeout(fallbackReveal, WATCHDOG_AT);
 })();
 </script>
 
