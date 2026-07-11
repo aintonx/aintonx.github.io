@@ -1051,9 +1051,23 @@ body {
    anti-reflow-flash), инфинит-анимации идут непрерывно — нет
    pause/resume-флэша. */
 body.scroll-restoring,
-body.scroll-restoring *,
-body.scroll-restoring *::before,
-body.scroll-restoring *::after {
+body.scroll-restoring header,
+body.scroll-restoring #_blurW,
+body.scroll-restoring .pcard,
+body.scroll-restoring .pcard::before,
+body.scroll-restoring .pcard::after,
+body.scroll-restoring .pcard .pimg img,
+body.scroll-restoring .moverlay,
+body.scroll-restoring .modal,
+body.scroll-restoring .chk-overlay,
+body.scroll-restoring .chk-modal,
+body.scroll-restoring .cart-overlay,
+body.scroll-restoring .cart-panel,
+body.scroll-restoring .mob-nav,
+body.scroll-restoring .ap-console-overlay,
+body.scroll-restoring .ap-console-panel,
+body.scroll-restoring .ap-status-panel,
+body.scroll-restoring .legal-modal {
   transition: none !important;
 }
 body.scroll-restoring .moverlay.closing,
@@ -1092,23 +1106,14 @@ body::before {
   z-index: 0;
 }
 
-/* ── ПЛЁНОЧНОЕ ЗЕРНО — тонкое, не на скролл-контейнерах, не перекрывает контент ── */
+/* Phase 2E.10 · SCROLL SURFACE STABILITY
+   The fixed SVG turbulence layer used to blend the entire viewport against
+   a changing backdrop on every desktop scroll frame. At 3.5% it was almost
+   invisible, but the full-surface reblend could checkerboard as a white flash.
+   Keep the premium surface clean and let the static gradients carry texture. */
 body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .25 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  opacity: 0.035;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  z-index: 1;
-}
-/* PERF: на мобиле зерно отключено — фиксированный слой с mix-blend-mode
-   пересчитывает смешивание со ВСЕЙ движущейся страницей каждый кадр
-   скролла (постоянная нагрузка на композитор iOS = фризы), а при
-   opacity 3.5% на маленьком экране зерно практически неразличимо. */
-@media (max-width: 960px) {
-  body::after { display: none; }
+  content: none;
+  display: none;
 }
 
 /* ── SCROLL BAR — отключён, индикатор убран ── */
@@ -1175,11 +1180,10 @@ body._blur-fading #_blurW {
   filter: blur(0) brightness(1) !important;
 }
 /* ── ВТОРАЯ ПОЛОВИНА ФИКСА: scroll-restoring не глушит transition ──
-   scroll-restoring добавляется в финале закрытия (при unlockScroll) и через
-   wildcard «body.scroll-restoring *» ставит transition:none !important на
-   ВСЕ потомки body — включая #_blurW. Это РЕЗАЛО анимацию блюра именно в
-   момент когда юзер на него смотрит — отсюда «дёрганье». Возвращаем
-   transition с тем же curve через !important. */
+   Раньше scroll-restoring глушил wildcard-правилом все потомки body. Теперь
+   список точечный, но #_blurW всё ещё входит в него: во время реального
+   восстановления позиции это защищает фон от промежуточного кадра. Для
+   синхронного закрытия возвращаем blur-transition тем же curve. */
 body.scroll-restoring #_blurW {
   -webkit-transition: -webkit-filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
   transition: filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
@@ -16033,7 +16037,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0001</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/pepe.webp" alt="Редкая лягушка" loading="lazy" decoding="async">
+        <img src="img/pepe.webp" alt="Редкая лягушка" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16058,7 +16062,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0002</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/labubu.webp" alt="Зубастый спутник" loading="lazy" decoding="async">
+        <img src="img/labubu.webp" alt="Зубастый спутник" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16084,7 +16088,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0003</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/akula.webp" alt="Сухопутная акула" loading="lazy" decoding="async">
+        <img src="img/akula.webp" alt="Сухопутная акула" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16109,7 +16113,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0004</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/bobr.webp" alt="Лесной гость" loading="lazy" decoding="async">
+        <img src="img/bobr.webp" alt="Лесной гость" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16134,7 +16138,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0005</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/tamagochi.webp" alt="Карманное существо" loading="lazy" decoding="async">
+        <img src="img/tamagochi.webp" alt="Карманное существо" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16160,7 +16164,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0006</div>
         <div class="pbeacon" data-status="first_form"><div class="pbeacon-dot"></div><span class="pbeacon-txt">В MARKETSPACE</span></div>
-        <img src="img/ball.webp" alt="Тёмный оракул" loading="lazy" decoding="async">
+        <img src="img/ball.webp" alt="Тёмный оракул" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16185,7 +16189,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0007</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/spinner.webp" alt="Карманный вихрь" loading="lazy" decoding="async">
+        <img src="img/spinner.webp" alt="Карманный вихрь" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16210,7 +16214,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0008</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/disco-ball.webp" alt="Зеркальный идол" loading="lazy" decoding="async">
+        <img src="img/disco-ball.webp" alt="Зеркальный идол" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16236,7 +16240,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0009</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/utka.webp" alt="Жёлтая горлица" loading="lazy" decoding="async">
+        <img src="img/utka.webp" alt="Жёлтая горлица" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16261,7 +16265,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0010</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/simple-dimple.webp" alt="Карманные соты" loading="lazy" decoding="async">
+        <img src="img/simple-dimple.webp" alt="Карманные соты" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16286,7 +16290,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0011</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/grib.webp" alt="Ночной мухомор" loading="lazy" decoding="async">
+        <img src="img/grib.webp" alt="Ночной мухомор" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16312,7 +16316,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0012</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/rash.webp" alt="Колючий страж" loading="lazy" decoding="async">
+        <img src="img/rash.webp" alt="Колючий страж" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -19121,6 +19125,21 @@ let _scrollLockCount = 0;
    нескроллящимся зонам панелей (шапка корзины, кнопки меню) раньше
    проходил сквозь и двигал страницу за окном — «лишний свайп-скролл». */
 const _MODAL_SCROLLERS = '.modal,.mbody,.chk-modal,#returnModalPanel,.legal-modal-body,.cart-body,.mob-nav-links,.echo-order-modal,.ap-console-panel,.ap-status-panel,.ap-console-body,.ap-status-body';
+let _lockedTouchScroller = null;
+function _findLockedModalScroller(target){
+  let sc = target && target.closest && target.closest(_MODAL_SCROLLERS);
+  while(sc){
+    if(sc.scrollHeight > sc.clientHeight + 1) return sc;
+    sc = sc.parentElement ? sc.parentElement.closest(_MODAL_SCROLLERS) : null;
+  }
+  return null;
+}
+function _cacheLockedTouchScroller(e){
+  _lockedTouchScroller = _findLockedModalScroller(e && e.target);
+}
+function _clearLockedTouchScroller(){
+  _lockedTouchScroller = null;
+}
 /* ── Детектор iOS-клавиатуры ──────────────────────────────────────
    window.innerHeight для этого НЕ годится: на iOS он лениво «усыхает»
    вслед за клавиатурой (подтверждено полевыми логами EWDBG) — сравнение
@@ -19140,10 +19159,13 @@ function _preventBgScroll(e){
   // (.legal-modal-body возврата — теперь плоский), не должен глушить
   // настоящий скроллер выше (#returnModalPanel). Для одиночных
   // скроллеров (все остальные модалки) поведение прежнее.
-  let sc = t && t.closest && t.closest(_MODAL_SCROLLERS);
-  while(sc){
-    if(sc.scrollHeight > sc.clientHeight + 1) return;
-    sc = sc.parentElement ? sc.parentElement.closest(_MODAL_SCROLLERS) : null;
+  /* Touch gestures keep the scroller resolved at touchstart, so the hot
+     touchmove path does not force scrollHeight/clientHeight layout reads on
+     every frame. Wheel input remains resolved from its current target. */
+  if(e.type === 'touchmove'){
+    if(_lockedTouchScroller && _lockedTouchScroller.isConnected) return;
+  }else if(_findLockedModalScroller(t)){
+    return;
   }
   e.preventDefault();
 }
@@ -19225,7 +19247,10 @@ function lockScroll(){
   // (хедер «отлипал» и прыгал на закрытии = вспышка «бар-меню»), а position:fixed
   // сбрасывал прокрутку (вспышка контента). Перехват событий не трогает ни
   // позицию прокрутки, ни sticky, ни scrollbar.
+  document.addEventListener('touchstart', _cacheLockedTouchScroller, {capture:true, passive:true});
   document.addEventListener('touchmove', _preventBgScroll, {passive:false});
+  document.addEventListener('touchend', _clearLockedTouchScroller, {capture:true, passive:true});
+  document.addEventListener('touchcancel', _clearLockedTouchScroller, {capture:true, passive:true});
   document.addEventListener('wheel', _preventBgScroll, {passive:false});
   document.addEventListener('keydown', _preventScrollKeys, {passive:false});
   window.addEventListener('scroll', _pinLockedScroll, {passive:true});
@@ -19247,11 +19272,15 @@ function unlockScroll(){
    пользуются CSS-правила .cart-closing). Reflow и scrollTo больше нет. */
 function _forceUnlockScroll(){
   _scrollLockCount = 0;
+  document.removeEventListener('touchstart', _cacheLockedTouchScroller, true);
   document.removeEventListener('touchmove', _preventBgScroll);
+  document.removeEventListener('touchend', _clearLockedTouchScroller, true);
+  document.removeEventListener('touchcancel', _clearLockedTouchScroller, true);
   document.removeEventListener('wheel', _preventBgScroll);
   document.removeEventListener('keydown', _preventScrollKeys);
   window.removeEventListener('scroll', _pinLockedScroll);
   document.removeEventListener('focusout', _pinAfterFocusChange, true);
+  _clearLockedTouchScroller();
   /* T5: восстанавливаем позицию страницы до открытия модалки.
      Мобильный браузер при фокусе в input внутри fixed-модалки может
      «съехать» страницей (keyboard avoidance). Instant-restore не вызывает
@@ -20725,6 +20754,10 @@ function _ewMaxCssMotionMs(el){
 function _ewCancelModalExit(root){
   if(!root) return;
   root._ewCloseToken = (root._ewCloseToken || 0) + 1;
+  if(root._ewVisualExitCleanup){
+    try{ root._ewVisualExitCleanup(); }catch(_){ }
+    root._ewVisualExitCleanup = null;
+  }
   if(root._ewVisualExitTimer){
     clearTimeout(root._ewVisualExitTimer);
     root._ewVisualExitTimer = 0;
@@ -20734,6 +20767,7 @@ function _ewAfterModalExit(root, panel, done, opts){
   opts = opts || {};
   if(!root){ if(typeof done === 'function') done('missing-root'); return 0; }
   _ewCancelModalExit(root);
+  try{delete root.dataset.ewExitReason;}catch(_){ }
   const token = root._ewCloseToken;
   const closingClass = Object.prototype.hasOwnProperty.call(opts, 'closingClass') ? opts.closingClass : 'closing';
   const prefersReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -20743,16 +20777,93 @@ function _ewAfterModalExit(root, panel, done, opts){
   );
   const minMs = typeof opts.minMs === 'number' ? opts.minMs : 160;
   const maxMs = typeof opts.maxMs === 'number' ? opts.maxMs : 620;
-  const waitMs = prefersReduced ? 30 : Math.max(minMs, Math.min(maxMs, Math.ceil(cssMs + 48)));
+  /* animationend is the primary completion signal. The timer is only a
+     fail-safe for engines that do not expose CSSAnimation immediately;
+     keep its tail within one frame so the page cannot look ready while the
+     touch/wheel guard is still attached. */
+  const waitMs = prefersReduced ? 30 : Math.max(minMs, Math.min(maxMs, Math.ceil(cssMs + 16)));
+  let finished = false;
+  let eventTarget = null;
+  let expectedAnimations = null;
+  let animationProbeRaf = 0;
+  let animationPromiseStarted = false;
+  function cleanupEvent(){
+    if(eventTarget){
+      eventTarget.removeEventListener('animationend', onAnimationEnd, true);
+      eventTarget = null;
+    }
+    if(animationProbeRaf){
+      cancelAnimationFrame(animationProbeRaf);
+      animationProbeRaf = 0;
+    }
+  }
+  function finish(reason){
+    if(finished || root._ewCloseToken !== token) return;
+    if(closingClass && !root.classList.contains(closingClass)) return;
+    finished = true;
+    if(root._ewVisualExitTimer){
+      clearTimeout(root._ewVisualExitTimer);
+      root._ewVisualExitTimer = 0;
+    }
+    cleanupEvent();
+    root._ewVisualExitCleanup = null;
+    try{root.dataset.ewExitReason=reason;}catch(_){ }
+    if(typeof done === 'function') done(reason);
+  }
+  function onAnimationEnd(event){
+    if(!eventTarget || event.target !== panel) return;
+    if(expectedAnimations && expectedAnimations.size && !expectedAnimations.has(event.animationName)) return;
+    finish('css-animation-end');
+  }
+  if(!prefersReduced && panel && panel.addEventListener){
+    try{
+      const panelMotion=getComputedStyle(panel);
+      const names=String(panelMotion.animationName||'').split(',').map(function(name){return name.trim();});
+      const durations=_ewCssTimeList(panelMotion.animationDuration);
+      const delays=_ewCssTimeList(panelMotion.animationDelay);
+      let longestName='';
+      let longestMs=-1;
+      names.forEach(function(name,index){
+        if(!name || name==='none') return;
+        const total=(durations[index%durations.length]||0)+Math.max(0,delays[index%delays.length]||0);
+        if(total>longestMs){longestMs=total;longestName=name;}
+      });
+      expectedAnimations = new Set(longestName?[longestName]:[]);
+    }catch(_){ expectedAnimations = null; }
+    if(expectedAnimations && expectedAnimations.size){
+      /* Capture on the layer: this remains reliable even if an older panel
+         handler stops propagation while the closing animation is running. */
+      eventTarget = root;
+      root.addEventListener('animationend', onAnimationEnd, true);
+      root._ewVisualExitCleanup = cleanupEvent;
+      if(typeof panel.getAnimations === 'function'){
+        let probeCount=0;
+        const watchAnimations=function(){
+          animationProbeRaf=0;
+          if(finished || root._ewCloseToken !== token || animationPromiseStarted) return;
+          try{
+            const activeAnimations=panel.getAnimations().filter(function(animation){
+              return !animation.animationName || expectedAnimations.has(animation.animationName);
+            });
+            if(activeAnimations.length){
+              animationPromiseStarted=true;
+              Promise.all(activeAnimations.map(function(animation){return animation.finished.catch(function(){return null;});}))
+                .then(function(){finish('web-animation-finished');});
+              return;
+            }
+          }catch(_){ }
+          /* Some mobile engines instantiate CSSAnimation only after style
+             commit. Two probes cover that boundary without polling. */
+          if(++probeCount<3) animationProbeRaf=requestAnimationFrame(watchAnimations);
+        };
+        watchAnimations();
+      }
+    }
+  }
   root._ewVisualExitTimer = setTimeout(function(){
     if(root._ewCloseToken !== token) return;
     if(closingClass && !root.classList.contains(closingClass)) return;
-    root._ewVisualExitTimer = 0;
-    requestAnimationFrame(function(){
-      if(root._ewCloseToken !== token) return;
-      if(closingClass && !root.classList.contains(closingClass)) return;
-      if(typeof done === 'function') done('css-motion-complete');
-    });
+    finish('css-motion-fallback');
   }, waitMs);
   return root._ewVisualExitTimer;
 }
@@ -20764,10 +20875,9 @@ function _cleanupModal(){
   _cancelModalScrollHintEntry(panel);
   if(typeof _ewCancelProductSheetPreopen === 'function') _ewCancelProductSheetPreopen(ov, panel);
   closeModalFirstFormHint();
-  /* 0. Мгновенно замораживаем все анимации ДО любых DOM-изменений.
-     Это убирает «внезапное появление» секций и scroll-line в момент
-     когда overlay уходит, но position:fixed ещё не снят. */
-  document.body.classList.add('scroll-restoring');
+  /* 0. Cleanup starts only after the panel's real animationend. The central
+     unlock routine will enable scroll-restoring itself if it actually has to
+     correct a keyboard-induced scroll offset. */
   /* 1. Убираем overlay из потока — теперь страница технически скрыта.
      ВАЖНО: убираем И .open И .closing одновременно — анимация уже
      отработала, теперь скрываем модал. */
@@ -22001,7 +22111,6 @@ function toggleCart(){
     // (transition:none !important). Keyframe-анимация это переживает —
     // она ИСКЛЮЧЕНА из паузы (см. CSS body.scroll-restoring .cart-closing),
     // поэтому слайд закрытия всегда плавный.
-    document.body.classList.add('scroll-restoring'); // мобильный anti-flash: фоновые анимации уже на паузе во время закрытия
     // BLUR FADE SYNC — блюр уходит синхронно со слайдом корзины вправо.
     // cart-open оставляем (он держит header z-index до конца слайда);
     // _blur-fading перекроет blur через !important.
@@ -22139,6 +22248,7 @@ function _setupModalUnstickAfterBlur(panel, inputsOrSelector, openBodyClass){
   panel.dataset.unstickAfterBlurInit = '1';
   function unstick(){
     if(!panel.isConnected) return;
+    if(panel.closest && panel.closest('.closing')) return;
     /* Класс «модалка открыта» может жить и на body (chk-open, modal-open),
        и на html (legal-modal-open у Реквизитов/Сектора Тишины) — проверяем оба.
        Раньше проверялся только body, из-за чего у формы возврата
@@ -22163,7 +22273,10 @@ function _setupModalUnstickAfterBlur(panel, inputsOrSelector, openBodyClass){
       // каждый resize — на iOS это создаёт каскад overflow:auto↔hidden
       // длительностью ~500мс, во время которого тапы по чекбоксу и
       // крестику теряются (форма «залипала»).
-      unstick();
+      /* closeModal adds .closing later in this same task. A microtask keeps
+         ordinary blur effectively immediate, while allowing a close-triggered
+         blur to skip the forced overflow/layout kick. */
+      Promise.resolve().then(unstick);
       setTimeout(unstick, 360);
     });
   }
@@ -22253,15 +22366,23 @@ function _setupAutofillFreeze(panel, ids){
     const keep = panel.scrollTop;
     const prev = panel.style.overflowY;
     panel.style.overflowY = 'hidden';
+    function release(){
+      panel.style.overflowY = prev || '';
+      panel.scrollTop = keep;
+      frozenUntil = 0;
+    }
     (function hold(){
+      const owner = panel.closest && panel.closest('.moverlay,.chk-overlay,#reqModal,#offerModal,#privacyModal');
+      if(owner && (!owner.classList.contains('open') || owner.classList.contains('closing'))){
+        release();
+        return;
+      }
       if(performance.now() < frozenUntil){
         if(Math.abs(panel.scrollTop - keep) > 0) panel.scrollTop = keep;
         requestAnimationFrame(hold);
         return;
       }
-      panel.style.overflowY = prev || '';
-      panel.scrollTop = keep;
-      frozenUntil = 0;
+      release();
     })();
   }
   ids.forEach(function(id){
@@ -22356,7 +22477,6 @@ function closeCheckout(){
   document.body.classList.add('_blur-fading');
   const panel = document.getElementById('chkModalPanel');
   _ewAfterModalExit(ov, panel, function(){
-    document.body.classList.add('scroll-restoring');
     ov.classList.remove('open');
     ov.classList.remove('closing');
     document.body.classList.remove('chk-open');
@@ -25915,9 +26035,10 @@ function _apCloseOverlay(id, opts){
     if(!keepLock && !_apAnyMounted()){
       document.body.classList.remove('ap-console-open','_blur-fading');
       if(document.body.dataset.apConsoleLocked==='1'){
-        document.body.classList.add('scroll-restoring');
         delete document.body.dataset.apConsoleLocked;
-        unlockScroll();
+        /* If a non-Apertura layer opened during this exit, the one existing
+           lock becomes its ownership instead of being released underneath it. */
+        if(!(typeof _hasScrollLockedLayer === 'function' && _hasScrollLockedLayer())) unlockScroll();
       }
     }
     if(typeof opts.onDone === 'function') opts.onDone();
@@ -27203,7 +27324,10 @@ function _apOpenCartAfterClose(){
 }
 function _apScrollTo(id){
   const el=document.getElementById(id);
-  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  if(el){
+    if(typeof window._ewRevealForTarget === 'function') window._ewRevealForTarget(el, 'apertura-anchor');
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
 }
 function _resetEchoForNew(){
   const ta=document.getElementById('echoTextInput');
@@ -29498,11 +29622,7 @@ function closeMobNav(){
   nav.classList.remove('open');
   document.getElementById('mobNavOverlay').classList.remove('open');
   document.getElementById('mobBurger').classList.remove('open');
-  // scroll-restoring замораживает анимации на время unlockScroll,
-  // чтобы pulse/scanline не «дёрнулись» в момент возврата body
-  // из position:fixed (это и было визуально «рваным»).
   setTimeout(()=>{
-    document.body.classList.add('scroll-restoring');
     nav.classList.remove('closing');
     document.body.classList.remove('mob-nav-open');
     unlockScroll();
@@ -29519,6 +29639,7 @@ function _smoothScrollToHash(hash){
   let target;
   try { target = document.querySelector(hash); } catch(e) { return; }
   if(!target) return;
+  if(typeof window._ewRevealForTarget === 'function') window._ewRevealForTarget(target, 'anchor');
   const header = document.querySelector('header');
   const offset = header ? header.offsetHeight : 0;
   const rect = target.getBoundingClientRect();
@@ -31295,7 +31416,6 @@ function closeReturnModal(){
   document.body.classList.add('_blur-fading');
   const panel = document.getElementById('returnModalPanel');
   _ewAfterModalExit(ov, panel, function(){
-    document.body.classList.add('scroll-restoring');
     ov.classList.remove('open');
     ov.classList.remove('closing');
     document.body.classList.remove('chk-open');
@@ -31460,6 +31580,7 @@ function acceptCookies(){
   var KEY='ew:architect-trace:v3';
   var ANCHORS=['relic','catalog','echo','impulse','about','worlds','collab','preorderSection','faq','architect'];
   var restoring=false;
+  var scrollSaveTimer=0;
   var last=0, lastSavedY=-1, lastSavedKey='';
   try{
     ['ew:architect-trace:v2','ew:architect-trace:pending:v2'].forEach(function(k){
@@ -31500,7 +31621,13 @@ function acceptCookies(){
       localStorage.setItem(KEY, payload);
     }catch(e){}
   }
-  window.addEventListener('scroll', function(){ save(false); }, {passive:true});
+  /* Geometry for ten anchors plus two storage writes does not belong in the
+     wheel hot path. Keep the existing 650ms safety interval and add one
+     trailing save after the user pauses. */
+  window.addEventListener('scroll', function(){
+    if(scrollSaveTimer) clearTimeout(scrollSaveTimer);
+    scrollSaveTimer=setTimeout(function(){ scrollSaveTimer=0; save(false); }, 240);
+  }, {passive:true});
   ['touchend','pointerup','mouseup','keyup','resize'].forEach(function(ev){
     window.addEventListener(ev, function(){ save(true); }, {passive:true});
   });
@@ -34030,13 +34157,25 @@ body.modal-open .pcard.reading::before {
   };
 
   /* Низкоприоритетная подготовка уже отрисованных карточек: не грузим
-     насильно весь каталог, но декодируем то, что браузер уже успел загрузить. */
+     насильно весь каталог, но декодируем то, что браузер уже успел загрузить.
+     One image per idle slice avoids uploading twelve 900×900 textures in one
+     compositor burst while the user starts scrolling. */
   function idleDecodeLoadedCatalogImages(){
     try{
-      document.querySelectorAll('.pcard img').forEach(function(img){
-        if(!img || !img.complete || !img.currentSrc) return;
-        if(typeof img.decode === 'function') img.decode().catch(function(){});
+      const queue=Array.prototype.slice.call(document.querySelectorAll('.pcard img')).filter(function(img){
+        return !!(img && img.complete && img.currentSrc && typeof img.decode === 'function');
       });
+      let index=0;
+      function scheduleNext(){
+        if(index>=queue.length) return;
+        if('requestIdleCallback' in window) requestIdleCallback(decodeNext,{timeout:800});
+        else setTimeout(decodeNext,48);
+      }
+      function decodeNext(){
+        const img=queue[index++];
+        Promise.resolve().then(function(){return img.decode();}).catch(function(){}).then(scheduleNext);
+      }
+      scheduleNext();
     }catch(_){ }
   }
   if('requestIdleCallback' in window) requestIdleCallback(idleDecodeLoadedCatalogImages, {timeout:2500});
@@ -37097,6 +37236,277 @@ window.inspectPwaMobileParityRootFix = function(){
       checkoutRenderSignature:echoList?echoList.dataset.ewRenderSignature||null:null,
       canvasContextWarmed:Boolean(canvas&&canvas.dataset.ewContextWarm==='1'),
       mechanicsPreserved:true
+    };
+  };
+})();
+</script>
+
+<style id="ew-scroll-reveal-stability-v1">
+/* Phase 2E.10 · SCROLL / REVEAL STABILITY
+   Anchor geometry stays native; reveal never changes layout dimensions. */
+#relic,
+#catalog,
+#echo,
+#about,
+#worlds,
+#collab,
+#preorderSection,
+#faq,
+#architect,
+footer {
+  scroll-margin-top: 86px;
+}
+
+/* These badges already have nearly opaque surfaces. Removing backdrop blur
+   preserves their appearance while avoiding three extra backdrop layers per
+   catalog card during desktop scroll. */
+.pcard-power,
+.arttag,
+.pbeacon {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+@media (min-width: 961px) {
+  /* Safari tint sampling probes are only useful in the mobile shell. */
+  .safari-tint-probe { display: none !important; }
+
+  /* A stationary pointer must not start twelve hover/compositor scenes while
+     the catalog moves underneath it. Interaction returns 140ms after scroll. */
+  body.ew-user-scrolling .pcard {
+    transition: none !important;
+  }
+  body.ew-user-scrolling .pcard:not(.sold):hover {
+    background: var(--surface) !important;
+    border-color: var(--line) !important;
+    box-shadow: none !important;
+    transform: translateZ(0) !important;
+  }
+  body.ew-user-scrolling .pcard.sold:hover {
+    box-shadow: none !important;
+    transform: translateZ(0) !important;
+  }
+  body.ew-user-scrolling .pcard:hover::after {
+    left: -100% !important;
+    transition: none !important;
+  }
+  body.ew-user-scrolling .pcard:hover .pimg img {
+    transform: none !important;
+    transition: none !important;
+  }
+  body.ew-user-scrolling .pcard:hover .pimg-scan {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  body.ew-user-scrolling .pcard:hover .pimg::before {
+    opacity: 0 !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 960px) {
+  #relic,
+  #catalog,
+  #echo,
+  #about,
+  #worlds,
+  #collab,
+  #preorderSection,
+  #faq,
+  #architect,
+  footer { scroll-margin-top: 70px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ew-reveal-state="running"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+</style>
+<script id="ew-scroll-reveal-stability-js-v1">
+(function(){
+  const PATCH='Phase 2E.10 · SCROLL / REVEAL STABILITY';
+  const REVEAL_SELECTOR='.hero,#relic,#catalog,#echo,#about,#worlds,#collab,#preorderSection,#faq,#architect,footer';
+  const targets=Array.prototype.slice.call(document.querySelectorAll(REVEAL_SELECTOR));
+  const seen=new WeakSet();
+  const animations=new WeakMap();
+  const reduceMotion=window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : {matches:false};
+  let observer=null;
+  let scrollCalmTimer=0;
+  let hashPositionTimer=0;
+
+  function revealElementForNode(node){
+    if(!node || node.nodeType!==1) return null;
+    if(node.matches && node.matches(REVEAL_SELECTOR)) return node;
+    return node.closest ? node.closest(REVEAL_SELECTOR) : null;
+  }
+  function finishReveal(el,reason){
+    if(!el) return false;
+    seen.add(el);
+    if(observer) observer.unobserve(el);
+    const active=animations.get(el);
+    if(active){
+      active.onfinish=null;
+      active.oncancel=null;
+      try{active.cancel();}catch(_){ }
+      animations.delete(el);
+    }
+    el.classList.remove('ew-reveal-running');
+    el.classList.add('ew-revealed');
+    el.dataset.ewRevealState=reason||'revealed';
+    return true;
+  }
+  function playReveal(el){
+    if(!el || seen.has(el)) return;
+    if(reduceMotion.matches || typeof el.animate!=='function'){
+      finishReveal(el,'reduced-or-fallback');
+      return;
+    }
+    seen.add(el);
+    if(observer) observer.unobserve(el);
+    el.classList.add('ew-reveal-running');
+    el.dataset.ewRevealState='running';
+    const mobile=window.matchMedia && window.matchMedia('(max-width: 960px)').matches;
+    const animation=el.animate([
+      {opacity:0.01,transform:'translate3d(0,'+(mobile?'14px':'20px')+',0)'},
+      {offset:0.72,opacity:1,transform:'translate3d(0,-2px,0)'},
+      {opacity:1,transform:'translate3d(0,0,0)'}
+    ],{
+      duration:mobile?440:540,
+      easing:'cubic-bezier(.16,1,.3,1)',
+      fill:'both'
+    });
+    animations.set(el,animation);
+    animation.onfinish=function(){finishReveal(el,'complete');};
+    animation.oncancel=function(){
+      animations.delete(el);
+      el.classList.remove('ew-reveal-running');
+      el.classList.add('ew-revealed');
+      el.dataset.ewRevealState='cancelled-visible';
+    };
+  }
+  function hashTarget(){
+    if(!location.hash || location.hash.length<2) return null;
+    try{return document.getElementById(decodeURIComponent(location.hash.slice(1)));}catch(_){return null;}
+  }
+  function revealForTarget(node,reason){
+    const el=revealElementForNode(node);
+    return finishReveal(el,reason||'targeted');
+  }
+  function revealViewport(reason){
+    const h=window.innerHeight||document.documentElement.clientHeight||0;
+    targets.forEach(function(el){
+      const rect=el.getBoundingClientRect();
+      if(rect.bottom>=-24 && rect.top<=h+24) finishReveal(el,reason||'viewport');
+    });
+  }
+  function revealAll(reason){
+    targets.forEach(function(el){finishReveal(el,reason||'all-visible');});
+  }
+
+  /* history.scrollRestoration is intentionally manual elsewhere on the
+     site. On a back/forward entry with a real #hash that can suppress the
+     browser's native anchor jump, so verify the final position once and use
+     the site's existing cinematic scroll only when the target is genuinely
+     off-position. This never runs for ordinary scroll restoration. */
+  function ensureHashPosition(reason){
+    const requestedHash=location.hash;
+    if(!requestedHash || requestedHash.length<2) return;
+    if(hashPositionTimer) clearTimeout(hashPositionTimer);
+    hashPositionTimer=setTimeout(function(){
+      hashPositionTimer=0;
+      if(location.hash!==requestedHash || window.__EW_SCROLL_RESTORE_ACTIVE__) return;
+      const target=hashTarget();
+      if(!target) return;
+      revealForTarget(target,reason||'hash-position');
+      const header=document.querySelector('header');
+      const expectedTop=(header ? header.offsetHeight : 0)+6;
+      const rect=target.getBoundingClientRect();
+      if(Math.abs(rect.top-expectedTop)<=30) return;
+      if(reduceMotion.matches){
+        window.scrollTo(0,Math.max(0,(window.scrollY||window.pageYOffset||0)+rect.top-expectedTop));
+      }else if(typeof _smoothScrollToHash==='function'){
+        _smoothScrollToHash(requestedHash);
+      }else{
+        target.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    },0);
+  }
+
+  window._ewRevealForTarget=revealForTarget;
+
+  const finePointer=window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)');
+  function markWindowScrolling(){
+    if(!finePointer || !finePointer.matches || !document.body) return;
+    if(!document.body.classList.contains('ew-user-scrolling')) document.body.classList.add('ew-user-scrolling');
+    if(scrollCalmTimer) clearTimeout(scrollCalmTimer);
+    scrollCalmTimer=setTimeout(function(){
+      scrollCalmTimer=0;
+      document.body.classList.remove('ew-user-scrolling');
+    },140);
+  }
+  window.addEventListener('scroll',markWindowScrolling,{passive:true});
+
+  targets.forEach(function(el){el.dataset.ewReveal='1';});
+  const directTarget=hashTarget();
+  if(directTarget){
+    revealForTarget(directTarget,'initial-hash');
+    requestAnimationFrame(function(){ensureHashPosition('initial-hash');});
+  }
+
+  if(reduceMotion.matches || !('IntersectionObserver' in window) || !Element.prototype.animate || document.visibilityState==='hidden'){
+    revealAll(reduceMotion.matches?'reduced-motion':'fallback-visible');
+  }else{
+    observer=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){if(entry.isIntersecting) playReveal(entry.target);});
+    },{root:null,rootMargin:'0px 0px 8% 0px',threshold:0.01});
+    const h=window.innerHeight||document.documentElement.clientHeight||0;
+    targets.forEach(function(el){
+      if(seen.has(el)) return;
+      const rect=el.getBoundingClientRect();
+      if(rect.bottom>=-24 && rect.top<=h+24) finishReveal(el,'initial-viewport');
+      else observer.observe(el);
+    });
+  }
+
+  function syncLocation(reason){
+    const target=hashTarget();
+    if(target) revealForTarget(target,reason);
+    revealViewport(reason);
+    ensureHashPosition(reason);
+  }
+  window.addEventListener('hashchange',function(){syncLocation('hashchange');});
+  window.addEventListener('popstate',function(){setTimeout(function(){syncLocation('popstate');},0);});
+  window.addEventListener('pageshow',function(event){
+    if(event && event.persisted) revealViewport('bfcache');
+    ensureHashPosition(event && event.persisted?'bfcache':'pageshow');
+  });
+  window.addEventListener('ew:scroll-restore-done',function(){
+    revealViewport('scroll-restore-done');
+    ensureHashPosition('scroll-restore-done');
+  });
+  setTimeout(function(){
+    if(window.__EW_SCROLL_RESTORE_ACTIVE__) revealAll('scroll-restore-active');
+  },32);
+  const onMotionChange=function(event){if(event.matches) revealAll('reduced-motion-change');};
+  if(reduceMotion.addEventListener) reduceMotion.addEventListener('change',onMotionChange);
+  else if(reduceMotion.addListener) reduceMotion.addListener(onMotionChange);
+
+  window.inspectScrollRevealStability=function(){
+    const running=targets.filter(function(el){return el.dataset.ewRevealState==='running';}).length;
+    const revealed=targets.filter(function(el){return seen.has(el);}).length;
+    return {
+      ok:true,
+      patch:PATCH,
+      targets:targets.length,
+      revealed:revealed,
+      running:running,
+      reducedMotion:!!reduceMotion.matches,
+      intersectionObserver:!!observer,
+      failOpen:true,
+      contentVisibilityUsed:false,
+      grainLayerDisabled:getComputedStyle(document.body,'::after').display==='none'
     };
   };
 })();
