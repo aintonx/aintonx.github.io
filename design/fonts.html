@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>EchoWorld · Шрифты — новая пятёрка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prata&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Exo+2:wght@500;600;700&family=Fira+Sans:wght@400;500;600&family=Sofia+Sans:wght@500;700;800&family=Golos+Text:wght@400;500;600&family=Podkova:wght@500;600;700;800&family=Cuprum:wght@400;500;600;700&family=Yeseva+One&family=Commissioner:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   ШРИФТЫ · НОВАЯ ПЯТЁРКА — каждое решение = новая ПАРА.
+   Здесь по-настоящему разный не только заголовок, но и основной
+   текст: два варианта с serif-текстом, узкий гротеск, тёплый
+   гуманист, российский гротеск. Основной текст показан в трёх
+   местах: подзаголовок, описание карточки, длинный абзац.
+   Системные лейблы везде IBM Plex Mono (голос машины — не меняем).
+   ════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --void:#04040a; --ink:#f0f0f8; --ink-2:#c8c8dc; --ink-3:#9a9ab8; --ink-4:#6a6a8a;
+  --warm:#d1a04a; --warm-hi:#e8c37a; --cyan:#00c8c8; --cyan-hi:#4ce0e0; --red-hi:#e64545;
+  --mono:'IBM Plex Mono', ui-monospace, monospace;
+}
+html { background: var(--void); scroll-behavior: smooth; }
+body { color: var(--ink-2); -webkit-font-smoothing: antialiased; overflow-x: hidden; font-family: var(--body); }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+.sky { position: fixed; inset: 0; z-index: -1; background: var(--void); overflow: hidden; }
+.sky::before { content:""; position:absolute; inset:-20%;
+  background:
+    radial-gradient(46% 34% at 74% 8%, rgba(58,66,160,0.16), transparent 70%),
+    radial-gradient(38% 30% at 10% 32%, rgba(0,200,200,0.08), transparent 70%),
+    radial-gradient(44% 36% at 86% 74%, rgba(192,40,40,0.07), transparent 70%);
+  animation: drift 48s ease-in-out infinite alternate; }
+.sky::after { content:""; position:absolute; inset:0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 22%, rgba(240,240,248,0.5), transparent 100%),
+    radial-gradient(1px 1px at 34% 64%, rgba(76,224,224,0.4), transparent 100%),
+    radial-gradient(1.4px 1.4px at 56% 18%, rgba(240,240,248,0.34), transparent 100%),
+    radial-gradient(1px 1px at 72% 46%, rgba(240,240,248,0.4), transparent 100%),
+    radial-gradient(1.2px 1.2px at 88% 26%, rgba(230,69,69,0.3), transparent 100%),
+    radial-gradient(1px 1px at 22% 84%, rgba(240,240,248,0.3), transparent 100%); }
+@keyframes drift { to { transform: translate(3%,2%) scale(1.04); } }
+
+.top { max-width: 1080px; margin: 0 auto; padding: 60px 32px 8px; }
+.top h1 { font-family: var(--mono); font-size: 12px; letter-spacing: 0.3em; color: var(--ink-3); font-weight: 500; }
+.top p { margin-top: 14px; max-width: 68ch; font-family: 'Golos Text', sans-serif; font-size: 15px; color: var(--ink-3); }
+.nav { position: sticky; top: 0; z-index: 50; background: rgba(4,4,10,0.72); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(240,240,248,0.08); margin-top: 22px; }
+.nav-in { max-width: 1080px; margin: 0 auto; padding: 0 32px; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.nav-in::-webkit-scrollbar { display: none; }
+.nav a { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; color: var(--ink-4); white-space: nowrap; padding: 14px 12px 12px; border-bottom: 2px solid transparent; transition: color 0.2s; }
+.nav a:hover { color: var(--ink-2); }
+.nav a.on { color: var(--ink); border-bottom-color: var(--warm); }
+.nav a b { color: var(--warm); margin-right: 6px; }
+
+.variant { max-width: 1080px; margin: 0 auto; padding: 56px 32px 30px; }
+.variant + .variant { border-top: 1px solid rgba(240,240,248,0.07); }
+.v-tag { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 30px; }
+.v-tag .num { font-family: var(--mono); font-size: 12px; letter-spacing: 0.2em; color: var(--warm); }
+.v-tag .nm { font-family: var(--mono); font-size: 13px; letter-spacing: 0.14em; color: var(--ink); }
+.v-tag .fonts { font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; color: var(--ink-4); }
+.v-tag .desc { flex-basis: 100%; font-family: 'Golos Text', sans-serif; font-size: 13.5px; color: var(--ink-3); max-width: 82ch; margin-top: 2px; }
+.v-tag .desc b { color: var(--ink-2); font-weight: 500; }
+
+.demo { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 44px; align-items: center; }
+.eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; color: var(--ink-4); display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.eyebrow::before { content:""; width: 26px; height: 1px; background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.6); }
+.demo h2 { font-family: var(--disp); font-weight: var(--disp-w, 700); font-size: clamp(30px, 4.6vw, 52px); line-height: var(--disp-lh, 1.1); letter-spacing: var(--disp-ls, 0); color: var(--ink); text-wrap: balance; }
+.demo h2 .dim { color: var(--ink-3); font-weight: var(--disp-w2, 500); }
+.demo h2 .accent { color: var(--red-hi); text-shadow: 0 0 30px rgba(230,69,69,0.32); }
+.demo .sub { margin: 22px 0 0; font-family: var(--body); font-size: var(--body-size, 15.5px); line-height: var(--body-lh, 1.62); color: var(--ink-3); max-width: 54ch; font-weight: var(--body-w, 400); }
+.demo .sub strong { color: var(--ink-2); font-weight: var(--body-sw, 600); }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.btn { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warm-hi); padding: 15px 24px; border-radius: 99px; background: rgba(209,160,74,0.09); border: 1px solid rgba(209,160,74,0.34); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12); transition: background 0.25s; }
+.btn:hover { background: rgba(209,160,74,0.15); }
+.btn.q { color: var(--ink-2); background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); }
+
+.glass { position: relative; font-family: var(--mono); border-radius: 24px; background: rgba(14,16,28,0.4); backdrop-filter: blur(26px) saturate(175%); -webkit-backdrop-filter: blur(26px) saturate(175%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 30px 90px rgba(0,0,0,0.55); overflow: hidden; }
+.glass::before { content:""; position:absolute; inset:0; border-radius: inherit; padding:1px; z-index:2; background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(120,220,255,0.1) 30%, rgba(255,255,255,0.02) 48%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.16)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events:none; }
+.g-head { display: flex; align-items: center; gap: 10px; padding: 15px 20px 0; }
+.g-chip { display: inline-flex; align-items: center; gap: 8px; font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-2); background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 12px; }
+.g-chip .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 9px rgba(0,200,200,0.9); }
+.g-aux { margin-left: auto; font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); }
+.g-body { padding: 16px 20px 8px; }
+.g-item { padding: 14px 2px; border-bottom: 1px solid rgba(240,240,248,0.08); }
+.g-item:last-child { border-bottom: none; }
+.g-item .pname { font-family: var(--disp); font-weight: var(--disp-w, 700); font-size: 20px; color: var(--ink); letter-spacing: var(--disp-ls, 0); }
+.g-item .pdesc { font-family: var(--body); font-size: var(--body-size2, 12.5px); line-height: 1.55; color: var(--ink-3); margin-top: 6px; font-weight: var(--body-w, 400); }
+.g-item .prow { display: flex; align-items: baseline; gap: 10px; margin-top: 12px; }
+.g-item .price { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--ink); }
+.g-item .price span { font-size: 11px; color: var(--ink-4); font-weight: 400; }
+.g-item .pw { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; color: var(--warm-hi); }
+.g-foot { display: flex; justify-content: space-between; padding: 12px 20px 15px; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); }
+
+.specimen { display: grid; grid-template-columns: 1.3fr 1fr; gap: 30px 40px; margin-top: 40px; padding-top: 26px; border-top: 1px solid rgba(240,240,248,0.06); }
+.spec-col .lbl { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.18em; color: var(--ink-4); margin-bottom: 9px; }
+.spec-read { font-family: var(--body); font-size: var(--body-size, 15px); line-height: var(--body-lh, 1.68); color: var(--ink-2); font-weight: var(--body-w, 400); }
+.spec-read strong { color: var(--ink); font-weight: var(--body-sw, 600); }
+.spec-row { display: flex; flex-wrap: wrap; gap: 24px 36px; align-items: flex-end; }
+.spec-big { font-family: var(--disp); font-weight: var(--disp-w, 700); font-size: 34px; color: var(--ink); letter-spacing: var(--disp-ls, 0); }
+.spec-num { font-family: var(--disp); font-weight: var(--disp-w, 700); font-size: 28px; color: var(--ink); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
+.spec-btnrow { margin-top: 8px; }
+
+@media (max-width: 900px) {
+  .demo, .specimen { grid-template-columns: 1fr; gap: 28px; }
+  .top, .variant { padding-left: 20px; padding-right: 20px; }
+  .nav-in { padding: 0 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .sky::before { animation: none; } }
+
+/* ── ПЕРЕМЕННЫЕ ВАРИАНТОВ (заголовок + ОСНОВНОЙ ТЕКСТ) ─────────── */
+/* 1 · ИЗДАНИЕ — Prata (didone serif) + Spectral (serif-текст) */
+.f-edition { --disp:'Prata', serif; --disp-w:400; --disp-w2:400; --disp-ls:0; --disp-lh:1.14;
+  --body:'Spectral', serif; --body-w:400; --body-sw:600; --body-size:16px; --body-size2:13px; --body-lh:1.66; }
+/* 2 · ТЁПЛАЯ ТЕХНИКА — Exo 2 (техно) + Fira Sans (гуманист-текст) */
+.f-techwarm { --disp:'Exo 2', sans-serif; --disp-w:700; --disp-w2:500; --disp-ls:-0.01em; --disp-lh:1.08;
+  --body:'Fira Sans', sans-serif; --body-w:400; --body-sw:600; --body-size:15px; --body-size2:12.5px; --body-lh:1.6; }
+/* 3 · ЖИВОЙ ГРОТЕСК — Sofia Sans + Golos Text */
+.f-lively { --disp:'Sofia Sans', sans-serif; --disp-w:800; --disp-w2:500; --disp-ls:-0.01em; --disp-lh:1.04;
+  --body:'Golos Text', sans-serif; --body-w:400; --body-sw:600; --body-size:15px; --body-size2:12.5px; --body-lh:1.6; }
+/* 4 · СЛЭБ-ПАСПОРТ — Podkova (slab) + Cuprum (узкий гротеск) */
+.f-slab { --disp:'Podkova', serif; --disp-w:700; --disp-w2:500; --disp-ls:0; --disp-lh:1.1;
+  --body:'Cuprum', sans-serif; --body-w:400; --body-sw:700; --body-size:16px; --body-size2:13.5px; --body-lh:1.55; }
+/* 5 · РЕЗКИЙ КОНТРАСТ — Yeseva One (elegant serif) + Commissioner (гротеск) */
+.f-contrast { --disp:'Yeseva One', serif; --disp-w:400; --disp-w2:400; --disp-ls:0; --disp-lh:1.1;
+  --body:'Commissioner', sans-serif; --body-w:400; --body-sw:600; --body-size:15px; --body-size2:12.5px; --body-lh:1.62; }
+</style>
+</head>
+<body class="f-edition">
+
+<div class="sky" aria-hidden="true"></div>
+
+<header class="top">
+  <h1>ШРИФТЫ // НОВАЯ ПЯТЁРКА</h1>
+  <p>Теперь каждое решение — полноценная пара: свой заголовок и свой основной текст. Основной текст показан в трёх местах: подзаголовок hero, описание в карточке каталога и длинный абзац на «читаемость». Два варианта — с serif-текстом (совсем другое ощущение чтения). Системные лейблы везде остаются на IBM Plex Mono.</p>
+</header>
+
+<nav class="nav" aria-label="Варианты">
+  <div class="nav-in">
+    <a href="#e1"><b>1</b>ИЗДАНИЕ</a>
+    <a href="#e2"><b>2</b>ТЁПЛАЯ ТЕХНИКА</a>
+    <a href="#e3"><b>3</b>ЖИВОЙ ГРОТЕСК</a>
+    <a href="#e4"><b>4</b>СЛЭБ-ПАСПОРТ</a>
+    <a href="#e5"><b>5</b>РЕЗКИЙ КОНТРАСТ</a>
+  </div>
+</nav>
+
+<!-- ═══ 1 · ИЗДАНИЕ ═══ -->
+<section class="variant f-edition" id="e1">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 1</span><span class="nm">ИЗДАНИЕ</span>
+    <span class="fonts">Prata (serif) + Spectral (serif-текст)</span>
+    <p class="desc">Полностью серифная пара: тонкий контрастный заголовок и серифный основной текст. Ощущение дорогого печатного каталога, музейной этикетки, аукционного лота. <b>И заголовок, и текст</b> набраны с засечками — читается как издание, а не интерфейс.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read">Виши — живые существа, рождённые из человеческих желаний. Внешне похожи на людей: они рождаются, растут, учатся, влюбляются. Те из них, чей путь ведёт к <strong>Предназначению</strong>, однажды проходят Переход — и появляются в нашем мире как физический предмет.</p>
+    </div>
+    <div class="spec-col"><div class="lbl">ЗАГОЛОВОК · ЧИСЛА</div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+      <div class="spec-btnrow"><a class="btn">Передать Эхо</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 2 · ТЁПЛАЯ ТЕХНИКА ═══ -->
+<section class="variant f-techwarm" id="e2">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 2</span><span class="nm">ТЁПЛАЯ ТЕХНИКА</span>
+    <span class="fonts">Exo 2 (техно) + Fira Sans (гуманист-текст)</span>
+    <p class="desc">Техно-заголовок с намёком на скорость и сеть — плюс тёплый гуманистический текст Fira Sans, заметно живее и мягче нейтральных гротесков. <b>Плюс:</b> система техно, но читать тепло и по-человечески. Хороший баланс «прибор + человек».</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read">Виши — живые существа, рождённые из человеческих желаний. Внешне похожи на людей: они рождаются, растут, учатся, влюбляются. Те из них, чей путь ведёт к <strong>Предназначению</strong>, однажды проходят Переход — и появляются в нашем мире как физический предмет.</p>
+    </div>
+    <div class="spec-col"><div class="lbl">ЗАГОЛОВОК · ЧИСЛА</div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+      <div class="spec-btnrow"><a class="btn">Передать Эхо</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 3 · ЖИВОЙ ГРОТЕСК ═══ -->
+<section class="variant f-lively" id="e3">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 3</span><span class="nm">ЖИВОЙ ГРОТЕСК</span>
+    <span class="fonts">Sofia Sans + Golos Text</span>
+    <p class="desc">Характерный заголовочный гротеск Sofia Sans с лёгким наклоном форм — плюс Golos Text, российский гротеск с узнаваемой кириллицей, заметно самобытнее Inter. <b>Плюс:</b> современно и «своё», без музейности и без холода. Крепкая рабочая пара для маркетплейса.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read">Виши — живые существа, рождённые из человеческих желаний. Внешне похожи на людей: они рождаются, растут, учатся, влюбляются. Те из них, чей путь ведёт к <strong>Предназначению</strong>, однажды проходят Переход — и появляются в нашем мире как физический предмет.</p>
+    </div>
+    <div class="spec-col"><div class="lbl">ЗАГОЛОВОК · ЧИСЛА</div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+      <div class="spec-btnrow"><a class="btn">Передать Эхо</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 4 · СЛЭБ-ПАСПОРТ ═══ -->
+<section class="variant f-slab" id="e4">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 4</span><span class="nm">СЛЭБ-ПАСПОРТ</span>
+    <span class="fonts">Podkova (slab) + Cuprum (узкий гротеск)</span>
+    <p class="desc">Заголовок с плитными засечками (slab) — «технический паспорт», печать на ящике, инвентарная бирка. Текст Cuprum — узкий гротеск, экономный и характерный. <b>Плюс:</b> ощущение документа секретного архива. <b>Риск:</b> самый «промышленный», брутальный из пятёрки.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read">Виши — живые существа, рождённые из человеческих желаний. Внешне похожи на людей: они рождаются, растут, учатся, влюбляются. Те из них, чей путь ведёт к <strong>Предназначению</strong>, однажды проходят Переход — и появляются в нашем мире как физический предмет.</p>
+    </div>
+    <div class="spec-col"><div class="lbl">ЗАГОЛОВОК · ЧИСЛА</div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+      <div class="spec-btnrow"><a class="btn">Передать Эхо</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 5 · РЕЗКИЙ КОНТРАСТ ═══ -->
+<section class="variant f-contrast" id="e5">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 5</span><span class="nm">РЕЗКИЙ КОНТРАСТ</span>
+    <span class="fonts">Yeseva One (serif) + Commissioner (гротеск)</span>
+    <p class="desc">Элегантный высококонтрастный заголовок Yeseva One — плюс чистый нейтральный гротеск Commissioner для текста. Классическая схема премиума: дорогой serif в заголовке, спокойный гротеск в тексте. <b>Плюс:</b> красиво и статусно, но текст остаётся интерфейсным и лёгким.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read">Виши — живые существа, рождённые из человеческих желаний. Внешне похожи на людей: они рождаются, растут, учатся, влюбляются. Те из них, чей путь ведёт к <strong>Предназначению</strong>, однажды проходят Переход — и появляются в нашем мире как физический предмет.</p>
+    </div>
+    <div class="spec-col"><div class="lbl">ЗАГОЛОВОК · ЧИСЛА</div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+      <div class="spec-btnrow"><a class="btn">Передать Эхо</a></div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var links = document.querySelectorAll('.nav a'), map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        links.forEach(function (a) { a.classList.remove('on'); });
+        var a = map[en.target.id]; if (a) a.classList.add('on');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  document.querySelectorAll('.variant').forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>EchoWorld · Шрифты — 10 пар (RU + EN)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=PT+Sans:wght@400;700&family=Nunito:wght@700;800;900&family=Nunito+Sans:wght@400;600&family=Raleway:wght@600;700;800&family=Source+Sans+3:wght@400;600&family=Wix+Madefor+Display:wght@600;700;800&family=Wix+Madefor+Text:wght@400;500;600&family=Cormorant:wght@500;600;700&family=Manrope:wght@400;600&family=Geologica:wght@600;700&family=Rubik:wght@400;500;700&family=Jura:wght@500;600;700&family=Bitter:wght@600;700&family=Alegreya+Sans:wght@700;800&family=Alegreya:wght@400;500&family=Rubik+Mono+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   ШРИФТЫ · 10 ПАР — с проверкой RU + EN.
+   У каждого шрифта проверены и латиница, и кириллица (Archivo/
+   Archivo Black отброшены — у них нет кириллицы). В каждом варианте
+   отдельный образец латиницы (MARKETSPACE · EchoWorld · Apertura),
+   чтобы оценить английский там, где он реально встречается.
+   ════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --void:#04040a; --ink:#f0f0f8; --ink-2:#c8c8dc; --ink-3:#9a9ab8; --ink-4:#6a6a8a;
+  --warm:#d1a04a; --warm-hi:#e8c37a; --cyan:#00c8c8; --cyan-hi:#4ce0e0; --red-hi:#e64545;
+  --mono:'IBM Plex Mono', ui-monospace, monospace;
+}
+html { background: var(--void); scroll-behavior: smooth; }
+body { color: var(--ink-2); -webkit-font-smoothing: antialiased; overflow-x: hidden; font-family: var(--body); }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+.sky { position: fixed; inset: 0; z-index: -1; background: var(--void); overflow: hidden; }
+.sky::before { content:""; position:absolute; inset:-20%;
+  background:
+    radial-gradient(46% 34% at 74% 8%, rgba(58,66,160,0.16), transparent 70%),
+    radial-gradient(38% 30% at 10% 32%, rgba(0,200,200,0.08), transparent 70%),
+    radial-gradient(44% 36% at 86% 74%, rgba(192,40,40,0.07), transparent 70%);
+  animation: drift 48s ease-in-out infinite alternate; }
+.sky::after { content:""; position:absolute; inset:0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 22%, rgba(240,240,248,0.5), transparent 100%),
+    radial-gradient(1px 1px at 34% 64%, rgba(76,224,224,0.4), transparent 100%),
+    radial-gradient(1.4px 1.4px at 56% 18%, rgba(240,240,248,0.34), transparent 100%),
+    radial-gradient(1px 1px at 72% 46%, rgba(240,240,248,0.4), transparent 100%),
+    radial-gradient(1.2px 1.2px at 88% 26%, rgba(230,69,69,0.3), transparent 100%),
+    radial-gradient(1px 1px at 22% 84%, rgba(240,240,248,0.3), transparent 100%); }
+@keyframes drift { to { transform: translate(3%,2%) scale(1.04); } }
+
+.top { max-width: 1080px; margin: 0 auto; padding: 60px 32px 8px; }
+.top h1 { font-family: var(--mono); font-size: 12px; letter-spacing: 0.3em; color: var(--ink-3); font-weight: 500; }
+.top p { margin-top: 14px; max-width: 70ch; font-family: 'Manrope', sans-serif; font-size: 15px; color: var(--ink-3); }
+.top .files { margin-top: 10px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; color: var(--ink-4); }
+.nav { position: sticky; top: 0; z-index: 50; background: rgba(4,4,10,0.72); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(240,240,248,0.08); margin-top: 22px; }
+.nav-in { max-width: 1080px; margin: 0 auto; padding: 0 32px; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.nav-in::-webkit-scrollbar { display: none; }
+.nav a { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; color: var(--ink-4); white-space: nowrap; padding: 14px 10px 12px; border-bottom: 2px solid transparent; transition: color 0.2s; }
+.nav a:hover { color: var(--ink-2); }
+.nav a.on { color: var(--ink); border-bottom-color: var(--warm); }
+.nav a b { color: var(--warm); margin-right: 5px; }
+
+.variant { max-width: 1080px; margin: 0 auto; padding: 54px 32px 30px; }
+.variant + .variant { border-top: 1px solid rgba(240,240,248,0.07); }
+.v-tag { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 28px; }
+.v-tag .num { font-family: var(--mono); font-size: 12px; letter-spacing: 0.2em; color: var(--warm); }
+.v-tag .nm { font-family: var(--mono); font-size: 13px; letter-spacing: 0.14em; color: var(--ink); }
+.v-tag .fonts { font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; color: var(--ink-4); }
+.v-tag .desc { flex-basis: 100%; font-family: 'Manrope', sans-serif; font-size: 13.5px; color: var(--ink-3); max-width: 84ch; margin-top: 2px; }
+.v-tag .desc b { color: var(--ink-2); font-weight: 500; }
+
+.demo { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 44px; align-items: center; }
+.eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; color: var(--ink-4); display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.eyebrow::before { content:""; width: 26px; height: 1px; background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.6); }
+.demo h2 { font-family: var(--disp); font-weight: var(--disp-w, 700); font-size: clamp(30px, 4.6vw, 52px); line-height: var(--disp-lh, 1.1); letter-spacing: var(--disp-ls, 0); color: var(--ink); text-wrap: balance; }
+.demo h2 .dim { color: var(--ink-3); font-weight: var(--disp-w2, 500); }
+.demo h2 .accent { color: var(--red-hi); text-shadow: 0 0 30px rgba(230,69,69,0.32); }
+.demo .sub { margin: 22px 0 0; font-family: var(--body); font-size: var(--body-size, 15.5px); line-height: var(--body-lh, 1.62); color: var(--ink-3); max-width: 54ch; font-weight: var(--body-w, 400); }
+.demo .sub strong { color: var(--ink-2); font-weight: var(--body-sw, 600); }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.btn { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warm-hi); padding: 15px 24px; border-radius: 99px; background: rgba(209,160,74,0.09); border: 1px solid rgba(209,160,74,0.34); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12); transition: background 0.25s; }
+.btn:hover { background: rgba(209,160,74,0.15); }
+.btn.q { color: var(--ink-2); background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); }
+
+.glass { position: relative; font-family: var(--mono); border-radius: 24px; background: rgba(14,16,28,0.4); backdrop-filter: blur(26px) saturate(175%); -webkit-backdrop-filter: blur(26px) saturate(175%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 30px 90px rgba(0,0,0,0.55); overflow: hidden; }
+.glass::before { content:""; position:absolute; inset:0; border-radius: inherit; padding:1px; z-index:2; background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(120,220,255,0.1) 30%, rgba(255,255,255,0.02) 48%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.16)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events:none; }
+.g-head { display: flex; align-items: center; gap: 10px; padding: 15px 20px 0; }
+.g-chip { display: inline-flex; align-items: center; gap: 8px; font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-2); background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 12px; }
+.g-chip .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 9px rgba(0,200,200,0.9); }
+.g-aux { margin-left: auto; font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); }
+.g-body { padding: 16px 20px 8px; }
+.g-item { padding: 14px 2px; }
+.g-item .pname { font-family: var(--disp); font-weight: var(--disp-w, 700); font-size: 20px; color: var(--ink); letter-spacing: var(--disp-ls, 0); }
+.g-item .pdesc { font-family: var(--body); font-size: var(--body-size2, 12.5px); line-height: 1.55; color: var(--ink-3); margin-top: 6px; font-weight: var(--body-w, 400); }
+.g-item .prow { display: flex; align-items: baseline; gap: 10px; margin-top: 12px; }
+.g-item .price { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--ink); }
+.g-item .price span { font-size: 11px; color: var(--ink-4); font-weight: 400; }
+.g-item .pw { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; color: var(--warm-hi); }
+.g-foot { display: flex; justify-content: space-between; padding: 12px 20px 15px; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); }
+
+/* полоса образцов: латиница + читаемость + заголовок */
+.specimen { display: grid; grid-template-columns: 1fr 1fr; gap: 30px 40px; margin-top: 38px; padding-top: 26px; border-top: 1px solid rgba(240,240,248,0.06); }
+.spec-col .lbl { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.18em; color: var(--ink-4); margin-bottom: 9px; }
+.spec-latin { font-family: var(--disp); font-weight: var(--disp-w, 700); color: var(--ink); letter-spacing: var(--disp-ls, 0); line-height: 1.14; }
+.spec-latin .big { display: block; font-size: 30px; }
+.spec-latin .mid { display: block; font-size: 19px; color: var(--ink-2); margin-top: 6px; font-weight: var(--disp-w2, 500); }
+.spec-read { font-family: var(--body); font-size: var(--body-size, 15px); line-height: var(--body-lh, 1.68); color: var(--ink-2); font-weight: var(--body-w, 400); }
+.spec-read strong { color: var(--ink); font-weight: var(--body-sw, 600); }
+.spec-read .en { color: var(--ink); }
+.spec-row { display: flex; flex-wrap: wrap; gap: 20px 34px; align-items: flex-end; margin-top: 22px; }
+.spec-big { font-family: var(--disp); font-weight: var(--disp-w, 700); font-size: 30px; color: var(--ink); letter-spacing: var(--disp-ls, 0); }
+.spec-num { font-family: var(--disp); font-weight: var(--disp-w, 700); font-size: 26px; color: var(--ink); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 900px) {
+  .demo, .specimen { grid-template-columns: 1fr; gap: 28px; }
+  .top, .variant { padding-left: 20px; padding-right: 20px; }
+  .nav-in { padding: 0 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .sky::before { animation: none; } }
+
+/* ── ПЕРЕМЕННЫЕ 10 ВАРИАНТОВ ──────────────────────────────────── */
+.f-01 { --disp:'Montserrat',sans-serif; --disp-w:700; --disp-w2:600; --disp-ls:-0.01em; --disp-lh:1.1;
+  --body:'PT Sans',sans-serif; --body-w:400; --body-sw:700; --body-size:15.5px; --body-size2:13px; --body-lh:1.6; }
+.f-02 { --disp:'Nunito',sans-serif; --disp-w:900; --disp-w2:700; --disp-ls:-0.02em; --disp-lh:1.06;
+  --body:'Nunito Sans',sans-serif; --body-w:400; --body-sw:600; --body-size:15px; --body-size2:12.5px; --body-lh:1.62; }
+.f-03 { --disp:'Raleway',sans-serif; --disp-w:800; --disp-w2:600; --disp-ls:-0.01em; --disp-lh:1.08;
+  --body:'Source Sans 3',sans-serif; --body-w:400; --body-sw:600; --body-size:15.5px; --body-size2:13px; --body-lh:1.6; }
+.f-04 { --disp:'Wix Madefor Display',sans-serif; --disp-w:800; --disp-w2:600; --disp-ls:-0.015em; --disp-lh:1.06;
+  --body:'Wix Madefor Text',sans-serif; --body-w:400; --body-sw:600; --body-size:15px; --body-size2:12.5px; --body-lh:1.6; }
+.f-05 { --disp:'Cormorant',serif; --disp-w:700; --disp-w2:500; --disp-ls:0; --disp-lh:1.06;
+  --body:'Manrope',sans-serif; --body-w:400; --body-sw:600; --body-size:15px; --body-size2:12.5px; --body-lh:1.62; }
+.f-06 { --disp:'Geologica',sans-serif; --disp-w:700; --disp-w2:500; --disp-ls:-0.01em; --disp-lh:1.08;
+  --body:'Rubik',sans-serif; --body-w:400; --body-sw:600; --body-size:15px; --body-size2:12.5px; --body-lh:1.6; }
+.f-07 { --disp:'Jura',sans-serif; --disp-w:700; --disp-w2:500; --disp-ls:0.005em; --disp-lh:1.1;
+  --body:'Manrope',sans-serif; --body-w:400; --body-sw:600; --body-size:15px; --body-size2:12.5px; --body-lh:1.62; }
+.f-08 { --disp:'Bitter',serif; --disp-w:700; --disp-w2:600; --disp-ls:-0.005em; --disp-lh:1.1;
+  --body:'PT Sans',sans-serif; --body-w:400; --body-sw:700; --body-size:15.5px; --body-size2:13px; --body-lh:1.6; }
+.f-09 { --disp:'Alegreya Sans',sans-serif; --disp-w:800; --disp-w2:700; --disp-ls:-0.005em; --disp-lh:1.06;
+  --body:'Alegreya',serif; --body-w:400; --body-sw:500; --body-size:16px; --body-size2:13.5px; --body-lh:1.62; }
+.f-10 { --disp:'Rubik Mono One',monospace; --disp-w:400; --disp-w2:400; --disp-ls:-0.01em; --disp-lh:1.12;
+  --body:'Source Sans 3',sans-serif; --body-w:400; --body-sw:600; --body-size:15.5px; --body-size2:13px; --body-lh:1.6; }
+</style>
+</head>
+<body class="f-01">
+
+<div class="sky" aria-hidden="true"></div>
+
+<header class="top">
+  <h1>ШРИФТЫ // 10 ПАР · RU + EN</h1>
+  <p>Третья подборка. У каждого шрифта проверены обе письменности — латиница (MARKETSPACE, EchoWorld, Apertura) и кириллица. В каждом варианте отдельный образец английского в заголовочном шрифте, длинный русский абзац на читаемость и системные лейблы на IBM Plex Mono.</p>
+  <div class="files">ПРЕДЫДУЩИЕ ПОДБОРКИ СОХРАНЕНЫ · design/fonts.html</div>
+</header>
+
+<nav class="nav" aria-label="Варианты">
+  <div class="nav-in">
+    <a href="#p01"><b>01</b>ГЕОМЕТРИЯ</a>
+    <a href="#p02"><b>02</b>СКРУГЛЁННАЯ</a>
+    <a href="#p03"><b>03</b>ЛЁГКИЙ ЛЮКС</a>
+    <a href="#p04"><b>04</b>ПРОДУКТ</a>
+    <a href="#p05"><b>05</b>АУКЦИОН</a>
+    <a href="#p06"><b>06</b>ХАРАКТЕР</a>
+    <a href="#p07"><b>07</b>ОРБИТА</a>
+    <a href="#p08"><b>08</b>РЕДАКЦИЯ</a>
+    <a href="#p09"><b>09</b>ЛИТЕРАТУРА</a>
+    <a href="#p10"><b>10</b>МОНО-АКЦЕНТ</a>
+  </div>
+</nav>
+
+<!-- ═══ 01 · ГЕОМЕТРИЯ ═══ -->
+<section class="variant f-01" id="p01">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 01</span><span class="nm">ГЕОМЕТРИЯ</span>
+    <span class="fonts">Montserrat + PT Sans</span>
+    <p class="desc">Геометрический заголовок Montserrat — латиница уровня мировых брендов, MARKETSPACE смотрится дорого. Текст PT Sans — эталон русской наборной типографики, сделан именно под кириллицу. <b>Плюс:</b> сильная латиница И родной русский.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЛАТИНИЦА · АНГЛИЙСКИЙ В ЗАГОЛОВКЕ</div>
+      <div class="spec-latin"><span class="big">MARKETSPACE</span><span class="mid">EchoWorld · Apertura · Echo</span></div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+    </div>
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read"><span class="en">EchoWorld</span> разработал Систему <span class="en">Apertura</span> — первый инструмент, способный обнаружить это пространство. Сегодня каждая реликвия — <strong>подлинный артефакт</strong> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 02 · СКРУГЛЁННАЯ ═══ -->
+<section class="variant f-02" id="p02">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 02</span><span class="nm">СКРУГЛЁННАЯ</span>
+    <span class="fonts">Nunito + Nunito Sans</span>
+    <p class="desc">Скруглённая суперсемья: мягкий мощный заголовок Nunito и его прямой текстовый напарник. Дружелюбно, тепло, современно — без холода «системы». <b>Плюс:</b> располагает, не давит. <b>Риск:</b> мягкость может звучать менее «секретно».</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЛАТИНИЦА · АНГЛИЙСКИЙ В ЗАГОЛОВКЕ</div>
+      <div class="spec-latin"><span class="big">MARKETSPACE</span><span class="mid">EchoWorld · Apertura · Echo</span></div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+    </div>
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read"><span class="en">EchoWorld</span> разработал Систему <span class="en">Apertura</span> — первый инструмент, способный обнаружить это пространство. Сегодня каждая реликвия — <strong>подлинный артефакт</strong> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 03 · ЛЁГКИЙ ЛЮКС ═══ -->
+<section class="variant f-03" id="p03">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 03</span><span class="nm">ЛЁГКИЙ ЛЮКС</span>
+    <span class="fonts">Raleway + Source Sans 3</span>
+    <p class="desc">Тонкий элегантный Raleway с фирменной буквой W — плюс чистый международный Source Sans 3. <b>Плюс:</b> лёгкость и статус, отличная латиница у обоих. <b>Риск:</b> тонкие штрихи требуют крупного кегля, иначе теряются.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЛАТИНИЦА · АНГЛИЙСКИЙ В ЗАГОЛОВКЕ</div>
+      <div class="spec-latin"><span class="big">MARKETSPACE</span><span class="mid">EchoWorld · Apertura · Echo</span></div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+    </div>
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read"><span class="en">EchoWorld</span> разработал Систему <span class="en">Apertura</span> — первый инструмент, способный обнаружить это пространство. Сегодня каждая реликвия — <strong>подлинный артефакт</strong> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 04 · ПРОДУКТ ═══ -->
+<section class="variant f-04" id="p04">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 04</span><span class="nm">ПРОДУКТ</span>
+    <span class="fonts">Wix Madefor Display + Wix Madefor Text</span>
+    <p class="desc">Пара, сделанная как продуктовая система: дисплей и текст одной руки, спроектированы вместе, с равно сильной латиницей и кириллицей. <b>Плюс:</b> максимальная слаженность и нейтральная надёжность интерфейса.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЛАТИНИЦА · АНГЛИЙСКИЙ В ЗАГОЛОВКЕ</div>
+      <div class="spec-latin"><span class="big">MARKETSPACE</span><span class="mid">EchoWorld · Apertura · Echo</span></div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+    </div>
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read"><span class="en">EchoWorld</span> разработал Систему <span class="en">Apertura</span> — первый инструмент, способный обнаружить это пространство. Сегодня каждая реликвия — <strong>подлинный артефакт</strong> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 05 · АУКЦИОН ═══ -->
+<section class="variant f-05" id="p05">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 05</span><span class="nm">АУКЦИОН</span>
+    <span class="fonts">Cormorant + Manrope</span>
+    <p class="desc">Роскошный высокий serif Cormorant в заголовке — тоньше и изящнее Playfair — плюс спокойный чистый Manrope в тексте. <b>Плюс:</b> реликвия звучит как лот аукциона, но текст остаётся лёгким и интерфейсным.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЛАТИНИЦА · АНГЛИЙСКИЙ В ЗАГОЛОВКЕ</div>
+      <div class="spec-latin"><span class="big">MARKETSPACE</span><span class="mid">EchoWorld · Apertura · Echo</span></div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+    </div>
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read"><span class="en">EchoWorld</span> разработал Систему <span class="en">Apertura</span> — первый инструмент, способный обнаружить это пространство. Сегодня каждая реликвия — <strong>подлинный артефакт</strong> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 06 · ХАРАКТЕР ═══ -->
+<section class="variant f-06" id="p06">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 06</span><span class="nm">ХАРАКТЕР</span>
+    <span class="fonts">Geologica + Rubik</span>
+    <p class="desc">Geologica — характерный современный гротеск с узнаваемым ритмом — плюс круглый дружелюбный Rubik в тексте. <b>Плюс:</b> «своё лицо» без экзотики, крепко и по-современному. Хорошая рабочая пара для маркетплейса.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЛАТИНИЦА · АНГЛИЙСКИЙ В ЗАГОЛОВКЕ</div>
+      <div class="spec-latin"><span class="big">MARKETSPACE</span><span class="mid">EchoWorld · Apertura · Echo</span></div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+    </div>
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read"><span class="en">EchoWorld</span> разработал Систему <span class="en">Apertura</span> — первый инструмент, способный обнаружить это пространство. Сегодня каждая реликвия — <strong>подлинный артефакт</strong> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 07 · ОРБИТА ═══ -->
+<section class="variant f-07" id="p07">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 07</span><span class="nm">ОРБИТА</span>
+    <span class="fonts">Jura + Manrope</span>
+    <p class="desc">Jura — тонкий геометрический техно-шрифт с круглыми формами: ощущение орбиты, приборной панели, HUD. Текст Manrope — чистый и нейтральный. <b>Плюс:</b> космично и технологично. <b>Риск:</b> заголовок тонкий, нужен крупный размер.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЛАТИНИЦА · АНГЛИЙСКИЙ В ЗАГОЛОВКЕ</div>
+      <div class="spec-latin"><span class="big">MARKETSPACE</span><span class="mid">EchoWorld · Apertura · Echo</span></div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+    </div>
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read"><span class="en">EchoWorld</span> разработал Систему <span class="en">Apertura</span> — первый инструмент, способный обнаружить это пространство. Сегодня каждая реликвия — <strong>подлинный артефакт</strong> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 08 · РЕДАКЦИЯ ═══ -->
+<section class="variant f-08" id="p08">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 08</span><span class="nm">РЕДАКЦИЯ</span>
+    <span class="fonts">Bitter + PT Sans</span>
+    <p class="desc">Тёплый slab-serif Bitter в заголовке — «редакция», журнал, печатная колонка — плюс наборный PT Sans. <b>Плюс:</b> уютная авторская подача, отличная кириллица у обоих. <b>Риск:</b> ближе к «медиа», чем к «системе».</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЛАТИНИЦА · АНГЛИЙСКИЙ В ЗАГОЛОВКЕ</div>
+      <div class="spec-latin"><span class="big">MARKETSPACE</span><span class="mid">EchoWorld · Apertura · Echo</span></div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+    </div>
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read"><span class="en">EchoWorld</span> разработал Систему <span class="en">Apertura</span> — первый инструмент, способный обнаружить это пространство. Сегодня каждая реликвия — <strong>подлинный артефакт</strong> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 09 · ЛИТЕРАТУРА ═══ -->
+<section class="variant f-09" id="p09">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 09</span><span class="nm">ЛИТЕРАТУРА</span>
+    <span class="fonts">Alegreya Sans + Alegreya</span>
+    <p class="desc">Гуманистическая суперсемья: живой Alegreya Sans в заголовке и книжный serif Alegreya в тексте. Спроектированы для длинного чтения, с богатой кириллицей. <b>Плюс:</b> тёплая литературная интонация, лор читается как рассказ.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЛАТИНИЦА · АНГЛИЙСКИЙ В ЗАГОЛОВКЕ</div>
+      <div class="spec-latin"><span class="big">MARKETSPACE</span><span class="mid">EchoWorld · Apertura · Echo</span></div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+    </div>
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read"><span class="en">EchoWorld</span> разработал Систему <span class="en">Apertura</span> — первый инструмент, способный обнаружить это пространство. Сегодня каждая реликвия — <strong>подлинный артефакт</strong> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 10 · МОНО-АКЦЕНТ ═══ -->
+<section class="variant f-10" id="p10">
+  <div class="v-tag">
+    <span class="num">ВАРИАНТ 10</span><span class="nm">МОНО-АКЦЕНТ</span>
+    <span class="fonts">Rubik Mono One + Source Sans 3</span>
+    <p class="desc">Моноширинный жирный Rubik Mono One в заголовке — прямая рифма с системными лейблами, «машина говорит крупно» — плюс чистый Source Sans 3 в тексте. <b>Плюс:</b> смело и терминально. <b>Риск:</b> самый специфичный, моно-заголовок на любителя.</p>
+  </div>
+  <div class="demo">
+    <div>
+      <div class="eyebrow">// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE</div>
+      <h2>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h2>
+      <p class="sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Каждая существует в единственном экземпляре — и может оказаться в ваших руках.</p>
+      <div class="cta"><a class="btn">Открыть каталог</a><a class="btn q">Что здесь происходит?</a></div>
+    </div>
+    <div class="glass">
+      <div class="g-head"><span class="g-chip"><span class="dot"></span>КАТАЛОГ · MARKETSPACE</span><span class="g-aux">ART. 01-0001</span></div>
+      <div class="g-body"><div class="g-item">
+        <div class="pname">Редкая лягушка</div>
+        <div class="pdesc">Знали его все, а близко он не подпустил никого. Достанется одному — и так и останется непонятым.</div>
+        <div class="prow"><span class="price">99 999 <span>₽</span></span><span class="pw">S · СИНГУЛЯРНОСТЬ</span></div>
+      </div></div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="spec-col"><div class="lbl">ЛАТИНИЦА · АНГЛИЙСКИЙ В ЗАГОЛОВКЕ</div>
+      <div class="spec-latin"><span class="big">MARKETSPACE</span><span class="mid">EchoWorld · Apertura · Echo</span></div>
+      <div class="spec-row"><div class="spec-big">Мощь Реликвии</div><div class="spec-num">49 999 ₽</div></div>
+    </div>
+    <div class="spec-col"><div class="lbl">ЧИТАЕМОСТЬ · ОСНОВНОЙ ТЕКСТ</div>
+      <p class="spec-read"><span class="en">EchoWorld</span> разработал Систему <span class="en">Apertura</span> — первый инструмент, способный обнаружить это пространство. Сегодня каждая реликвия — <strong>подлинный артефакт</strong> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+    </div>
+  </div>
+</section>
+
+
+<script>
+(function () {
+  var links = document.querySelectorAll('.nav a'), map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        links.forEach(function (a) { a.classList.remove('on'); });
+        var a = map[en.target.id]; if (a) a.classList.add('on');
+      }
+    });
+  }, { rootMargin: '-42% 0px -53% 0px' });
+  document.querySelectorAll('.variant').forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>

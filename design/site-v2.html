@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04040a">
+<title>EchoWorld — реликвии из MARKETSPACE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   ECHOWORLD · SITE V2 — сайт целиком на системе «Линза»
+   Материал: плавающее стекло над небом другого мира.
+   Шрифты: Unbounded — заголовки и крупные значения,
+   Inter — человеческий текст, IBM Plex Mono — голос системы.
+   Акценты: циан — система живёт · янтарь — энергия и действие ·
+   красный — предупреждение и доступ. Темы одна: тьма.
+   Терминалы: Загрузка · Наблюдение · Передатчик · Диалог ·
+   Печать · Поддержка — как утверждено.
+   ════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --void:   #04040a;
+  --ink:    #f0f0f8;
+  --ink-2:  #c8c8dc;
+  --ink-3:  #9a9ab8;
+  --ink-4:  #6a6a8a;
+  --warm:   #d1a04a;
+  --warm-hi:#e8c37a;
+  --cyan:   #00c8c8;
+  --cyan-hi:#4ce0e0;
+  --red:    #c02828;
+  --red-hi: #e64545;
+  --mono:   'IBM Plex Mono', ui-monospace, monospace;
+  --text:   'Inter', system-ui, sans-serif;
+  --display:'Unbounded', var(--text);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --glass-bg: rgba(14, 16, 28, 0.4);
+  --hairline: rgba(240, 240, 248, 0.1);
+}
+
+html { background: var(--void); scroll-behavior: smooth; }
+body { font-family: var(--text); color: var(--ink-2); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+button, input, textarea { font: inherit; color: inherit; background: none; border: none; outline: none; }
+button { cursor: pointer; }
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+::selection { background: rgba(209,160,74,0.35); color: var(--ink); }
+
+/* ── Небо другого мира ─────────────────────────────────────────── */
+.sky { position: fixed; inset: 0; z-index: -1; background: var(--void); overflow: hidden; }
+.sky::before {
+  content: ""; position: absolute; inset: -20%;
+  background:
+    radial-gradient(46% 34% at 74% 8%, rgba(58, 66, 160, 0.15), transparent 70%),
+    radial-gradient(38% 30% at 10% 30%, rgba(0, 200, 200, 0.07), transparent 70%),
+    radial-gradient(44% 36% at 86% 72%, rgba(192, 40, 40, 0.06), transparent 70%),
+    radial-gradient(30% 24% at 36% 92%, rgba(58, 66, 160, 0.09), transparent 70%);
+  animation: skyDrift 48s ease-in-out infinite alternate;
+}
+.sky::after {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 22%, rgba(240,240,248,0.5), transparent 100%),
+    radial-gradient(1px 1px at 34% 64%, rgba(76,224,224,0.4), transparent 100%),
+    radial-gradient(1.4px 1.4px at 56% 18%, rgba(240,240,248,0.34), transparent 100%),
+    radial-gradient(1px 1px at 72% 46%, rgba(240,240,248,0.4), transparent 100%),
+    radial-gradient(1.2px 1.2px at 88% 26%, rgba(230,69,69,0.3), transparent 100%),
+    radial-gradient(1px 1px at 22% 84%, rgba(240,240,248,0.3), transparent 100%),
+    radial-gradient(1.3px 1.3px at 64% 82%, rgba(76,224,224,0.3), transparent 100%),
+    radial-gradient(1px 1px at 92% 64%, rgba(240,240,248,0.36), transparent 100%);
+  animation: starDrift 90s linear infinite alternate;
+}
+@keyframes skyDrift { to { transform: translate(3%, 2%) scale(1.04); } }
+@keyframes starDrift { to { transform: translate(-1.5%, -1%); } }
+
+.blob { position: absolute; border-radius: 50%; filter: blur(60px); pointer-events: none; }
+
+/* ════════════════════════════════════════════════════════════════
+   МАТЕРИАЛ «ЛИНЗА» — общие примитивы
+   ════════════════════════════════════════════════════════════════ */
+.glass {
+  position: relative; font-family: var(--mono);
+  border-radius: 24px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(26px) saturate(175%);
+  -webkit-backdrop-filter: blur(26px) saturate(175%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -24px 48px rgba(0,0,0,0.2), 0 30px 90px rgba(0,0,0,0.55);
+  overflow: hidden;
+}
+.glass::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 6;
+  background: linear-gradient(135deg, rgba(255,255,255,0.32), rgba(120,220,255,0.1) 28%, rgba(255,255,255,0.02) 46%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.18));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;
+}
+.glass::after {
+  content: ""; position: absolute; top: -60%; left: -55%; width: 52%; height: 220%; z-index: 5;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.05) 42%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 58%, transparent);
+  animation: sheen 16s ease-in-out infinite; animation-delay: var(--sheen, 0s);
+  pointer-events: none;
+}
+@keyframes sheen { 0%, 58% { left: -55%; } 90%, 100% { left: 115%; } }
+
+.g-head { display: flex; align-items: center; gap: 12px; padding: 15px 20px 0; position: relative; z-index: 1; }
+.g-chip { display: inline-flex; align-items: center; gap: 8px; font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-2); background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); white-space: nowrap; }
+.g-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; transition: background 0.4s, box-shadow 0.4s; }
+.g-dot.c { background: var(--cyan); box-shadow: 0 0 9px rgba(0,200,200,0.9); animation: breathe 3.2s ease-in-out infinite; }
+.g-dot.w { background: var(--warm); box-shadow: 0 0 9px rgba(209,160,74,0.9); }
+.g-dot.r { background: var(--red-hi); box-shadow: 0 0 9px rgba(230,69,69,0.9); }
+@keyframes breathe { 50% { opacity: 0.45; } }
+.g-aux { margin-left: auto; font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); text-align: right; transition: color 0.4s; }
+
+.g-body { padding: 16px 20px 18px; position: relative; z-index: 1; }
+.g-row { display: flex; align-items: center; gap: 14px; padding: 10px 2px; position: relative; }
+.g-row + .g-row::before, .g-sep::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--hairline) 16%, var(--hairline) 84%, transparent); }
+.g-k { font-size: 9.5px; letter-spacing: 0.14em; color: var(--ink-3); }
+.g-v { margin-left: auto; font-size: 12.5px; font-weight: 500; color: var(--ink); display: inline-flex; align-items: center; gap: 8px; }
+.g-v.c { color: var(--cyan-hi); text-shadow: 0 0 14px rgba(0,200,200,0.4); }
+.g-v.r { color: var(--red-hi); text-shadow: 0 0 14px rgba(230,69,69,0.35); }
+.g-v.mut { color: var(--ink-4); font-weight: 400; }
+.g-lock { width: 11px; height: 11px; fill: var(--ink-4); flex-shrink: 0; }
+.g-foot { display: flex; justify-content: space-between; gap: 12px; padding: 11px 20px 15px; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); position: relative; z-index: 1; }
+.g-foot [data-status] { transition: color 0.3s; }
+
+.g-well { display: block; width: 100%; font-family: var(--text); font-size: 13.5px; color: var(--ink); background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px 15px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; resize: none; }
+.g-well::placeholder { color: var(--ink-3); opacity: 0.8; }
+.g-well:focus { border-color: rgba(0,200,200,0.4); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 3px rgba(0,200,200,0.08), 0 0 18px rgba(0,200,200,0.1); background: rgba(255,255,255,0.06); }
+.g-well.err { border-color: rgba(230,69,69,0.55); box-shadow: 0 0 0 3px rgba(230,69,69,0.09), 0 0 18px rgba(230,69,69,0.12); animation: shake 0.32s var(--ease-out); }
+@keyframes shake { 25% { transform: translateX(-4px); } 55% { transform: translateX(3px); } 80% { transform: translateX(-2px); } }
+.g-meta { display: flex; justify-content: space-between; margin: 8px 3px 0; font-size: 9px; letter-spacing: 0.13em; color: var(--ink-4); font-family: var(--mono); }
+
+.g-tabs { position: relative; display: flex; gap: 4px; padding: 4px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 99px; margin-bottom: 12px; }
+.g-tab { flex: 1; display: flex; justify-content: center; gap: 10px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 9px 12px; color: var(--ink-3); border-radius: 99px; transition: background 0.3s var(--ease-out), color 0.25s, box-shadow 0.3s; position: relative; overflow: hidden; }
+.g-tab .p { color: var(--ink-4); transition: color 0.25s; }
+.g-tab.on { color: var(--ink); background: rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+.g-tab.on .p { color: var(--warm-hi); }
+
+.g-actions { display: flex; gap: 10px; padding-top: 14px; }
+.g-btn { position: relative; overflow: hidden; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warm-hi); padding: 15px 20px; border-radius: 99px; background: rgba(209,160,74,0.09); border: 1px solid rgba(209,160,74,0.34); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 0 26px rgba(209,160,74,0.08); transition: box-shadow 0.3s var(--ease-out), background 0.3s, transform 0.15s; }
+.g-btn:hover { background: rgba(209,160,74,0.15); box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 0 30px rgba(209,160,74,0.13), 0 0 30px rgba(209,160,74,0.2); }
+.g-btn:active { transform: scale(0.985); }
+.g-btn.quiet { color: var(--ink-2); background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+.g-btn.quiet:hover { background: rgba(255,255,255,0.08); }
+.g-btn[disabled] { opacity: 0.45; pointer-events: none; }
+.g-help { position: relative; overflow: hidden; width: 47px; height: 47px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; font-family: var(--mono); font-size: 13px; color: var(--ink-3); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.11); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); transition: color 0.2s, background 0.2s; }
+.g-help:hover { color: var(--ink); background: rgba(255,255,255,0.09); }
+
+/* рябь и отказ */
+.ripple { position: absolute; border-radius: 50%; pointer-events: none; z-index: 4; width: 14px; height: 14px; margin: -7px 0 0 -7px; background: radial-gradient(circle, rgba(255,255,255,0.3), rgba(255,255,255,0.06) 55%, transparent 70%); animation: rip 0.6s var(--ease-out) forwards; }
+.ripple.deny { background: radial-gradient(circle, rgba(230,69,69,0.38), rgba(230,69,69,0.08) 55%, transparent 70%); }
+.ripple.warm { background: radial-gradient(circle, rgba(232,195,122,0.36), rgba(232,195,122,0.07) 55%, transparent 70%); }
+@keyframes rip { to { transform: scale(16); opacity: 0; } }
+.denied-pulse { animation: deniedPulse 0.5s var(--ease-out); }
+@keyframes deniedPulse { 30% { box-shadow: inset 0 0 0 1px rgba(230,69,69,0.4), inset 0 0 30px rgba(230,69,69,0.1); } }
+
+/* сцены и перенастройка */
+.g-stage { position: relative; height: var(--stage-h, 120px); }
+.g-pane { position: absolute; inset: 0; transition: opacity 0.38s var(--ease-out), filter 0.38s var(--ease-out), transform 0.38s var(--ease-out); }
+.g-pane.off { opacity: 0; filter: blur(7px); transform: translateY(7px); pointer-events: none; }
+.retune-band { position: absolute; top: -6%; bottom: -6%; left: -20%; width: 16%; z-index: 3; pointer-events: none; opacity: 0; background: linear-gradient(90deg, transparent, rgba(76,224,224,0.1) 35%, rgba(240,240,248,0.16) 50%, rgba(76,224,224,0.1) 65%, transparent); filter: blur(1px); }
+.retuning .retune-band { animation: band 0.5s var(--ease-out); }
+@keyframes band { 0% { opacity: 0; left: -20%; } 20% { opacity: 1; } 100% { opacity: 0; left: 108%; } }
+
+/* тост */
+#toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 16px); z-index: 300; pointer-events: none; opacity: 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink); background: rgba(13,13,26,0.92); border: 1px solid rgba(240,240,248,0.16); border-radius: 10px; padding: 10px 18px; transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out); backdrop-filter: blur(10px); max-width: calc(100vw - 40px); text-align: center; }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ════════════════════════════════════════════════════════════════
+   ШАПКА — плавающая капсула
+   ════════════════════════════════════════════════════════════════ */
+.hdr { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 90; width: min(1160px, calc(100% - 24px)); border-radius: 99px; display: flex; align-items: center; gap: 6px; padding: 10px 12px 10px 20px; background: rgba(8, 9, 18, 0.55); backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%); border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 18px 50px rgba(0,0,0,0.45); transition: background 0.3s; }
+.hdr.solid { background: rgba(6, 7, 14, 0.78); }
+.hdr-logo { display: flex; align-items: center; gap: 10px; margin-right: 8px; }
+.hdr-logo svg { height: 20px; width: auto; }
+.hdr-logo svg rect { fill: var(--ink); }
+.hdr-logo b { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.4em; color: var(--ink); margin-left: 0.1em; }
+.hdr-nav { display: flex; gap: 2px; margin-left: auto; }
+.hdr-nav a { position: relative; overflow: hidden; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; color: var(--ink-3); padding: 9px 13px; border-radius: 99px; transition: color 0.2s, background 0.2s; }
+.hdr-nav a:hover { color: var(--ink); background: rgba(255,255,255,0.06); }
+.hdr-cart { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; color: var(--ink-2); padding: 9px 14px; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: background 0.2s; }
+.hdr-cart:hover { background: rgba(255,255,255,0.09); }
+.hdr-cart svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.hdr-cart .n { font-weight: 600; color: var(--warm-hi); min-width: 10px; text-align: center; }
+.hdr-burger { position: relative; overflow: hidden; width: 40px; height: 40px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: background 0.2s; }
+.hdr-burger:hover { background: rgba(255,255,255,0.09); }
+.hdr-burger i { position: absolute; left: 13px; right: 13px; height: 1.5px; background: var(--ink); border-radius: 2px; transition: transform 0.35s var(--ease-out), top 0.35s var(--ease-out), opacity 0.3s; }
+.hdr-burger i:nth-child(1) { top: 16px; }
+.hdr-burger i:nth-child(2) { top: 22px; }
+body.menu-open .hdr-burger i:nth-child(1) { top: 19px; transform: rotate(45deg); }
+body.menu-open .hdr-burger i:nth-child(2) { top: 19px; transform: rotate(-45deg); }
+
+/* ── Меню-мембрана ─────────────────────────────────────────────── */
+.menu { position: fixed; inset: 0; z-index: 80; display: grid; align-items: center; padding: 90px 0 40px; visibility: hidden; opacity: 0; background: rgba(4, 4, 10, 0.6); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%); transition: opacity 0.45s var(--ease-out), visibility 0.45s; overflow-y: auto; }
+body.menu-open .menu { visibility: visible; opacity: 1; }
+.menu-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; }
+.menu-nav { display: flex; flex-direction: column; gap: 4px; }
+.menu-nav a { display: flex; align-items: baseline; gap: 16px; padding: 12px 14px; border-radius: 16px; opacity: 0; transform: translateY(14px); transition: background 0.25s, opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); transition-delay: 0s, var(--d, 0s), var(--d, 0s); }
+body.menu-open .menu-nav a { opacity: 1; transform: none; }
+.menu-nav a:hover { background: rgba(255,255,255,0.05); }
+.menu-nav .t { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 3.4vw, 34px); color: var(--ink); }
+.menu-nav .s { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; color: var(--ink-4); }
+.menu-side { display: flex; flex-direction: column; gap: 12px; opacity: 0; transform: translateY(14px); transition: opacity 0.5s var(--ease-out) 0.25s, transform 0.5s var(--ease-out) 0.25s; }
+body.menu-open .menu-side { opacity: 1; transform: none; }
+.menu-card { border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); padding: 14px 16px; }
+.menu-card .lbl { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.2em; color: var(--ink-4); margin-bottom: 10px; }
+.menu-worlds { display: flex; flex-direction: column; gap: 4px; }
+.menu-world { position: relative; overflow: hidden; display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink-2); padding: 9px 10px; border-radius: 10px; transition: background 0.2s; cursor: pointer; }
+.menu-world:hover { background: rgba(255,255,255,0.05); }
+.menu-world .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px rgba(0,200,200,0.8); }
+.menu-world.locked { color: var(--ink-4); }
+.menu-world.locked .dot { background: rgba(240,240,248,0.2); box-shadow: none; }
+.menu-world .tag { margin-left: auto; font-size: 8px; letter-spacing: 0.14em; color: var(--ink-4); }
+.menu-world.on .tag { color: var(--cyan-hi); }
+.menu-foot { display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); padding: 0 6px; }
+
+/* ════════════════════════════════════════════════════════════════
+   СЕКЦИИ — общий каркас
+   ════════════════════════════════════════════════════════════════ */
+.wrap { width: min(1160px, calc(100% - 48px)); margin: 0 auto; position: relative; }
+section { position: relative; }
+.sec { padding: 110px 0 30px; scroll-margin-top: 80px; }
+.sec-head { max-width: 76ch; margin-bottom: 40px; }
+.sec-head .mark { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; color: var(--ink-4); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.sec-head .mark::before { content: ""; width: 26px; height: 1px; background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.6); }
+.sec-head h2 { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 4vw, 44px); line-height: 1.12; color: var(--ink); letter-spacing: 0; text-wrap: balance; }
+.sec-head .lead { margin-top: 18px; font-size: 15.5px; color: var(--ink-3); max-width: 66ch; }
+.sec-head .lead em { font-style: normal; color: var(--cyan-hi); }
+.sec-head .lead strong { color: var(--ink-2); font-weight: 600; }
+.rev { opacity: 1; transform: none; transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out); }
+.rev.rev-off { opacity: 0; transform: translateY(22px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sky::before, .sky::after { animation: none; }
+  .glass::after { animation: none; display: none; }
+  .g-dot.c { animation: none; }
+  .rev, .rev.rev-off { opacity: 1; transform: none; transition: none; }
+  .g-pane { transition: none; }
+}
+</style>
+<style>
+/* ════════════════════════════════════════════════════════════════
+   HERO
+   ════════════════════════════════════════════════════════════════ */
+.hero { padding: 158px 0 40px; }
+.hero-grid { display: grid; grid-template-columns: 1.06fr 0.94fr; gap: 48px; align-items: center; }
+.hero h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 4.6vw, 52px); line-height: 1.1; color: var(--ink); letter-spacing: 0; text-wrap: balance; }
+.hero h1 .dim { color: var(--ink-3); font-weight: 500; }
+.hero h1 .accent { color: var(--red-hi); text-shadow: 0 0 30px rgba(230,69,69,0.35); }
+.hero-sub { margin: 22px 0 0; font-size: 15.5px; color: var(--ink-3); max-width: 58ch; }
+.hero-sub strong { color: var(--ink-2); font-weight: 600; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.hero-cta .g-btn { flex: none; padding: 15px 26px; }
+.hero-note { margin-top: 26px; font-size: 12.5px; color: var(--ink-4); max-width: 54ch; }
+.hero-note strong { color: var(--ink-3); font-weight: 600; }
+.hero-note b.ms { color: var(--warm-hi); font-weight: 600; }
+.hero-status { display: flex; align-items: center; gap: 10px; margin-top: 34px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; color: var(--ink-4); }
+.hero-status .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px rgba(0,200,200,0.8); animation: breathe 3.2s ease-in-out infinite; }
+
+/* наблюдение (терминал героя) */
+.obs-top { display: flex; align-items: flex-end; gap: 20px; padding: 2px 2px 12px; }
+.obs-top .big b { display: block; font-family: var(--display); font-weight: 700; font-size: 26px; color: var(--ink); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.obs-top .big i { font-style: normal; font-size: 8.5px; letter-spacing: 0.16em; color: var(--ink-4); font-family: var(--mono); }
+.obs-top .side { margin-left: auto; text-align: right; display: grid; gap: 3px; }
+.obs-kv { font-size: 9px; letter-spacing: 0.13em; color: var(--ink-4); font-family: var(--mono); }
+.obs-kv b { color: var(--ink-2); font-weight: 500; margin-left: 8px; font-variant-numeric: tabular-nums; }
+.obs-wave { position: relative; height: 46px; margin-bottom: 6px; border-radius: 12px; background: rgba(3,4,10,0.35); border: 1px solid rgba(255,255,255,0.07); overflow: hidden; }
+.obs-wave svg { display: block; width: 100%; height: 100%; }
+.obs-wave path { fill: none; stroke: var(--cyan-hi); stroke-width: 1.4; filter: drop-shadow(0 0 6px rgba(0,200,200,0.5)); }
+.obs-wave .cap-w { position: absolute; top: 6px; right: 9px; font-size: 8px; letter-spacing: 0.14em; color: var(--ink-4); font-family: var(--mono); }
+.tapline { cursor: pointer; overflow: hidden; border-radius: 10px; transition: background 0.25s; }
+.tapline:hover { background: rgba(255,255,255,0.03); }
+
+/* ════════════════════════════════════════════════════════════════
+   МОЩЬ РЕЛИКВИИ
+   ════════════════════════════════════════════════════════════════ */
+.power-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.power-card { position: relative; overflow: hidden; border-radius: 20px; background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.09); padding: 20px 20px 18px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); transition: background 0.3s, border-color 0.3s, transform 0.3s var(--ease-out); }
+.power-card:hover { background: rgba(255,255,255,0.055); transform: translateY(-3px); }
+.power-card .ltr { font-family: var(--display); font-weight: 700; font-size: 30px; color: var(--ink); }
+.power-card .nm { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--ink-2); margin-top: 2px; }
+.power-card .spec { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--ink-4); margin-top: 8px; }
+.power-card .frags { display: flex; gap: 5px; margin-top: 12px; }
+.power-card .frags i { width: 18px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); }
+.power-card .frags i.on { background: linear-gradient(90deg, #edc87c, #c3943c); box-shadow: 0 0 9px rgba(209,160,74,0.5); }
+.power-card p { font-size: 12.5px; color: var(--ink-3); margin-top: 14px; line-height: 1.55; }
+.power-card[data-pw="K"]:hover { border-color: rgba(232,195,122,0.3); }
+.power-card[data-pw="C"]:hover { border-color: rgba(76,224,224,0.3); }
+.power-card[data-pw="R"]:hover { border-color: rgba(76,224,224,0.4); }
+.power-card[data-pw="S"]:hover { border-color: rgba(230,69,69,0.35); }
+.power-lede { margin-top: 26px; max-width: 72ch; font-size: 13.5px; color: var(--ink-4); }
+.power-lede strong { color: var(--ink-3); font-weight: 600; }
+
+/* ════════════════════════════════════════════════════════════════
+   КАТАЛОГ
+   ════════════════════════════════════════════════════════════════ */
+.cat-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
+.cat-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cat-chip { position: relative; overflow: hidden; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--ink-3); padding: 9px 14px; border-radius: 99px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); transition: color 0.2s, background 0.2s, border-color 0.2s; }
+.cat-chip span { color: var(--ink-4); margin-left: 7px; }
+.cat-chip:hover { color: var(--ink); background: rgba(255,255,255,0.07); }
+.cat-chip.on { color: var(--ink); background: rgba(209,160,74,0.12); border-color: rgba(209,160,74,0.4); }
+.cat-chip.on span { color: var(--warm-hi); }
+.cat-search { position: relative; margin-left: auto; }
+.cat-search input { width: 230px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--ink); background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 10px 16px 10px 36px; transition: border-color 0.2s, box-shadow 0.2s; }
+.cat-search input::placeholder { color: var(--ink-4); }
+.cat-search input:focus { border-color: rgba(0,200,200,0.4); box-shadow: 0 0 0 3px rgba(0,200,200,0.07); }
+.cat-search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 13px; height: 13px; fill: none; stroke: var(--ink-4); stroke-width: 1.6; stroke-linecap: round; }
+.cat-note { display: flex; gap: 10px; align-items: baseline; font-size: 12.5px; color: var(--ink-4); max-width: 78ch; margin-bottom: 30px; }
+.cat-note::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.7); flex-shrink: 0; transform: translateY(-2px); }
+.cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.pcard { position: relative; overflow: hidden; border-radius: 22px; background: var(--glass-bg); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 20px 50px rgba(0,0,0,0.4); cursor: pointer; transition: transform 0.35s var(--ease-out), box-shadow 0.35s, border-color 0.3s; display: flex; flex-direction: column; }
+.pcard:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.18); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 30px 70px rgba(0,0,0,0.5); }
+.pcard.hide { display: none; }
+.pimg { position: relative; aspect-ratio: 1 / 0.92; overflow: hidden; background: #07070f; }
+.pimg img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease-out), opacity 0.4s; }
+.pcard:hover .pimg img { transform: scale(1.035); }
+.pimg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(4,4,10,0.55)); }
+.p-art { position: absolute; top: 12px; left: 12px; z-index: 2; font-family: var(--mono); font-size: 8px; letter-spacing: 0.16em; color: var(--ink-2); background: rgba(4,4,10,0.55); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.12); border-radius: 99px; padding: 5px 10px; }
+.p-pw { position: absolute; top: 12px; right: 12px; z-index: 2; font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.1em; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: rgba(4,4,10,0.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.16); color: var(--ink); }
+.p-pw.S { color: var(--red-hi); border-color: rgba(230,69,69,0.5); }
+.p-pw.R { color: var(--cyan-hi); border-color: rgba(76,224,224,0.45); }
+.p-pw.C { color: var(--cyan); border-color: rgba(0,200,200,0.35); }
+.p-pw.K { color: var(--warm-hi); border-color: rgba(232,195,122,0.4); }
+.p-status { position: absolute; bottom: 12px; left: 12px; z-index: 2; display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-2); background: rgba(4,4,10,0.55); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.12); border-radius: 99px; padding: 5px 11px; }
+.p-status .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 7px rgba(0,200,200,0.9); }
+.p-status.ms .dot { background: var(--warm); box-shadow: 0 0 7px rgba(209,160,74,0.9); }
+.pbody { display: flex; flex-direction: column; flex: 1; padding: 16px 18px 16px; }
+.pname { font-family: var(--display); font-weight: 700; font-size: 15.5px; color: var(--ink); letter-spacing: 0.01em; }
+.pdesc { margin-top: 9px; font-size: 12.5px; line-height: 1.55; color: var(--ink-3); }
+.pdesc em { font-style: normal; color: var(--ink-2); }
+.pfoot { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding-top: 13px; position: relative; }
+.pfoot::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--hairline) 16%, var(--hairline) 84%, transparent); }
+.pprice { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--ink); }
+.pprice span { font-size: 11px; color: var(--ink-4); font-weight: 400; }
+.popen { position: relative; overflow: hidden; margin-left: auto; font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.18em; color: var(--warm-hi); padding: 9px 16px; border-radius: 99px; background: rgba(209,160,74,0.08); border: 1px solid rgba(209,160,74,0.3); transition: background 0.2s, box-shadow 0.2s; }
+.popen:hover { background: rgba(209,160,74,0.14); box-shadow: 0 0 18px rgba(209,160,74,0.16); }
+.cat-empty { display: none; padding: 40px 0 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink-4); text-align: center; }
+.cat-empty.show { display: block; }
+
+/* ── Модал реликвии ────────────────────────────────────────────── */
+.mov { position: fixed; inset: 0; z-index: 150; display: grid; place-items: center; padding: 20px; background: rgba(2,2,7,0.6); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); opacity: 0; visibility: hidden; transition: opacity 0.35s var(--ease-out), visibility 0.35s; }
+.mov.open { opacity: 1; visibility: visible; }
+.mpanel { width: min(880px, 100%); max-height: min(86vh, 900px); overflow-y: auto; scrollbar-width: none; border-radius: 26px; transform: translateY(18px) scale(0.985); transition: transform 0.4s var(--ease-out); }
+.mov.open .mpanel { transform: none; }
+.mpanel::-webkit-scrollbar { display: none; }
+.m-grid { display: grid; grid-template-columns: 0.92fr 1.08fr; gap: 0; }
+.m-imgw { position: relative; min-height: 320px; background: #07070f; }
+.m-imgw img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.m-imgw::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 70%, rgba(10,11,20,0.55)); }
+.m-body { padding: 26px 26px 22px; display: flex; flex-direction: column; }
+.m-art { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--ink-4); }
+.m-name { font-family: var(--display); font-weight: 700; font-size: 24px; color: var(--ink); margin: 8px 0 4px; }
+.m-pw { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em; color: var(--ink-3); margin-bottom: 14px; }
+.m-pw b { color: var(--warm-hi); font-weight: 600; }
+.m-desc { font-size: 13.5px; line-height: 1.65; color: var(--ink-3); }
+.m-clar { margin-top: 16px; }
+.m-clar-item { border-top: 1px solid var(--hairline); }
+.m-clar-head { position: relative; overflow: hidden; width: 100%; display: flex; align-items: baseline; gap: 12px; text-align: left; padding: 12px 2px; font-family: var(--mono); }
+.m-clar-head .k { font-size: 10px; letter-spacing: 0.12em; color: var(--ink-2); }
+.m-clar-head .v { margin-left: auto; font-size: 9px; letter-spacing: 0.1em; color: var(--ink-4); }
+.m-clar-head .pl { color: var(--warm-hi); font-size: 13px; transition: transform 0.3s var(--ease-out); }
+.m-clar-item.open .m-clar-head .pl { transform: rotate(45deg); }
+.m-clar-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s var(--ease-out); }
+.m-clar-item.open .m-clar-panel { grid-template-rows: 1fr; }
+.m-clar-panel > div { overflow: hidden; }
+.m-clar-panel p { font-size: 12.5px; color: var(--ink-3); padding: 0 2px 12px; }
+.m-foot { display: flex; align-items: center; gap: 14px; margin-top: auto; padding-top: 18px; }
+.m-price { font-family: var(--mono); font-size: 19px; font-weight: 600; color: var(--ink); }
+.m-price span { font-size: 13px; color: var(--ink-4); font-weight: 400; }
+.m-close { position: absolute; top: 14px; right: 14px; z-index: 5; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: rgba(4,4,10,0.55); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.14); color: var(--ink-2); font-size: 15px; transition: background 0.2s, color 0.2s; overflow: hidden; }
+.m-close:hover { background: rgba(4,4,10,0.75); color: var(--ink); }
+
+/* ════════════════════════════════════════════════════════════════
+   ЭХО / СИСТЕМА / МИРЫ / ПАРТНЁРСТВА
+   ════════════════════════════════════════════════════════════════ */
+.split { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 48px; align-items: start; }
+.split .sec-head { margin-bottom: 0; }
+.side-note { margin-top: 20px; font-size: 12.5px; color: var(--ink-4); max-width: 52ch; }
+.side-note sup { color: var(--cyan-hi); }
+.foot-note { margin-top: 14px; font-size: 11.5px; color: var(--ink-4); max-width: 52ch; display: flex; gap: 8px; }
+.foot-note .st { color: var(--cyan-hi); flex-shrink: 0; }
+
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 44px; max-width: none; }
+.about-text { font-size: 14.5px; line-height: 1.7; color: var(--ink-3); }
+.about-text em { font-style: normal; color: var(--cyan-hi); }
+.about-text strong { color: var(--ink-2); font-weight: 600; }
+.about-cta { grid-column: 1 / -1; font-size: 13.5px; color: var(--ink-3); border-top: 1px solid var(--hairline); padding-top: 18px; max-width: 76ch; }
+.about-cta strong { color: var(--warm-hi); font-weight: 600; }
+
+.tech-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 42px; }
+.tech-card { position: relative; overflow: hidden; border-radius: 20px; background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.09); padding: 20px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); transition: background 0.3s, transform 0.3s var(--ease-out); }
+.tech-card:hover { background: rgba(255,255,255,0.05); transform: translateY(-3px); }
+.tech-card .n { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--warm-hi); }
+.tech-card h3 { font-family: var(--display); font-weight: 700; font-size: 14.5px; color: var(--ink); margin: 10px 0 10px; letter-spacing: 0.01em; }
+.tech-card p { font-size: 12.5px; line-height: 1.6; color: var(--ink-3); }
+.tech-card p em { font-style: normal; color: var(--cyan-hi); }
+.tech-card p strong { color: var(--ink-2); font-weight: 600; }
+
+.aw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.aw-card { position: relative; overflow: hidden; border-radius: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.09); cursor: pointer; transition: transform 0.3s var(--ease-out), border-color 0.3s; }
+.aw-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.16); }
+.aw-canvas { position: relative; aspect-ratio: 16 / 9.4; overflow: hidden; background: #07070f; }
+.aw-canvas img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; filter: saturate(1.2) brightness(0.85); transform: scale(1.06); }
+.aw-canvas::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,4,10,0.15), rgba(4,4,10,0.6)); }
+.aw-scan { position: absolute; left: 0; right: 0; height: 22%; top: -25%; background: linear-gradient(180deg, transparent, rgba(76,224,224,0.12) 50%, transparent); animation: awScan 5.5s ease-in-out infinite; }
+.aw-card:nth-child(2) .aw-scan { animation-delay: 1.8s; }
+.aw-card:nth-child(3) .aw-scan { animation-delay: 3.4s; }
+@keyframes awScan { 0%, 55% { top: -25%; opacity: 0; } 60% { opacity: 1; } 100% { top: 115%; opacity: 0; } }
+.aw-meta { position: absolute; top: 12px; left: 14px; right: 14px; z-index: 2; display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; color: var(--ink-2); }
+.aw-meta .lk { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-3); }
+.aw-meta .lk svg { width: 10px; height: 10px; fill: var(--ink-3); }
+.aw-body { padding: 14px 16px 15px; }
+.aw-name { font-family: var(--display); font-weight: 700; font-size: 14px; color: var(--ink); }
+.aw-desc { margin-top: 6px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em; color: var(--ink-4); }
+
+.clinks { display: flex; flex-direction: column; gap: 10px; }
+.clink { position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); padding: 15px 18px; transition: background 0.25s, border-color 0.25s, transform 0.25s var(--ease-out); cursor: pointer; text-align: left; width: 100%; }
+.clink:hover { background: rgba(255,255,255,0.06); transform: translateX(4px); }
+.clink .ic { width: 38px; height: 38px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+.clink .ic svg { width: 15px; height: 15px; fill: none; stroke: var(--ink-2); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.clink .nm { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; color: var(--ink); }
+.clink .sb { font-size: 12px; color: var(--ink-4); margin-top: 2px; }
+.clink .arr { margin-left: auto; font-family: var(--mono); color: var(--ink-4); transition: transform 0.25s var(--ease-out), color 0.25s; }
+.clink:hover .arr { transform: translateX(4px); color: var(--warm-hi); }
+.cdesc { font-size: 14px; line-height: 1.7; color: var(--ink-3); max-width: 60ch; }
+.cdesc strong { color: var(--ink-2); font-weight: 600; }
+
+/* кабинет-тизер */
+.cab { position: relative; overflow: hidden; display: flex; align-items: center; gap: 18px; border-radius: 22px; padding: 22px 26px; cursor: pointer; }
+.cab .lk { width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(230,69,69,0.07); border: 1px solid rgba(230,69,69,0.3); }
+.cab .lk svg { width: 17px; height: 17px; fill: var(--red-hi); }
+.cab .t1 { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--red-hi); }
+.cab .t2 { font-size: 14.5px; color: var(--ink-2); margin-top: 4px; }
+.cab .tag { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; color: var(--ink-4); white-space: nowrap; }
+
+/* ════════════════════════════════════════════════════════════════
+   FAQ
+   ════════════════════════════════════════════════════════════════ */
+.faq-sub { font-size: 13px; color: var(--ink-4); margin-top: 10px; }
+.faq-unlock { position: relative; overflow: hidden; width: 100%; display: flex; align-items: center; gap: 16px; border-radius: 20px; padding: 18px 22px; text-align: left; margin-bottom: 14px; }
+.faq-unlock .fp { width: 40px; height: 40px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(0,200,200,0.06); border: 1px solid rgba(0,200,200,0.3); }
+.faq-unlock .fp svg { width: 17px; height: 17px; fill: none; stroke: var(--cyan-hi); stroke-width: 1.4; stroke-linecap: round; }
+.faq-unlock .l1 { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.2em; color: var(--cyan-hi); }
+.faq-unlock .l2 { font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; color: var(--ink); margin-top: 4px; }
+.faq-unlock .meta { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; color: var(--ink-4); }
+.faq-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.6s var(--ease-out); }
+.faq-body.open { grid-template-rows: 1fr; }
+.faq-body > div { overflow: hidden; }
+.faq-group { font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em; color: var(--ink-4); padding: 26px 4px 10px; }
+.faq-item { border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); margin-bottom: 8px; transition: background 0.25s, border-color 0.25s; }
+.faq-item.open { background: rgba(255,255,255,0.045); border-color: rgba(255,255,255,0.12); }
+.faq-q { position: relative; overflow: hidden; width: 100%; display: flex; align-items: baseline; gap: 14px; text-align: left; padding: 15px 18px; font-size: 13.5px; font-weight: 500; color: var(--ink-2); border-radius: 16px; }
+.faq-q .pl { margin-left: auto; font-family: var(--mono); color: var(--warm-hi); font-size: 15px; flex-shrink: 0; transition: transform 0.3s var(--ease-out); }
+.faq-item.open .faq-q .pl { transform: rotate(45deg); }
+.faq-a-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.45s var(--ease-out); }
+.faq-item.open .faq-a-wrap { grid-template-rows: 1fr; }
+.faq-a-wrap > div { overflow: hidden; }
+.faq-a { padding: 0 18px 16px; font-size: 13px; line-height: 1.65; color: var(--ink-3); }
+.faq-a strong { color: var(--ink-2); font-weight: 600; }
+.faq-cta { display: inline-flex; margin-top: 12px; }
+
+/* ════════════════════════════════════════════════════════════════
+   ПЕЧАТЬ · ПОДДЕРЖКА · ФУТЕР · КУКИ · ЗАГРУЗКА
+   ════════════════════════════════════════════════════════════════ */
+.seal { text-align: center; padding: 8px 0 0; }
+.seal-x { position: relative; overflow: hidden; width: 112px; height: 112px; margin: 2px auto 14px; display: grid; place-items: center; border-radius: 50%; cursor: pointer; background: rgba(230,69,69,0.05); border: 1px solid rgba(230,69,69,0.3); box-shadow: 0 0 26px rgba(230,69,69,0.14), inset 0 1px 0 rgba(255,255,255,0.08); transition: background 0.3s, box-shadow 0.3s; }
+.seal-x:hover { background: rgba(230,69,69,0.09); box-shadow: 0 0 40px rgba(230,69,69,0.24), inset 0 1px 0 rgba(255,255,255,0.08); }
+.seal-x b { font-family: var(--display); font-weight: 700; font-size: 46px; color: var(--ink); text-shadow: 0 0 26px rgba(230,69,69,0.5); line-height: 1; }
+.seal-x .halo { position: absolute; inset: -1px; border-radius: 50%; border: 1px dashed rgba(230,69,69,0.35); animation: haloSpin 42s linear infinite; }
+@keyframes haloSpin { to { transform: rotate(360deg); } }
+.seal-x.deny-flash { animation: sealDeny 0.55s var(--ease-out); }
+@keyframes sealDeny { 30% { box-shadow: 0 0 54px rgba(230,69,69,0.55), inset 0 0 26px rgba(230,69,69,0.2); } }
+.seal-name { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.32em; color: var(--ink); margin-left: 0.32em; }
+.seal-des { font-size: 8.5px; letter-spacing: 0.24em; color: var(--ink-4); margin: 5px 0 0; font-family: var(--mono); }
+.seal-des b { color: var(--red-hi); font-weight: 600; }
+.seal-status { min-height: 15px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.2em; color: var(--ink-4); margin: 13px 0 2px; transition: color 0.3s; }
+.seal-status.scan { color: var(--cyan-hi); }
+.seal-status.no { color: var(--red-hi); }
+.seal-wave { position: relative; overflow: hidden; height: 54px; margin: 12px 0 2px; border-radius: 12px; background: rgba(3,4,10,0.35); border: 1px solid rgba(255,255,255,0.07); cursor: pointer; transition: border-color 0.25s; }
+.seal-wave:hover { border-color: rgba(0,200,200,0.25); }
+.seal-wave svg { display: block; width: 100%; height: 100%; }
+.seal-wave path { fill: none; stroke: rgba(76,224,224,0.75); stroke-width: 1.4; filter: drop-shadow(0 0 5px rgba(0,200,200,0.4)); }
+.seal-wave .cap-w { position: absolute; top: 6px; left: 10px; font-size: 8px; letter-spacing: 0.16em; color: var(--ink-4); font-family: var(--mono); }
+.seal-scanline { position: absolute; left: 0; right: 0; top: -14%; height: 12%; z-index: 3; pointer-events: none; opacity: 0; background: linear-gradient(180deg, transparent, rgba(230,69,69,0.06) 40%, rgba(240,240,248,0.12) 50%, rgba(230,69,69,0.06) 60%, transparent); }
+.scanning .seal-scanline { animation: sealScan 1.25s var(--ease-out) both; }
+@keyframes sealScan { 0% { top: -14%; opacity: 0; } 14% { opacity: 1; } 100% { top: 108%; opacity: 0; } }
+.console-row { cursor: pointer; overflow: hidden; border-radius: 10px; transition: background 0.25s; }
+.console-row:hover { background: rgba(255,255,255,0.03); }
+.arch-desc { font-size: 14px; line-height: 1.7; color: var(--ink-3); max-width: 56ch; }
+.arch-desc strong { color: var(--ink-2); font-weight: 600; }
+.arch-art { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.22em; color: var(--ink-4); margin-bottom: 12px; }
+
+.g-ant { display: flex; align-items: center; gap: 20px; padding: 8px 2px 16px; }
+.g-ant svg.ico { width: 52px; height: 52px; flex-shrink: 0; color: var(--ink-3); filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+.g-seg { display: flex; gap: 5px; flex: 1; max-width: 320px; }
+.g-seg span { flex: 1; height: 15px; border-radius: 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 1px 2px rgba(0,0,0,0.4); }
+.g-seg span.lit { background: linear-gradient(180deg, #edc87c, #c3943c); border-color: rgba(232,195,122,0.65); box-shadow: 0 0 16px rgba(209,160,74,0.55), inset 0 1px 0 rgba(255,255,255,0.55); }
+.g-ant .pow { margin-left: auto; text-align: right; }
+.g-ant .pow b { display: block; font-family: var(--display); font-size: 19px; font-weight: 700; color: var(--ink); letter-spacing: 0.01em; }
+.g-ant .pow i { font-style: normal; font-size: 8.5px; letter-spacing: 0.16em; color: var(--ink-4); font-family: var(--mono); }
+
+footer { margin-top: 110px; border-top: 1px solid rgba(240,240,248,0.07); padding: 34px 0 44px; }
+.foot-in { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.foot-copy { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--ink-4); }
+.foot-links { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 10px; }
+.foot-links button { position: relative; overflow: hidden; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; color: var(--ink-3); padding: 4px 0; border-bottom: 1px solid transparent; transition: color 0.2s, border-color 0.2s; }
+.foot-links button:hover { color: var(--ink); border-bottom-color: rgba(240,240,248,0.3); }
+.foot-logo { margin-left: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.foot-logo svg { height: 24px; width: auto; opacity: 0.85; }
+.foot-logo svg rect { fill: var(--ink); }
+.foot-logo span { font-family: var(--mono); font-size: 7px; letter-spacing: 0.5em; color: var(--ink-4); margin-left: 0.5em; }
+
+.cookie { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 120; width: min(680px, calc(100% - 24px)); border-radius: 20px; display: flex; align-items: center; gap: 16px; padding: 16px 18px; transition: transform 0.5s var(--ease-out), opacity 0.5s; }
+.cookie.hide { transform: translate(-50%, 140%); opacity: 0; pointer-events: none; }
+.cookie .txt { font-size: 12px; line-height: 1.55; color: var(--ink-3); }
+.cookie .txt .lbl { display: block; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.2em; color: var(--red-hi); margin-bottom: 5px; }
+.cookie .txt button { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+.cookie .g-btn { flex: none; padding: 12px 20px; }
+
+.boot { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: var(--void); transition: opacity 0.7s var(--ease-out), visibility 0.7s; cursor: pointer; }
+.boot.away { opacity: 0; visibility: hidden; }
+.boot .bg { position: absolute; inset: -10%; background: radial-gradient(50% 40% at 70% 16%, rgba(58,66,160,0.2), transparent 70%), radial-gradient(42% 34% at 16% 66%, rgba(0,200,200,0.09), transparent 70%), radial-gradient(46% 38% at 84% 84%, rgba(192,40,40,0.08), transparent 70%); }
+.boot .bg::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(1.2px 1.2px at 18% 30%, rgba(240,240,248,0.45), transparent 100%), radial-gradient(1px 1px at 66% 22%, rgba(76,224,224,0.4), transparent 100%), radial-gradient(1.2px 1.2px at 82% 58%, rgba(240,240,248,0.34), transparent 100%), radial-gradient(1px 1px at 34% 76%, rgba(240,240,248,0.3), transparent 100%); }
+.boot-card { position: relative; width: min(400px, calc(100% - 48px)); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out), filter 0.6s var(--ease-out); }
+.boot-card.away { opacity: 0; transform: translateY(-14px) scale(0.985); filter: blur(8px); }
+.boot-logo { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 22px 0 4px; }
+.boot-logo svg { height: 34px; width: auto; }
+.boot-logo svg rect { fill: var(--ink); }
+.boot-logo .wm { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.55em; color: var(--ink-3); margin-left: 0.55em; }
+.boot-log { padding: 14px 22px 4px; min-height: 88px; }
+.boot-log .ln { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; color: var(--ink-3); padding: 3.5px 0; opacity: 0; transform: translateY(4px); transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out); }
+.boot-log .ln.show { opacity: 1; transform: none; }
+.boot-log .ln .pfx { color: var(--cyan-hi); margin-right: 8px; }
+.boot-log .ln.ok { color: var(--ink-2); }
+.boot-bar { margin: 8px 22px 22px; height: 3px; border-radius: 3px; background: rgba(255,255,255,0.07); overflow: hidden; }
+.boot-bar i { display: block; height: 100%; width: 0%; border-radius: 3px; background: linear-gradient(90deg, rgba(209,160,74,0.65), var(--warm-hi)); box-shadow: 0 0 12px rgba(209,160,74,0.6); transition: width 0.25s linear; }
+.boot-skip { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.22em; color: var(--ink-4); }
+
+/* ── Адаптив ───────────────────────────────────────────────────── */
+@media (max-width: 1020px) {
+  .hero-grid, .split { grid-template-columns: 1fr; gap: 36px; }
+  .power-grid { grid-template-columns: repeat(2, 1fr); }
+  .cat-grid, .tech-grid, .aw-grid { grid-template-columns: repeat(2, 1fr); }
+  .about-grid { grid-template-columns: 1fr; }
+  .m-grid { grid-template-columns: 1fr; }
+  .m-imgw { min-height: 260px; }
+  .menu-in { grid-template-columns: 1fr; gap: 28px; }
+  .hdr-nav { display: none; }
+}
+@media (max-width: 640px) {
+  .wrap { width: calc(100% - 32px); }
+  .sec { padding: 84px 0 20px; }
+  .hero { padding: 128px 0 30px; }
+  .power-grid, .cat-grid, .tech-grid, .aw-grid { grid-template-columns: 1fr; }
+  .hdr { padding: 8px 8px 8px 16px; }
+  .hdr-cart .lbl-t { display: none; }
+  .g-head { padding: 13px 16px 0; }
+  .g-body { padding: 14px 16px 16px; }
+  .g-foot { padding: 10px 16px 14px; flex-wrap: wrap; }
+  .g-actions { flex-direction: column; }
+  .g-help { width: 100%; height: 46px; border-radius: 99px; }
+  .g-ant { flex-wrap: wrap; }
+  .g-ant .pow { width: 100%; text-align: left; margin-left: 72px; margin-top: -6px; }
+  .obs-top { flex-wrap: wrap; }
+  .obs-top .side { margin-left: 0; text-align: left; width: 100%; }
+  .cat-search { margin-left: 0; width: 100%; }
+  .cat-search input { width: 100%; }
+  .cab { flex-wrap: wrap; }
+  .cab .tag { margin-left: 58px; }
+  .cookie { flex-direction: column; align-items: stretch; text-align: left; }
+  .echo-stage { --stage-h: 132px !important; }
+  .dlg { height: 380px !important; }
+}
+</style>
+<style>
+/* ════════════════════════════════════════════════════════════════
+   ПЕРЕДАТЧИК (Эхо) и ДИАЛОГ (конденсация) — утверждённые терминалы
+   ════════════════════════════════════════════════════════════════ */
+.aura { display: flex; align-items: center; gap: 10px; padding: 2px 2px 12px; }
+.aura .lbl { font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); }
+.aura-chip { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.14em; color: var(--cyan-hi); background: rgba(0,200,200,0.06); border: 1px solid rgba(0,200,200,0.25); border-radius: 99px; padding: 5px 12px; transition: opacity 0.2s, filter 0.2s; }
+.aura-chip.spin { opacity: 0.4; filter: blur(2px); }
+.aura-re { position: relative; overflow: hidden; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.11); }
+.aura-re svg { width: 11px; height: 11px; fill: none; stroke: var(--ink-3); stroke-width: 1.8; stroke-linecap: round; transition: transform 0.45s var(--ease-out); }
+.aura-re:active svg { transform: rotate(300deg); }
+.aura .hint { margin-left: auto; font-size: 8.5px; letter-spacing: 0.12em; color: var(--ink-4); }
+.beam { position: relative; height: 40px; margin-bottom: 12px; border-radius: 10px; background: rgba(3,4,10,0.35); border: 1px solid rgba(255,255,255,0.07); overflow: hidden; }
+.beam svg { display: block; width: 100%; height: 100%; }
+.beam path { fill: none; stroke: var(--cyan-hi); stroke-width: 1.4; filter: drop-shadow(0 0 6px rgba(0,200,200,0.55)); transition: stroke 0.3s; }
+.hot .beam path { stroke: var(--red-hi); filter: drop-shadow(0 0 6px rgba(230,69,69,0.55)); }
+.beam .fr { position: absolute; top: 5px; right: 9px; font-size: 8.5px; letter-spacing: 0.13em; color: var(--ink-4); }
+.slots { display: flex; gap: 6px; padding: 2px 2px 10px; }
+.slots i { flex: 1; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.07); transition: background 0.3s, box-shadow 0.3s; }
+.slots i.on { background: linear-gradient(90deg, #edc87c, #c3943c); box-shadow: 0 0 10px rgba(209,160,74,0.5); }
+.slots.over i.on { background: var(--red-hi); box-shadow: 0 0 10px rgba(230,69,69,0.5); }
+.rec-zone { display: flex; align-items: center; gap: 16px; height: 64px; }
+.mic-wrap { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+.mic-btn { position: relative; overflow: hidden; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); transition: background 0.25s, border-color 0.25s, box-shadow 0.25s; }
+.mic-btn svg { width: 20px; height: 20px; fill: none; stroke: var(--ink-2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.25s; }
+.mic-btn:hover { background: rgba(255,255,255,0.09); }
+.rec .mic-btn { border-color: rgba(230,69,69,0.55); background: rgba(230,69,69,0.12); box-shadow: 0 0 22px rgba(230,69,69,0.3); }
+.rec .mic-btn svg { stroke: var(--red-hi); }
+.mic-ring { position: absolute; inset: -3px; pointer-events: none; }
+.mic-ring circle { fill: none; stroke: var(--red-hi); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 194; stroke-dashoffset: 194; filter: drop-shadow(0 0 5px rgba(230,69,69,0.7)); transform: rotate(-90deg); transform-origin: center; }
+.wave { flex: 1; display: flex; align-items: center; gap: 3px; height: 56px; }
+.wave i { flex: 1; min-width: 3px; height: 12%; border-radius: 3px; background: rgba(255,255,255,0.1); transition: height 0.12s var(--ease-out), background 0.2s; }
+.wave i.on { background: var(--red-hi); box-shadow: 0 0 6px rgba(230,69,69,0.4); }
+.wave.done i.on { background: rgba(240,240,248,0.4); box-shadow: none; }
+.wave i.lit { background: var(--cyan-hi); box-shadow: 0 0 7px rgba(0,200,200,0.5); }
+.voice-side { flex-shrink: 0; text-align: right; width: 74px; }
+.voice-side .tm { font-family: var(--mono); font-size: 16px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.voice-side .st { font-size: 8px; letter-spacing: 0.13em; color: var(--ink-4); font-family: var(--mono); }
+.voice-ctl { display: flex; align-items: center; gap: 12px; margin-top: 10px; height: 26px; }
+.vc-btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; color: var(--ink-3); padding: 6px 10px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); transition: color 0.2s, background 0.2s, opacity 0.3s; }
+.vc-btn:hover { color: var(--ink); background: rgba(255,255,255,0.08); }
+.vc-btn svg { width: 9px; height: 9px; fill: currentColor; }
+.vc-btn[disabled] { opacity: 0.3; pointer-events: none; }
+.voice-ctl .note { margin-left: auto; font-size: 8.5px; letter-spacing: 0.12em; color: var(--ink-4); font-family: var(--mono); }
+
+.dlg { display: flex; flex-direction: column; height: 348px; }
+.dlg-log { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 4px 2px 10px; -webkit-mask-image: linear-gradient(180deg, transparent, #000 9%); mask-image: linear-gradient(180deg, transparent, #000 9%); }
+.dlg-log::-webkit-scrollbar { display: none; }
+.dlg-q { display: flex; gap: 10px; padding: 7px 0; font-size: 11.5px; letter-spacing: 0.05em; color: var(--ink-2); font-family: var(--mono); }
+.dlg-q .pfx { color: var(--cyan-hi); flex-shrink: 0; }
+.dlg-q .cur { display: inline-block; width: 7px; height: 12px; vertical-align: -2px; background: var(--cyan); margin-left: 2px; animation: curBlink 1s steps(2) infinite; }
+@keyframes curBlink { 50% { opacity: 0; } }
+.dlg-a { display: flex; justify-content: flex-end; padding: 5px 0; animation: aIn 0.4s var(--ease-out); }
+@keyframes aIn { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
+.dlg-a span { max-width: 82%; font-family: var(--text); font-size: 12.5px; color: var(--ink); background: rgba(209,160,74,0.1); border: 1px solid rgba(209,160,74,0.3); border-radius: 14px 14px 4px 14px; padding: 8px 13px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
+.dlg-sys { padding: 5px 0; font-size: 10px; letter-spacing: 0.1em; color: var(--ink-4); animation: aIn 0.4s var(--ease-out); font-family: var(--mono); }
+.dlg-sys.err { color: var(--red-hi); }
+.dlg-final { margin: 8px 0 2px; padding: 13px 15px; border-radius: 16px; background: rgba(0,200,200,0.05); border: 1px solid rgba(0,200,200,0.22); animation: aIn 0.45s var(--ease-out); }
+.dlg-final .code { font-size: 10px; letter-spacing: 0.2em; color: var(--cyan-hi); font-family: var(--mono); }
+.dlg-final h4 { font-family: var(--display); font-weight: 700; font-size: 14px; color: var(--ink); margin: 6px 0 4px; }
+.dlg-final p { font-family: var(--text); font-size: 12px; color: var(--ink-3); }
+.dlg-final p b { color: var(--ink-2); font-weight: 500; }
+.dlg-in { display: flex; gap: 8px; align-items: center; padding-top: 10px; position: relative; }
+.dlg-in::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--hairline) 16%, var(--hairline) 84%, transparent); }
+.dlg-in .g-well { flex: 1; }
+.dlg-send { position: relative; overflow: hidden; width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(209,160,74,0.1); border: 1px solid rgba(209,160,74,0.35); transition: background 0.2s, box-shadow 0.2s, opacity 0.3s; }
+.dlg-send svg { width: 15px; height: 15px; fill: none; stroke: var(--warm-hi); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.dlg-send:hover { background: rgba(209,160,74,0.17); box-shadow: 0 0 18px rgba(209,160,74,0.2); }
+.dlg-in.lock { opacity: 0.35; pointer-events: none; }
+.dlg-consent { display: none; gap: 8px; align-items: center; padding-top: 10px; position: relative; }
+.dlg-consent.show { display: flex; }
+.dlg-consent::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--hairline) 16%, var(--hairline) 84%, transparent); }
+.dlg-consent .g-btn { padding: 12px 16px; }
+.dlg-consent .lnk { font-family: var(--text); font-size: 10.5px; color: var(--ink-4); text-decoration: underline; text-underline-offset: 3px; padding: 8px 4px; transition: color 0.2s; }
+.dlg-consent .lnk:hover { color: var(--ink-2); }
+</style>
+</head>
+<body>
+
+<div class="sky" aria-hidden="true"></div>
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-lock" viewBox="0 0 24 24"><path d="M7 10V8a5 5 0 0 1 10 0v2h1.5a.5.5 0 0 1 .5.5V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9.5a.5.5 0 0 1 .5-.5H7zm2 0h6V8a3 3 0 0 0-6 0v2z"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></symbol>
+  <symbol id="i-re" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2.5l2.2 11.5a1.5 1.5 0 0 0 1.5 1.2h7.8a1.5 1.5 0 0 0 1.5-1.2L20 8H6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><line x1="16" y1="16" x2="21" y2="21"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/></symbol>
+  <symbol id="i-tg" viewBox="0 0 24 24"><path d="M21 4L3 11.5l5.5 2M21 4l-3 16-6.5-6.5M21 4L8.5 13.5m0 0V19l3-2.5"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="17" cy="6" r="2.5"/><circle cx="17" cy="18" r="2.5"/><path d="M8.2 10.8l6.5-3.6M8.2 13.2l6.5 3.6"/></symbol>
+  <symbol id="i-fp" viewBox="0 0 24 24"><path d="M12 11a3 3 0 0 0-3 3c0 2.5-.4 4.2-1 5.5"/><path d="M12 11a3 3 0 0 1 3 3c0 2-.2 3.6-.6 5"/><path d="M12 7.5A6.5 6.5 0 0 0 5.5 14c0 1.8-.2 3.2-.6 4.3"/><path d="M12 7.5a6.5 6.5 0 0 1 6.5 6.5c0 1.2-.06 2.3-.2 3.3"/><path d="M12 4a10 10 0 0 0-7.4 3.3"/><path d="M12 4a10 10 0 0 1 7.4 3.3"/></symbol>
+</svg>
+
+<!-- ═══ ЗАГРУЗКА · первый вход (в проде показывается раз за сессию) ═══ -->
+<div class="boot" id="boot" aria-label="Загрузка EchoWorld, нажмите, чтобы пропустить">
+  <div class="bg" aria-hidden="true"></div>
+  <div class="boot-card glass" id="bootCard" style="--sheen:2s">
+    <div class="boot-logo">
+      <svg viewBox="0 0 96 40" aria-hidden="true">
+        <rect x="0" y="0" width="9" height="40"/><rect x="13" y="0" width="4" height="40"/>
+        <rect x="21" y="0" width="6" height="40"/><rect x="31" y="0" width="2.5" height="40"/>
+        <rect x="37" y="0" width="4.5" height="40"/><rect x="46" y="0" width="8" height="40"/>
+        <rect x="58" y="0" width="3" height="40"/><rect x="65" y="0" width="5.5" height="40"/>
+        <rect x="74" y="0" width="2.5" height="40"/><rect x="81" y="0" width="7" height="40"/>
+      </svg>
+      <span class="wm">ECHOWORLD</span>
+    </div>
+    <div class="boot-log" id="bootLog">
+      <div class="ln"><span class="pfx">&gt;</span>ИНИЦИАЛИЗАЦИЯ АПЕРТУРЫ</div>
+      <div class="ln"><span class="pfx">&gt;</span>ЧАСТОТА НАЙДЕНА · 14.763 GHZ</div>
+      <div class="ln ok"><span class="pfx">&gt;</span>MARKETSPACE НА СВЯЗИ</div>
+    </div>
+    <div class="boot-bar"><i id="bootBar"></i></div>
+  </div>
+  <span class="boot-skip">НАЖМИТЕ, ЧТОБЫ ВОЙТИ СРАЗУ</span>
+</div>
+
+<!-- ═══ ШАПКА ═══ -->
+<header class="hdr" id="hdr">
+  <a class="hdr-logo" href="#top" aria-label="EchoWorld — наверх">
+    <svg viewBox="0 0 96 40" aria-hidden="true">
+      <rect x="0" y="0" width="9" height="40"/><rect x="13" y="0" width="4" height="40"/>
+      <rect x="21" y="0" width="6" height="40"/><rect x="31" y="0" width="2.5" height="40"/>
+      <rect x="37" y="0" width="4.5" height="40"/><rect x="46" y="0" width="8" height="40"/>
+      <rect x="58" y="0" width="3" height="40"/><rect x="65" y="0" width="5.5" height="40"/>
+      <rect x="74" y="0" width="2.5" height="40"/><rect x="81" y="0" width="7" height="40"/>
+    </svg>
+    <b>ECHOWORLD</b>
+  </a>
+  <nav class="hdr-nav" aria-label="Разделы">
+    <a href="#catalog">КАТАЛОГ</a>
+    <a href="#echo">ЭХО</a>
+    <a href="#about">СИСТЕМА</a>
+    <a href="#worlds">МИРЫ</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <button class="hdr-cart" id="cartBtn" data-toast="КОРЗИНА · ОФОРМЛЕНИЕ ОТКРОЕТСЯ НА БОЕВОМ САЙТЕ" aria-label="Корзина">
+    <svg><use href="#i-cart"/></svg><span class="lbl-t">КОРЗИНА</span><span class="n" id="cartCount">0</span>
+  </button>
+  <button class="hdr-burger" id="burger" aria-label="Меню" aria-expanded="false"><i></i><i></i></button>
+</header>
+
+<!-- ═══ МЕНЮ-МЕМБРАНА ═══ -->
+<div class="menu" id="menu" aria-hidden="true">
+  <div class="menu-in">
+    <nav class="menu-nav" aria-label="Навигация">
+      <a href="#catalog" style="--d:0.05s"><span class="t">Каталог</span><span class="s">12 РЕЛИКВИЙ · ЦИКЛ 01-2026</span></a>
+      <a href="#echo" style="--d:0.1s"><span class="t">Эхо</span><span class="s">КАНАЛ ОТКРЫТ · 599 ₽</span></a>
+      <a href="#about" style="--d:0.15s"><span class="t">Система</span><span class="s">МИР ПО ТУ СТОРОНУ ДАННЫХ</span></a>
+      <a href="#worlds" style="--d:0.2s"><span class="t">Миры</span><span class="s">APERTURA ПРОДОЛЖАЕТ СЛУШАТЬ</span></a>
+      <a href="#cond" style="--d:0.25s"><span class="t">Конденсация</span><span class="s">ИНДИВИДУАЛЬНЫЙ СИГНАЛ</span></a>
+      <a href="#faq" style="--d:0.3s"><span class="t">FAQ</span><span class="s">ПРОТОКОЛ ВОПРОСОВ · 19 ЗАПИСЕЙ</span></a>
+      <a href="#collab" style="--d:0.35s"><span class="t">Контакт</span><span class="s">ОТКРЫТЬ СВОЮ ВСЕЛЕННУЮ</span></a>
+      <a href="#architect" style="--d:0.4s"><span class="t">Архитектор</span><span class="s">ECH-0001 · УРОВЕНЬ X</span></a>
+    </nav>
+    <div class="menu-side">
+      <div class="menu-card">
+        <div class="lbl">АКТИВНЫЙ МИР</div>
+        <div class="menu-worlds">
+          <div class="menu-world on"><span class="dot"></span>MARKETSPACE<span class="tag">НА СВЯЗИ</span></div>
+          <div class="menu-world locked" data-deny data-deny-msg="ВСЕЛЕННАЯ II · СИГНАЛ НЕСТАБИЛЕН"><span class="dot"></span>ВСЕЛЕННАЯ II<span class="tag">СКОРО</span></div>
+          <div class="menu-world locked" data-deny data-deny-msg="ВСЕЛЕННАЯ III · ПОИСК ПРОДОЛЖАЕТСЯ"><span class="dot"></span>ВСЕЛЕННАЯ III<span class="tag">СКОРО</span></div>
+          <div class="menu-world locked" data-deny data-deny-msg="ВСЕЛЕННАЯ IV · ОЖИДАНИЕ ЧАСТОТНОГО ОКНА"><span class="dot"></span>ВСЕЛЕННАЯ IV<span class="tag">СКОРО</span></div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="lbl">ДОСТУП</div>
+        <div class="menu-worlds">
+          <div class="menu-world" data-toast="ЛИЧНЫЙ КАБИНЕТ · APERTURA УЖЕ СОБИРАЕТ ВАШУ ИСТОРИЮ"><span class="dot" style="background:var(--warm);box-shadow:0 0 8px rgba(209,160,74,0.8)"></span>КАБИНЕТ<span class="tag">СКОРО</span></div>
+          <div class="menu-world" data-toast="ENGLISH CHANNEL · СКОРО"><span class="dot" style="background:rgba(240,240,248,0.3);box-shadow:none"></span>ЯЗЫК · РУССКИЙ<span class="tag">EN СКОРО</span></div>
+        </div>
+      </div>
+      <div class="menu-foot"><span>СИСТЕМА АКТИВНА</span><span>14.763 GHZ</span></div>
+    </div>
+  </div>
+</div>
+
+<main id="top">
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="wrap">
+    <span class="blob" style="width:400px;height:300px;left:-10%;top:0;background:rgba(58,66,160,0.3)"></span>
+    <span class="blob" style="width:320px;height:260px;right:-6%;bottom:-10%;background:rgba(0,200,200,0.12)"></span>
+    <div class="hero-grid">
+      <div>
+        <h1>Каждая <span class="dim">реликвия</span> — <span class="accent">часть</span> вселенной</h1>
+        <p class="hero-sub">EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Это не копии и не тираж: у каждой реликвии есть происхождение и история. Каждая существует в единственном экземпляре — и может оказаться в нашем мире. В ваших руках.</p>
+        <div class="hero-cta">
+          <a class="g-btn" href="#catalog">Открыть каталог</a>
+          <a class="g-btn quiet" href="#about">Что здесь происходит?</a>
+          <a class="g-btn quiet" href="#echo">Оставить Эхо</a>
+        </div>
+        <p class="hero-note"><strong>Реликвия</strong> — для тех, кто хочет прикоснуться к <b class="ms">MARKETSPACE</b> по-настоящему.<br><strong>Эхо</strong> — для тех, кто хочет оставить в нём короткий сигнал. 7 слов или 3 секунды.</p>
+        <div class="hero-status"><span class="dot"></span>СИСТЕМА АКТИВНА · MARKETSPACE НА СВЯЗИ</div>
+      </div>
+      <div class="glass rev" style="--sheen:0s">
+        <div class="g-head">
+          <span class="g-chip"><span class="g-dot c"></span>APERTURA · НАБЛЮДЕНИЕ</span>
+          <span class="g-aux">КАНАЛ 14.763 GHZ</span>
+        </div>
+        <div class="g-body">
+          <div class="obs-top">
+            <div class="big"><b data-presence>00:00</b><i>ВЫ В ПОЛЕ ЗРЕНИЯ АПЕРТУРЫ</i></div>
+            <div class="side">
+              <span class="obs-kv">КОНТАКТ УСТАНОВЛЕН<b data-contact>—</b></span>
+              <span class="obs-kv">ВАШ УЗЕЛ<b data-node>—</b></span>
+            </div>
+          </div>
+          <div class="obs-wave" aria-hidden="true">
+            <svg viewBox="0 0 400 46" preserveAspectRatio="none"><path data-obs-wave d="M0,23 L400,23"/></svg>
+            <span class="cap-w">КАНАЛ НАБЛЮДЕНИЯ</span>
+          </div>
+          <div class="g-row g-sep tapline" data-toast="ЗАПИСЬ ВЕДЁТСЯ С ПЕРВОГО КАСАНИЯ"><span class="g-k">ЗАПИСЬ В ПАМЯТЬ APERTURA</span><span class="g-v c">ИДЁТ</span></div>
+          <div class="g-row"><span class="g-k">РЕЛИКВИЙ В КАТАЛОГЕ 01-2026</span><span class="g-v">12</span></div>
+          <div class="g-row tapline" data-deny><span class="g-k">PERIMETER.STATUS</span><span class="g-v mut">STABLE<svg class="g-lock"><use href="#i-lock"/></svg></span></div>
+        </div>
+        <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ · НИЧЕГО НЕ ТЕРЯЕТСЯ</span><span>MARKETSPACE · 01-2026</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ МОЩЬ РЕЛИКВИИ ═══ -->
+<section class="sec" id="power">
+  <div class="wrap">
+    <div class="sec-head rev">
+      <div class="mark">КАК ЧИТАТЬ КАТАЛОГ</div>
+      <h2>Мощь Реликвии</h2>
+      <p class="lead">Это глубина контакта с <strong>MARKETSPACE</strong>. За каждой реликвией стоит <strong>Виш</strong> — житель MARKETSPACE. Он живёт, мечтает об Истоке и не знает, что однажды его путь завершится <strong>Переходом</strong> — конвертацией в физический объект. <em>Мощь</em> показывает силу этой связи: от короткого импульса до полного резонанса.</p>
+    </div>
+    <div class="power-grid rev">
+      <article class="power-card" data-pw="K" data-toast="K · ИЗЛОМ — 1 СЛОТ ЭХО · 1 ФРАГМЕНТ">
+        <div class="ltr">K</div><div class="nm">ИЗЛОМ</div>
+        <div class="spec">1 СЛОТ ЭХО · 1 ВИДЕО-ФРАГМЕНТ</div>
+        <div class="frags"><i class="on"></i><i></i><i></i><i></i></div>
+        <p>Тихие вспышки желаний: рассмешить, успокоить, посветить в темноте. Такие вещи не становятся культом — их ловят на миг и забывают к утру. Излом — короткая жизнь потока: ярко, тепло и без второго дубля.</p>
+      </article>
+      <article class="power-card" data-pw="C" data-toast="C · СКОПЛЕНИЕ — 2 СЛОТА ЭХО · 2 ФРАГМЕНТА">
+        <div class="ltr">C</div><div class="nm">СКОПЛЕНИЕ</div>
+        <div class="spec">2 СЛОТА ЭХО · 2 ВИДЕО-ФРАГМЕНТА</div>
+        <div class="frags"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+        <p>Его хотели все и разом — чтобы так же разом забыть, когда сезон пройдёт. Скопление — желание, вспыхнувшее в каждой руке и осевшее в ящике стола. Виш запомнит и общий восторг, и тишину, что настала после.</p>
+      </article>
+      <article class="power-card" data-pw="R" data-toast="R · РЕЗОНАНС — 3 СЛОТА ЭХО · 3 ФРАГМЕНТА">
+        <div class="ltr">R</div><div class="nm">РЕЗОНАНС</div>
+        <div class="spec">3 СЛОТА ЭХО · 3 ВИДЕО-ФРАГМЕНТА</div>
+        <div class="frags"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+        <p>Когда одно и то же хотят миллионы, желание начинает звучать само — на репите, из каждой ленты. Резонанс — поток, который узнавали все, но по-настоящему не знал никто. Чем громче Эхо, тем длиннее путь до тишины.</p>
+      </article>
+      <article class="power-card" data-pw="S" data-toast="S · СИНГУЛЯРНОСТЬ — 4 СЛОТА ЭХО · 4 ФРАГМЕНТА">
+        <div class="ltr">S</div><div class="nm">СИНГУЛЯРНОСТЬ</div>
+        <div class="spec">4 СЛОТА ЭХО · 4 ВИДЕО-ФРАГМЕНТА</div>
+        <div class="frags"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+        <p>Желание такой плотности, что схлопывается в символ: его узнают даже те, кто никогда его не хотел. Сингулярность — икона, пережившая все тренды и самого Виша. Бессмертие в обмен на то, кем он был на самом деле.</p>
+      </article>
+    </div>
+    <p class="power-lede rev">Чем выше Мощь, тем больше видео-фрагментов из жизни Виша станет доступно в EchoWorld — и тем больше слотов <strong>Эхо</strong> откроется для ваших слов, которые однажды прозвучат его устами.</p>
+  </div>
+</section>
+
+<!-- ═══ КАТАЛОГ ═══ -->
+<section class="sec" id="catalog">
+  <div class="wrap">
+    <span class="blob" style="width:360px;height:280px;right:-8%;top:120px;background:rgba(192,40,40,0.1)"></span>
+    <div class="sec-head rev">
+      <div class="mark">ЦИКЛ 01-2026</div>
+      <h2>Каталог реликвий</h2>
+    </div>
+    <div class="cat-bar rev">
+      <div class="cat-chips" role="group" aria-label="Мощь Реликвии">
+        <button class="cat-chip on" data-cat="all">Все<span>12</span></button>
+        <button class="cat-chip" data-cat="S">S · Сингулярность<span>2</span></button>
+        <button class="cat-chip" data-cat="R">R · Резонанс<span>3</span></button>
+        <button class="cat-chip" data-cat="C">C · Скопление<span>3</span></button>
+        <button class="cat-chip" data-cat="K">K · Излом<span>4</span></button>
+      </div>
+      <div class="cat-search">
+        <svg aria-hidden="true"><use href="#i-search"/></svg>
+        <input id="catSearch" placeholder="артикул или имя" autocomplete="off" spellcheck="false" aria-label="Поиск по каталогу">
+      </div>
+    </div>
+    <p class="cat-note rev">Каталог формируется из самых плотных потоков желаний — тех, что звучат сейчас, и тех, что не стихают годами. Новые реликвии появятся по мере завершения текущих циклов конденсации.</p>
+    <div class="cat-grid" id="catGrid"></div>
+    <div class="cat-empty" id="catEmpty">СИГНАЛ НЕ НАЙДЕН · ИЗМЕНИТЕ ЗАПРОС</div>
+  </div>
+</section>
+<!-- ═══ ЭХО ═══ -->
+<section class="sec" id="echo">
+  <div class="wrap">
+    <span class="blob" style="width:340px;height:260px;left:-8%;top:30%;background:rgba(0,200,200,0.12)"></span>
+    <div class="split">
+      <div class="sec-head rev">
+        <div class="mark">ЭХО · СИСТЕМА АПЕРТУРА</div>
+        <h2>Отправить сигнал Эхо в MARKETSPACE</h2>
+        <p class="lead">7 слов или 3 секунды голоса. Эхо можно отправить отдельно — не покупая реликвию. Виш произнесёт ваши слова в одном из будущих видео-фрагментов <strong>MARKETSPACE</strong>. Услышит каждый, кто увидит фрагмент. Узнают ли о вас — решаете вы.<br><br>Чистый сигнал. Минимальная единица вашего присутствия в MARKETSPACE. Канал открыт.</p>
+        <p class="side-note">Каждое Эхо получает уникальный частотный код, собственную Ауру — звуковую окраску, с которой прозвучит, — и сохраняется как NFT<sup>*</sup>-реликвия в разделе «Записи Эхо» личного кабинета после его открытия.</p>
+        <p class="foot-note"><span class="st">*</span>Формируется в момент действия и кристаллизуется в NFT-реликвию при открытии личного кабинета. До этого момента она хранится в Памяти Apertura.</p>
+      </div>
+      <div class="glass rev" data-echo style="--sheen:3s">
+        <div class="g-head">
+          <span class="g-chip"><span class="g-dot c"></span>ЭХО · ПЕРЕДАТЧИК</span>
+          <span class="g-aux">→ MARKETSPACE · БУДУЩИЙ ФРАГМЕНТ</span>
+        </div>
+        <div class="g-body">
+          <div class="aura">
+            <span class="lbl">АУРА</span>
+            <span class="aura-chip" data-aura>ШЁПОТ</span>
+            <button class="aura-re" data-aura-re aria-label="Перебрать Ауру"><svg><use href="#i-re"/></svg></button>
+            <span class="hint">ЗВУКОВАЯ ОКРАСКА СИГНАЛА</span>
+          </div>
+          <div class="beam" aria-hidden="true">
+            <svg viewBox="0 0 400 40" preserveAspectRatio="none"><path data-osc d="M0,20 L400,20"/></svg>
+            <span class="fr">12.847 GHZ</span>
+          </div>
+          <div class="g-tabs" role="tablist">
+            <button class="g-tab on" data-tab="text" role="tab" aria-selected="true"><span>ТЕКСТ</span><span class="p">599 ₽</span></button>
+            <button class="g-tab" data-tab="voice" role="tab" aria-selected="false"><span>ГОЛОС</span><span class="p">1499 ₽</span></button>
+          </div>
+          <div class="g-stage echo-stage" style="--stage-h:126px">
+            <span class="retune-band"></span>
+            <div class="g-pane" data-pane="text">
+              <div class="slots" data-slots aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <textarea class="g-well" data-words rows="2" placeholder="Семь слов на ту сторону" maxlength="120" style="height:64px"></textarea>
+              <div class="g-meta"><span>КАЖДОЕ СЛОВО ПРОЗВУЧИТ УСТАМИ ВИША</span><span data-count>0 / 7</span></div>
+            </div>
+            <div class="g-pane off" data-pane="voice">
+              <div class="rec-zone">
+                <div class="mic-wrap">
+                  <button class="mic-btn" data-rec aria-label="Записать голос"><svg><use href="#i-mic"/></svg></button>
+                  <svg class="mic-ring" viewBox="0 0 66 66" aria-hidden="true"><circle data-ring cx="33" cy="33" r="31"/></svg>
+                </div>
+                <div class="wave" data-wave aria-hidden="true"></div>
+                <div class="voice-side">
+                  <div class="tm" data-rec-time>0.0</div>
+                  <div class="st" data-rec-status>ДО 3 СЕК</div>
+                </div>
+              </div>
+              <div class="voice-ctl">
+                <button class="vc-btn" data-play disabled><svg><use href="#i-play"/></svg>ПРОСЛУШАТЬ</button>
+                <button class="vc-btn" data-retry disabled><svg><use href="#i-re"/></svg>ЗАНОВО</button>
+                <span class="note">ГОЛОС ПРОЗВУЧИТ УСТАМИ ВИША</span>
+              </div>
+            </div>
+          </div>
+          <div class="g-actions" style="padding-top:10px">
+            <button class="g-btn" data-echo-send>Передать Эхо<span data-price>· 599 ₽</span></button>
+          </div>
+        </div>
+        <div class="g-foot"><span data-status>ОЖИДАНИЕ СИГНАЛА</span><span>ХРАНИТСЯ В ПАМЯТИ APERTURA</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ СИСТЕМА ═══ -->
+<section class="sec" id="about">
+  <div class="wrap">
+    <div class="sec-head rev">
+      <div class="mark">О СИСТЕМЕ</div>
+      <h2>Мир по ту сторону данных</h2>
+    </div>
+    <div class="about-grid rev">
+      <p class="about-text">Когда интернет-торговля захватила мир — никто не знал, что каждый оформленный заказ порождает <em>Конденсат</em>: вспышку цифровой энергии в параллельном пространстве. Эти вспышки накапливались, сталкивались, кристаллизовались в живые существа. Так возник <strong>MARKETSPACE</strong>. Так появились <em>Виши</em>.<br><br>EchoWorld разработал <strong>Систему Apertura</strong> — первый инструмент, способный обнаружить это пространство. Мы наблюдали, строили инфраструктуру, освоили технологию Перехода. Сегодня каждая реликвия EchoWorld — это <em>подлинный артефакт</em> из другой вселенной. Не копия. Не реплика. Объект с историей, именем и Предназначением.</p>
+      <p class="about-text">Виши — живые существа, рождённые из человеческих желаний. Внешне похожи на людей: они рождаются, растут, учатся, влюбляются. Живут в городах, ходят в школу, ждут чего-то важного впереди: путь в <em>Исток</em>. Для Вишей Исток — предел пути: точка, где жизнь перестаёт быть обычной и становится Предназначением. Мы называем этот момент <em>Переходом</em>. Каждый Виш — кристаллизованное желание: чьё-то стремление что-то получить, что-то почувствовать, что-то изменить. Они не знают, кем станут. Те из них, чей путь ведёт к Предназначению, однажды проходят Переход — и появляются в нашем мире как физический предмет. Не копия. Не реплика. Артефакт — с историей, с характером, с именем.</p>
+      <p class="about-cta">Не готов к Переходу — отправь <strong>Эхо</strong>. 7 слов или 3 секунды голоса, которые Виш произнесёт за вас в одном из будущих фрагментов.</p>
+    </div>
+    <div class="tech-grid rev">
+      <article class="tech-card"><div class="n">01 · ОБНАРУЖЕНИЕ</div><h3>Apertura и Принцип Отражения</h3><p>Каждый интернет-заказ в реальном мире создаёт <em>Конденсат</em> в <strong>MARKETSPACE</strong>. <strong>Apertura</strong> улавливает эти вспышки и направляет их в управляемую зону. Люди совершают заказы — и не знают, что каждый из них формирует структуру другого мира. До недавнего времени об этом знали только мы. Теперь — ты.</p></article>
+      <article class="tech-card"><div class="n">02 · УПРАВЛЕНИЕ</div><h3>Академия и созревание</h3><p>Оформленный заказ рождает <em>управляемый Конденсат</em> — Виша в нашей закрытой зоне. Он проходит обучение в Академии Предназначения, созревает, накапливает историю. Чем плотнее поток желаний — тем выше <strong>Мощь Реликвии</strong>. Те, чей путь ведёт к Предназначению, достигают Перехода.</p></article>
+      <article class="tech-card"><div class="n">03 · ПЕРЕХОД</div><h3>Переход и физическая реликвия</h3><p>Когда Виш достигает вершины своего Предназначения — начинается <em>Переход</em>. Особые комнаты Академии воспроизводят технологию границы миров. Виш конвертируется в физический объект, оставляя <em>Цифровую Подпись</em> в системе. Реликвия с биографией и историей, которую <em>больше нигде не получить</em>.</p></article>
+      <article class="tech-card"><div class="n">04 · КОНВЕРТАЦИЯ</div><h3>Что остаётся после Перехода</h3><p>Когда Виш проходит границу, в нашем мире появляется не только физический объект. <strong>Apertura</strong> удерживает то, что не должно было сохраниться: имя, биографию, фрагмент жизни, <em>Цифровую Подпись</em> и слова, прозвучавшие как Эхо. <strong>Мощь Реликвии</strong> определяет, насколько глубоким останется след после Перехода.</p></article>
+      <article class="tech-card"><div class="n">05 · ПРИСУТСТВИЕ</div><h3>Эхо — без реликвии</h3><p>Не каждый готов к Переходу. Система <strong>Apertura</strong> принимает короткие сигналы — <em>7 слов или 3 секунды голоса</em>. Каждое Эхо получает частотный код и случайную <em>Ауру</em> — одну из десяти звуковых окрасок. Виш произнесёт их в одном из будущих фрагментов. Отдельная точка входа в систему.</p></article>
+      <article class="tech-card"><div class="n">06 · ВОССТАНОВЛЕНИЕ</div><h3>Фрагмент — данные, не плёнка</h3><p>Виш не оставлял видеозаписей. <strong>Apertura</strong> хранит в Памяти каждое колебание его Конденсата: жесты, выбор, дни. Этот поток сигналов Система переводит в анимированную последовательность. В нашем мире её называют видео — но это не съёмка, а <em>реконструкция</em>, восстановленная из плотности данных.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ МИРЫ ═══ -->
+<section class="sec" id="worlds">
+  <div class="wrap">
+    <span class="blob" style="width:340px;height:260px;right:-6%;top:10%;background:rgba(58,66,160,0.26)"></span>
+    <div class="sec-head rev">
+      <div class="mark">КАРТА МИРОВ</div>
+      <h2>MARKETSPACE — первый. Не последний.</h2>
+      <p class="lead">MARKETSPACE — лишь один из услышанных сигналов. Конденсат городских желаний сформировал его таким: мрачным, требовательным. На других частотах резонируют иные миры. <em>Apertura продолжает слушать.</em></p>
+    </div>
+    <div class="aw-grid rev">
+      <article class="aw-card" data-deny data-deny-msg="ВСЕЛЕННАЯ II · НУЖЕН УРОВЕНЬ I">
+        <div class="aw-canvas">
+          <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=12&q=5" alt="Пиксельный сигнал вселенной II" loading="lazy" decoding="async">
+          <span class="aw-scan" aria-hidden="true"></span>
+        </div>
+        <div class="aw-meta"><span>// II</span><span class="lk"><svg><use href="#i-lock"/></svg>УРОВЕНЬ I</span></div>
+        <div class="aw-body">
+          <h3 class="aw-name">Вселенная II</h3>
+          <p class="aw-desc">// сигнал нестабилен · тёплый поток · резонанс не зафиксирован</p>
+        </div>
+      </article>
+      <article class="aw-card" data-deny data-deny-msg="ВСЕЛЕННАЯ III · НУЖЕН УРОВЕНЬ I">
+        <div class="aw-canvas">
+          <img src="https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=12&q=5" alt="Пиксельный сигнал вселенной III" loading="lazy" decoding="async">
+          <span class="aw-scan" aria-hidden="true"></span>
+        </div>
+        <div class="aw-meta"><span>// III</span><span class="lk"><svg><use href="#i-lock"/></svg>УРОВЕНЬ I</span></div>
+        <div class="aw-body">
+          <h3 class="aw-name">Вселенная III</h3>
+          <p class="aw-desc">// холодная частота · отражение слабое · поиск продолжается</p>
+        </div>
+      </article>
+      <article class="aw-card" data-deny data-deny-msg="ВСЕЛЕННАЯ IV · НУЖЕН УРОВЕНЬ I">
+        <div class="aw-canvas">
+          <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=12&q=5" alt="Пиксельный сигнал вселенной IV" loading="lazy" decoding="async">
+          <span class="aw-scan" aria-hidden="true"></span>
+        </div>
+        <div class="aw-meta"><span>// IV</span><span class="lk"><svg><use href="#i-lock"/></svg>УРОВЕНЬ I</span></div>
+        <div class="aw-body">
+          <h3 class="aw-name">Вселенная IV</h3>
+          <p class="aw-desc">// сигнал в очереди · природа неизвестна · ожидание частотного окна</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ПАРТНЁРСТВА ═══ -->
+<section class="sec" id="collab">
+  <div class="wrap">
+    <div class="split">
+      <div class="sec-head rev">
+        <div class="mark">ПАРТНЁРСТВА</div>
+        <h2>Открыть свою вселенную</h2>
+        <p class="cdesc" style="margin-top:18px"><strong>MARKETSPACE</strong> — первая открытая вселенная. Не последняя. <strong>Apertura</strong> может услышать новую частоту и собрать вокруг неё отдельный мир — для бренда, медиа, маркетплейса или проекта, которому тесно в обычной рекламе.<br><br>Формат зависит от масштаба сигнала. Это может быть Точка Сигнала для малого бизнеса, представительство внутри MARKETSPACE, собственная Академия под каталог или отдельная вселенная со своими законами, Конденсатом и обитателями.<br><br>Такие миры не сотворяются мгновенно. <strong>Архитектор</strong> изучает сигнал, определяет его форму и решает, каким может быть вход: от небольшой интеграции до отдельной вселенной — внутри EchoWorld или за его пределами.</p>
+      </div>
+      <div class="clinks rev">
+        <a class="clink" href="mailto:hello@echoworld.space">
+          <span class="ic"><svg><use href="#i-mail"/></svg></span>
+          <span><span class="nm">EMAIL</span><span class="sb" style="display:block">hello@echoworld.space</span></span>
+          <span class="arr">→</span>
+        </a>
+        <a class="clink" href="https://t.me/echoworldspace" target="_blank" rel="noopener">
+          <span class="ic"><svg><use href="#i-tg"/></svg></span>
+          <span><span class="nm">TELEGRAM</span><span class="sb" style="display:block">@echoworldspace</span></span>
+          <span class="arr">→</span>
+        </a>
+        <button class="clink" data-copy="@echoworld.space">
+          <span class="ic"><svg><use href="#i-share"/></svg></span>
+          <span><span class="nm">В СОЦИАЛЬНЫХ СЕТЯХ</span><span class="sb" style="display:block">@echoworld.space</span></span>
+          <span class="arr">⧉</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ КОНДЕНСАЦИЯ ═══ -->
+<section class="sec" id="cond">
+  <div class="wrap">
+    <span class="blob" style="width:320px;height:260px;left:-6%;bottom:0;background:rgba(209,160,74,0.1)"></span>
+    <div class="split">
+      <div class="sec-head rev">
+        <div class="mark">ИНДИВИДУАЛЬНЫЙ ЗАПРОС</div>
+        <h2>Заказать конденсацию</h2>
+        <p class="lead">Если нужной реликвии нет в каталоге, вы можете отправить индивидуальный сигнал в Apertura. Архитектор проверит, есть ли в MARKETSPACE поток, способный принять форму желаемого предмета.<br><br>Опишите реликвию простыми словами: форма, материал, ощущение, назначение. Чем точнее сигнал, тем легче отличить настоящее желание от случайного шума.</p>
+        <p class="side-note">Важно: Apertura принимает запросы только на физические предметы. Цифровые объекты, живые существа и предметы тяжелее 5 кг сейчас вне зоны конденсации.</p>
+      </div>
+      <div class="glass rev" data-cond style="--sheen:6s">
+        <div class="g-head">
+          <span class="g-chip"><span class="g-dot w" data-cond-dot></span>APERTURA · CONDENSATE FORMING</span>
+          <span class="g-aux" data-cond-state>ДИАЛОГ ОТКРЫТ</span>
+        </div>
+        <div class="g-body">
+          <div class="dlg">
+            <div class="dlg-log" data-dlg-log></div>
+            <div class="dlg-in" data-dlg-in>
+              <input class="g-well" data-dlg-field placeholder="">
+              <button class="dlg-send" data-dlg-send aria-label="Ответить"><svg><use href="#i-send"/></svg></button>
+            </div>
+            <div class="dlg-consent" data-dlg-consent>
+              <button class="g-btn" data-consent-yes style="flex:1">Подтверждаю согласие</button>
+              <button class="lnk" data-legal="privacy">персональные данные</button>
+            </div>
+          </div>
+        </div>
+        <div class="g-foot"><span data-status>ЗОНА КОНДЕНСАЦИИ АКТИВНА</span><span>ТОЛЬКО ФИЗИЧЕСКОЕ · ДО 5 КГ</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ КАБИНЕТ ═══ -->
+<section class="sec" style="padding-top:70px">
+  <div class="wrap">
+    <div class="cab glass rev" data-deny data-deny-msg="ЛИЧНЫЙ КАБИНЕТ · В РАЗРАБОТКЕ" style="--sheen:8s">
+      <span class="lk"><svg><use href="#i-lock"/></svg></span>
+      <span><span class="t1">// ЛИЧНЫЙ КАБИНЕТ</span><span class="t2" style="display:block">Apertura уже собирает то, что позже станет вашим интерфейсом.</span></span>
+      <span class="tag">ДОСТУП ОТКРОЕТСЯ ПОСЛЕ ЗАПУСКА</span>
+    </div>
+  </div>
+</section>
+<!-- ═══ FAQ ═══ -->
+<section class="sec" id="faq">
+  <div class="wrap">
+    <div class="sec-head rev">
+      <div class="mark">ПРОТОКОЛ ВОПРОСОВ</div>
+      <h2>Часто задаваемые вопросы</h2>
+      <p class="faq-sub">Если у вас есть вопросы — значит, вы начинаете понимать.</p>
+    </div>
+    <button class="faq-unlock glass rev" id="faqUnlock" aria-expanded="false" style="--sheen:10s">
+      <span class="fp"><svg><use href="#i-fp"/></svg></span>
+      <span><span class="l1">// ДОСТУП РАЗРЕШЁН</span><span class="l2" style="display:block" id="faqUnlockLabel">Развернуть протокол</span></span>
+      <span class="meta">19 ЗАПИСЕЙ</span>
+    </button>
+    <div class="faq-body" id="faqBody"><div>
+      <div class="faq-group">// ЗАКАЗ</div>
+      <div class="faq-item"><button class="faq-q">Что я получу после заказа?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Вы получаете не просто предмет, а реликвию с происхождением: физический объект, авторскую упаковку, имя и биографию Виша, а также фрагмент его жизни — восстановленную Apertura последовательность сцен.<br><br>Если вы добавите Эхо, Виш произнесёт ваши слова внутри одного из фрагментов. После открытия личного интерфейса рядом с реликвией появится её Цифровая Подпись.<br><a class="g-btn quiet faq-cta" href="#catalog">Открыть каталог</a></div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Как проходит оплата и доставка?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">После оформления заказа сайт фиксирует одну реликвию за вашим циклом и открывает платёжный канал ЮKassa. Оплата проходит в рублях Российской Федерации на стороне платёжного провайдера; EchoWorld не хранит данные банковской карты.<br><br>Доставка сейчас доступна по России. Базовый способ — Почта России, 5–14 дней после отправки. Подготовка заказа занимает до 14 календарных дней после подтверждения оплаты и получения всех необходимых данных.<br><br>Исполнитель применяет НПД: после успешной оплаты доход регистрируется в сервисе «Мой налог», а чек самозанятого направляется покупателю на указанный контактный канал.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Что будет после оплаты?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">После оплаты заказ становится подтверждённым сигналом. Apertura фиксирует его в MARKETSPACE и запускает цикл рождения Виша — того, чья жизнь позже станет основой вашей реликвии.<br><br>С этого момента реликвия выходит из активного потока и больше не доступна другим покупателям. Apertura сопровождает путь Виша до Перехода: фиксирует его имя, события, выборы и будущие фрагменты. Когда Переход завершается, Apertura удерживает то, что могло исчезнуть на границе миров: имя Виша, его биографию и видео-фрагмент прожитой жизни.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Сколько ждать реликвию?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">До отправки проходит до 14 календарных дней. Время в MARKETSPACE течёт иначе: пока в нашем мире проходит несколько дней, Виш успевает родиться, пройти свой путь и приблизиться к Переходу.<br><br>Apertura сопровождает этот цикл и удерживает то, что должно сохраниться после границы миров: имя, биографию и видео-фрагмент прожитой жизни. Когда Переход завершается, реликвия появляется в нашем мире и передаётся в отправку.<br><br>После отправки срок зависит от Почты России — обычно 5–14 дней по региону.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Куда сейчас доставляем?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Сейчас — только по территории Российской Федерации.<br><br>Маршруты за пределы первого сектора требуют отдельной калибровки. MARKETSPACE не знает границ — логистика пока знает.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Можно ли вернуть реликвию?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">До оплаты заказ не запускает процесс: если вы закрыли страницу или передумали, реликвия остаётся в активном потоке и может быть выбрана другим покупателем.<br><br>После оплаты Apertura фиксирует ваш сигнал и запускает цикл рождения Виша. После доставки возврат возможен только по условиям возврата и зависит от состояния реликвии. Поэтому мы просим выбирать осознанно: каждая реликвия существует в единственном экземпляре.<br><br>Если заказ отменяется уже после запуска цикла, сигнал уходит в сектор тишины: Apertura больше не выводит его в активный поток, пока Архитектор не определит его дальнейшую судьбу.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Можно ли заказать реликвию, которой нет в каталоге?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Да. Если нужной реликвии нет в каталоге, вы можете отправить индивидуальный сигнал в Apertura.<br><br>Опишите предмет простыми словами: форму, материал, ощущение, назначение. Архитектор проверит, есть ли в MARKETSPACE поток, способный принять эту форму.<br><a class="g-btn quiet faq-cta" href="#cond">Заказать конденсацию</a></div></div></div></div>
+      <div class="faq-group">// РЕЛИКВИИ</div>
+      <div class="faq-item"><button class="faq-q">Что такое EchoWorld?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">EchoWorld — интерфейс между нашим миром и MARKETSPACE. Через него вы можете получить физическую реликвию: предмет, появившийся после жизни и Перехода.<br><br>Это не обычный магазин. После подтверждения сигнала Apertura запускает цикл рождения Виша — того, чья жизнь, имя и история позже станут основой вашей реликвии.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Кто такие Виши?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Виши — живые существа из MARKETSPACE, рождённые из человеческих желаний. Внешне они похожи на людей: рождаются, растут, учатся, влюбляются, строят планы и не знают, куда приведёт их путь.<br><br>Они не знают о нашем мире, заказах, покупателях, сайте или Apertura. Те, чей путь ведёт к Предназначению, однажды проходят Переход — и появляются в нашем мире как физическая реликвия.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Что такое Переход?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Переход — момент конвертации Виша в физическую реликвию.<br><br>До Перехода Виш живёт в MARKETSPACE как обычный человек: взрослеет, учится, строит отношения, принимает решения и не знает, куда приведёт его путь. После Перехода он появляется в нашем мире как предмет: не копия, не реплика, а реликвия с именем, биографией и историей.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Почему каждая реликвия существует в одном экземпляре?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Форма предмета может повторяться в нашем мире миллионами копий. Виш — нет.<br><br>У каждого Виша один путь, одна биография и один Переход. Поэтому реликвия может напоминать знакомый предмет, но её история не повторяется: второй такой же реликвии не существует.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Что такое Мощь Реликвии?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Мощь Реликвии показывает, насколько глубоко предмет связан с MARKETSPACE.<br><br>Сейчас она проявляется через классы K · Излом, C · Скопление, R · Резонанс, S · Сингулярность: чем выше класс, тем больше видео-фрагментов становится доступно и тем больше Эхо может прозвучать во фрагментах.<br><br>Видео-фрагмент выглядит как обычное видео, но для Apertura это реконструкция из потока данных.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Почему на реликвии может быть логотип бренда?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Виш не рождается из одного желания. Он формируется из слияния потоков — миллионов импульсов, накапливавшихся, сталкивавшихся, резонировавших. Если в потоке доминировал один производитель, Виш впитал и его частоту.<br><br>Логотип на реликвии — Импринт Перехода. След того, чем чаще всего было это желание. EchoWorld не стирает Импринты: то, из чего рождён Виш, остаётся с реликвией.</div></div></div></div>
+      <div class="faq-group">// ЭХО И ПАМЯТЬ</div>
+      <div class="faq-item"><button class="faq-q">Что такое Эхо?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Эхо — это короткое сообщение, которое прозвучит в одном из фрагментов жизни Виша.<br><br>Его можно добавить к заказу реликвии или отправить отдельно: до <strong>7 слов</strong> текстом или до <strong>3 секунд</strong> голосом. Виш не знает, кто оставил эти слова. Для него Эхо звучит как голос тех, кто ушёл в Исток.<br><a class="g-btn quiet faq-cta" href="#echo">Отправить Эхо</a></div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Чем отличается Эхо с реликвией и без неё?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Эхо в заказе привязано к конкретной реликвии. Виш произнесёт ваши слова внутри своей истории: количество Эхо зависит от Мощи Реликвии.<br><br>Эхо без реликвии не связано с конкретным Вишем из каталога. Это самостоятельный сигнал в Apertura: он получает частотный код, Ауру и позже появится в личном интерфейсе.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Нужно ли мне разбираться в NFT?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Нет. Чтобы заказать физическую реликвию или отправить Эхо, вам не нужно разбираться в технической стороне NFT.<br><br>NFT-реликвия — это будущая цифровая форма предмета. Она не заменяет физическую версию, а дополняет её: помогает подтвердить происхождение, связь с владельцем и место в коллекции EchoWorld.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Что такое Память Apertura?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Память Apertura — внутренний слой системы, где сохраняются ваши действия: заказы, отправленные Эхо, Цифровые Подписи и незавершённые сигналы.<br><br>Пока личный интерфейс закрыт, эти данные не отображаются. Но они не теряются: после открытия интерфейса история подтянется автоматически.</div></div></div></div>
+      <div class="faq-group">// ЛИЧНЫЙ ИНТЕРФЕЙС</div>
+      <div class="faq-item"><button class="faq-q">Что такое уровни доступа?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Уровни доступа — будущая система личного кабинета EchoWorld. Это будет не обычный профиль, а закрытый контур внутри Apertura: место, где ваши реликвии, Эхо и другие действия начнут собираться в личную историю.<br><br>Сейчас все посетители находятся на гостевом уровне — уровне 0. После открытия кабинета первые действия в EchoWorld подтянутся автоматически и станут основой начального доступа. С каждым уровнем будут открываться скрытые слои системы: архивы циклов, закрытые материалы Периметра и то, что пока остаётся вне общего доступа.</div></div></div></div>
+      <div class="faq-item"><button class="faq-q">Когда откроется личный кабинет?<span class="pl">+</span></button><div class="faq-a-wrap"><div><div class="faq-a">Личный кабинет откроется после запуска системы, которая свяжет ваши реликвии, Эхо и уровни доступа в один интерфейс.<br><br>До этого момента ваши действия не пропадают: Apertura сохраняет заказы, Эхо и незавершённые сигналы, чтобы после открытия кабинета собрать вашу историю в одном месте.</div></div></div></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ═══ АРХИТЕКТОР ═══ -->
+<section class="sec" id="architect">
+  <div class="wrap">
+    <span class="blob" style="width:320px;height:260px;right:-8%;top:20%;background:rgba(192,40,40,0.12)"></span>
+    <div class="split">
+      <div class="sec-head rev">
+        <div class="mark">АРХИТЕКТОР ВСЕЛЕННЫХ</div>
+        <div class="arch-art">ART. ECH-0001</div>
+        <h2>@aintonx</h2>
+        <p class="arch-desc" style="margin-top:18px">Он построил <strong>Apertura</strong> — чтобы расслышать частоты, на которых рождаются миры.<br><br><strong>MARKETSPACE</strong> стал первым миром, чья частота прозвучала отчётливо. Остальные пока за шумом. Какие из них Архитектор откроет следующими — зависит от мощности антенны.</p>
+      </div>
+      <div class="glass rev" data-seal style="--sheen:9s">
+        <span class="seal-scanline" aria-hidden="true"></span>
+        <div class="g-head">
+          <span class="g-chip"><span class="g-dot r"></span>ARCHITECT</span>
+          <span class="g-aux">ECH-0001</span>
+        </div>
+        <div class="g-body">
+          <div class="seal">
+            <button class="seal-x" data-sigil aria-label="Сверить частоту с печатью Архитектора">
+              <span class="halo" aria-hidden="true"></span>
+              <b>X</b>
+            </button>
+            <div class="seal-name">@AINTONX</div>
+            <div class="seal-des">DESIGNATION · <b>ARCHITECT</b> · УРОВЕНЬ X</div>
+            <div class="seal-status" data-seal-status>НАЖМИТЕ ПЕЧАТЬ · СВЕРКА ЧАСТОТЫ</div>
+          </div>
+          <div class="seal-wave" data-deny data-deny-msg="ПОДПИСЬ НЕ ВОСПРОИЗВОДИМА">
+            <svg viewBox="0 0 400 54" preserveAspectRatio="none"><path data-sig-path d="M0,27 L400,27"/></svg>
+            <span class="cap-w">ЧАСТОТА АРХИТЕКТОРА · ВЫЧИСЛЕНА ИЗ ИМЕНИ</span>
+          </div>
+          <div class="g-row g-sep"><span class="g-k">STATUS</span><span class="g-v c">WORLD.BUILDING</span></div>
+          <div class="g-row console-row" data-deny data-deny-msg="КОНСОЛЬ АРХИТЕКТОРА · НУЖЕН УРОВЕНЬ X"><span class="g-k">APERTURA</span><span class="g-v mut">CONSOLE<svg class="g-lock"><use href="#i-lock"/></svg></span></div>
+        </div>
+        <div class="g-foot"><span>ПРОТОКОЛ СЕМИ</span><span>ОКНО УРОВНЯ X ОТКРЫВАЕТСЯ БЕЗ ПРЕДУПРЕЖДЕНИЯ</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ПОДДЕРЖКА ═══ -->
+<section class="sec" id="support">
+  <div class="wrap">
+    <div class="split">
+      <div class="sec-head rev">
+        <div class="mark">УСИЛЕНИЕ СИГНАЛА АНТЕННЫ</div>
+        <h2>Чем чище канал, тем дальше слышно</h2>
+        <p class="lead">Apertura уже слышит первые миры. Дальние — тонут в шуме: антенне не хватает <strong>мощности</strong>.<br><br>Каждый сигнал поддержки идёт в усиление: выше <strong>мощность передатчика</strong>, шире <strong>апертура</strong> приёма, ниже <strong>шумовой порог</strong>. Чем чище канал — тем дальше слышно. Тем больше миров Архитектор откроет следующими.</p>
+      </div>
+      <div class="glass rev" style="--sheen:12s">
+        <div class="g-head">
+          <span class="g-chip"><span class="g-dot w"></span>SIGNAL SUPPORT</span>
+          <span class="g-aux">APERTURA · CHANNEL OPEN</span>
+        </div>
+        <div class="g-body">
+          <div class="g-ant">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="9.078" r="2"/>
+                <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
+                <path d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
+                <path d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
+              </g>
+            </svg>
+            <div class="g-seg" aria-label="Мощность передатчика 34%">
+              <span class="lit"></span><span class="lit"></span><span class="lit"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="pow"><b>34%</b><i>МОЩНОСТЬ</i></div>
+          </div>
+          <div class="g-row g-sep"><span class="g-k">АПЕРТУРА ПРИЁМА</span><span class="g-v">УЗКАЯ</span></div>
+          <div class="g-row"><span class="g-k">ШУМОВОЙ ПОРОГ</span><span class="g-v r">ВЫСОКИЙ</span></div>
+          <div class="g-row"><span class="g-k">МИРЫ В ОЧЕРЕДИ</span><span class="g-v">III · IV</span></div>
+          <div class="g-actions">
+            <button class="g-btn" data-toast="ПЛАТЁЖНЫЙ КАНАЛ ПОДКЛЮЧАЕТСЯ ПРИ ПЕРЕНОСЕ НА БОЕВОЙ САЙТ">Усилить сигнал через СБП</button>
+            <button class="g-help" data-toast="КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ АНТЕННЫ" aria-label="Что значит усилить сигнал?">?</button>
+          </div>
+        </div>
+        <div class="g-foot"><span>КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ</span><span>ЧЕМ ЧИЩЕ КАНАЛ, ТЕМ ДАЛЬШЕ СЛЫШНО</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <div>
+      <div class="foot-copy">© 2026 EchoWorld.space · Все права защищены · @echoworld.space</div>
+      <nav class="foot-links" aria-label="Правовые документы">
+        <button data-legal="req">Реквизиты</button>
+        <button data-legal="offer">Публичная оферта</button>
+        <button data-legal="privacy">Политика конфиденциальности</button>
+        <button data-legal="return">Возврат реликвии</button>
+      </nav>
+    </div>
+    <div class="foot-logo">
+      <svg viewBox="0 0 96 40" aria-hidden="true">
+        <rect x="0" y="0" width="9" height="40"/><rect x="13" y="0" width="4" height="40"/>
+        <rect x="21" y="0" width="6" height="40"/><rect x="31" y="0" width="2.5" height="40"/>
+        <rect x="37" y="0" width="4.5" height="40"/><rect x="46" y="0" width="8" height="40"/>
+        <rect x="58" y="0" width="3" height="40"/><rect x="65" y="0" width="5.5" height="40"/>
+        <rect x="74" y="0" width="2.5" height="40"/><rect x="81" y="0" width="7" height="40"/>
+      </svg>
+      <span>ECHOWORLD</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══ КУКИ · ПРОТОКОЛ ПРИСУТСТВИЯ ═══ -->
+<div class="cookie glass" id="cookie" style="--sheen:14s">
+  <div class="txt">
+    <span class="lbl">// ПРОТОКОЛ ПРИСУТСТВИЯ</span>
+    Echoworld оставляет за вами лёгкий след — Cookies. По нему система помнит, что вы здесь были. Соглашаясь, вы принимаете <button data-legal="privacy">Политику конфиденциальности</button>.
+  </div>
+  <button class="g-btn" id="cookieOk">Принять след</button>
+</div>
+
+<!-- ═══ МОДАЛ РЕЛИКВИИ ═══ -->
+<div class="mov" id="mov" aria-hidden="true">
+  <div class="mpanel glass" role="dialog" aria-modal="true" aria-label="Карточка реликвии">
+    <button class="m-close" id="mClose" aria-label="Закрыть">✕</button>
+    <div class="m-grid">
+      <div class="m-imgw"><img id="mImg" src="" alt=""></div>
+      <div class="m-body">
+        <div class="m-art" id="mArt">ART. 01-0000</div>
+        <h3 class="m-name" id="mName"></h3>
+        <div class="m-pw" id="mPw"></div>
+        <p class="m-desc" id="mDesc"></p>
+        <div class="m-clar">
+          <div class="m-clar-item">
+            <button class="m-clar-head"><span class="k">ЧТО ВХОДИТ В РЕЛИКВИЮ</span><span class="v">ПРЕДМЕТ · ВИДЕО · NFT</span><span class="pl">+</span></button>
+            <div class="m-clar-panel"><div><p>Вы получаете физический предмет из MARKETSPACE, видео его истории, запись в Памяти Apertura и право первого владельца.</p><p>Когда Личный кабинет EchoWorld откроется, внутри него появится NFT-реликвия — цифровая форма этого предмета, связанная с его физическим воплощением и записью в Памяти Apertura.</p></div></div>
+          </div>
+          <div class="m-clar-item">
+            <button class="m-clar-head"><span class="k">ОБЛИК РЕЛИКВИИ</span><span class="v">РЕКОНСТРУКЦИЯ APERTURA</span><span class="pl">+</span></button>
+            <div class="m-clar-panel"><div><p>Изображение показывает вероятную форму реликвии по данным Apertura.</p><p>Финальный физический предмет может отличаться деталями: Переход фиксирует форму не как копию изображения, а как единственный объект.</p></div></div>
+          </div>
+        </div>
+        <div class="m-foot">
+          <div class="m-price" id="mPrice">0 <span>₽</span></div>
+          <button class="g-btn" id="mBuy" style="flex:1">В корзину</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+<script>
+(function () {
+  var motionOK = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Тост и световая рябь ── */
+  var toastEl = document.getElementById('toast'), toastT;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+  }
+  function ripple(el, ev, kind) {
+    var r = el.getBoundingClientRect();
+    var i = document.createElement('i');
+    i.className = 'ripple' + (kind ? ' ' + kind : '');
+    i.style.left = ((ev && ev.clientX ? ev.clientX : r.left + r.width / 2) - r.left) + 'px';
+    i.style.top = ((ev && ev.clientY ? ev.clientY : r.top + r.height / 2) - r.top) + 'px';
+    el.appendChild(i);
+    setTimeout(function () { i.remove(); }, 650);
+  }
+  document.addEventListener('click', function (e) {
+    var deny = e.target.closest('[data-deny]');
+    if (deny) {
+      ripple(deny, e, 'deny');
+      deny.classList.remove('denied-pulse'); void deny.offsetWidth;
+      deny.classList.add('denied-pulse');
+      toast(deny.getAttribute('data-deny-msg') || 'ДОСТУП ОГРАНИЧЕН · ПРОТОКОЛ СЕМИ');
+      return;
+    }
+    var legal = e.target.closest('[data-legal]');
+    if (legal) { ripple(legal, e); toast('ДОКУМЕНТ ПОДКЛЮЧАЕТСЯ ПРИ ПЕРЕНОСЕ НА БОЕВОЙ САЙТ'); return; }
+    var cp = e.target.closest('[data-copy]');
+    if (cp) {
+      ripple(cp, e);
+      var v = cp.getAttribute('data-copy');
+      if (navigator.clipboard) navigator.clipboard.writeText(v).then(function () { toast('СКОПИРОВАНО · ' + v.toUpperCase()); });
+      else toast(v.toUpperCase());
+      return;
+    }
+    var t = e.target.closest('[data-toast]');
+    if (t) { ripple(t, e, t.classList.contains('g-btn') ? 'warm' : ''); toast(t.getAttribute('data-toast')); return; }
+    var b = e.target.closest('.g-btn, .g-tab, .mic-btn, .vc-btn, .g-help, .aura-re, .dlg-send, .popen, .cat-chip, .faq-q, .m-clar-head, .hdr-burger, .hdr-nav a, .menu-nav a, .clink');
+    if (b) ripple(b, e, b.classList.contains('g-btn') && !b.classList.contains('quiet') ? 'warm' : '');
+  });
+  function retune(host, stage, showSel) {
+    host.classList.add('retuning');
+    stage.querySelectorAll('.g-pane').forEach(function (p) { p.classList.toggle('off', !p.matches(showSel)); });
+    setTimeout(function () { host.classList.remove('retuning'); }, 520);
+  }
+  function two(n) { return n < 10 ? '0' + n : n; }
+
+  /* ── Загрузка: первый вход (клик — пропустить) ── */
+  var boot = document.getElementById('boot');
+  var bootBar = document.getElementById('bootBar');
+  var bootLines = document.querySelectorAll('#bootLog .ln');
+  var bootTimers = [], bootDone = false;
+  document.body.style.overflow = 'hidden';
+  function bootFinish() {
+    if (bootDone) return;
+    bootDone = true;
+    bootTimers.forEach(clearTimeout);
+    boot.classList.add('away');
+    document.body.style.overflow = '';
+    setTimeout(function () { boot.remove(); }, 800);
+  }
+  if (motionOK) {
+    bootTimers.push(setTimeout(function () { bootLines[0].classList.add('show'); }, 300));
+    bootTimers.push(setTimeout(function () { bootLines[1].classList.add('show'); }, 1000));
+    bootTimers.push(setTimeout(function () { bootLines[2].classList.add('show'); }, 1700));
+    [[300, 14], [650, 26], [1000, 39], [1400, 52], [1800, 66], [2200, 79], [2600, 91], [2950, 100]].forEach(function (s) {
+      bootTimers.push(setTimeout(function () { bootBar.style.width = s[1] + '%'; }, s[0]));
+    });
+    bootTimers.push(setTimeout(bootFinish, 3400));
+  } else {
+    bootLines.forEach(function (l) { l.classList.add('show'); });
+    bootBar.style.width = '100%';
+    setTimeout(bootFinish, 400);
+  }
+  boot.addEventListener('click', bootFinish);
+
+  /* ── Шапка и меню-мембрана ── */
+  var hdr = document.getElementById('hdr');
+  addEventListener('scroll', function () { hdr.classList.toggle('solid', scrollY > 40); }, { passive: true });
+  var burger = document.getElementById('burger');
+  var menu = document.getElementById('menu');
+  function setMenu(open) {
+    document.body.classList.toggle('menu-open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+    burger.setAttribute('aria-expanded', open);
+    menu.setAttribute('aria-hidden', !open);
+  }
+  burger.addEventListener('click', function () { setMenu(!document.body.classList.contains('menu-open')); });
+  menu.querySelectorAll('.menu-nav a').forEach(function (a) { a.addEventListener('click', function () { setMenu(false); }); });
+  addEventListener('keydown', function (e) { if (e.key === 'Escape') { setMenu(false); closeModal(); } });
+
+  /* ── Наблюдение: только честные данные ── */
+  var t0 = new Date();
+  document.querySelector('[data-contact]').textContent = two(t0.getHours()) + ':' + two(t0.getMinutes()) + ':' + two(t0.getSeconds());
+  var AB = 'ACEFHKMNPRTWX', DG = '234679';
+  function pick(s) { return s[Math.floor(Math.random() * s.length)]; }
+  document.querySelector('[data-node]').textContent = pick(AB) + pick(DG) + '-' + pick(DG) + pick(AB);
+  var presenceEl = document.querySelector('[data-presence]');
+  var obsKick = 0;
+  setInterval(function () {
+    var s = Math.floor((Date.now() - t0.getTime()) / 1000);
+    presenceEl.textContent = s >= 3600
+      ? two(Math.floor(s / 3600)) + ':' + two(Math.floor(s / 60) % 60) + ':' + two(s % 60)
+      : two(Math.floor(s / 60)) + ':' + two(s % 60);
+    obsKick = Math.min(obsKick + 4, 12);
+  }, 1000);
+  var obsPath = document.querySelector('[data-obs-wave]');
+  function drawObs(t) {
+    var amp = 5 + obsKick; obsKick *= 0.95;
+    var d = 'M0,23';
+    for (var x = 0; x <= 400; x += 8) d += ' L' + x + ',' + (23 + amp * Math.sin(x * 0.024 + t) * Math.sin(x * 0.01 + t * 0.55)).toFixed(1);
+    obsPath.setAttribute('d', d);
+  }
+  if (motionOK) (function lo() { drawObs(performance.now() / 800); requestAnimationFrame(lo); })();
+  else drawObs(2);
+
+  /* ── Каталог: данные и рендер ── */
+  var P = [
+    { id: 1, art: '01-0001', name: 'Редкая лягушка', img: '../img/pepe.webp', pw: 'S', pwn: 'Сингулярность', slots: 4, price: 99999, ms: false,
+      card: 'Дело было не в красоте — лицо его не умело ничего скрывать, и каждый читал в нём своё. <em>Знали его все, а близко он не подпустил никого.</em> Достанется одному — и так и останется непонятым.',
+      full: 'Дело было не в красоте — лицо у него было такое открытое, что мимо было не пройти: оно не умело ничего скрывать. В звёзды он не рвался — просто на этом лице каждый читал что-то своё: свою тоску, свою тихую радость, свою усталость без слов, — и оттого его скоро знал каждый. Слава вышла странная: знали его все, а близко он не подпустил никого — и грустил о своём в стороне от тех, кто звал его своим. Такие не повторяются: один на всех — и каждый втайне хотел, чтобы достался именно ему. Достанется он одному — и, снова поняв вас без единого слова, сам так и останется непонятым, теперь навсегда и теперь вашим.' },
+    { id: 2, art: '01-0002', name: 'Зубастый спутник', img: '../img/labubu.webp', pw: 'S', pwn: 'Сингулярность', slots: 4, price: 99999, ms: false,
+      card: 'Улыбка чуть зубастее, чем нужно, чтобы ей верить, — но верили все. <em>Однажды вы пристегнёте его к сумке и не снимете уже никогда.</em> И задумаетесь: кто кого здесь выбрал.',
+      full: 'Улыбка у него была чуть зубастее, чем нужно, чтобы ей сразу поверить, — и всё равно ей верили все. Он умел получить своё, проскользнуть там, где другим говорили «нет», и обаять так, что злиться на него выходило недолго. Хитёр был, не отнять, — но без злого умысла, скорее как ребёнок, уверенный, что ему всё простят. Рядом с ним было весело и самую малость тревожно, и эта смесь не отпускала. Однажды вы пристегнёте его к сумке и не снимете уже никогда — а поймав на себе ту самую улыбку, нет-нет да задумаетесь: кто кого здесь выбрал.' },
+    { id: 3, art: '01-0003', name: 'Сухопутная акула', img: '../img/akula.webp', pw: 'R', pwn: 'Резонанс', slots: 3, price: 49999, ms: false,
+      card: 'Нёс полную чушь — но с таким лицом, что верили, а потом повторяли все. <em>Однажды окажется у вас на полке — в тех же кроссовках.</em> Готовый убеждать в своей ерунде уже вас.',
+      full: 'Он нёс полную чушь — но с таким серьёзным лицом, будто говорит что-то важное, и оттого ему верили. Спорить с ним было без толку: в любой своей глупости он был уверен крепче, чем иные в правде. Смысла в его словах искать было бесполезно, а вот повторяли их потом все, сами не понимая зачем. Однажды он окажется у вас на полке — в тех же кроссовках, с той же невозмутимой мордой, готовый убеждать в своей ерунде уже лично вас.' },
+    { id: 4, art: '01-0004', name: 'Лесной гость', img: '../img/bobr.webp', pw: 'R', pwn: 'Резонанс', slots: 3, price: 49999, ms: false,
+      card: 'Ворчал без передышки — но молча чинил что угодно, от замка до чужой беды. <em>Окажется у вас дома — починит то, что вы уже отчаялись починить.</em> И не спросит, почему не взялись сами.',
+      full: 'Ворчал он без передышки — на погоду, на чужую безалаберность, на вещь, которая сломалась не у него и его вообще не касалась. Но пока другие охали, он молча закатывал рукава и приводил в порядок что угодно — от заевшего замка до чьей-то развалившейся затеи. Спасибо ему говорить было бесполезно: отмахнётся и заворчит, что не за что. Однажды он окажется у вас дома — хмурый, надёжный, из тех, кто молча чинит то, что вы уже отчаялись починить, и не спросит, почему вы не взялись сами.' },
+    { id: 5, art: '01-0005', name: 'Карманное существо', img: '../img/tamagochi.webp', pw: 'R', pwn: 'Резонанс', slots: 3, price: 49999, ms: false,
+      card: 'Внимания ему нужно было постоянно — и просил он его без капли стеснения. <em>Скоро уместится у вас на ладони и потребует своего.</em> Забыть его на день — значит однажды найти погасшим насовсем.',
+      full: 'Внимания ему было нужно постоянно и сразу — чтобы заметили, накормили, не уходили далеко. Просил он это в открытую, без капли стеснения, и обижался искренне, если о нём забывали хоть на час. Сердиться на него получалось ровно до первого взгляда в глаза — а там уже сам нёс ему всё, что он просил. Скоро он уместится у вас на ладони и снова потребует своего — покормить, побыть рядом, не забывать; и вы уступите, как уступали все, ведь забыть его хоть на день — значит однажды найти погасшим насовсем.' },
+    { id: 6, art: '01-0006', name: 'Тёмный оракул', img: '../img/ball.webp', pw: 'C', pwn: 'Скопление', slots: 2, price: 25999, ms: true,
+      card: 'Отвечал раньше, чем успеешь договорить, — спокойно, будто всё знал. <em>Сбывалось так часто, что во второй раз боялись подходить.</em> Спросите — ответит, как всем, кто потом жалел.',
+      full: 'Он отвечал раньше, чем ты успевал договорить, — спокойно, без тени сомнения, будто всё давно знал. Сбывалось не каждый раз, но достаточно часто, чтобы во второй раз к нему уже боялись подходить. Встряхните, спросите о своём — и он ответит так же ровно, как отвечал всем, кто потом жалел, что спросил.' },
+    { id: 7, art: '01-0007', name: 'Карманный вихрь', img: '../img/spinner.webp', pw: 'C', pwn: 'Скопление', slots: 2, price: 25999, ms: false,
+      card: 'На месте не сидел ни минуты — а смотреть на него было до странного спокойно. <em>Закрутите его в пальцах — он заберёт вашу тревогу в свой вихрь.</em> Сам остановиться так и не научится.',
+      full: 'На месте он не сидел ни минуты: стучал, ёрзал, крутил всё, что попадалось под руку, и заводил окружающих своей суетой. Но стоило понаблюдать за ним со стороны — и собственные мысли отчего-то унимались. Закрутите его в пальцах, когда внутри неспокойно: он закружит вашу тревогу вместе с собой, как кружил чужую всегда, — только сам остановиться так и не научится, даже теперь.' },
+    { id: 8, art: '01-0008', name: 'Зеркальный идол', img: '../img/disco-ball.webp', pw: 'C', pwn: 'Скопление', slots: 2, price: 25999, ms: false,
+      card: 'Был уверен, что вечер начинается в тот миг, когда появляется он, — и оказывался прав. <em>Дайте луч — вспыхнет сотней огней, в которых вы утонете.</em> Вот только без вашего луча не светит вовсе.',
+      full: 'Скромностью он не страдал и был уверен, что любой стоящий вечер начинается ровно в тот миг, когда появляется он. Бесило, что он каждый раз оказывался прав — без него и правда всё как-то не клеилось. Поднимите его повыше, дайте луч — и он вспыхнет сотней огней, в которых вы утонете; вот только без вашего луча он, как выясняется, не светит вовсе.' },
+    { id: 9, art: '01-0009', name: 'Жёлтая горлица', img: '../img/utka.webp', pw: 'K', pwn: 'Излом', slots: 1, price: 9999, ms: false,
+      card: 'Между мыслью и словом у него не было паузы — выпаливал то, о чём все молчали. <em>Сожмите, когда не хватит слов, — крикнет за вас.</em> Того, кого нельзя было унять, теперь слышно, только если нажать.',
+      full: 'Между тем, что он думал, и тем, что говорил, не было ровно никакой паузы: он выпаливал вслух то, о чём все молчали. Сожмите его, когда не хватит слов, — крикнет за вас; того, кого при жизни нельзя было унять, теперь слышно, только если нажать.' },
+    { id: 10, art: '01-0010', name: 'Карманные соты', img: '../img/simple-dimple.webp', pw: 'K', pwn: 'Излом', slots: 1, price: 9999, ms: false,
+      card: 'Простой до невозможности — и нравился больше тех, кто корчил из себя глубоких. <em>Нажмите, устав от запутанного: щёлк — и проще.</em> Большего он не обещал ни тогда, ни теперь.',
+      full: 'Простой он был до невозможности и ничуть этого не стеснялся — а нравился людям больше тех, кто из кожи лез казаться сложным и глубоким. Нажмите на него, устав от запутанного: щёлк — и станет проще, как умел он один; большего он не обещал ни тогда, ни теперь.' },
+    { id: 11, art: '01-0011', name: 'Ночной мухомор', img: '../img/grib.webp', pw: 'K', pwn: 'Излом', slots: 1, price: 9999, ms: false,
+      card: 'Нарочно набивал себе славу опасного — а кто всерьёз пугался, над тем первый и смеялся. <em>Поставьте у изголовья: пугать умеет, но светит по-настоящему.</em> И темноты вашей боится меньше, чем вы.',
+      full: 'Выглядел он пугающе и нарочно набивал себе славу опасного — а если кто всерьёз пугался, сам первый и смеялся. Поставьте его у изголовья: пугать умеет, но светит по-настоящему, и темноты вашей боится меньше, чем вы.' },
+    { id: 12, art: '01-0012', name: 'Колючий страж', img: '../img/rash.webp', pw: 'K', pwn: 'Излом', slots: 1, price: 9999, ms: false,
+      card: 'Самую грязную работу делал молча — не геройствуя и не жалуясь. <em>Снова возьмётся за то, от чего вы отводите глаза.</em> Спасибо ему не скажут — да он того и не ждал.',
+      full: 'Самую грязную работу он делал молча — не делая из этого подвига, не жалуясь: кто-то ведь должен, а он умел и не морщился. Скоро он снова возьмётся за то, от чего вы отводите глаза, — только спасибо ему не скажут: кто же благодарит вещь, да он того и не ждал никогда.' }
+  ];
+  function fmtPrice(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  var grid = document.getElementById('catGrid');
+  P.forEach(function (p) {
+    var el = document.createElement('article');
+    el.className = 'pcard';
+    el.setAttribute('data-id', p.id);
+    el.setAttribute('data-pw', p.pw);
+    el.setAttribute('data-name', (p.name + ' ' + p.art).toLowerCase());
+    el.innerHTML =
+      '<div class="pimg">' +
+        '<span class="p-art">ART. ' + p.art + '</span>' +
+        '<span class="p-pw ' + p.pw + '">' + p.pw + '</span>' +
+        '<span class="p-status' + (p.ms ? ' ms' : '') + '"><span class="dot"></span>' + (p.ms ? 'В MARKETSPACE' : 'ДОСТУПНА') + '</span>' +
+        '<img src="' + p.img + '" alt="' + p.name + '" loading="lazy" decoding="async">' +
+      '</div>' +
+      '<div class="pbody">' +
+        '<h3 class="pname">' + p.name + '</h3>' +
+        '<p class="pdesc">' + p.card + '</p>' +
+        '<div class="pfoot"><span class="pprice">' + fmtPrice(p.price) + ' <span>₽</span></span><button class="popen">Открыть</button></div>' +
+      '</div>';
+    el.addEventListener('click', function () { openModal(p.id); });
+    grid.appendChild(el);
+  });
+
+  /* фильтры и поиск */
+  var activeCat = 'all', q = '';
+  function applyFilter() {
+    var shown = 0;
+    grid.querySelectorAll('.pcard').forEach(function (c) {
+      var okCat = activeCat === 'all' || c.getAttribute('data-pw') === activeCat;
+      var okQ = !q || c.getAttribute('data-name').indexOf(q) >= 0;
+      var show = okCat && okQ;
+      c.classList.toggle('hide', !show);
+      if (show) shown++;
+    });
+    document.getElementById('catEmpty').classList.toggle('show', shown === 0);
+  }
+  document.querySelectorAll('.cat-chip').forEach(function (ch) {
+    ch.addEventListener('click', function () {
+      document.querySelectorAll('.cat-chip').forEach(function (c) { c.classList.remove('on'); });
+      ch.classList.add('on');
+      activeCat = ch.getAttribute('data-cat');
+      applyFilter();
+    });
+  });
+  document.getElementById('catSearch').addEventListener('input', function (e) {
+    q = e.target.value.trim().toLowerCase();
+    applyFilter();
+  });
+
+  /* ── Модал реликвии и корзина ── */
+  var mov = document.getElementById('mov');
+  var cartN = 0, cartEl = document.getElementById('cartCount');
+  var curP = null;
+  function openModal(id) {
+    curP = P.find(function (p) { return p.id === id; });
+    if (!curP) return;
+    document.getElementById('mImg').src = curP.img;
+    document.getElementById('mImg').alt = curP.name;
+    document.getElementById('mArt').textContent = 'ART. ' + curP.art + ' · MARKETSPACE';
+    document.getElementById('mName').textContent = curP.name;
+    document.getElementById('mPw').innerHTML = '<b>' + curP.pw + ' · ' + curP.pwn.toUpperCase() + '</b> · СЛОТОВ ЭХО: ' + curP.slots + ' · ФРАГМЕНТОВ: ' + curP.slots;
+    document.getElementById('mDesc').textContent = curP.full;
+    document.getElementById('mPrice').innerHTML = fmtPrice(curP.price) + ' <span>₽</span>';
+    var buy = document.getElementById('mBuy');
+    if (curP.ms) { buy.textContent = 'В MARKETSPACE · ЦИКЛ ИДЁТ'; buy.setAttribute('disabled', ''); }
+    else { buy.textContent = 'В корзину'; buy.removeAttribute('disabled'); }
+    mov.classList.add('open');
+    mov.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    if (!mov.classList.contains('open')) return;
+    mov.classList.remove('open');
+    mov.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('mClose').addEventListener('click', closeModal);
+  mov.addEventListener('click', function (e) { if (e.target === mov) closeModal(); });
+  document.getElementById('mBuy').addEventListener('click', function () {
+    if (!curP || curP.ms) return;
+    cartN++;
+    cartEl.textContent = cartN;
+    toast('РЕЛИКВИЯ В КОРЗИНЕ · ' + curP.name.toUpperCase());
+    closeModal();
+  });
+  document.querySelectorAll('.m-clar-head').forEach(function (h) {
+    h.addEventListener('click', function () { h.closest('.m-clar-item').classList.toggle('open'); });
+  });
+
+  /* ── Передатчик (Эхо) ── */
+  var echo = document.querySelector('[data-echo]');
+  var AURAS = ['ГУЛ', 'ШЁПОТ', 'ЗВОН', 'ХЛАД', 'СРЫВ', 'ДВОЙНИК'];
+  var auraChip = echo.querySelector('[data-aura]');
+  echo.querySelector('[data-aura-re]').addEventListener('click', function () {
+    auraChip.classList.add('spin');
+    setTimeout(function () {
+      var next; do { next = AURAS[Math.floor(Math.random() * AURAS.length)]; } while (next === auraChip.textContent);
+      auraChip.textContent = next;
+      auraChip.classList.remove('spin');
+    }, 220);
+  });
+  var osc = echo.querySelector('path[data-osc]');
+  var oscKick = 0;
+  function drawOsc(t) {
+    var amp = (echo.classList.contains('hot') ? 11 : 5) + oscKick;
+    oscKick *= 0.94;
+    var d = 'M0,20';
+    for (var x = 0; x <= 400; x += 8) d += ' L' + x + ',' + (20 + amp * Math.sin(x * 0.03 + t) * Math.sin(x * 0.012 + t * 0.6)).toFixed(1);
+    osc.setAttribute('d', d);
+  }
+  if (motionOK) (function lo() { drawOsc(performance.now() / 650); requestAnimationFrame(lo); })();
+  else drawOsc(2);
+
+  var words = echo.querySelector('[data-words]');
+  var count = echo.querySelector('[data-count]');
+  var slots = echo.querySelector('[data-slots]');
+  words.addEventListener('input', function () {
+    var n = words.value.trim().split(/\s+/).filter(Boolean).length;
+    count.textContent = n + ' / 7';
+    count.style.color = n > 7 ? 'var(--red-hi)' : '';
+    slots.classList.toggle('over', n > 7);
+    for (var i = 0; i < 7; i++) slots.children[i].classList.toggle('on', i < n);
+    oscKick = Math.min(oscKick + 7, 22);
+  });
+  words.addEventListener('focus', function () { echo.classList.add('hot'); });
+  words.addEventListener('blur', function () { echo.classList.remove('hot'); });
+
+  var price = echo.querySelector('[data-price]');
+  var echoMode = 'text';
+  echo.querySelectorAll('[data-tab]').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      if (tab.classList.contains('on')) return;
+      echo.querySelectorAll('[data-tab]').forEach(function (t) {
+        var on = t === tab;
+        t.classList.toggle('on', on);
+        t.setAttribute('aria-selected', on);
+      });
+      echoMode = tab.getAttribute('data-tab');
+      retune(echo, echo.querySelector('.echo-stage'), '[data-pane="' + echoMode + '"]');
+      price.textContent = echoMode === 'text' ? '· 599 ₽' : '· 1499 ₽';
+    });
+  });
+
+  var BARS = 27;
+  var waveEl = echo.querySelector('[data-wave]');
+  for (var b = 0; b < BARS; b++) waveEl.appendChild(document.createElement('i'));
+  var waveBars = waveEl.children;
+  var recBtn = echo.querySelector('[data-rec]');
+  var ring = echo.querySelector('[data-ring]');
+  var recTm = echo.querySelector('[data-rec-time]');
+  var recSt = echo.querySelector('[data-rec-status]');
+  var playBtn = echo.querySelector('[data-play]');
+  var retryBtn = echo.querySelector('[data-retry]');
+  var recIv, playIv, hasRec = false;
+  function waveReset() {
+    waveEl.classList.remove('done');
+    for (var i = 0; i < BARS; i++) { waveBars[i].className = ''; waveBars[i].style.height = '12%'; }
+  }
+  waveReset();
+  recBtn.addEventListener('click', function () {
+    if (echo.classList.contains('rec')) return;
+    stopPlay(); waveReset();
+    hasRec = false; playBtn.disabled = true; retryBtn.disabled = true;
+    echo.classList.add('rec', 'hot');
+    recSt.textContent = 'ЗАПИСЬ';
+    var rt0 = performance.now();
+    clearInterval(recIv);
+    recIv = setInterval(function () {
+      var s = Math.min((performance.now() - rt0) / 1000, 3);
+      recTm.textContent = s.toFixed(1);
+      ring.style.strokeDashoffset = String(194 - (s / 3) * 194);
+      var idx = Math.min(Math.floor((s / 3) * BARS), BARS - 1);
+      if (!waveBars[idx].classList.contains('on')) {
+        waveBars[idx].style.height = (18 + Math.random() * 74) + '%';
+        waveBars[idx].classList.add('on');
+      }
+      oscKick = Math.min(oscKick + 3, 22);
+      if (s >= 3) {
+        clearInterval(recIv);
+        echo.classList.remove('rec', 'hot');
+        recSt.textContent = 'ГОТОВО · 3.0 СЕК';
+        waveEl.classList.add('done');
+        ring.style.strokeDashoffset = '194';
+        hasRec = true; playBtn.disabled = false; retryBtn.disabled = false;
+      }
+    }, 60);
+  });
+  function stopPlay() { clearInterval(playIv); echo.classList.remove('playing'); }
+  playBtn.addEventListener('click', function () {
+    if (!hasRec) return;
+    if (echo.classList.contains('playing')) { stopPlay(); return; }
+    echo.classList.add('playing');
+    for (var i = 0; i < BARS; i++) waveBars[i].classList.remove('lit');
+    var pt0 = performance.now();
+    clearInterval(playIv);
+    playIv = setInterval(function () {
+      var p = (performance.now() - pt0) / 3000;
+      var idx = Math.floor(p * BARS);
+      for (var i = 0; i < BARS && i <= idx; i++) waveBars[i].classList.add('lit');
+      recTm.textContent = Math.min(p * 3, 3).toFixed(1);
+      oscKick = Math.min(oscKick + 2, 16);
+      if (p >= 1) { stopPlay(); recTm.textContent = '3.0'; }
+    }, 50);
+  });
+  retryBtn.addEventListener('click', function () {
+    stopPlay(); waveReset();
+    hasRec = false; playBtn.disabled = true; retryBtn.disabled = true;
+    recTm.textContent = '0.0'; recSt.textContent = 'ДО 3 СЕК';
+  });
+  echo.querySelector('[data-echo-send]').addEventListener('click', function () {
+    var status = echo.querySelector('[data-status]');
+    if (echoMode === 'text' && !words.value.trim()) { toast('СИГНАЛ ПУСТ · ДОБАВЬТЕ СЛОВА'); return; }
+    if (echoMode === 'voice' && !hasRec) { toast('СНАЧАЛА ЗАПИШИТЕ ГОЛОС'); return; }
+    var code = 'ИМП-' + String(Math.floor(1000 + Math.random() * 9000));
+    status.textContent = 'СИГНАЛ УШЁЛ · КОД ' + code + ' · АУРА «' + auraChip.textContent + '»';
+    status.style.color = 'var(--cyan-hi)';
+    oscKick = 26;
+    setTimeout(function () { status.textContent = 'ОЖИДАНИЕ СИГНАЛА'; status.style.color = ''; }, 3800);
+  });
+
+  /* ── Диалог (конденсация) ── */
+  var cond = document.querySelector('[data-cond]');
+  var dlgLog = cond.querySelector('[data-dlg-log]');
+  var dlgIn = cond.querySelector('[data-dlg-in]');
+  var dlgField = cond.querySelector('[data-dlg-field]');
+  var dlgConsent = cond.querySelector('[data-dlg-consent]');
+  var condState = cond.querySelector('[data-cond-state]');
+  var condDot = cond.querySelector('[data-cond-dot]');
+  var answers = {};
+  var STEPS = [
+    { key: 'relic', q: 'Что должно появиться в вашем мире? Опишите простыми словами: форма, материал, ощущение.', ph: 'Например: медная сова размером с ладонь', validate: function (v) { return v.length >= 2 ? '' : 'Сигнал слишком короткий. Опишите желаемое.'; } },
+    { key: 'mail', q: 'Куда прислать ответ, когда Архитектор проверит поток?', ph: 'Email для связи', validate: function (v) { return v.indexOf('@') > 0 && v.indexOf('.') > 1 ? '' : 'Узел не отвечает. Проверьте адрес.'; } },
+    { key: 'consent', q: 'Осталось согласие на обработку персональных данных — без него сигнал не уйдёт.', consent: true }
+  ];
+  var stepIdx = -1, busy = false;
+  function scrollLog() { dlgLog.scrollTop = dlgLog.scrollHeight; }
+  function typeQuestion(text, done) {
+    var qel = document.createElement('div');
+    qel.className = 'dlg-q';
+    qel.innerHTML = '<span class="pfx">&gt;</span><span class="txt"></span><span class="cur"></span>';
+    dlgLog.appendChild(qel);
+    var span = qel.querySelector('.txt'), cur = qel.querySelector('.cur');
+    if (!motionOK) { span.textContent = text; cur.remove(); scrollLog(); done && done(); return; }
+    var i = 0;
+    (function step() {
+      span.textContent = text.slice(0, ++i);
+      scrollLog();
+      if (i < text.length) setTimeout(step, 15);
+      else { cur.remove(); done && done(); }
+    })();
+  }
+  function addAnswer(text) {
+    var a = document.createElement('div');
+    a.className = 'dlg-a';
+    a.innerHTML = '<span></span>';
+    a.querySelector('span').textContent = text;
+    dlgLog.appendChild(a); scrollLog();
+  }
+  function addSys(text, err) {
+    var s = document.createElement('div');
+    s.className = 'dlg-sys' + (err ? ' err' : '');
+    s.textContent = text;
+    dlgLog.appendChild(s); scrollLog();
+  }
+  function nextStep() {
+    stepIdx++;
+    var st = STEPS[stepIdx];
+    if (!st) return;
+    busy = true;
+    dlgIn.classList.add('lock');
+    typeQuestion(st.q, function () {
+      busy = false;
+      if (st.consent) { dlgIn.style.display = 'none'; dlgConsent.classList.add('show'); }
+      else {
+        dlgIn.classList.remove('lock');
+        dlgField.placeholder = st.ph;
+        dlgField.value = '';
+      }
+    });
+  }
+  function submitAnswer() {
+    if (busy) return;
+    var st = STEPS[stepIdx];
+    if (!st || st.consent) return;
+    var v = dlgField.value.trim();
+    var err = st.validate(v);
+    if (err) {
+      dlgField.classList.add('err');
+      setTimeout(function () { dlgField.classList.remove('err'); }, 700);
+      addSys(err, true);
+      return;
+    }
+    answers[st.key] = v;
+    addAnswer(v);
+    condState.textContent = 'SIGNAL FORMING'; condState.style.color = 'var(--warm-hi)';
+    nextStep();
+  }
+  dlgIn.querySelector('[data-dlg-send]').addEventListener('click', submitAnswer);
+  dlgField.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); } });
+  cond.querySelector('[data-consent-yes]').addEventListener('click', function () {
+    dlgConsent.classList.remove('show');
+    addAnswer('Согласие подтверждено');
+    busy = true;
+    addSys('ФОРМИРУЮ ЗАПРОС…');
+    setTimeout(function () {
+      var code = 'КНД-' + String(Math.floor(1000 + Math.random() * 9000));
+      var f = document.createElement('div');
+      f.className = 'dlg-final';
+      f.innerHTML = '<div class="code">' + code + '</div><h4>Сигнал принят</h4><p>Архитектор проверит, есть ли в MARKETSPACE поток, способный принять форму желаемого. Ответ придёт на <b></b>.</p>';
+      f.querySelector('b').textContent = answers.mail || '';
+      dlgLog.appendChild(f); scrollLog();
+      condDot.classList.remove('w'); condDot.classList.add('c');
+      condState.textContent = 'SIGNAL ACCEPTED'; condState.style.color = 'var(--cyan-hi)';
+      var status = cond.querySelector('[data-status]');
+      status.textContent = 'СИГНАЛ В ПАМЯТИ APERTURA'; status.style.color = 'var(--cyan-hi)';
+      var again = document.createElement('div');
+      again.className = 'dlg-sys';
+      again.innerHTML = '<button class="vc-btn" data-dlg-again style="margin-top:6px"><svg><use href="#i-re"/></svg>НОВЫЙ СИГНАЛ</button>';
+      dlgLog.appendChild(again); scrollLog();
+      again.querySelector('[data-dlg-again]').addEventListener('click', function () {
+        dlgLog.innerHTML = ''; answers = {}; stepIdx = -1; busy = false;
+        dlgIn.style.display = ''; dlgIn.classList.remove('lock');
+        condDot.classList.remove('c'); condDot.classList.add('w');
+        condState.textContent = 'ДИАЛОГ ОТКРЫТ'; condState.style.color = '';
+        status.textContent = 'ЗОНА КОНДЕНСАЦИИ АКТИВНА'; status.style.color = '';
+        nextStep();
+      });
+    }, motionOK ? 900 : 100);
+  });
+  var dlgStarted = false;
+  new IntersectionObserver(function (en, io) {
+    if (en[0].isIntersecting && !dlgStarted) { dlgStarted = true; nextStep(); io.disconnect(); }
+  }, { threshold: 0.3 }).observe(cond);
+
+  /* ── Печать Архитектора ── */
+  var seal = document.querySelector('[data-seal]');
+  var sigil = seal.querySelector('[data-sigil]');
+  var sealSt = seal.querySelector('[data-seal-status]');
+  var sealBusy = false;
+  sigil.addEventListener('click', function () {
+    if (sealBusy) return;
+    sealBusy = true;
+    seal.classList.add('scanning');
+    sealSt.textContent = 'СКАНИРОВАНИЕ ЧАСТОТЫ…';
+    sealSt.className = 'seal-status scan';
+    setTimeout(function () {
+      seal.classList.remove('scanning');
+      sealSt.textContent = 'ВЫ НЕ АРХИТЕКТОР';
+      sealSt.className = 'seal-status no';
+      sigil.classList.remove('deny-flash'); void sigil.offsetWidth;
+      sigil.classList.add('deny-flash');
+      setTimeout(function () {
+        sealSt.textContent = 'НАЖМИТЕ ПЕЧАТЬ · СВЕРКА ЧАСТОТЫ';
+        sealSt.className = 'seal-status';
+        sealBusy = false;
+      }, 2500);
+    }, motionOK ? 1300 : 200);
+  });
+  /* подпись-частота: волна, вычисленная из букв aintonx */
+  (function () {
+    var name = 'aintonx';
+    var waves = [];
+    for (var i = 0; i < name.length; i++) {
+      var c = name.charCodeAt(i);
+      waves.push({ a: 4 + (c % 7), f: 0.012 + (c % 11) * 0.004, p: (c % 13) * 0.6 });
+    }
+    var d = 'M0,27';
+    for (var x = 0; x <= 400; x += 4) {
+      var y = 27;
+      waves.forEach(function (w) { y += w.a * Math.sin(x * w.f + w.p) / name.length * 2.4; });
+      d += ' L' + x + ',' + y.toFixed(1);
+    }
+    seal.querySelector('[data-sig-path]').setAttribute('d', d);
+  })();
+
+  /* ── FAQ ── */
+  var faqBody = document.getElementById('faqBody');
+  var faqUnlock = document.getElementById('faqUnlock');
+  faqUnlock.addEventListener('click', function () {
+    var open = faqBody.classList.toggle('open');
+    faqUnlock.setAttribute('aria-expanded', open);
+    document.getElementById('faqUnlockLabel').textContent = open ? 'Свернуть протокол' : 'Развернуть протокол';
+  });
+  document.querySelectorAll('.faq-q').forEach(function (qb) {
+    qb.addEventListener('click', function () { qb.closest('.faq-item').classList.toggle('open'); });
+  });
+
+  /* ── Куки ── */
+  var cookie = document.getElementById('cookie');
+  try { if (localStorage.getItem('ew2-trace') === '1') cookie.classList.add('hide'); } catch (e) {}
+  document.getElementById('cookieOk').addEventListener('click', function () {
+    cookie.classList.add('hide');
+    try { localStorage.setItem('ew2-trace', '1'); } catch (e) {}
+    toast('СЛЕД ПРИНЯТ · СИСТЕМА ЗАПОМНИТ ВАС');
+  });
+
+  /* ── Появление секций ── */
+  if (motionOK && 'IntersectionObserver' in window) {
+    var revs = document.querySelectorAll('.rev');
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.remove('rev-off'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.1 });
+    revs.forEach(function (el) {
+      if (el.getBoundingClientRect().top > innerHeight * 0.92) {
+        el.classList.add('rev-off');
+        io.observe(el);
+      }
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

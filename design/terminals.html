@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>EchoWorld · Терминалы — 5 направлений</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   ТЕРМИНАЛЫ ECHOWORLD · лукбук из 5 направлений
+   Каждое направление показано на всех интерфейсах системы:
+   LIVE FEED · ЭХО · КОНДЕНСАЦИЯ (объединённая) · АРХИТЕКТОР · ПОДДЕРЖКА
+   Файл самодостаточен: стили и логика внутри, кроме Google Fonts.
+   ════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --void:      #04040a;
+  --deep:      #08080f;
+  --raised:    #0d0d1a;
+  --well:      #05050c;
+  --ink:       #f0f0f8;
+  --ink-2:     #c8c8dc;
+  --ink-3:     #9a9ab8;
+  --ink-4:     #6a6a8a;
+  --line:      rgba(240,240,248,0.08);
+  --line-hi:   rgba(240,240,248,0.16);
+  --red:       #c02828;
+  --red-hi:    #e64545;
+  --cyan:      #00c8c8;
+  --cyan-hi:   #4ce0e0;
+  --warm:      #d1a04a;
+  --ok:        #38c172;
+  --mono:      'IBM Plex Mono', ui-monospace, monospace;
+  --text:      'Inter', system-ui, sans-serif;
+  --display:   'Unbounded', var(--text);
+  --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html { background: var(--void); scroll-behavior: smooth; }
+body {
+  font-family: var(--text);
+  color: var(--ink-2);
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(192,40,40,0.05), transparent 60%),
+    radial-gradient(900px 500px at 10% 30%, rgba(0,200,200,0.03), transparent 55%),
+    var(--void);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
+}
+
+/* ── Шапка лукбука ─────────────────────────────────────────────── */
+.lb-head { max-width: 1200px; margin: 0 auto; padding: 72px 32px 24px; }
+.lb-head h1 {
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(28px, 4vw, 52px); letter-spacing: -0.01em;
+  color: var(--ink); text-wrap: balance;
+}
+.lb-head h1 .dim { color: var(--ink-4); font-weight: 500; }
+.lb-sub { margin-top: 14px; max-width: 68ch; font-size: 15px; color: var(--ink-3); }
+.lb-sub strong { color: var(--ink-2); font-weight: 500; }
+
+.lb-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(4,4,10,0.88); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.lb-nav-in {
+  max-width: 1200px; margin: 0 auto; padding: 0 32px;
+  display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none;
+}
+.lb-nav-in::-webkit-scrollbar { display: none; }
+.lb-nav a {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+  color: var(--ink-4); text-decoration: none; white-space: nowrap;
+  padding: 14px 14px 12px; border-bottom: 2px solid transparent;
+  transition: color 0.2s;
+}
+.lb-nav a:hover { color: var(--ink-2); }
+.lb-nav a.on { color: var(--ink); border-bottom-color: var(--red); }
+.lb-nav a .n { color: var(--red-hi); margin-right: 6px; }
+
+/* ── Секция направления ────────────────────────────────────────── */
+.fam { max-width: 1200px; margin: 0 auto; padding: 72px 32px 40px; }
+.fam + .fam { border-top: 1px solid var(--line); }
+.fam-head { margin-bottom: 36px; max-width: 76ch; }
+.fam-head .num {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.2em;
+  color: var(--red-hi);
+}
+.fam-head h2 {
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(22px, 2.6vw, 34px); letter-spacing: 0;
+  color: var(--ink); margin: 8px 0 10px;
+}
+.fam-head p { font-size: 14.5px; color: var(--ink-3); max-width: 70ch; }
+.fam-head p strong { color: var(--ink-2); font-weight: 500; }
+
+.fam-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+.cell-5 { grid-column: span 5; } .cell-7 { grid-column: span 7; }
+.cell-6 { grid-column: span 6; } .cell-12 { grid-column: span 12; }
+@media (max-width: 940px) {
+  .fam { padding: 56px 20px 32px; }
+  .lb-head { padding: 56px 20px 20px; }
+  .lb-nav-in { padding: 0 20px; }
+  .cell-5, .cell-7, .cell-6, .cell-12 { grid-column: span 12; }
+}
+
+/* Подпись интерфейса — хром лукбука, не часть дизайна терминала */
+.cap {
+  font-size: 11px; color: var(--ink-4); letter-spacing: 0.04em;
+  margin: 0 0 10px 2px; text-transform: uppercase;
+}
+.cap b { color: var(--ink-3); font-weight: 500; }
+
+/* ── Демо-плашка ───────────────────────────────────────────────── */
+#toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 16px);
+  z-index: 100; pointer-events: none; opacity: 0;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  color: var(--ink); background: var(--raised);
+  border: 1px solid var(--line-hi); padding: 10px 18px;
+  transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Общее для полей: сброс */
+input, textarea, button { font: inherit; color: inherit; background: none; border: none; outline: none; }
+button { cursor: pointer; }
+input::placeholder, textarea::placeholder { color: var(--ink-4); opacity: 1; }
+
+/* ════════════════════════════════════════════════════════════════
+   01 · РЕЕСТР — учётная книга Отдела Регулирования
+   Терминал как лист дела: прошито, пронумеровано, проштамповано.
+   ════════════════════════════════════════════════════════════════ */
+.f1 {
+  background: var(--deep);
+  border: 1px solid var(--line-hi);
+  font-family: var(--mono);
+  position: relative;
+  padding-left: 26px; /* корешок с перфорацией */
+}
+.f1::before { /* перфорация корешка */
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 26px;
+  border-right: 1px solid var(--line);
+  background-image: radial-gradient(circle at 13px 16px, var(--void) 2.5px, transparent 3px);
+  background-size: 26px 32px; background-position: 0 8px;
+}
+.f1-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--line-hi);
+}
+.f1-head .doc {
+  font-size: 10px; letter-spacing: 0.18em; color: var(--ink-3);
+}
+.f1-head .doc b { color: var(--ink); font-weight: 600; }
+.f1-head .no { margin-left: auto; font-size: 10px; letter-spacing: 0.1em; color: var(--ink-4); }
+.f1-stamp {
+  font-size: 9px; letter-spacing: 0.16em; color: var(--red-hi);
+  border: 1px solid rgba(192,40,40,0.55); padding: 3px 8px;
+  transform: rotate(-1.6deg);
+}
+.f1-stamp.ok { color: var(--ok); border-color: rgba(56,193,114,0.45); }
+.f1-body { padding: 6px 16px 14px; }
+.f1-row {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 8px 0; font-size: 12px;
+}
+.f1-row + .f1-row { border-top: 1px dashed rgba(240,240,248,0.07); }
+.f1-row .i { font-size: 9px; color: var(--ink-4); width: 20px; flex-shrink: 0; }
+.f1-row .k { font-size: 10px; letter-spacing: 0.12em; color: var(--ink-3); }
+.f1-row .lead { flex: 1; border-bottom: 1px dotted rgba(240,240,248,0.16); transform: translateY(-3px); min-width: 24px; }
+.f1-row .v { color: var(--ink); font-weight: 500; text-align: right; }
+.f1-row .v.c { color: var(--cyan-hi); } .f1-row .v.r { color: var(--red-hi); }
+.f1-row.locked .v { color: var(--ink-4); font-weight: 400; }
+.f1-row.locked .k::after { content: " · ДОСТУП A"; color: rgba(192,40,40,0.7); letter-spacing: 0.1em; }
+.f1-foot {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 9px 16px; border-top: 1px solid var(--line);
+  font-size: 9px; letter-spacing: 0.14em; color: var(--ink-4);
+}
+/* поля-бланки */
+.f1-field { display: flex; align-items: baseline; gap: 10px; padding: 10px 0; }
+.f1-field + .f1-field { border-top: 1px dashed rgba(240,240,248,0.07); }
+.f1-field .i { font-size: 9px; color: var(--ink-4); width: 20px; }
+.f1-field label { font-size: 10px; letter-spacing: 0.12em; color: var(--ink-3); flex-shrink: 0; }
+.f1-field input, .f1-field textarea {
+  flex: 1; font-family: var(--mono); font-size: 12px; color: var(--ink);
+  border-bottom: 1px dotted rgba(240,240,248,0.28); padding: 0 2px 3px;
+  transition: border-color 0.2s;
+}
+.f1-field :is(input, textarea):focus { border-bottom: 1px solid var(--red-hi); }
+.f1-check { display: flex; gap: 10px; align-items: center; padding: 12px 0 4px 30px; font-size: 10px; color: var(--ink-3); cursor: pointer; }
+.f1-check input { position: absolute; opacity: 0; }
+.f1-check .box {
+  width: 13px; height: 13px; border: 1px solid var(--line-hi); flex-shrink: 0;
+  display: grid; place-items: center; transition: border-color 0.15s;
+}
+.f1-check input:checked + .box { border-color: var(--red-hi); }
+.f1-check input:checked + .box::after { content: "✕"; color: var(--red-hi); font-size: 9px; }
+.f1-btn {
+  display: block; width: calc(100% - 30px); margin: 14px 0 4px 30px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em;
+  color: var(--red-hi); border: 1px solid rgba(192,40,40,0.6);
+  padding: 13px 16px; text-transform: uppercase;
+  transition: background 0.15s, color 0.15s;
+}
+.f1-btn:hover { background: var(--red); color: var(--ink); }
+.f1-btn:active { transform: translateY(1px); }
+/* частотная строка Эха — язык Штрих */
+.f1-freq { display: flex; align-items: flex-end; gap: 2px; height: 42px; padding: 10px 0 6px 30px; }
+.f1-freq span { width: 3px; background: var(--cyan); opacity: 0.75; height: 20%; transition: height 0.3s; }
+.f1.rec .f1-freq span { background: var(--red-hi); }
+.f1-tabs { display: flex; gap: 14px; padding: 10px 0 2px 30px; font-size: 10px; letter-spacing: 0.14em; }
+.f1-tab { color: var(--ink-4); padding-bottom: 3px; border-bottom: 1px solid transparent; }
+.f1-tab.on { color: var(--ink); border-bottom-color: var(--red-hi); }
+.f1-tab .p { color: var(--ink-4); margin-left: 6px; }
+.f1-meta { display: flex; justify-content: space-between; padding: 6px 2px 0 30px; font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); }
+</style>
+</head>
+<body>
+
+<header class="lb-head">
+  <h1>Терминалы <span class="dim">// 5 направлений</span></h1>
+  <p class="lb-sub">Каждое направление показано на всех интерфейсах системы: <strong>живая лента</strong>, <strong>Эхо</strong>, <strong>конденсация</strong> (статус и форма объединены в один терминал), <strong>реестр Архитектора</strong> и <strong>усиление антенны</strong>. Контент настоящий, с сайта. Поля живые: печатайте, переключайте, нажимайте. Направления можно смешивать.</p>
+</header>
+
+<nav class="lb-nav" aria-label="Направления">
+  <div class="lb-nav-in">
+    <a href="#f1"><span class="n">01</span>РЕЕСТР</a>
+    <a href="#f2"><span class="n">02</span>ПРИБОР</a>
+    <a href="#f3"><span class="n">03</span>КАНАЛ</a>
+    <a href="#f4"><span class="n">04</span>МЕМБРАНА</a>
+    <a href="#f5"><span class="n">05</span>АРТЕФАКТ</a>
+  </div>
+</nav>
+
+<!-- ═══════════════ 01 · РЕЕСТР ═══════════════ -->
+<section class="fam" id="f1">
+  <div class="fam-head">
+    <div class="num">НАПРАВЛЕНИЕ 01</div>
+    <h2>Реестр</h2>
+    <p>Терминал как лист учётного дела: прошито, пронумеровано, проштамповано. Дух <strong>Отдела Регулирования</strong>: система не показывает себя, она ведёт запись. Перфорация корешка, номера строк, пунктирные отточия, штампы вместо светодиодов. Самое строгое и «бумажное» из пяти.</p>
+  </div>
+  <div class="fam-grid">
+
+    <div class="cell-5">
+      <p class="cap"><b>Live feed</b> · шапка сайта</p>
+      <div class="f1">
+        <div class="f1-head">
+          <span class="doc"><b>АПЕРТУРА</b> // ОПИСЬ СОСТОЯНИЯ</span>
+          <span class="no">Ф-01/26</span>
+          <span class="f1-stamp ok">АКТИВНА</span>
+        </div>
+        <div class="f1-body">
+          <div class="f1-row"><span class="i">01</span><span class="k">SYS.STATUS</span><span class="lead"></span><span class="v c">ONLINE</span></div>
+          <div class="f1-row"><span class="i">02</span><span class="k">ACTIVE.WORLD</span><span class="lead"></span><span class="v">MARKETSPACE</span></div>
+          <div class="f1-row"><span class="i">03</span><span class="k">CATALOG.ID</span><span class="lead"></span><span class="v">01-2026</span></div>
+          <div class="f1-row"><span class="i">04</span><span class="k">CONDENSATS.ACTIVE</span><span class="lead"></span><span class="v">11</span></div>
+          <div class="f1-row locked"><span class="i">05</span><span class="k">APERTURA.VERSION</span><span class="lead"></span><span class="v">1.1.7</span></div>
+          <div class="f1-row locked"><span class="i">06</span><span class="k">PERIMETER.STATUS</span><span class="lead"></span><span class="v">STABLE</span></div>
+        </div>
+        <div class="f1-foot"><span>ПРОШИТО · ПРОНУМЕРОВАНО</span><span>ПАМЯТЬ APERTURA</span></div>
+      </div>
+    </div>
+
+    <div class="cell-7">
+      <p class="cap"><b>Эхо</b> · отправка сигнала</p>
+      <div class="f1" data-echo>
+        <div class="f1-head">
+          <span class="doc"><b>ЭХО</b> // БЛАНК СИГНАЛА</span>
+          <span class="no" data-freq>12.847 GHZ</span>
+          <span class="f1-stamp">К ПРИЁМУ</span>
+        </div>
+        <div class="f1-body">
+          <div class="f1-freq" data-bars aria-hidden="true"></div>
+          <div class="f1-tabs" role="tablist">
+            <button class="f1-tab on" data-tab="text" role="tab" aria-selected="true">ТЕКСТ<span class="p">599 ₽</span></button>
+            <button class="f1-tab" data-tab="voice" role="tab" aria-selected="false">ГОЛОС<span class="p">1499 ₽</span></button>
+          </div>
+          <div data-pane="text">
+            <div class="f1-field"><span class="i">01</span><label>СИГНАЛ</label><input data-words placeholder="Семь слов на ту сторону" maxlength="120"></div>
+            <div class="f1-meta"><span>ДО 7 СЛОВ</span><span data-count>0 / 7 СЛОВ</span></div>
+          </div>
+          <div data-pane="voice" hidden>
+            <div class="f1-field"><span class="i">01</span><label>ГОЛОС</label>
+              <button class="f1-btn" style="margin:0;width:auto;flex:1" data-rec>НАЧАТЬ ЗАПИСЬ · ДО 3 СЕК</button>
+            </div>
+            <div class="f1-meta"><span data-rec-status>КАНАЛ ГОТОВ</span><span data-rec-time>0.0 СЕК</span></div>
+          </div>
+          <button class="f1-btn" data-send data-done="СИГНАЛ ПРИНЯТ · ЗАПИСАН В ПАМЯТЬ APERTURA">Передать Эхо</button>
+        </div>
+        <div class="f1-foot"><span data-status>ОЖИДАНИЕ СИГНАЛА</span><span>АУРА НАЗНАЧАЕТСЯ СИСТЕМОЙ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-7">
+      <p class="cap"><b>Конденсация</b> · индивидуальный запрос, объединённый терминал</p>
+      <div class="f1" data-cond>
+        <div class="f1-head">
+          <span class="doc"><b>АПЕРТУРА</b> // ЗАПРОС КОНДЕНСАЦИИ</span>
+          <span class="no">Ф-09/26</span>
+          <span class="f1-stamp" data-cond-stamp>ОЖИДАЕТ</span>
+        </div>
+        <div class="f1-body">
+          <div class="f1-row"><span class="i">01</span><span class="k">RELIC.SIGNAL</span><span class="lead"></span><span class="v" data-mirror="relic">—</span></div>
+          <div class="f1-row"><span class="i">02</span><span class="k">CONTACT.NODE</span><span class="lead"></span><span class="v" data-mirror="mail">—</span></div>
+          <div class="f1-field"><span class="i">03</span><label>РЕЛИКВИЯ</label><input data-src="relic" placeholder="Какую реликвию желаете? *" maxlength="120"></div>
+          <div class="f1-field"><span class="i">04</span><label>EMAIL</label><input data-src="mail" type="email" placeholder="Email для связи *"></div>
+          <label class="f1-check"><input type="checkbox"><span class="box"></span>Подтверждаю согласие на обработку персональных данных.</label>
+          <button class="f1-btn" data-send data-done="ЗАПРОС ПРИНЯТ · АРХИТЕКТОР ПРОВЕРИТ ПОТОК">Запросить конденсацию</button>
+        </div>
+        <div class="f1-foot"><span>ТОЛЬКО ФИЗИЧЕСКИЕ ПРЕДМЕТЫ · ДО 5 КГ</span><span>ЗОНА КОНДЕНСАЦИИ АКТИВНА</span></div>
+      </div>
+    </div>
+
+    <div class="cell-5">
+      <p class="cap"><b>Архитектор</b> · реестр</p>
+      <div class="f1">
+        <div class="f1-head">
+          <span class="doc"><b>ДЕЛО</b> // ECH-0001</span>
+          <span class="no">АРХИВ</span>
+          <span class="f1-stamp">ЗАПЕРТО</span>
+        </div>
+        <div class="f1-body">
+          <div class="f1-row"><span class="i">01</span><span class="k">DESIGNATION</span><span class="lead"></span><span class="v">ARCHITECT</span></div>
+          <div class="f1-row"><span class="i">02</span><span class="k">IDENTIFIER</span><span class="lead"></span><span class="v">aintonx</span></div>
+          <div class="f1-row locked"><span class="i">03</span><span class="k">ACCESS.LEVEL</span><span class="lead"></span><span class="v">X</span></div>
+          <div class="f1-row"><span class="i">04</span><span class="k">WORLDS.CREATED</span><span class="lead"></span><span class="v">1</span></div>
+          <div class="f1-row locked"><span class="i">05</span><span class="k">WORLDS.PENDING</span><span class="lead"></span><span class="v">∞</span></div>
+          <div class="f1-row locked"><span class="i">06</span><span class="k">APERTURA</span><span class="lead"></span><span class="v">CONSOLE</span></div>
+          <div class="f1-row"><span class="i">07</span><span class="k">STATUS</span><span class="lead"></span><span class="v r">WORLD.BUILDING</span></div>
+        </div>
+        <div class="f1-foot"><span>ПРОТОКОЛ СЕМИ</span><span>УРОВЕНЬ X · НЕ НАКАПЛИВАЕТСЯ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-12">
+      <p class="cap"><b>Поддержка</b> · усиление сигнала антенны</p>
+      <div class="f1">
+        <div class="f1-head">
+          <span class="doc"><b>АНТЕННА</b> // ВЕДОМОСТЬ УСИЛЕНИЯ</span>
+          <span class="no">Ф-12/26</span>
+          <span class="f1-stamp ok">КАНАЛ ОТКРЫТ</span>
+        </div>
+        <div class="f1-body" style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px;">
+          <div>
+            <div class="f1-row"><span class="i">01</span><span class="k">МОЩНОСТЬ ПЕРЕДАТЧИКА</span><span class="lead"></span><span class="v">34%</span></div>
+            <div class="f1-row"><span class="i">02</span><span class="k">АПЕРТУРА ПРИЁМА</span><span class="lead"></span><span class="v">УЗКАЯ</span></div>
+            <div class="f1-row"><span class="i">03</span><span class="k">ШУМОВОЙ ПОРОГ</span><span class="lead"></span><span class="v r">ВЫСОКИЙ</span></div>
+            <div class="f1-row"><span class="i">04</span><span class="k">МИРЫ В ОЧЕРЕДИ</span><span class="lead"></span><span class="v">III · IV</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+            <button class="f1-btn" data-toast="ДЕМО · ПЛАТЁЖНЫЙ КАНАЛ ОТКЛЮЧЁН" style="margin-left:0;width:100%;">Усилить сигнал через СБП</button>
+          </div>
+        </div>
+        <div class="f1-foot"><span>КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ</span><span>ЧЕМ ЧИЩЕ КАНАЛ, ТЕМ ДАЛЬШЕ СЛЫШНО</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<svg style="display:none" aria-hidden="true"><symbol id="ic-lock" viewBox="0 0 24 24"><path d="M7 10V8a5 5 0 0 1 10 0v2h1.5a.5.5 0 0 1 .5.5V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9.5a.5.5 0 0 1 .5-.5H7zm2 0h6V8a3 3 0 0 0-6 0v2z"/></symbol></svg>
+
+<style>
+/* ════════════════════════════════════════════════════════════════
+   02 · ПРИБОР — измерительная техника Апертуры
+   Терминал как лабораторный инструмент: шкалы, стрелки, светодиоды
+   Ридера. Система, которую можно потрогать за ручки настройки.
+   ════════════════════════════════════════════════════════════════ */
+.f2 {
+  font-family: var(--mono);
+  background: linear-gradient(180deg, #0c0c16, #08080f);
+  border: 1px solid rgba(240,240,248,0.13);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+.f2-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.01));
+  border-bottom: 1px solid rgba(240,240,248,0.12);
+}
+.f2-head .brand {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.22em; color: var(--ink);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.8);
+}
+.f2-head .model { font-size: 9px; letter-spacing: 0.14em; color: var(--ink-4); }
+.f2-head .leds { margin-left: auto; display: flex; gap: 7px; }
+.f2-led {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #1c1c2c; box-shadow: inset 0 1px 1px rgba(0,0,0,0.7);
+}
+.f2-led.g { background: var(--ok); box-shadow: 0 0 7px rgba(56,193,114,0.7); }
+.f2-led.y { background: var(--warm); box-shadow: 0 0 7px rgba(209,160,74,0.6); }
+.f2-led.r { background: var(--red-hi); box-shadow: 0 0 7px rgba(230,69,69,0.7); }
+.f2.rec .f2-led.r, .f2.typing .f2-led.r { animation: f2blink 0.9s steps(2) infinite; }
+@keyframes f2blink { 50% { opacity: 0.25; } }
+/* шкала-градуировка под шапкой: осмысленные деления прибора */
+.f2-scale {
+  height: 7px;
+  background-image: linear-gradient(90deg, rgba(240,240,248,0.18) 1px, transparent 1px);
+  background-size: 9px 100%;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0 2px, #000 2px);
+          mask-image: linear-gradient(180deg, transparent 0 2px, #000 2px);
+  border-bottom: 1px solid rgba(240,240,248,0.09);
+  opacity: 0.55;
+}
+.f2-body { padding: 14px 14px 12px; }
+.f2-row { display: grid; grid-template-columns: 128px 1fr auto; align-items: center; gap: 12px; padding: 7px 0; }
+.f2-row .k { font-size: 9.5px; letter-spacing: 0.1em; color: var(--ink-3); }
+.f2-row .v { font-size: 12px; font-weight: 500; color: var(--ink); text-align: right; min-width: 76px; }
+.f2-row .v.c { color: var(--cyan-hi); } .f2-row .v.r { color: var(--red-hi); } .f2-row .v.dim { color: var(--ink-4); font-weight: 400; }
+.f2-track { position: relative; height: 3px; background: rgba(240,240,248,0.09); border-radius: 2px; }
+.f2-track i {
+  position: absolute; inset: 0 auto 0 0; width: var(--w, 50%);
+  background: var(--cyan); border-radius: 2px;
+  box-shadow: 0 0 8px rgba(0,200,200,0.4);
+}
+.f2-track.r i { background: var(--red-hi); box-shadow: 0 0 8px rgba(230,69,69,0.4); }
+.f2-track.w i { background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.4); }
+.f2-track em {
+  position: absolute; top: -3.5px; left: var(--w, 50%); width: 1px; height: 10px;
+  background: var(--ink); box-shadow: 0 0 4px rgba(240,240,248,0.8);
+}
+.f2-row .lock { width: 11px; height: 11px; fill: var(--ink-4); flex-shrink: 0; margin-left: 6px; vertical-align: -1px; }
+.f2-foot {
+  display: flex; justify-content: space-between; padding: 8px 14px;
+  border-top: 1px solid rgba(240,240,248,0.09);
+  font-size: 9px; letter-spacing: 0.13em; color: var(--ink-4);
+}
+/* экран осциллографа */
+.f2-scope { position: relative; margin: 2px 0 12px; border: 1px solid rgba(240,240,248,0.1); border-radius: 6px; background: var(--well); overflow: hidden; }
+.f2-scope::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,200,200,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,200,0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.f2-scope svg { display: block; width: 100%; height: 110px; }
+.f2-scope path { fill: none; stroke: var(--cyan); stroke-width: 1.6; filter: drop-shadow(0 0 4px rgba(0,200,200,0.55)); }
+.f2.typing .f2-scope path, .f2.rec .f2-scope path { stroke: var(--red-hi); filter: drop-shadow(0 0 4px rgba(230,69,69,0.55)); }
+.f2-scope .freq {
+  position: absolute; top: 7px; right: 9px;
+  font-size: 9px; letter-spacing: 0.12em; color: var(--cyan-hi); opacity: 0.85;
+}
+/* органы управления */
+.f2-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.f2-tab {
+  flex: 1; display: flex; justify-content: space-between; gap: 8px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  padding: 9px 12px; color: var(--ink-3);
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+  border: 1px solid rgba(240,240,248,0.12); border-radius: 6px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.f2-tab .p { color: var(--ink-4); }
+.f2-tab.on { color: var(--ink); border-color: rgba(0,200,200,0.5); box-shadow: inset 0 0 12px rgba(0,200,200,0.08); }
+.f2-tab.on .p { color: var(--cyan-hi); }
+.f2-well {
+  width: 100%; font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+  background: var(--well); border: 1px solid rgba(240,240,248,0.11); border-radius: 6px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.55);
+  padding: 11px 13px; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.f2-well:focus { border-color: rgba(0,200,200,0.55); box-shadow: inset 0 2px 6px rgba(0,0,0,0.55), 0 0 10px rgba(0,200,200,0.12); }
+.f2-meta { display: flex; justify-content: space-between; margin: 7px 1px 0; font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); }
+.f2-btn {
+  display: block; width: 100%; margin-top: 12px;
+  font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--ink); padding: 13px 16px; border-radius: 7px;
+  background: linear-gradient(180deg, #d23434, #a82222);
+  border: 1px solid #e05050;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 3px 0 #6e1616;
+  transition: transform 0.08s, box-shadow 0.08s, filter 0.15s;
+}
+.f2-btn:hover { filter: brightness(1.08); }
+.f2-btn:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 1px 0 #6e1616; }
+.f2-btn.ghost {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border: 1px solid rgba(240,240,248,0.16); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 3px 0 #05050c;
+  color: var(--ink-2);
+}
+.f2-check { display: flex; gap: 10px; align-items: center; margin-top: 12px; font-size: 10px; color: var(--ink-3); cursor: pointer; position: relative; }
+.f2-check input { position: absolute; opacity: 0; }
+.f2-check .box {
+  width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0;
+  background: var(--well); border: 1px solid rgba(240,240,248,0.16);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.6);
+  display: grid; place-items: center; transition: border-color 0.15s;
+}
+.f2-check input:checked + .box { border-color: var(--cyan); }
+.f2-check input:checked + .box::after { content: ""; width: 6px; height: 6px; border-radius: 2px; background: var(--cyan); box-shadow: 0 0 6px rgba(0,200,200,0.7); }
+/* круговой индикатор мощности антенны */
+.f2-gauge { display: flex; align-items: center; gap: 18px; padding: 4px 0 8px; }
+.f2-gauge svg { width: 92px; height: 92px; flex-shrink: 0; }
+.f2-gauge .bg { fill: none; stroke: rgba(240,240,248,0.1); stroke-width: 7; }
+.f2-gauge .val { fill: none; stroke: var(--warm); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 74 218; filter: drop-shadow(0 0 5px rgba(209,160,74,0.5)); }
+.f2-gauge .num { font-size: 17px; font-weight: 600; fill: var(--ink); }
+.f2-gauge .lbl { font-size: 6.5px; letter-spacing: 0.14em; fill: var(--ink-4); }
+</style>
+
+<!-- ═══════════════ 02 · ПРИБОР ═══════════════ -->
+<section class="fam" id="f2">
+  <div class="fam-head">
+    <div class="num">НАПРАВЛЕНИЕ 02</div>
+    <h2>Прибор</h2>
+    <p>Терминал как измерительный инструмент Апертуры: гравированная панель, деления шкалы, светодиоды в логике <strong>Ридера</strong> (зелёный — норма, жёлтый — тревога, красный — запись), уровни-полоски у каждого показателя, кнопки, которые физически нажимаются. Система, у которой есть корпус.</p>
+  </div>
+  <div class="fam-grid">
+
+    <div class="cell-5">
+      <p class="cap"><b>Live feed</b> · шапка сайта</p>
+      <div class="f2">
+        <div class="f2-head"><span class="brand">APERTURA</span><span class="model">БЛОК ИЗМ-01 · СЕРИЯ 26</span><span class="leds"><span class="f2-led g"></span><span class="f2-led"></span><span class="f2-led"></span></span></div>
+        <div class="f2-scale" aria-hidden="true"></div>
+        <div class="f2-body">
+          <div class="f2-row"><span class="k">SYS.STATUS</span><span class="f2-track"><i style="--w:96%"></i><em style="--w:96%"></em></span><span class="v c">ONLINE</span></div>
+          <div class="f2-row"><span class="k">ACTIVE.WORLD</span><span class="f2-track"><i style="--w:64%"></i><em style="--w:64%"></em></span><span class="v">MARKETSPACE</span></div>
+          <div class="f2-row"><span class="k">CATALOG.ID</span><span class="f2-track"><i style="--w:22%"></i><em style="--w:22%"></em></span><span class="v">01-2026</span></div>
+          <div class="f2-row"><span class="k">CONDENSATS.ACTIVE</span><span class="f2-track w"><i style="--w:44%"></i><em style="--w:44%"></em></span><span class="v">11</span></div>
+          <div class="f2-row"><span class="k">APERTURA.VERSION</span><span class="f2-track"><i style="--w:0%"></i></span><span class="v dim">1.1.7<svg class="lock"><use href="#ic-lock"/></svg></span></div>
+          <div class="f2-row"><span class="k">PERIMETER.STATUS</span><span class="f2-track"><i style="--w:0%"></i></span><span class="v dim">STABLE<svg class="lock"><use href="#ic-lock"/></svg></span></div>
+        </div>
+        <div class="f2-foot"><span>КАНАЛ 14.763 GHZ</span><span>ПОМЕХ НЕТ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-7">
+      <p class="cap"><b>Эхо</b> · отправка сигнала</p>
+      <div class="f2" data-echo>
+        <div class="f2-head"><span class="brand">ЭХО</span><span class="model">ПЕРЕДАТЧИК СИГНАЛА</span><span class="leds"><span class="f2-led g"></span><span class="f2-led"></span><span class="f2-led r"></span></span></div>
+        <div class="f2-scale" aria-hidden="true"></div>
+        <div class="f2-body">
+          <div class="f2-scope">
+            <svg viewBox="0 0 400 200" preserveAspectRatio="none" aria-hidden="true"><path data-osc d="M0,100 L400,100"/></svg>
+            <span class="freq" data-freq>12.847 GHZ</span>
+          </div>
+          <div class="f2-tabs" role="tablist">
+            <button class="f2-tab on" data-tab="text" role="tab" aria-selected="true"><span>ТЕКСТ</span><span class="p">599 ₽</span></button>
+            <button class="f2-tab" data-tab="voice" role="tab" aria-selected="false"><span>ГОЛОС</span><span class="p">1499 ₽</span></button>
+          </div>
+          <div data-pane="text">
+            <input class="f2-well" data-words placeholder="Семь слов на ту сторону" maxlength="120">
+            <div class="f2-meta"><span>ДО 7 СЛОВ</span><span data-count>0 / 7 СЛОВ</span></div>
+          </div>
+          <div data-pane="voice" hidden>
+            <button class="f2-btn ghost" data-rec style="margin-top:0">НАЧАТЬ ЗАПИСЬ · ДО 3 СЕК</button>
+            <div class="f2-meta"><span data-rec-status>КАНАЛ ГОТОВ</span><span data-rec-time>0.0 СЕК</span></div>
+          </div>
+          <button class="f2-btn" data-send data-done="СИГНАЛ ПРИНЯТ · ЗАПИСАН В ПАМЯТЬ APERTURA">Передать Эхо</button>
+        </div>
+        <div class="f2-foot"><span data-status>ОЖИДАНИЕ СИГНАЛА</span><span>АУРА НАЗНАЧАЕТСЯ СИСТЕМОЙ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-7">
+      <p class="cap"><b>Конденсация</b> · индивидуальный запрос, объединённый терминал</p>
+      <div class="f2" data-cond>
+        <div class="f2-head"><span class="brand">APERTURA</span><span class="model">CONDENSATE FORMING</span><span class="leds"><span class="f2-led g"></span><span class="f2-led y"></span><span class="f2-led"></span></span></div>
+        <div class="f2-scale" aria-hidden="true"></div>
+        <div class="f2-body">
+          <div class="f2-row"><span class="k">RELIC.SIGNAL</span><span class="f2-track w"><i style="--w:0%"></i></span><span class="v dim" data-mirror="relic">—</span></div>
+          <div class="f2-row" style="margin-bottom:8px"><span class="k">CONTACT.NODE</span><span class="f2-track w"><i style="--w:0%"></i></span><span class="v dim" data-mirror="mail">—</span></div>
+          <input class="f2-well" data-src="relic" placeholder="Какую реликвию желаете? *" maxlength="120" style="margin-bottom:10px">
+          <input class="f2-well" data-src="mail" type="email" placeholder="Email для связи *">
+          <label class="f2-check"><input type="checkbox"><span class="box"></span>Подтверждаю согласие на обработку персональных данных.</label>
+          <button class="f2-btn" data-send data-done="ЗАПРОС ПРИНЯТ · АРХИТЕКТОР ПРОВЕРИТ ПОТОК">Запросить конденсацию</button>
+        </div>
+        <div class="f2-foot"><span data-status>APERTURA AWAITS SIGNAL</span><span>ТОЛЬКО ФИЗИЧЕСКОЕ · ДО 5 КГ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-5">
+      <p class="cap"><b>Архитектор</b> · реестр</p>
+      <div class="f2">
+        <div class="f2-head"><span class="brand">РЕЕСТР</span><span class="model">ARCHITECT · ECH-0001</span><span class="leds"><span class="f2-led g"></span><span class="f2-led"></span><span class="f2-led r"></span></span></div>
+        <div class="f2-scale" aria-hidden="true"></div>
+        <div class="f2-body">
+          <div class="f2-row"><span class="k">DESIGNATION</span><span class="f2-track r"><i style="--w:100%"></i></span><span class="v">ARCHITECT</span></div>
+          <div class="f2-row"><span class="k">IDENTIFIER</span><span class="f2-track r"><i style="--w:70%"></i></span><span class="v">aintonx</span></div>
+          <div class="f2-row"><span class="k">ACCESS.LEVEL</span><span class="f2-track r"><i style="--w:100%"></i><em style="--w:100%"></em></span><span class="v r">X<svg class="lock"><use href="#ic-lock"/></svg></span></div>
+          <div class="f2-row"><span class="k">WORLDS.CREATED</span><span class="f2-track"><i style="--w:25%"></i></span><span class="v">1</span></div>
+          <div class="f2-row"><span class="k">WORLDS.PENDING</span><span class="f2-track"><i style="--w:0%"></i></span><span class="v dim">∞<svg class="lock"><use href="#ic-lock"/></svg></span></div>
+          <div class="f2-row"><span class="k">APERTURA</span><span class="f2-track"><i style="--w:0%"></i></span><span class="v dim">CONSOLE<svg class="lock"><use href="#ic-lock"/></svg></span></div>
+          <div class="f2-row"><span class="k">STATUS</span><span class="f2-track w"><i style="--w:58%"></i><em style="--w:58%"></em></span><span class="v">WORLD.BUILDING</span></div>
+        </div>
+        <div class="f2-foot"><span>ПРОТОКОЛ СЕМИ</span><span>УРОВЕНЬ X · НЕ НАКАПЛИВАЕТСЯ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-12">
+      <p class="cap"><b>Поддержка</b> · усиление сигнала антенны</p>
+      <div class="f2">
+        <div class="f2-head"><span class="brand">АНТЕННА</span><span class="model">SIGNAL SUPPORT · CHANNEL OPEN</span><span class="leds"><span class="f2-led g"></span><span class="f2-led y"></span><span class="f2-led"></span></span></div>
+        <div class="f2-scale" aria-hidden="true"></div>
+        <div class="f2-body" style="display:grid;grid-template-columns:auto 1fr;gap:6px 34px;align-items:center;">
+          <div class="f2-gauge">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle class="bg" cx="50" cy="50" r="41"/>
+              <circle class="val" cx="50" cy="50" r="41" transform="rotate(-90 50 50)"/>
+              <text class="num" x="50" y="49" text-anchor="middle">34%</text>
+              <text class="lbl" x="50" y="63" text-anchor="middle">МОЩНОСТЬ</text>
+            </svg>
+          </div>
+          <div>
+            <div class="f2-row"><span class="k">АПЕРТУРА ПРИЁМА</span><span class="f2-track w"><i style="--w:28%"></i><em style="--w:28%"></em></span><span class="v">УЗКАЯ</span></div>
+            <div class="f2-row"><span class="k">ШУМОВОЙ ПОРОГ</span><span class="f2-track r"><i style="--w:71%"></i><em style="--w:71%"></em></span><span class="v r">ВЫСОКИЙ</span></div>
+            <div class="f2-row"><span class="k">МИРЫ В ОЧЕРЕДИ</span><span class="f2-track"><i style="--w:50%"></i></span><span class="v">III · IV</span></div>
+            <button class="f2-btn" data-toast="ДЕМО · ПЛАТЁЖНЫЙ КАНАЛ ОТКЛЮЧЁН" style="max-width:360px">Усилить сигнал через СБП</button>
+          </div>
+        </div>
+        <div class="f2-foot"><span>КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ</span><span>ЧЕМ ЧИЩЕ КАНАЛ, ТЕМ ДАЛЬШЕ СЛЫШНО</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+/* ════════════════════════════════════════════════════════════════
+   03 · КАНАЛ — прямой поток системы
+   Никаких коробок: тонкая линейка сверху, журнал строк с таймкодами,
+   мигающий курсор, инверсная статусная строка снизу. Апертура
+   говорит текстом; всё остальное убрано.
+   ════════════════════════════════════════════════════════════════ */
+.f3 { font-family: var(--mono); font-size: 12.5px; }
+.f3-rule {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 10px; letter-spacing: 0.18em; color: var(--ink-3);
+}
+.f3-rule b { color: var(--ink); font-weight: 600; }
+.f3-rule::before, .f3-rule::after { content: ""; height: 1px; background: var(--line-hi); flex: 0 0 18px; }
+.f3-rule::after { flex: 1; }
+.f3-log { padding: 14px 2px 6px; }
+.f3-ln { display: flex; gap: 12px; padding: 3.5px 0; align-items: baseline; }
+.f3-ln .t { color: var(--ink-4); font-size: 10px; flex-shrink: 0; }
+.f3-ln .k { color: var(--ink-3); letter-spacing: 0.06em; }
+.f3-ln .arr { color: var(--ink-4); }
+.f3-ln .v { color: var(--ink); font-weight: 500; }
+.f3-ln .v.c { color: var(--cyan-hi); } .f3-ln .v.r { color: var(--red-hi); } .f3-ln .v.dim { color: var(--ink-4); font-weight: 400; }
+.f3-ln .tag { font-size: 9px; letter-spacing: 0.1em; padding: 1px 6px; border: 1px solid rgba(230,69,69,0.5); color: var(--red-hi); margin-left: 6px; }
+.f3-ln .tag.ok { border-color: rgba(0,200,200,0.4); color: var(--cyan-hi); }
+.f3-sys { color: var(--ink-4); padding: 3.5px 0; }
+.f3-sys .pfx { color: var(--red-hi); margin-right: 8px; }
+.f3-caret {
+  display: inline-block; width: 7px; height: 13px; vertical-align: -2px;
+  background: var(--cyan); margin-left: 3px;
+  animation: f3blink 1.1s steps(2) infinite;
+}
+@keyframes f3blink { 50% { opacity: 0; } }
+.f3-bar {
+  margin-top: 12px; display: flex; justify-content: space-between; gap: 16px;
+  background: var(--ink); color: var(--void);
+  font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+  padding: 6px 12px;
+}
+.f3-bar .m { color: #46464f; font-weight: 500; }
+/* строка-приглашение для ввода */
+.f3-prompt { display: flex; align-items: baseline; gap: 10px; padding: 6px 0 2px; }
+.f3-prompt .pfx { color: var(--cyan-hi); }
+.f3-prompt label { color: var(--ink-4); font-size: 10px; letter-spacing: 0.1em; flex-shrink: 0; }
+.f3-prompt input {
+  flex: 1; font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+  caret-color: var(--cyan); border-bottom: 1px solid transparent; padding-bottom: 2px;
+  transition: border-color 0.2s;
+}
+.f3-prompt input:focus { border-bottom-color: rgba(0,200,200,0.4); }
+/* команды в скобках */
+.f3-cmds { display: flex; flex-wrap: wrap; gap: 10px 18px; padding: 12px 0 2px; }
+.f3-cmd {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  color: var(--ink-2); padding: 6px 4px;
+  transition: background 0.12s, color 0.12s;
+}
+.f3-cmd::before { content: "[ "; color: var(--ink-4); }
+.f3-cmd::after { content: " ]"; color: var(--ink-4); }
+.f3-cmd:hover, .f3-cmd.on { background: var(--ink); color: var(--void); }
+.f3-cmd:hover::before, .f3-cmd:hover::after, .f3-cmd.on::before, .f3-cmd.on::after { color: var(--void); }
+.f3-cmd.hot { color: var(--red-hi); }
+.f3-cmd.hot:hover { background: var(--red); color: var(--ink); }
+.f3-cmd.hot:hover::before, .f3-cmd.hot:hover::after { color: var(--ink); }
+.f3-cmd .p { margin-left: 8px; opacity: 0.6; letter-spacing: 0.06em; }
+/* волна: голый луч без рамки */
+.f3-wave { position: relative; margin: 8px 0 2px; }
+.f3-wave svg { display: block; width: 100%; height: 72px; }
+.f3-wave path { fill: none; stroke: var(--cyan); stroke-width: 1.3; opacity: 0.9; }
+.f3.typing .f3-wave path, .f3.rec .f3-wave path { stroke: var(--red-hi); }
+.f3-wave .freq { position: absolute; top: 0; right: 2px; font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); }
+/* уровень сигнала антенны: блоки */
+.f3-blocks { display: flex; align-items: flex-end; gap: 3px; height: 40px; padding: 8px 0 4px; }
+.f3-blocks span { width: 6px; background: var(--ink-3); opacity: 0.85; height: 20%; }
+.f3-blocks span:nth-child(-n+6) { background: var(--warm); }
+.f3-check { display: flex; gap: 10px; align-items: baseline; padding: 8px 0 0; font-size: 10.5px; color: var(--ink-4); cursor: pointer; position: relative; }
+.f3-check input { position: absolute; opacity: 0; }
+.f3-check .box { color: var(--ink-3); }
+.f3-check .box::before { content: "[ ]"; letter-spacing: 2px; }
+.f3-check input:checked + .box { color: var(--cyan-hi); }
+.f3-check input:checked + .box::before { content: "[x]"; }
+</style>
+
+<!-- ═══════════════ 03 · КАНАЛ ═══════════════ -->
+<section class="fam" id="f3">
+  <div class="fam-head">
+    <div class="num">НАПРАВЛЕНИЕ 03</div>
+    <h2>Канал</h2>
+    <p>Терминал, у которого убрали корпус и оставили только связь. Журнал строк с таймкодами, мигающий курсор, команды в скобках, инверсная статусная строка. Самое смелое из пяти: границы создаются ритмом текста, а не рамками. Апертура здесь ближе всего к голосу в проводе.</p>
+  </div>
+  <div class="fam-grid">
+
+    <div class="cell-5">
+      <p class="cap"><b>Live feed</b> · шапка сайта</p>
+      <div class="f3">
+        <div class="f3-rule"><b>APERTURA</b><span>ЖИВАЯ ЛЕНТА</span></div>
+        <div class="f3-log">
+          <div class="f3-ln"><span class="t">09:41:07</span><span class="k">SYS.STATUS</span><span class="arr">→</span><span class="v c">ONLINE</span></div>
+          <div class="f3-ln"><span class="t">09:41:09</span><span class="k">ACTIVE.WORLD</span><span class="arr">→</span><span class="v">MARKETSPACE</span></div>
+          <div class="f3-ln"><span class="t">09:41:12</span><span class="k">CATALOG.ID</span><span class="arr">→</span><span class="v">01-2026</span></div>
+          <div class="f3-ln"><span class="t">09:41:15</span><span class="k">CONDENSATS.ACTIVE</span><span class="arr">→</span><span class="v">11</span></div>
+          <div class="f3-ln"><span class="t">09:41:18</span><span class="k">APERTURA.VERSION</span><span class="arr">→</span><span class="v dim">1.1.7</span><span class="tag">ЗАПЕРТО</span></div>
+          <div class="f3-ln"><span class="t">09:41:21</span><span class="k">PERIMETER.STATUS</span><span class="arr">→</span><span class="v dim">STABLE</span><span class="tag">ЗАПЕРТО</span></div>
+          <div class="f3-sys" style="margin-top:6px"><span class="pfx">&gt;</span>лента обновляется<span class="f3-caret"></span></div>
+        </div>
+        <div class="f3-bar"><span>ПАМЯТЬ APERTURA · ЗАПИСЬ ИДЁТ</span><span class="m">14.763 GHZ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-7">
+      <p class="cap"><b>Эхо</b> · отправка сигнала</p>
+      <div class="f3" data-echo>
+        <div class="f3-rule"><b>ЭХО</b><span>КАНАЛ ОТКРЫТ</span></div>
+        <div class="f3-log">
+          <div class="f3-wave">
+            <svg viewBox="0 0 400 200" preserveAspectRatio="none" aria-hidden="true"><path data-osc d="M0,100 L400,100"/></svg>
+            <span class="freq" data-freq>12.847 GHZ · SIGNAL ACCEPTED</span>
+          </div>
+          <div class="f3-cmds" role="tablist">
+            <button class="f3-cmd on" data-tab="text" role="tab" aria-selected="true">ТЕКСТ<span class="p">599 ₽</span></button>
+            <button class="f3-cmd" data-tab="voice" role="tab" aria-selected="false">ГОЛОС<span class="p">1499 ₽</span></button>
+          </div>
+          <div data-pane="text">
+            <div class="f3-prompt"><span class="pfx">&gt;</span><input data-words placeholder="Семь слов на ту сторону" maxlength="120"></div>
+            <div class="f3-ln" style="padding-top:6px"><span class="t">ДО 7 СЛОВ</span><span class="v dim" style="margin-left:auto;font-size:10px" data-count>0 / 7 СЛОВ</span></div>
+          </div>
+          <div data-pane="voice" hidden>
+            <div class="f3-cmds" style="padding-top:4px"><button class="f3-cmd" data-rec>НАЧАТЬ ЗАПИСЬ · ДО 3 СЕК</button></div>
+            <div class="f3-ln"><span class="t" data-rec-status>КАНАЛ ГОТОВ</span><span class="v dim" style="margin-left:auto;font-size:10px" data-rec-time>0.0 СЕК</span></div>
+          </div>
+          <div class="f3-cmds"><button class="f3-cmd hot" data-send data-done="СИГНАЛ ПРИНЯТ · ЗАПИСАН В ПАМЯТЬ APERTURA">ПЕРЕДАТЬ ЭХО</button></div>
+        </div>
+        <div class="f3-bar"><span data-status>ОЖИДАНИЕ СИГНАЛА</span><span class="m">АУРА НАЗНАЧАЕТСЯ СИСТЕМОЙ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-7">
+      <p class="cap"><b>Конденсация</b> · индивидуальный запрос, объединённый терминал</p>
+      <div class="f3" data-cond>
+        <div class="f3-rule"><b>APERTURA</b><span>ЗАПРОС КОНДЕНСАЦИИ</span></div>
+        <div class="f3-log">
+          <div class="f3-sys"><span class="pfx">&gt;</span>APERTURA AWAITS SIGNAL<span class="f3-caret"></span></div>
+          <div class="f3-ln"><span class="t">RELIC.SIGNAL</span><span class="v dim" style="margin-left:auto" data-mirror="relic">—</span></div>
+          <div class="f3-ln" style="margin-bottom:8px"><span class="t">CONTACT.NODE</span><span class="v dim" style="margin-left:auto" data-mirror="mail">—</span></div>
+          <div class="f3-prompt"><span class="pfx">&gt;</span><label>РЕЛИКВИЯ</label><input data-src="relic" placeholder="Какую реликвию желаете? *" maxlength="120"></div>
+          <div class="f3-prompt"><span class="pfx">&gt;</span><label>EMAIL</label><input data-src="mail" type="email" placeholder="Email для связи *"></div>
+          <label class="f3-check"><input type="checkbox"><span class="box"></span>Подтверждаю согласие на обработку персональных данных.</label>
+          <div class="f3-cmds"><button class="f3-cmd hot" data-send data-done="ЗАПРОС ПРИНЯТ · АРХИТЕКТОР ПРОВЕРИТ ПОТОК">ЗАПРОСИТЬ КОНДЕНСАЦИЮ</button></div>
+        </div>
+        <div class="f3-bar"><span data-status>ЗОНА КОНДЕНСАЦИИ АКТИВНА</span><span class="m">ТОЛЬКО ФИЗИЧЕСКОЕ · ДО 5 КГ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-5">
+      <p class="cap"><b>Архитектор</b> · реестр</p>
+      <div class="f3">
+        <div class="f3-rule"><b>РЕЕСТР</b><span>ECH-0001</span></div>
+        <div class="f3-log">
+          <div class="f3-sys"><span class="pfx">&gt;</span>запрос: реестр архитектора</div>
+          <div class="f3-sys" style="color:var(--red-hi);opacity:.85">доступ ограничен · Протокол Семи</div>
+          <div class="f3-ln" style="margin-top:6px"><span class="t">01</span><span class="k">DESIGNATION</span><span class="arr">→</span><span class="v">ARCHITECT</span></div>
+          <div class="f3-ln"><span class="t">02</span><span class="k">IDENTIFIER</span><span class="arr">→</span><span class="v">aintonx</span></div>
+          <div class="f3-ln"><span class="t">03</span><span class="k">ACCESS.LEVEL</span><span class="arr">→</span><span class="v r">X</span><span class="tag">ЗАПЕРТО</span></div>
+          <div class="f3-ln"><span class="t">04</span><span class="k">WORLDS.CREATED</span><span class="arr">→</span><span class="v">1</span></div>
+          <div class="f3-ln"><span class="t">05</span><span class="k">WORLDS.PENDING</span><span class="arr">→</span><span class="v dim">∞</span><span class="tag">ЗАПЕРТО</span></div>
+          <div class="f3-ln"><span class="t">06</span><span class="k">APERTURA</span><span class="arr">→</span><span class="v dim">CONSOLE</span><span class="tag">ЗАПЕРТО</span></div>
+          <div class="f3-ln"><span class="t">07</span><span class="k">STATUS</span><span class="arr">→</span><span class="v c">WORLD.BUILDING</span><span class="tag ok">ИДЁТ</span></div>
+        </div>
+        <div class="f3-bar"><span>ПРОТОКОЛ СЕМИ</span><span class="m">УРОВЕНЬ X · НЕ НАКАПЛИВАЕТСЯ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-12">
+      <p class="cap"><b>Поддержка</b> · усиление сигнала антенны</p>
+      <div class="f3">
+        <div class="f3-rule"><b>АНТЕННА</b><span>SIGNAL SUPPORT · CHANNEL OPEN</span></div>
+        <div class="f3-log" style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px;align-items:end;">
+          <div>
+            <div class="f3-ln"><span class="t">МОЩНОСТЬ</span><span class="v" style="margin-left:auto">34%</span></div>
+            <div class="f3-ln"><span class="t">АПЕРТУРА ПРИЁМА</span><span class="v" style="margin-left:auto">УЗКАЯ</span></div>
+            <div class="f3-ln"><span class="t">ШУМОВОЙ ПОРОГ</span><span class="v r" style="margin-left:auto">ВЫСОКИЙ</span></div>
+            <div class="f3-ln"><span class="t">МИРЫ В ОЧЕРЕДИ</span><span class="v" style="margin-left:auto">III · IV</span></div>
+          </div>
+          <div>
+            <div class="f3-blocks" data-bars aria-hidden="true"></div>
+            <div class="f3-cmds" style="padding-top:6px"><button class="f3-cmd hot" data-toast="ДЕМО · ПЛАТЁЖНЫЙ КАНАЛ ОТКЛЮЧЁН">УСИЛИТЬ СИГНАЛ ЧЕРЕЗ СБП</button></div>
+          </div>
+        </div>
+        <div class="f3-bar"><span>КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ</span><span class="m">ЧЕМ ЧИЩЕ КАНАЛ, ТЕМ ДАЛЬШЕ СЛЫШНО</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+/* ════════════════════════════════════════════════════════════════
+   04 · МЕМБРАНА — стекло между мирами
+   Терминал как иллюминатор: за размытым стеклом дышит MARKETSPACE
+   (узлы Старых Связей), запертые значения видны, но не читаются —
+   они буквально за мембраной. Самое премиальное и мягкое из пяти.
+   ════════════════════════════════════════════════════════════════ */
+.f4 {
+  font-family: var(--mono); position: relative; overflow: hidden;
+  border-radius: 16px;
+  background: rgba(13,13,26,0.58);
+  border: 1px solid rgba(240,240,248,0.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 24px 60px rgba(0,0,0,0.5);
+  backdrop-filter: blur(14px);
+}
+.f4::before { /* тот мир за стеклом: узлы Старых Связей */
+  content: ""; position: absolute; inset: -40%;
+  background:
+    radial-gradient(2px 2px at 18% 32%, rgba(76,224,224,0.5), transparent 100%),
+    radial-gradient(1.5px 1.5px at 64% 18%, rgba(240,240,248,0.4), transparent 100%),
+    radial-gradient(2px 2px at 82% 64%, rgba(230,69,69,0.4), transparent 100%),
+    radial-gradient(1.5px 1.5px at 38% 78%, rgba(76,224,224,0.35), transparent 100%),
+    radial-gradient(1px 1px at 52% 48%, rgba(240,240,248,0.3), transparent 100%),
+    radial-gradient(420px 260px at 75% 0%, rgba(0,200,200,0.07), transparent 70%),
+    radial-gradient(380px 240px at 10% 100%, rgba(192,40,40,0.06), transparent 70%);
+  filter: blur(1px);
+  animation: f4drift 26s linear infinite alternate;
+  pointer-events: none;
+}
+@keyframes f4drift { to { transform: translate(4%, 3%); } }
+@media (prefers-reduced-motion: reduce) { .f4::before { animation: none; } }
+.f4 > * { position: relative; }
+.f4-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px 0; }
+.f4-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-2);
+  background: rgba(240,240,248,0.05); border: 1px solid rgba(240,240,248,0.09);
+  border-radius: 99px; padding: 6px 12px;
+}
+.f4-chip .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px rgba(0,200,200,0.8); }
+.f4-chip .dot.r { background: var(--red-hi); box-shadow: 0 0 8px rgba(230,69,69,0.8); }
+.f4-chip .dot.w { background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.8); }
+.f4-head .aux { margin-left: auto; font-size: 9px; letter-spacing: 0.14em; color: var(--ink-4); }
+.f4-body { padding: 14px 18px 16px; }
+.f4-row { display: flex; align-items: center; gap: 14px; padding: 9.5px 2px; position: relative; }
+.f4-row + .f4-row::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(240,240,248,0.1) 18%, rgba(240,240,248,0.1) 82%, transparent);
+}
+.f4-row .k { font-size: 9.5px; letter-spacing: 0.13em; color: var(--ink-3); }
+.f4-row .v { margin-left: auto; font-size: 12.5px; font-weight: 500; color: var(--ink); }
+.f4-row .v.c { color: var(--cyan-hi); text-shadow: 0 0 12px rgba(0,200,200,0.4); }
+.f4-row .v.r { color: var(--red-hi); text-shadow: 0 0 12px rgba(230,69,69,0.35); }
+.f4-row.sealed .v { filter: blur(3.5px); opacity: 0.75; user-select: none; }
+.f4-row .lock { width: 11px; height: 11px; fill: var(--ink-4); flex-shrink: 0; }
+.f4-note { padding: 10px 2px 0; font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); display: flex; justify-content: space-between; gap: 12px; }
+/* стеклянные поля и кнопки */
+.f4-well {
+  width: 100%; font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+  background: rgba(240,240,248,0.045);
+  border: 1px solid rgba(240,240,248,0.1); border-radius: 10px;
+  padding: 12px 14px; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.f4-well:focus { border-color: rgba(0,200,200,0.45); box-shadow: 0 0 0 3px rgba(0,200,200,0.09), 0 0 18px rgba(0,200,200,0.1); background: rgba(240,240,248,0.06); }
+.f4-btn {
+  display: block; width: 100%; margin-top: 12px;
+  font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--cyan-hi); padding: 13px 16px; border-radius: 10px;
+  background: rgba(0,200,200,0.07);
+  border: 1px solid rgba(0,200,200,0.3);
+  box-shadow: inset 0 0 24px rgba(0,200,200,0.06);
+  transition: box-shadow 0.25s var(--ease-out), background 0.25s, transform 0.15s;
+}
+.f4-btn:hover { background: rgba(0,200,200,0.12); box-shadow: inset 0 0 24px rgba(0,200,200,0.1), 0 0 24px rgba(0,200,200,0.15); }
+.f4-btn:active { transform: scale(0.99); }
+.f4-btn.hot {
+  color: var(--ink); background: rgba(192,40,40,0.24); border-color: rgba(230,69,69,0.45);
+  box-shadow: inset 0 0 24px rgba(230,69,69,0.1);
+}
+.f4-btn.hot:hover { background: rgba(192,40,40,0.34); box-shadow: inset 0 0 24px rgba(230,69,69,0.14), 0 0 26px rgba(192,40,40,0.25); }
+.f4-tabs {
+  display: flex; gap: 4px; margin-bottom: 12px; padding: 4px;
+  background: rgba(240,240,248,0.04); border: 1px solid rgba(240,240,248,0.08);
+  border-radius: 12px;
+}
+.f4-tab {
+  flex: 1; display: flex; justify-content: center; gap: 10px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  padding: 9px 12px; color: var(--ink-3); border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+.f4-tab .p { color: var(--ink-4); }
+.f4-tab.on { color: var(--ink); background: rgba(240,240,248,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
+.f4-tab.on .p { color: var(--cyan-hi); }
+.f4-meta { display: flex; justify-content: space-between; margin: 8px 2px 0; font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); }
+.f4-check { display: flex; gap: 10px; align-items: center; margin-top: 12px; font-size: 10px; color: var(--ink-3); cursor: pointer; position: relative; }
+.f4-check input { position: absolute; opacity: 0; }
+.f4-check .box {
+  width: 15px; height: 15px; border-radius: 6px; flex-shrink: 0;
+  background: rgba(240,240,248,0.05); border: 1px solid rgba(240,240,248,0.14);
+  display: grid; place-items: center; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.f4-check input:checked + .box { border-color: rgba(0,200,200,0.6); box-shadow: 0 0 10px rgba(0,200,200,0.2); }
+.f4-check input:checked + .box::after { content: ""; width: 7px; height: 7px; border-radius: 3px; background: var(--cyan); box-shadow: 0 0 8px rgba(0,200,200,0.8); }
+/* осциллограф с блюмом */
+.f4-scope { position: relative; margin-bottom: 12px; }
+.f4-scope svg { display: block; width: 100%; height: 110px; }
+.f4-scope path { fill: none; stroke: var(--cyan-hi); stroke-width: 1.6; filter: drop-shadow(0 0 7px rgba(0,200,200,0.65)) drop-shadow(0 0 18px rgba(0,200,200,0.3)); }
+.f4.typing .f4-scope path, .f4.rec .f4-scope path { stroke: var(--red-hi); filter: drop-shadow(0 0 7px rgba(230,69,69,0.65)) drop-shadow(0 0 18px rgba(230,69,69,0.3)); }
+.f4-scope .freq { position: absolute; top: 2px; right: 4px; font-size: 9px; letter-spacing: 0.13em; color: var(--ink-4); }
+/* антенна с пульсирующим гало */
+.f4-halo { position: relative; display: grid; place-items: center; height: 128px; }
+.f4-halo .core {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--warm); box-shadow: 0 0 16px rgba(209,160,74,0.9);
+}
+.f4-halo .ring {
+  position: absolute; width: 10px; height: 10px; border-radius: 50%;
+  border: 1px solid rgba(209,160,74,0.7);
+  animation: f4ring 3.4s var(--ease-out) infinite;
+}
+.f4-halo .ring:nth-child(3) { animation-delay: 1.7s; }
+@keyframes f4ring { to { width: 128px; height: 128px; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .f4-halo .ring { animation: none; width: 72px; height: 72px; opacity: 0.3; }
+}
+</style>
+
+<!-- ═══════════════ 04 · МЕМБРАНА ═══════════════ -->
+<section class="fam" id="f4">
+  <div class="fam-head">
+    <div class="num">НАПРАВЛЕНИЕ 04</div>
+    <h2>Мембрана</h2>
+    <p>Терминал как иллюминатор в MARKETSPACE: глубокое стекло, за которым дышат узлы <strong>Старых Связей</strong>, мягкое свечение сигналов, плавные радиусы. Запертые значения не спрятаны, а размыты: они видны, но остаются <strong>за мембраной</strong>. Самое дорогое и спокойное из пяти.</p>
+  </div>
+  <div class="fam-grid">
+
+    <div class="cell-5">
+      <p class="cap"><b>Live feed</b> · шапка сайта</p>
+      <div class="f4">
+        <div class="f4-head"><span class="f4-chip"><span class="dot"></span>APERTURA · LIVE FEED</span><span class="aux">01-2026</span></div>
+        <div class="f4-body">
+          <div class="f4-row"><span class="k">SYS.STATUS</span><span class="v c">ONLINE</span></div>
+          <div class="f4-row"><span class="k">ACTIVE.WORLD</span><span class="v">MARKETSPACE</span></div>
+          <div class="f4-row"><span class="k">CONDENSATS.ACTIVE</span><span class="v">11</span></div>
+          <div class="f4-row sealed"><span class="k">APERTURA.VERSION</span><span class="v">1.1.7</span><svg class="lock"><use href="#ic-lock"/></svg></div>
+          <div class="f4-row sealed"><span class="k">PERIMETER.STATUS</span><span class="v">STABLE</span><svg class="lock"><use href="#ic-lock"/></svg></div>
+          <div class="f4-note"><span>ЗАПЕРТОЕ — ЗА МЕМБРАНОЙ</span><span>14.763 GHZ</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell-7">
+      <p class="cap"><b>Эхо</b> · отправка сигнала</p>
+      <div class="f4" data-echo>
+        <div class="f4-head"><span class="f4-chip"><span class="dot"></span>ЭХО · КАНАЛ ОТКРЫТ</span><span class="aux">SIGNAL ACCEPTED</span></div>
+        <div class="f4-body">
+          <div class="f4-scope">
+            <svg viewBox="0 0 400 200" preserveAspectRatio="none" aria-hidden="true"><path data-osc d="M0,100 L400,100"/></svg>
+            <span class="freq" data-freq>12.847 GHZ</span>
+          </div>
+          <div class="f4-tabs" role="tablist">
+            <button class="f4-tab on" data-tab="text" role="tab" aria-selected="true"><span>ТЕКСТ</span><span class="p">599 ₽</span></button>
+            <button class="f4-tab" data-tab="voice" role="tab" aria-selected="false"><span>ГОЛОС</span><span class="p">1499 ₽</span></button>
+          </div>
+          <div data-pane="text">
+            <input class="f4-well" data-words placeholder="Семь слов на ту сторону" maxlength="120">
+            <div class="f4-meta"><span>ДО 7 СЛОВ</span><span data-count>0 / 7 СЛОВ</span></div>
+          </div>
+          <div data-pane="voice" hidden>
+            <button class="f4-btn" data-rec style="margin-top:0">НАЧАТЬ ЗАПИСЬ · ДО 3 СЕК</button>
+            <div class="f4-meta"><span data-rec-status>КАНАЛ ГОТОВ</span><span data-rec-time>0.0 СЕК</span></div>
+          </div>
+          <button class="f4-btn hot" data-send data-done="СИГНАЛ ПРИНЯТ · ЗАПИСАН В ПАМЯТЬ APERTURA">Передать Эхо</button>
+          <div class="f4-note"><span data-status>ОЖИДАНИЕ СИГНАЛА</span><span>АУРА НАЗНАЧАЕТСЯ СИСТЕМОЙ</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell-7">
+      <p class="cap"><b>Конденсация</b> · индивидуальный запрос, объединённый терминал</p>
+      <div class="f4" data-cond>
+        <div class="f4-head"><span class="f4-chip"><span class="dot w"></span>APERTURA · CONDENSATE FORMING</span><span class="aux" data-cond-stamp>AWAITS SIGNAL</span></div>
+        <div class="f4-body">
+          <div class="f4-row"><span class="k">RELIC.SIGNAL</span><span class="v" data-mirror="relic">—</span></div>
+          <div class="f4-row" style="margin-bottom:10px"><span class="k">CONTACT.NODE</span><span class="v" data-mirror="mail">—</span></div>
+          <input class="f4-well" data-src="relic" placeholder="Какую реликвию желаете? *" maxlength="120" style="margin-bottom:10px">
+          <input class="f4-well" data-src="mail" type="email" placeholder="Email для связи *">
+          <label class="f4-check"><input type="checkbox"><span class="box"></span>Подтверждаю согласие на обработку персональных данных.</label>
+          <button class="f4-btn hot" data-send data-done="ЗАПРОС ПРИНЯТ · АРХИТЕКТОР ПРОВЕРИТ ПОТОК">Запросить конденсацию</button>
+          <div class="f4-note"><span data-status>ЗОНА КОНДЕНСАЦИИ АКТИВНА</span><span>ТОЛЬКО ФИЗИЧЕСКОЕ · ДО 5 КГ</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell-5">
+      <p class="cap"><b>Архитектор</b> · реестр</p>
+      <div class="f4">
+        <div class="f4-head"><span class="f4-chip"><span class="dot r"></span>ARCHITECT · REGISTRY</span><span class="aux">ECH-0001</span></div>
+        <div class="f4-body">
+          <div class="f4-row"><span class="k">DESIGNATION</span><span class="v">ARCHITECT</span></div>
+          <div class="f4-row"><span class="k">IDENTIFIER</span><span class="v">aintonx</span></div>
+          <div class="f4-row sealed"><span class="k">ACCESS.LEVEL</span><span class="v r">X</span><svg class="lock"><use href="#ic-lock"/></svg></div>
+          <div class="f4-row"><span class="k">WORLDS.CREATED</span><span class="v">1</span></div>
+          <div class="f4-row sealed"><span class="k">WORLDS.PENDING</span><span class="v">∞</span><svg class="lock"><use href="#ic-lock"/></svg></div>
+          <div class="f4-row sealed"><span class="k">APERTURA</span><span class="v">CONSOLE</span><svg class="lock"><use href="#ic-lock"/></svg></div>
+          <div class="f4-row"><span class="k">STATUS</span><span class="v c">WORLD.BUILDING</span></div>
+          <div class="f4-note"><span>ПРОТОКОЛ СЕМИ</span><span>УРОВЕНЬ X · НЕ НАКАПЛИВАЕТСЯ</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell-12">
+      <p class="cap"><b>Поддержка</b> · усиление сигнала антенны</p>
+      <div class="f4">
+        <div class="f4-head"><span class="f4-chip"><span class="dot w"></span>SIGNAL SUPPORT</span><span class="aux">APERTURA · CHANNEL OPEN</span></div>
+        <div class="f4-body" style="display:grid;grid-template-columns:220px 1fr;gap:0 36px;align-items:center;">
+          <div class="f4-halo" aria-hidden="true"><span class="ring"></span><span class="ring"></span><span class="core"></span></div>
+          <div>
+            <div class="f4-row"><span class="k">МОЩНОСТЬ ПЕРЕДАТЧИКА</span><span class="v">34%</span></div>
+            <div class="f4-row"><span class="k">ШУМОВОЙ ПОРОГ</span><span class="v r">ВЫСОКИЙ</span></div>
+            <div class="f4-row"><span class="k">МИРЫ В ОЧЕРЕДИ</span><span class="v">III · IV</span></div>
+            <button class="f4-btn hot" data-toast="ДЕМО · ПЛАТЁЖНЫЙ КАНАЛ ОТКЛЮЧЁН" style="max-width:380px">Усилить сигнал через СБП</button>
+          </div>
+        </div>
+        <div class="f4-body" style="padding-top:0"><div class="f4-note"><span>КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ</span><span>ЧЕМ ЧИЩЕ КАНАЛ, ТЕМ ДАЛЬШЕ СЛЫШНО</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+/* ════════════════════════════════════════════════════════════════
+   05 · АРТЕФАКТ — устройство, прошедшее Переход
+   Терминал как предмет из каталога: анодированный корпус, юстировочные
+   метки по углам, гравировка, бирка со штрихкодом (язык Штрих) — как
+   на фотографиях реликвий в пакетах. Интерфейс и товар — одна материя.
+   ════════════════════════════════════════════════════════════════ */
+.f5 {
+  font-family: var(--mono); position: relative;
+  background: linear-gradient(180deg, #111120, #0a0a13 55%, #0c0c17);
+  border: 1px solid #232336; border-radius: 12px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    inset 0 -1px 0 rgba(0,0,0,0.6),
+    0 14px 34px rgba(0,0,0,0.45);
+}
+.f5::before, .f5::after { /* юстировочные метки по углам */
+  content: ""; position: absolute; width: 9px; height: 9px; pointer-events: none;
+  border-color: rgba(240,240,248,0.28); border-style: solid;
+}
+.f5::before { top: 7px; left: 7px; border-width: 1px 0 0 1px; }
+.f5::after { bottom: 7px; right: 7px; border-width: 0 1px 1px 0; }
+.f5-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px 11px;
+  border-bottom: 1px solid rgba(0,0,0,0.65);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.045);
+}
+.f5-head .eng { /* гравировка */
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.24em; color: var(--ink-3);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.9), 0 -1px 0 rgba(255,255,255,0.06);
+}
+.f5-head .eng b { color: var(--ink); }
+.f5-tag { /* бирка со штрихкодом */
+  margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
+  background: #ece9df; color: #14141f;
+  font-size: 8px; font-weight: 600; letter-spacing: 0.1em;
+  padding: 4px 7px; border-radius: 2px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  transform: rotate(1.2deg);
+}
+.f5-tag .bc {
+  width: 34px; height: 12px;
+  background-image: linear-gradient(90deg,
+    #14141f 0 2px, transparent 2px 4px, #14141f 4px 5px, transparent 5px 8px,
+    #14141f 8px 11px, transparent 11px 13px, #14141f 13px 14px, transparent 14px 17px,
+    #14141f 17px 19px, transparent 19px 21px, #14141f 21px 24px, transparent 24px 26px,
+    #14141f 26px 27px, transparent 27px 30px, #14141f 30px 32px, transparent 32px 34px);
+}
+.f5-body { padding: 12px 16px 14px; }
+.f5-row { display: flex; align-items: center; gap: 12px; padding: 9px 2px; }
+.f5-row + .f5-row { border-top: 1px solid rgba(0,0,0,0.55); box-shadow: 0 -1px 0 rgba(255,255,255,0.035) inset; }
+.f5-row .k { font-size: 9.5px; letter-spacing: 0.13em; color: var(--ink-4); text-shadow: 0 1px 0 rgba(0,0,0,0.8); }
+.f5-row .v { margin-left: auto; font-size: 12px; font-weight: 500; color: var(--ink); }
+.f5-row .v.c { color: var(--cyan-hi); } .f5-row .v.r { color: var(--red-hi); } .f5-row .v.dim { color: var(--ink-4); font-weight: 400; }
+.f5-row .lock { width: 11px; height: 11px; fill: var(--ink-4); flex-shrink: 0; }
+.f5-foot {
+  display: flex; justify-content: space-between; gap: 12px; padding: 9px 16px;
+  border-top: 1px solid rgba(0,0,0,0.65); box-shadow: 0 1px 0 rgba(255,255,255,0.045) inset;
+  font-size: 9px; letter-spacing: 0.13em; color: var(--ink-4);
+}
+/* опечатанный терминал: лента через угол, как на карточках каталога */
+.f5.sealed { overflow: hidden; }
+.f5-ribbon {
+  position: absolute; top: 17px; right: -34px; z-index: 2;
+  transform: rotate(45deg);
+  font-size: 8.5px; font-weight: 600; letter-spacing: 0.22em;
+  color: var(--ink); background: var(--red);
+  padding: 4px 40px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+/* врезной экран */
+.f5-screen {
+  position: relative; margin-bottom: 12px;
+  background: #030308; border: 1px solid rgba(0,0,0,0.8); border-radius: 7px;
+  box-shadow: inset 0 3px 10px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.05);
+  overflow: hidden;
+}
+.f5-screen svg { display: block; width: 100%; height: 104px; }
+.f5-screen path { fill: none; stroke: var(--cyan); stroke-width: 1.5; filter: drop-shadow(0 0 5px rgba(0,200,200,0.5)); }
+.f5.typing .f5-screen path, .f5.rec .f5-screen path { stroke: var(--red-hi); filter: drop-shadow(0 0 5px rgba(230,69,69,0.5)); }
+.f5-screen .freq { position: absolute; top: 7px; right: 9px; font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); }
+/* прорези-слоты для ввода */
+.f5-slot {
+  width: 100%; font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+  background: #030308; border: 1px solid rgba(0,0,0,0.8); border-radius: 7px;
+  box-shadow: inset 0 3px 8px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.05);
+  padding: 11px 13px; transition: box-shadow 0.2s;
+}
+.f5-slot:focus { box-shadow: inset 0 3px 8px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px rgba(0,200,200,0.4), 0 0 14px rgba(0,200,200,0.12); }
+/* клавиша */
+.f5-btn {
+  display: block; width: 100%; margin-top: 12px;
+  font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--ink); padding: 13px 16px; border-radius: 8px;
+  background: linear-gradient(180deg, #c93030, #9c1f1f);
+  border: 1px solid rgba(0,0,0,0.7);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -6px 10px rgba(0,0,0,0.28), 0 4px 0 #571212, 0 6px 12px rgba(0,0,0,0.5);
+  transition: transform 0.07s, box-shadow 0.07s, filter 0.15s;
+}
+.f5-btn:hover { filter: brightness(1.07); }
+.f5-btn:active { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -4px 8px rgba(0,0,0,0.3), 0 1px 0 #571212, 0 2px 6px rgba(0,0,0,0.5); }
+.f5-btn.plain {
+  color: var(--ink-2);
+  background: linear-gradient(180deg, #1c1c2c, #12121e);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 4px 0 #05050a, 0 6px 12px rgba(0,0,0,0.5);
+}
+.f5-btn.plain:active { box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 1px 0 #05050a; }
+.f5-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.f5-tab {
+  flex: 1; display: flex; justify-content: space-between; gap: 8px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  padding: 9px 12px; color: var(--ink-4); border-radius: 7px;
+  background: #030308; border: 1px solid rgba(0,0,0,0.8);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.04);
+  transition: color 0.15s, box-shadow 0.15s;
+}
+.f5-tab .p { opacity: 0.7; }
+.f5-tab.on { color: var(--ink); box-shadow: inset 0 2px 6px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.04), 0 0 0 1px rgba(230,69,69,0.45), 0 0 12px rgba(230,69,69,0.12); }
+.f5-meta { display: flex; justify-content: space-between; margin: 7px 2px 0; font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); }
+.f5-check { display: flex; gap: 10px; align-items: center; margin-top: 12px; font-size: 10px; color: var(--ink-3); cursor: pointer; position: relative; }
+.f5-check input { position: absolute; opacity: 0; }
+.f5-check .box {
+  width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0;
+  background: #030308; border: 1px solid rgba(0,0,0,0.8);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.05);
+  display: grid; place-items: center;
+}
+.f5-check input:checked + .box::after { content: ""; width: 6px; height: 6px; border-radius: 2px; background: var(--red-hi); box-shadow: 0 0 7px rgba(230,69,69,0.8); }
+/* гравированная антенна и сегментный индикатор */
+.f5-ant { display: flex; align-items: center; gap: 20px; padding: 2px 0 6px; }
+.f5-ant svg { width: 58px; height: 58px; flex-shrink: 0; color: var(--ink-3); filter: drop-shadow(0 1px 0 rgba(0,0,0,0.9)); }
+.f5-seg { display: flex; gap: 4px; flex: 1; max-width: 300px; }
+.f5-seg span {
+  flex: 1; height: 16px; border-radius: 2px;
+  background: #030308; border: 1px solid rgba(0,0,0,0.8);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.04);
+}
+.f5-seg span.lit { background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.5), inset 0 1px 0 rgba(255,255,255,0.3); border-color: rgba(209,160,74,0.6); }
+</style>
+
+<!-- ═══════════════ 05 · АРТЕФАКТ ═══════════════ -->
+<section class="fam" id="f5">
+  <div class="fam-head">
+    <div class="num">НАПРАВЛЕНИЕ 05</div>
+    <h2>Артефакт</h2>
+    <p>Терминал как предмет, прошедший Переход: анодированный корпус с фаской, юстировочные метки по углам, гравированные надписи, врезные экраны, клавиши с настоящим ходом и <strong>бирка со штрихкодом</strong>, как на фотографиях реликвий в каталоге. Интерфейс сделан из той же материи, что и товар. Запертый реестр Архитектора <strong>опечатан лентой</strong>.</p>
+  </div>
+  <div class="fam-grid">
+
+    <div class="cell-5">
+      <p class="cap"><b>Live feed</b> · шапка сайта</p>
+      <div class="f5">
+        <div class="f5-head"><span class="eng"><b>APERTURA</b> · LIVE FEED</span><span class="f5-tag"><span class="bc" aria-hidden="true"></span>01-2026</span></div>
+        <div class="f5-body">
+          <div class="f5-row"><span class="k">SYS.STATUS</span><span class="v c">ONLINE</span></div>
+          <div class="f5-row"><span class="k">ACTIVE.WORLD</span><span class="v">MARKETSPACE</span></div>
+          <div class="f5-row"><span class="k">CATALOG.ID</span><span class="v">01-2026</span></div>
+          <div class="f5-row"><span class="k">CONDENSATS.ACTIVE</span><span class="v">11</span></div>
+          <div class="f5-row"><span class="k">APERTURA.VERSION</span><span class="v dim">1.1.7</span><svg class="lock"><use href="#ic-lock"/></svg></div>
+          <div class="f5-row"><span class="k">PERIMETER.STATUS</span><span class="v dim">STABLE</span><svg class="lock"><use href="#ic-lock"/></svg></div>
+        </div>
+        <div class="f5-foot"><span>КОРПУС 05 · СЕРИЯ 26</span><span>ПАМЯТЬ APERTURA</span></div>
+      </div>
+    </div>
+
+    <div class="cell-7">
+      <p class="cap"><b>Эхо</b> · отправка сигнала</p>
+      <div class="f5" data-echo>
+        <div class="f5-head"><span class="eng"><b>ЭХО</b> · ПЕРЕДАТЧИК</span><span class="f5-tag"><span class="bc" aria-hidden="true"></span>ИМП-0000</span></div>
+        <div class="f5-body">
+          <div class="f5-screen">
+            <svg viewBox="0 0 400 200" preserveAspectRatio="none" aria-hidden="true"><path data-osc d="M0,100 L400,100"/></svg>
+            <span class="freq" data-freq>12.847 GHZ</span>
+          </div>
+          <div class="f5-tabs" role="tablist">
+            <button class="f5-tab on" data-tab="text" role="tab" aria-selected="true"><span>ТЕКСТ</span><span class="p">599 ₽</span></button>
+            <button class="f5-tab" data-tab="voice" role="tab" aria-selected="false"><span>ГОЛОС</span><span class="p">1499 ₽</span></button>
+          </div>
+          <div data-pane="text">
+            <input class="f5-slot" data-words placeholder="Семь слов на ту сторону" maxlength="120">
+            <div class="f5-meta"><span>ДО 7 СЛОВ</span><span data-count>0 / 7 СЛОВ</span></div>
+          </div>
+          <div data-pane="voice" hidden>
+            <button class="f5-btn plain" data-rec style="margin-top:0">НАЧАТЬ ЗАПИСЬ · ДО 3 СЕК</button>
+            <div class="f5-meta"><span data-rec-status>КАНАЛ ГОТОВ</span><span data-rec-time>0.0 СЕК</span></div>
+          </div>
+          <button class="f5-btn" data-send data-done="СИГНАЛ ПРИНЯТ · ЗАПИСАН В ПАМЯТЬ APERTURA">Передать Эхо</button>
+        </div>
+        <div class="f5-foot"><span data-status>ОЖИДАНИЕ СИГНАЛА</span><span>АУРА НАЗНАЧАЕТСЯ СИСТЕМОЙ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-7">
+      <p class="cap"><b>Конденсация</b> · индивидуальный запрос, объединённый терминал</p>
+      <div class="f5" data-cond>
+        <div class="f5-head"><span class="eng"><b>APERTURA</b> · CONDENSATE</span><span class="f5-tag"><span class="bc" aria-hidden="true"></span>ЗАПРОС</span></div>
+        <div class="f5-body">
+          <div class="f5-row"><span class="k">RELIC.SIGNAL</span><span class="v dim" data-mirror="relic">—</span></div>
+          <div class="f5-row" style="margin-bottom:10px"><span class="k">CONTACT.NODE</span><span class="v dim" data-mirror="mail">—</span></div>
+          <input class="f5-slot" data-src="relic" placeholder="Какую реликвию желаете? *" maxlength="120" style="margin-bottom:10px">
+          <input class="f5-slot" data-src="mail" type="email" placeholder="Email для связи *">
+          <label class="f5-check"><input type="checkbox"><span class="box"></span>Подтверждаю согласие на обработку персональных данных.</label>
+          <button class="f5-btn" data-send data-done="ЗАПРОС ПРИНЯТ · АРХИТЕКТОР ПРОВЕРИТ ПОТОК">Запросить конденсацию</button>
+        </div>
+        <div class="f5-foot"><span data-status>APERTURA AWAITS SIGNAL</span><span>ТОЛЬКО ФИЗИЧЕСКОЕ · ДО 5 КГ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-5">
+      <p class="cap"><b>Архитектор</b> · реестр</p>
+      <div class="f5 sealed">
+        <div class="f5-ribbon">ОПЕЧАТАНО</div>
+        <div class="f5-head"><span class="eng"><b>РЕЕСТР</b> · ARCHITECT</span><span class="f5-tag" style="margin-right:26px"><span class="bc" aria-hidden="true"></span>ECH-0001</span></div>
+        <div class="f5-body">
+          <div class="f5-row"><span class="k">DESIGNATION</span><span class="v">ARCHITECT</span></div>
+          <div class="f5-row"><span class="k">IDENTIFIER</span><span class="v">aintonx</span></div>
+          <div class="f5-row"><span class="k">ACCESS.LEVEL</span><span class="v r">X</span><svg class="lock"><use href="#ic-lock"/></svg></div>
+          <div class="f5-row"><span class="k">WORLDS.CREATED</span><span class="v">1</span></div>
+          <div class="f5-row"><span class="k">WORLDS.PENDING</span><span class="v dim">∞</span><svg class="lock"><use href="#ic-lock"/></svg></div>
+          <div class="f5-row"><span class="k">APERTURA</span><span class="v dim">CONSOLE</span><svg class="lock"><use href="#ic-lock"/></svg></div>
+          <div class="f5-row"><span class="k">STATUS</span><span class="v c">WORLD.BUILDING</span></div>
+        </div>
+        <div class="f5-foot"><span>ПРОТОКОЛ СЕМИ</span><span>УРОВЕНЬ X · НЕ НАКАПЛИВАЕТСЯ</span></div>
+      </div>
+    </div>
+
+    <div class="cell-12">
+      <p class="cap"><b>Поддержка</b> · усиление сигнала антенны</p>
+      <div class="f5">
+        <div class="f5-head"><span class="eng"><b>АНТЕННА</b> · SIGNAL SUPPORT</span><span class="f5-tag"><span class="bc" aria-hidden="true"></span>КАНАЛ ОТКРЫТ</span></div>
+        <div class="f5-body" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 36px;align-items:center;">
+          <div class="f5-ant">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="9.078" r="2"/>
+                <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
+                <path d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
+                <path d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
+              </g>
+            </svg>
+            <div class="f5-seg" aria-label="Мощность 34%">
+              <span class="lit"></span><span class="lit"></span><span class="lit"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div>
+            <div class="f5-row" style="padding-top:0"><span class="k">ШУМОВОЙ ПОРОГ</span><span class="v r">ВЫСОКИЙ</span></div>
+            <div class="f5-row"><span class="k">МИРЫ В ОЧЕРЕДИ</span><span class="v">III · IV</span></div>
+            <button class="f5-btn" data-toast="ДЕМО · ПЛАТЁЖНЫЙ КАНАЛ ОТКЛЮЧЁН">Усилить сигнал через СБП</button>
+          </div>
+        </div>
+        <div class="f5-foot"><span>КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ</span><span>ЧЕМ ЧИЩЕ КАНАЛ, ТЕМ ДАЛЬШЕ СЛЫШНО</span></div>
+      </div>
+    </div>
+
+  </div>
+  <footer style="max-width:1200px;margin:24px auto 0;padding:24px 0 8px;border-top:1px solid var(--line);">
+    <p style="font-size:13px;color:var(--ink-4);max-width:70ch;">Направления можно смешивать: одна основа плюс детали из других (например, корпус «Прибора» с запертыми значениями «за мембраной»). Назовите номера, и следующим шагом соберём финальную систему терминалов для сайта.</p>
+  </footer>
+</section>
+
+<div id="toast" role="status"></div>
+<script>
+/* Живость лукбука: осциллографы, счётчики слов, зеркала форм, вкладки,
+   демо-отклики. Всё локально, ни один сигнал не уходит в сеть. */
+(function () {
+  var motionOK = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Тост */
+  var toastEl = document.getElementById('toast'), toastT;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 1800);
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toast]');
+    if (b) toast(b.getAttribute('data-toast'));
+  });
+
+  /* Частотные столбики (01/05) */
+  document.querySelectorAll('[data-bars]').forEach(function (wrap) {
+    for (var i = 0; i < 48; i++) wrap.appendChild(document.createElement('span'));
+    var bars = wrap.children, t = 0;
+    function step() {
+      t += 0.12;
+      for (var i = 0; i < bars.length; i++) {
+        var h = 22 + 60 * Math.abs(Math.sin(t + i * 0.42) * Math.sin(t * 0.53 + i * 0.11));
+        bars[i].style.height = h + '%';
+      }
+    }
+    step();
+    if (motionOK) setInterval(step, 220);
+  });
+
+  /* Осциллографы (02/03/04/05): плавный луч по sin-композиции */
+  var oscs = [];
+  document.querySelectorAll('path[data-osc]').forEach(function (p) { oscs.push({ p: p, ph: Math.random() * 9 }); });
+  function drawOsc(o, t) {
+    var d = 'M0,100', amp = o.p.closest('[data-echo]') && o.p.closest('[data-echo]').classList.contains('typing') ? 34 : 18;
+    for (var x = 0; x <= 400; x += 8) {
+      var y = 100 + amp * Math.sin(x * 0.028 + t + o.ph) * Math.sin(x * 0.011 + t * 0.6);
+      d += ' L' + x + ',' + y.toFixed(1);
+    }
+    o.p.setAttribute('d', d);
+  }
+  if (oscs.length) {
+    if (motionOK) {
+      (function loop() {
+        var t = performance.now() / 700;
+        oscs.forEach(function (o) { drawOsc(o, t); });
+        requestAnimationFrame(loop);
+      })();
+    } else {
+      oscs.forEach(function (o) { drawOsc(o, 2); });
+    }
+  }
+
+  /* Эхо: счётчик слов + «луч краснеет при наборе» */
+  document.querySelectorAll('[data-words]').forEach(function (inp) {
+    var box = inp.closest('[data-echo]');
+    var out = box.querySelector('[data-count]');
+    inp.addEventListener('input', function () {
+      var words = inp.value.trim().split(/\s+/).filter(Boolean).length;
+      out.textContent = words + ' / 7 СЛОВ';
+      out.style.color = words > 7 ? 'var(--red-hi)' : '';
+    });
+    inp.addEventListener('focus', function () { box.classList.add('typing'); });
+    inp.addEventListener('blur', function () { box.classList.remove('typing'); });
+  });
+
+  /* Эхо: вкладки текст/голос */
+  document.querySelectorAll('[data-echo]').forEach(function (box) {
+    box.querySelectorAll('[data-tab]').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        box.querySelectorAll('[data-tab]').forEach(function (t) {
+          var on = t === tab;
+          t.classList.toggle('on', on);
+          t.setAttribute('aria-selected', on);
+        });
+        box.querySelectorAll('[data-pane]').forEach(function (p) {
+          p.hidden = p.getAttribute('data-pane') !== tab.getAttribute('data-tab');
+        });
+      });
+    });
+    /* демо-запись голоса: 3 секунды красного статуса */
+    var rec = box.querySelector('[data-rec]');
+    if (rec) rec.addEventListener('click', function () {
+      var st = box.querySelector('[data-rec-status]'), tm = box.querySelector('[data-rec-time]');
+      if (box.classList.contains('rec')) return;
+      box.classList.add('rec');
+      st.textContent = 'ИДЁТ ЗАПИСЬ';
+      var t0 = performance.now();
+      var iv = setInterval(function () {
+        var s = (performance.now() - t0) / 1000;
+        tm.textContent = Math.min(s, 3).toFixed(1) + ' СЕК';
+        if (s >= 3) {
+          clearInterval(iv);
+          box.classList.remove('rec');
+          st.textContent = 'ЗАПИСЬ ГОТОВА · 3.0 СЕК';
+        }
+      }, 100);
+    });
+  });
+
+  /* Конденсация: поля зеркалятся в строки статуса */
+  document.querySelectorAll('[data-cond]').forEach(function (box) {
+    var stamp = box.querySelector('[data-cond-stamp]');
+    box.querySelectorAll('[data-src]').forEach(function (inp) {
+      var mirror = box.querySelector('[data-mirror="' + inp.getAttribute('data-src') + '"]');
+      inp.addEventListener('input', function () {
+        mirror.textContent = inp.value.trim() || '—';
+        var filled = Array.prototype.some.call(box.querySelectorAll('[data-src]'), function (i) { return i.value.trim(); });
+        if (stamp) stamp.textContent = filled ? 'ФОРМИРУЕТСЯ' : 'ОЖИДАЕТ';
+        box.classList.toggle('forming', filled);
+      });
+    });
+  });
+
+  /* Кнопки отправки: локальный отклик в статусной строке терминала */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-send]');
+    if (!b) return;
+    var box = b.closest('[data-echo], [data-cond], .t-any');
+    var status = box && box.querySelector('[data-status]');
+    if (status) {
+      var old = status.textContent;
+      status.textContent = b.getAttribute('data-done');
+      status.style.color = 'var(--cyan-hi)';
+      setTimeout(function () { status.textContent = old; status.style.color = ''; }, 3200);
+    } else {
+      toast(b.getAttribute('data-done') || 'СИГНАЛ ПРИНЯТ');
+    }
+  });
+
+  /* Активный пункт навигации */
+  var links = document.querySelectorAll('.lb-nav a');
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        links.forEach(function (a) { a.classList.remove('on'); });
+        var a = map[en.target.id];
+        if (a) a.classList.add('on');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  document.querySelectorAll('.fam').forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>

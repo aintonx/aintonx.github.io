@@ -10,9 +10,10 @@
    Runs before the main CSS so direct/share openings do not paint the old dark shell
    while the saved/system light theme is restored later by the full theme engine. */
 (function(){try{
-  var saved = null;
-  try{ saved = localStorage.getItem('ew-theme'); }catch(_){ saved = null; }
-  var light = saved ? (saved === 'light') : !(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  /* Тёмная тема — единственная и окончательная. Светлый режим выведен
+     из эксплуатации: prepaint всегда красит систему в тёмный. */
+  try{ localStorage.removeItem('ew-theme'); }catch(_){}
+  var light = false;
   var root = document.documentElement;
   root.classList.add('ew-first-boot-pending');
   var color = light ? '#e7e9f1' : '#04040a';
@@ -663,8 +664,11 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
 <link rel="preconnect" href="https://mc.yandex.ru">
 <link rel="dns-prefetch" href="https://yastatic.net">
 
-<!-- Шрифты — display:swap уже в URL, защита от FOUT -->
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Syne+Mono&family=Oxanium:wght@500;600;700&display=swap" rel="stylesheet">
+<!-- Шрифты — display:swap уже в URL, защита от FOUT.
+     Rubik Mono One — заголовки (голос системы, капс-кириллица);
+     Roboto Mono — основной текст (моноширинный, читаемый);
+     IBM Plex Mono — системные лейблы (GHZ, ART, //). Все с кириллицей. -->
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
 
 <!-- Безопасность: CSP ограничивает источники скриптов и стилей.
      'unsafe-inline' для script и style необходим — много inline-стилей. -->
@@ -747,13 +751,30 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   --radius:       10px;
   --radius-lg:    18px;
 
-  /* ── ТИПОГРАФИКА ── */
-  --font-display: 'Syne', system-ui, sans-serif;
+  /* ── ТИПОГРАФИКА ──
+     display — Rubik Mono One: заголовки, «голос системы» (кириллица капсом);
+     body    — Roboto Mono: основной читаемый моноширинный текст;
+     mono/code — IBM Plex Mono: системные лейблы (GHZ, ART, //). */
+  --font-display: 'Rubik Mono One', 'IBM Plex Mono', monospace;
   --font-mono:    'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
-  /* Syne Mono упразднён — все tech-лейблы на IBM Plex Mono */
+  --font-body:    'Roboto Mono', 'IBM Plex Mono', monospace;
   --font-code:    'IBM Plex Mono', monospace;
-  --font-input:   'IBM Plex Mono', monospace;
-  --font-num:     'Oxanium', 'IBM Plex Mono', monospace;
+  --font-input:   'Roboto Mono', 'IBM Plex Mono', monospace;
+  --font-num:     'Roboto Mono', 'IBM Plex Mono', monospace;
+
+  /* ── ЛИНЗА · материал интерфейса (жидкое стекло) ──
+     Единый материал панелей: полупрозрачное стекло с призматическим
+     кантом и медленным сиянием. Акценты: cyan=система живёт,
+     warm=энергия/действие, red=предупреждение/доступ. */
+  --warm-hi:      #e8c37a;
+  --glass-bg:     rgba(14, 16, 28, 0.40);
+  --glass-hi:     rgba(20, 22, 38, 0.55);
+  --glass-blur:   26px;
+  --hairline:     rgba(240, 240, 248, 0.10);
+  --hairline-hi:  rgba(240, 240, 248, 0.16);
+  --lens-edge:    linear-gradient(135deg, rgba(255,255,255,0.32), rgba(120,220,255,0.10) 28%, rgba(255,255,255,0.02) 46%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.18));
+  --lens-shadow:  inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -24px 48px rgba(0,0,0,0.20), 0 30px 90px rgba(0,0,0,0.55);
+  --ease-lens:    cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ── ТЕНИ ── */
   --shadow-sm:    0 1px 0 rgba(240,240,248,0.04) inset, 0 4px 16px rgba(0,0,0,0.3);
@@ -1023,7 +1044,7 @@ html::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
 body {
   background: var(--void);
   color: var(--white);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   min-height: 100vh;
   overflow-x: hidden;
   cursor: default;
@@ -1781,16 +1802,17 @@ header.scrolled {
 
 .hero-title {
   font-family: var(--font-display);
-  font-weight: 800;
-  /* HERO R6.4: чуть компактнее на десктопе, чтобы первая строка
-     «Каждая реликвия —» оставалась одной строкой и не ломала соседний терминал. */
-  font-size: clamp(42px, 4.45vw, 64px);
-  line-height: 0.95;
-  letter-spacing: -0.025em;
+  /* Rubik Mono One — единственный вес 400; прежний 800 давал faux-bold.
+     Моно-капс крупнее по массе, поэтому размер сбавлен, а буквам дан
+     положительный трекинг — иначе капс читается как «крик». */
+  font-weight: 400;
+  font-size: clamp(26px, 3.05vw, 41px);
+  line-height: 1.14;
+  letter-spacing: 0.005em;
   color: var(--white);
   margin-bottom: 24px;
 }
-.hero-title-line { display: inline-block; white-space: nowrap; }
+.hero-title-line { display: inline; white-space: normal; }
 .hero-title .dim { color: var(--white-dim); font-weight: 400; }
 .hero-title .accent { color: var(--red2); }
 .hero-dash {
@@ -15177,11 +15199,8 @@ body._blur-fading #_blurW {
      (особенно нижний тулбар) — стартовый #04040a «прилипал» к низу даже в
      светлой теме. Свежий узел до первой отрисовки = верный цвет бара сразу. */
   (function(){ try{
-    var t=localStorage.getItem('ew-theme');
-    /* Нет сохранённого выбора — следуем теме УСТРОЙСТВА: тёмная только если
-       система в тёмном режиме, иначе светлая (светлая = дефолт). Явный выбор
-       тумблером (localStorage) всегда приоритетнее системного. */
-    var light = t ? (t==='light') : !(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    /* Тёмная тема — единственная и окончательная. */
+    var light = false;
     if(light){ document.documentElement.setAttribute('data-theme','light');
       var cs=document.querySelector('meta[name="color-scheme"]'); if(cs) cs.setAttribute('content','light'); }
     var col = light ? '#e7e9f1' : '#04040a';
@@ -24250,8 +24269,10 @@ function _syncSafariTintSurfaces(t){
   }catch(e){}
 }
 function applyTheme(t, persist){
-  if(t==='light') document.documentElement.setAttribute('data-theme','light');
-  else document.documentElement.removeAttribute('data-theme');
+  /* Тёмная тема — единственная. Любой запрос темы форсится в dark, поэтому
+     светлый режим невозможен даже при клике по старому тумблеру. */
+  t = 'dark';
+  document.documentElement.removeAttribute('data-theme');
   /* Хром браузера (iOS Safari красит зоны за safe-area сверху/снизу по
      meta theme-color) перекрашивается вместе с темой — без этого верх и низ
      оставались в цвете прежней темы до перезагрузки страницы. */

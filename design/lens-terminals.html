@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>EchoWorld · Терминалы «Линза»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   СИСТЕМА «ЛИНЗА» · ревизия 3 — интерфейсы, переизобретённые с нуля
+   Материал прежний (утверждён), наполнение новое:
+   · LIVE FEED  → «Поток»: живой эфир MARKETSPACE — счётчик желаний,
+     пульс-линия, лента событий мира в реальном времени;
+   · ЭХО        → «Передатчик»: мессенджер в другой мир — Аура,
+     семь слотов для слов, запись голоса с живой волной
+     и прослушиванием (паттерн Telegram/WhatsApp);
+   · КОНДЕНСАЦИЯ→ «Диалог»: Апертура спрашивает сама, по одному
+     вопросу за раз (паттерн Typeform);
+   · АРХИТЕКТОР → «Досье»: восхождение Протокола Семи, карта миров,
+     сканирующий луч.
+   Загрузка и Поддержка — без изменений (утверждены).
+   ════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --void:   #04040a;
+  --ink:    #f0f0f8;
+  --ink-2:  #c8c8dc;
+  --ink-3:  #9a9ab8;
+  --ink-4:  #6a6a8a;
+  --warm:   #d1a04a;
+  --warm-hi:#e8c37a;
+  --cyan:   #00c8c8;
+  --cyan-hi:#4ce0e0;
+  --red:    #c02828;
+  --red-hi: #e64545;
+  --mono:   'IBM Plex Mono', ui-monospace, monospace;
+  --text:   'Inter', system-ui, sans-serif;
+  --display:'Unbounded', var(--text);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html { background: var(--void); scroll-behavior: smooth; }
+body { font-family: var(--text); color: var(--ink-2); line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+button, input, textarea { font: inherit; color: inherit; background: none; border: none; outline: none; }
+button { cursor: pointer; }
+
+/* ── Небо ──────────────────────────────────────────────────────── */
+.sky { position: fixed; inset: 0; z-index: -1; background: var(--void); overflow: hidden; }
+.sky::before {
+  content: ""; position: absolute; inset: -20%;
+  background:
+    radial-gradient(46% 34% at 74% 10%, rgba(58, 66, 160, 0.16), transparent 70%),
+    radial-gradient(38% 30% at 12% 34%, rgba(0, 200, 200, 0.08), transparent 70%),
+    radial-gradient(44% 36% at 84% 74%, rgba(192, 40, 40, 0.07), transparent 70%),
+    radial-gradient(30% 24% at 38% 88%, rgba(58, 66, 160, 0.1), transparent 70%);
+  animation: skyDrift 46s ease-in-out infinite alternate;
+}
+.sky::after {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 22%, rgba(240,240,248,0.5), transparent 100%),
+    radial-gradient(1px 1px at 34% 64%, rgba(76,224,224,0.4), transparent 100%),
+    radial-gradient(1.4px 1.4px at 56% 18%, rgba(240,240,248,0.34), transparent 100%),
+    radial-gradient(1px 1px at 72% 46%, rgba(240,240,248,0.4), transparent 100%),
+    radial-gradient(1.2px 1.2px at 88% 26%, rgba(230,69,69,0.32), transparent 100%),
+    radial-gradient(1px 1px at 22% 84%, rgba(240,240,248,0.3), transparent 100%),
+    radial-gradient(1.3px 1.3px at 64% 82%, rgba(76,224,224,0.3), transparent 100%),
+    radial-gradient(1px 1px at 92% 64%, rgba(240,240,248,0.36), transparent 100%);
+  animation: starDrift 90s linear infinite alternate;
+}
+@keyframes skyDrift { to { transform: translate(3%, 2%) scale(1.04); } }
+@keyframes starDrift { to { transform: translate(-1.5%, -1%); } }
+
+/* ── Хром лукбука ──────────────────────────────────────────────── */
+.lb-head { max-width: 760px; margin: 0 auto; padding: 64px 24px 20px; }
+.lb-head h1 { font-family: var(--display); font-weight: 700; font-size: clamp(24px, 3.2vw, 38px); color: var(--ink); text-wrap: balance; }
+.lb-head h1 .dim { color: var(--ink-4); font-weight: 500; }
+.lb-sub { margin-top: 14px; max-width: 70ch; font-size: 15px; color: var(--ink-3); }
+.lb-sub strong { color: var(--ink-2); font-weight: 500; }
+
+.lb-nav { position: sticky; top: 0; z-index: 50; background: rgba(4,4,10,0.7); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(240,240,248,0.08); }
+.lb-nav-in { max-width: 760px; margin: 0 auto; padding: 0 24px; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.lb-nav-in::-webkit-scrollbar { display: none; }
+.lb-nav a { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.07em; color: var(--ink-4); text-decoration: none; white-space: nowrap; padding: 14px 11px 12px; border-bottom: 2px solid transparent; transition: color 0.2s; }
+.lb-nav a:hover { color: var(--ink-2); }
+.lb-nav a.on { color: var(--ink); border-bottom-color: var(--warm); }
+
+.stack { max-width: 760px; margin: 0 auto; padding: 10px 24px 30px; position: relative; }
+.item { padding: 30px 0 6px; scroll-margin-top: 60px; }
+.cap { font-size: 11px; color: var(--ink-4); letter-spacing: 0.04em; margin: 0 0 10px 2px; text-transform: uppercase; }
+.cap b { color: var(--ink-3); font-weight: 500; }
+.blob { position: absolute; border-radius: 50%; filter: blur(56px); pointer-events: none; }
+
+#toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 16px); z-index: 100; pointer-events: none; opacity: 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink); background: rgba(13,13,26,0.92); border: 1px solid rgba(240,240,248,0.16); border-radius: 10px; padding: 10px 18px; transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out); backdrop-filter: blur(10px); max-width: calc(100vw - 40px); text-align: center; }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ════════════════════════════════════════════════════════════════
+   МАТЕРИАЛ «ЛИНЗА»
+   ════════════════════════════════════════════════════════════════ */
+.glass {
+  position: relative; font-family: var(--mono);
+  border-radius: 24px;
+  background: rgba(14, 16, 28, 0.4);
+  backdrop-filter: blur(26px) saturate(175%);
+  -webkit-backdrop-filter: blur(26px) saturate(175%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -24px 48px rgba(0,0,0,0.2), 0 30px 90px rgba(0,0,0,0.55);
+  overflow: hidden;
+}
+.glass::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 6;
+  background: linear-gradient(135deg, rgba(255,255,255,0.32), rgba(120,220,255,0.1) 28%, rgba(255,255,255,0.02) 46%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.18));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;
+}
+.glass::after {
+  content: ""; position: absolute; top: -60%; left: -55%; width: 52%; height: 220%; z-index: 5;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.05) 42%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 58%, transparent);
+  animation: sheen 15s ease-in-out infinite; animation-delay: var(--sheen, 0s);
+  pointer-events: none;
+}
+@keyframes sheen { 0%, 55% { left: -55%; } 88%, 100% { left: 115%; } }
+
+.g-head { display: flex; align-items: center; gap: 12px; padding: 15px 20px 0; position: relative; z-index: 1; }
+.g-chip { display: inline-flex; align-items: center; gap: 8px; font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-2); background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); white-space: nowrap; }
+.g-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; transition: background 0.4s, box-shadow 0.4s; }
+.g-dot.c { background: var(--cyan); box-shadow: 0 0 9px rgba(0,200,200,0.9); animation: breathe 3.2s ease-in-out infinite; }
+.g-dot.w { background: var(--warm); box-shadow: 0 0 9px rgba(209,160,74,0.9); }
+.g-dot.r { background: var(--red-hi); box-shadow: 0 0 9px rgba(230,69,69,0.9); }
+@keyframes breathe { 50% { opacity: 0.45; } }
+.g-aux { margin-left: auto; font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); text-align: right; transition: color 0.4s; }
+
+.g-body { padding: 16px 20px 18px; position: relative; z-index: 1; }
+.g-row { display: flex; align-items: center; gap: 14px; padding: 10px 2px; position: relative; }
+.g-row + .g-row::before, .g-sep::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(240,240,248,0.11) 16%, rgba(240,240,248,0.11) 84%, transparent); }
+.g-k { font-size: 9.5px; letter-spacing: 0.14em; color: var(--ink-3); }
+.g-v { margin-left: auto; font-size: 12.5px; font-weight: 500; color: var(--ink); display: inline-flex; align-items: center; gap: 8px; }
+.g-v.c { color: var(--cyan-hi); text-shadow: 0 0 14px rgba(0,200,200,0.4); }
+.g-v.r { color: var(--red-hi); text-shadow: 0 0 14px rgba(230,69,69,0.35); }
+.g-v.mut { color: var(--ink-4); font-weight: 400; }
+.g-lock { width: 11px; height: 11px; fill: var(--ink-4); flex-shrink: 0; }
+
+.g-foot { display: flex; justify-content: space-between; gap: 12px; padding: 11px 20px 15px; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); position: relative; z-index: 1; }
+.g-foot [data-status] { transition: color 0.3s; }
+
+.g-tabs { position: relative; display: flex; gap: 4px; padding: 4px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 99px; margin-bottom: 12px; }
+.g-tab { flex: 1; display: flex; justify-content: center; gap: 10px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 9px 12px; color: var(--ink-3); border-radius: 99px; transition: background 0.3s var(--ease-out), color 0.25s, box-shadow 0.3s; position: relative; overflow: hidden; }
+.g-tab .p { color: var(--ink-4); transition: color 0.25s; }
+.g-tab.on { color: var(--ink); background: rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+.g-tab.on .p { color: var(--warm-hi); }
+
+.g-actions { display: flex; gap: 10px; padding-top: 14px; }
+.g-btn { position: relative; overflow: hidden; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warm-hi); padding: 15px 18px; border-radius: 99px; background: rgba(209,160,74,0.09); border: 1px solid rgba(209,160,74,0.34); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 0 26px rgba(209,160,74,0.08); transition: box-shadow 0.3s var(--ease-out), background 0.3s, transform 0.15s; }
+.g-btn:hover { background: rgba(209,160,74,0.15); box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 0 30px rgba(209,160,74,0.13), 0 0 30px rgba(209,160,74,0.2); }
+.g-btn:active { transform: scale(0.985); }
+.g-btn.quiet { color: var(--ink-2); background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+.g-btn.quiet:hover { background: rgba(255,255,255,0.08); }
+.g-help { position: relative; overflow: hidden; width: 47px; height: 47px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; font-family: var(--mono); font-size: 13px; color: var(--ink-3); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.11); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); transition: color 0.2s, background 0.2s; }
+.g-help:hover { color: var(--ink); background: rgba(255,255,255,0.09); }
+
+/* световая рябь */
+.ripple { position: absolute; border-radius: 50%; pointer-events: none; z-index: 4; width: 14px; height: 14px; margin: -7px 0 0 -7px; background: radial-gradient(circle, rgba(255,255,255,0.3), rgba(255,255,255,0.06) 55%, transparent 70%); animation: rip 0.6s var(--ease-out) forwards; }
+.ripple.deny { background: radial-gradient(circle, rgba(230,69,69,0.38), rgba(230,69,69,0.08) 55%, transparent 70%); }
+.ripple.warm { background: radial-gradient(circle, rgba(232,195,122,0.36), rgba(232,195,122,0.07) 55%, transparent 70%); }
+@keyframes rip { to { transform: scale(16); opacity: 0; } }
+.denied-pulse { animation: deniedPulse 0.5s var(--ease-out); }
+@keyframes deniedPulse { 30% { box-shadow: inset 0 0 0 1px rgba(230,69,69,0.4), inset 0 0 30px rgba(230,69,69,0.1); } }
+
+/* сцены и перенастройка */
+.g-stage { position: relative; height: var(--stage-h, 120px); }
+.g-pane { position: absolute; inset: 0; transition: opacity 0.38s var(--ease-out), filter 0.38s var(--ease-out), transform 0.38s var(--ease-out); }
+.g-pane.off { opacity: 0; filter: blur(7px); transform: translateY(7px); pointer-events: none; }
+.retune-band { position: absolute; top: -6%; bottom: -6%; left: -20%; width: 16%; z-index: 3; pointer-events: none; opacity: 0; background: linear-gradient(90deg, transparent, rgba(76,224,224,0.1) 35%, rgba(240,240,248,0.16) 50%, rgba(76,224,224,0.1) 65%, transparent); filter: blur(1px); }
+.retuning .retune-band { animation: band 0.5s var(--ease-out); }
+@keyframes band { 0% { opacity: 0; left: -20%; } 20% { opacity: 1; } 100% { opacity: 0; left: 108%; } }
+
+/* ════════════════════════════════════════════════════════════════
+   НАБЛЮДЕНИЕ — Апертура смотрит на посетителя
+   Ни одного выдуманного события: момент контакта, живое время
+   присутствия, назначенный узел и константы мира.
+   ════════════════════════════════════════════════════════════════ */
+.obs-top { display: flex; align-items: flex-end; gap: 20px; padding: 2px 2px 12px; }
+.obs-top .big b { display: block; font-family: var(--display); font-weight: 700; font-size: 26px; color: var(--ink); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.obs-top .big i { font-style: normal; font-size: 8.5px; letter-spacing: 0.16em; color: var(--ink-4); }
+.obs-top .side { margin-left: auto; text-align: right; display: grid; gap: 3px; }
+.obs-kv { font-size: 9px; letter-spacing: 0.13em; color: var(--ink-4); }
+.obs-kv b { color: var(--ink-2); font-weight: 500; margin-left: 8px; font-variant-numeric: tabular-nums; }
+.obs-wave { position: relative; height: 46px; margin-bottom: 6px; border-radius: 12px; background: rgba(3,4,10,0.35); border: 1px solid rgba(255,255,255,0.07); overflow: hidden; }
+.obs-wave svg { display: block; width: 100%; height: 100%; }
+.obs-wave path { fill: none; stroke: var(--cyan-hi); stroke-width: 1.4; filter: drop-shadow(0 0 6px rgba(0,200,200,0.5)); }
+.obs-wave .cap-w { position: absolute; top: 6px; right: 9px; font-size: 8px; letter-spacing: 0.14em; color: var(--ink-4); }
+
+/* ════════════════════════════════════════════════════════════════
+   ПЕРЕДАТЧИК — Эхо как послание в другой мир
+   ════════════════════════════════════════════════════════════════ */
+.aura { display: flex; align-items: center; gap: 10px; padding: 2px 2px 12px; }
+.aura .lbl { font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); }
+.aura-chip { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.14em; color: var(--cyan-hi); background: rgba(0,200,200,0.06); border: 1px solid rgba(0,200,200,0.25); border-radius: 99px; padding: 5px 12px; transition: opacity 0.2s, filter 0.2s; }
+.aura-chip.spin { opacity: 0.4; filter: blur(2px); }
+.aura-re { position: relative; overflow: hidden; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.11); }
+.aura-re svg { width: 11px; height: 11px; fill: none; stroke: var(--ink-3); stroke-width: 1.8; stroke-linecap: round; transition: transform 0.45s var(--ease-out); }
+.aura-re:active svg { transform: rotate(300deg); }
+.aura .hint { margin-left: auto; font-size: 8.5px; letter-spacing: 0.12em; color: var(--ink-4); }
+/* канал: тонкий живой луч */
+.beam { position: relative; height: 40px; margin-bottom: 12px; border-radius: 10px; background: rgba(3,4,10,0.35); border: 1px solid rgba(255,255,255,0.07); overflow: hidden; }
+.beam svg { display: block; width: 100%; height: 100%; }
+.beam path { fill: none; stroke: var(--cyan-hi); stroke-width: 1.4; filter: drop-shadow(0 0 6px rgba(0,200,200,0.55)); transition: stroke 0.3s; }
+.hot .beam path { stroke: var(--red-hi); filter: drop-shadow(0 0 6px rgba(230,69,69,0.55)); }
+.beam .fr { position: absolute; top: 5px; right: 9px; font-size: 8.5px; letter-spacing: 0.13em; color: var(--ink-4); }
+/* семь слотов для слов */
+.slots { display: flex; gap: 6px; padding: 2px 2px 10px; }
+.slots i { flex: 1; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.07); transition: background 0.3s, box-shadow 0.3s; }
+.slots i.on { background: linear-gradient(90deg, #edc87c, #c3943c); box-shadow: 0 0 10px rgba(209,160,74,0.5); }
+.slots.over i.on { background: var(--red-hi); box-shadow: 0 0 10px rgba(230,69,69,0.5); }
+.g-well { display: block; width: 100%; font-family: var(--text); font-size: 13px; color: var(--ink); background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px 15px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; resize: none; }
+.g-well::placeholder { color: var(--ink-3); opacity: 0.8; }
+.g-well:focus { border-color: rgba(0,200,200,0.4); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 3px rgba(0,200,200,0.08), 0 0 18px rgba(0,200,200,0.1); background: rgba(255,255,255,0.06); }
+.g-meta { display: flex; justify-content: space-between; margin: 8px 3px 0; font-size: 9px; letter-spacing: 0.13em; color: var(--ink-4); font-family: var(--mono); }
+/* голос: запись с живой волной */
+.rec-zone { display: flex; align-items: center; gap: 16px; height: 64px; }
+.mic-wrap { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+.mic-btn { position: relative; overflow: hidden; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); transition: background 0.25s, border-color 0.25s, box-shadow 0.25s; }
+.mic-btn svg { width: 20px; height: 20px; fill: none; stroke: var(--ink-2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.25s; }
+.mic-btn:hover { background: rgba(255,255,255,0.09); }
+.rec .mic-btn { border-color: rgba(230,69,69,0.55); background: rgba(230,69,69,0.12); box-shadow: 0 0 22px rgba(230,69,69,0.3); }
+.rec .mic-btn svg { stroke: var(--red-hi); }
+.mic-ring { position: absolute; inset: -3px; pointer-events: none; }
+.mic-ring circle { fill: none; stroke: var(--red-hi); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 194; stroke-dashoffset: 194; filter: drop-shadow(0 0 5px rgba(230,69,69,0.7)); transform: rotate(-90deg); transform-origin: center; }
+.wave { flex: 1; display: flex; align-items: center; gap: 3px; height: 56px; }
+.wave i { flex: 1; min-width: 3px; height: 12%; border-radius: 3px; background: rgba(255,255,255,0.1); transition: height 0.12s var(--ease-out), background 0.2s; }
+.wave i.on { background: var(--red-hi); box-shadow: 0 0 6px rgba(230,69,69,0.4); }
+.wave.done i.on { background: rgba(240,240,248,0.4); box-shadow: none; }
+.wave i.lit { background: var(--cyan-hi); box-shadow: 0 0 7px rgba(0,200,200,0.5); }
+.voice-side { flex-shrink: 0; text-align: right; width: 74px; }
+.voice-side .tm { font-family: var(--mono); font-size: 16px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.voice-side .st { font-size: 8px; letter-spacing: 0.13em; color: var(--ink-4); font-family: var(--mono); }
+.voice-ctl { display: flex; align-items: center; gap: 12px; margin-top: 10px; height: 26px; }
+.vc-btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; color: var(--ink-3); padding: 6px 10px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); transition: color 0.2s, background 0.2s, opacity 0.3s; }
+.vc-btn:hover { color: var(--ink); background: rgba(255,255,255,0.08); }
+.vc-btn svg { width: 9px; height: 9px; fill: currentColor; }
+.vc-btn[disabled] { opacity: 0.3; pointer-events: none; }
+.voice-ctl .note { margin-left: auto; font-size: 8.5px; letter-spacing: 0.12em; color: var(--ink-4); font-family: var(--mono); }
+
+/* ════════════════════════════════════════════════════════════════
+   ДИАЛОГ — Апертура спрашивает сама
+   ════════════════════════════════════════════════════════════════ */
+.dlg { display: flex; flex-direction: column; height: 348px; }
+.dlg-log { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 4px 2px 10px; -webkit-mask-image: linear-gradient(180deg, transparent, #000 9%); mask-image: linear-gradient(180deg, transparent, #000 9%); }
+.dlg-log::-webkit-scrollbar { display: none; }
+.dlg-q { display: flex; gap: 10px; padding: 7px 0; font-size: 11.5px; letter-spacing: 0.05em; color: var(--ink-2); }
+.dlg-q .pfx { color: var(--cyan-hi); flex-shrink: 0; }
+.dlg-q .cur { display: inline-block; width: 7px; height: 12px; vertical-align: -2px; background: var(--cyan); margin-left: 2px; animation: curBlink 1s steps(2) infinite; }
+@keyframes curBlink { 50% { opacity: 0; } }
+.dlg-a { display: flex; justify-content: flex-end; padding: 5px 0; animation: aIn 0.4s var(--ease-out); }
+@keyframes aIn { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
+.dlg-a span { max-width: 82%; font-family: var(--text); font-size: 12.5px; color: var(--ink); background: rgba(209,160,74,0.1); border: 1px solid rgba(209,160,74,0.3); border-radius: 14px 14px 4px 14px; padding: 8px 13px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
+.dlg-sys { padding: 5px 0; font-size: 10px; letter-spacing: 0.1em; color: var(--ink-4); animation: aIn 0.4s var(--ease-out); }
+.dlg-sys.err { color: var(--red-hi); }
+.dlg-final { margin: 8px 0 2px; padding: 13px 15px; border-radius: 16px; background: rgba(0,200,200,0.05); border: 1px solid rgba(0,200,200,0.22); animation: aIn 0.45s var(--ease-out); }
+.dlg-final .code { font-size: 10px; letter-spacing: 0.2em; color: var(--cyan-hi); }
+.dlg-final h4 { font-family: var(--display); font-weight: 700; font-size: 14px; color: var(--ink); margin: 6px 0 4px; }
+.dlg-final p { font-family: var(--text); font-size: 12px; color: var(--ink-3); }
+.dlg-final p b { color: var(--ink-2); font-weight: 500; }
+.dlg-in { display: flex; gap: 8px; align-items: center; padding-top: 10px; position: relative; }
+.dlg-in::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(240,240,248,0.11) 16%, rgba(240,240,248,0.11) 84%, transparent); }
+.dlg-in .g-well { flex: 1; }
+.dlg-send { position: relative; overflow: hidden; width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(209,160,74,0.1); border: 1px solid rgba(209,160,74,0.35); transition: background 0.2s, box-shadow 0.2s, opacity 0.3s; }
+.dlg-send svg { width: 15px; height: 15px; fill: none; stroke: var(--warm-hi); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.dlg-send:hover { background: rgba(209,160,74,0.17); box-shadow: 0 0 18px rgba(209,160,74,0.2); }
+.dlg-in.lock { opacity: 0.35; pointer-events: none; }
+.dlg-consent { display: none; gap: 8px; align-items: center; padding-top: 10px; position: relative; }
+.dlg-consent.show { display: flex; }
+.dlg-consent::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(240,240,248,0.11) 16%, rgba(240,240,248,0.11) 84%, transparent); }
+.dlg-consent .g-btn { padding: 12px 16px; }
+.dlg-consent .lnk { font-family: var(--text); font-size: 10.5px; color: var(--ink-4); text-decoration: underline; text-underline-offset: 3px; padding: 8px 4px; transition: color 0.2s; }
+.dlg-consent .lnk:hover { color: var(--ink-2); }
+
+/* ════════════════════════════════════════════════════════════════
+   ПЕЧАТЬ — интерфейс загадочной личности
+   Знак X со сверкой частоты, подпись-волна, построенная из букв
+   aintonx, статус стройки и запертая консоль. Никаких схем.
+   ════════════════════════════════════════════════════════════════ */
+.seal { text-align: center; padding: 8px 0 0; }
+.seal-x { position: relative; overflow: hidden; width: 112px; height: 112px; margin: 2px auto 14px; display: grid; place-items: center; border-radius: 50%; cursor: pointer; background: rgba(230,69,69,0.05); border: 1px solid rgba(230,69,69,0.3); box-shadow: 0 0 26px rgba(230,69,69,0.14), inset 0 1px 0 rgba(255,255,255,0.08); transition: background 0.3s, box-shadow 0.3s; }
+.seal-x:hover { background: rgba(230,69,69,0.09); box-shadow: 0 0 40px rgba(230,69,69,0.24), inset 0 1px 0 rgba(255,255,255,0.08); }
+.seal-x b { font-family: var(--display); font-weight: 700; font-size: 46px; color: var(--ink); text-shadow: 0 0 26px rgba(230,69,69,0.5); line-height: 1; }
+.seal-x .halo { position: absolute; inset: -1px; border-radius: 50%; border: 1px dashed rgba(230,69,69,0.35); animation: haloSpin 42s linear infinite; }
+@keyframes haloSpin { to { transform: rotate(360deg); } }
+.seal-x.deny-flash { animation: sealDeny 0.55s var(--ease-out); }
+@keyframes sealDeny { 30% { box-shadow: 0 0 54px rgba(230,69,69,0.55), inset 0 0 26px rgba(230,69,69,0.2); } }
+.seal-name { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.32em; color: var(--ink); margin-left: 0.32em; }
+.seal-des { font-size: 8.5px; letter-spacing: 0.24em; color: var(--ink-4); margin: 5px 0 0; }
+.seal-des b { color: var(--red-hi); font-weight: 600; }
+.seal-status { min-height: 15px; font-size: 9.5px; letter-spacing: 0.2em; color: var(--ink-4); margin: 13px 0 2px; transition: color 0.3s; }
+.seal-status.scan { color: var(--cyan-hi); }
+.seal-status.no { color: var(--red-hi); }
+.seal-wave { position: relative; overflow: hidden; height: 54px; margin: 12px 0 2px; border-radius: 12px; background: rgba(3,4,10,0.35); border: 1px solid rgba(255,255,255,0.07); cursor: pointer; transition: border-color 0.25s; }
+.seal-wave:hover { border-color: rgba(0,200,200,0.25); }
+.seal-wave svg { display: block; width: 100%; height: 100%; }
+.seal-wave path { fill: none; stroke: rgba(76,224,224,0.75); stroke-width: 1.4; filter: drop-shadow(0 0 5px rgba(0,200,200,0.4)); }
+.seal-wave .cap-w { position: absolute; top: 6px; left: 10px; font-size: 8px; letter-spacing: 0.16em; color: var(--ink-4); }
+.seal-scanline { position: absolute; left: 0; right: 0; top: -14%; height: 12%; z-index: 3; pointer-events: none; opacity: 0; background: linear-gradient(180deg, transparent, rgba(230,69,69,0.06) 40%, rgba(240,240,248,0.12) 50%, rgba(230,69,69,0.06) 60%, transparent); }
+.scanning .seal-scanline { animation: sealScan 1.25s var(--ease-out) both; }
+@keyframes sealScan { 0% { top: -14%; opacity: 0; } 14% { opacity: 1; } 100% { top: 108%; opacity: 0; } }
+.console-row { cursor: pointer; overflow: hidden; border-radius: 10px; transition: background 0.25s; }
+.console-row:hover { background: rgba(255,255,255,0.03); }
+
+/* ── Загрузчик (утверждён) ─────────────────────────────────────── */
+.boot-frame { position: relative; border-radius: 20px; overflow: hidden; border: 1px solid rgba(240,240,248,0.1); background: var(--void); height: 460px; display: grid; place-items: center; }
+.boot-frame .bg { position: absolute; inset: -10%; background: radial-gradient(50% 40% at 70% 16%, rgba(58,66,160,0.2), transparent 70%), radial-gradient(42% 34% at 16% 66%, rgba(0,200,200,0.09), transparent 70%), radial-gradient(46% 38% at 84% 84%, rgba(192,40,40,0.08), transparent 70%); }
+.boot-frame .bg::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(1.2px 1.2px at 18% 30%, rgba(240,240,248,0.45), transparent 100%), radial-gradient(1px 1px at 66% 22%, rgba(76,224,224,0.4), transparent 100%), radial-gradient(1.2px 1.2px at 82% 58%, rgba(240,240,248,0.34), transparent 100%), radial-gradient(1px 1px at 34% 76%, rgba(240,240,248,0.3), transparent 100%); }
+.boot-card { position: relative; width: min(400px, calc(100% - 48px)); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out), filter 0.6s var(--ease-out); }
+.boot-card.away { opacity: 0; transform: translateY(-14px) scale(0.985); filter: blur(8px); pointer-events: none; }
+.boot-logo { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 22px 0 4px; }
+.boot-logo svg { height: 34px; width: auto; }
+.boot-logo svg rect { fill: var(--ink); }
+.boot-logo .wm { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.55em; color: var(--ink-3); margin-left: 0.55em; }
+.boot-log { padding: 14px 22px 4px; min-height: 88px; }
+.boot-log .ln { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; color: var(--ink-3); padding: 3.5px 0; opacity: 0; transform: translateY(4px); transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out); }
+.boot-log .ln.show { opacity: 1; transform: none; }
+.boot-log .ln .pfx { color: var(--cyan-hi); margin-right: 8px; }
+.boot-log .ln.ok { color: var(--ink-2); }
+.boot-bar { margin: 8px 22px 22px; height: 3px; border-radius: 3px; background: rgba(255,255,255,0.07); overflow: hidden; }
+.boot-bar i { display: block; height: 100%; width: 0%; border-radius: 3px; background: linear-gradient(90deg, rgba(209,160,74,0.65), var(--warm-hi)); box-shadow: 0 0 12px rgba(209,160,74,0.6); transition: width 0.25s linear; }
+.boot-done { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; transition: opacity 0.6s var(--ease-out) 0.25s; pointer-events: none; }
+.boot-done.show { opacity: 1; pointer-events: auto; }
+.boot-done .in { text-align: center; }
+.boot-done h3 { font-family: var(--display); font-weight: 700; font-size: 19px; color: var(--ink); }
+.boot-done p { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.22em; color: var(--ink-4); margin: 10px 0 22px; }
+.boot-done .g-btn { flex: none; padding: 12px 26px; }
+
+/* антенна (утверждена) */
+.g-ant { display: flex; align-items: center; gap: 20px; padding: 8px 2px 16px; }
+.g-ant svg.ico { width: 52px; height: 52px; flex-shrink: 0; color: var(--ink-3); filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+.g-seg { display: flex; gap: 5px; flex: 1; max-width: 320px; }
+.g-seg span { flex: 1; height: 15px; border-radius: 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 1px 2px rgba(0,0,0,0.4); }
+.g-seg span.lit { background: linear-gradient(180deg, #edc87c, #c3943c); border-color: rgba(232,195,122,0.65); box-shadow: 0 0 16px rgba(209,160,74,0.55), inset 0 1px 0 rgba(255,255,255,0.55); }
+.g-ant .pow { margin-left: auto; text-align: right; }
+.g-ant .pow b { display: block; font-family: var(--display); font-size: 19px; font-weight: 700; color: var(--ink); letter-spacing: 0.01em; }
+.g-ant .pow i { font-style: normal; font-size: 8.5px; letter-spacing: 0.16em; color: var(--ink-4); font-family: var(--mono); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sky::before, .sky::after { animation: none; }
+  .glass::after { animation: none; display: none; }
+  .g-dot.c, .rung.x, .scanline { animation: none; }
+  .g-pane, .boot-card { transition: none; }
+  .flow-ln { animation: none; }
+}
+@media (max-width: 640px) {
+  .lb-head, .stack { padding-left: 16px; padding-right: 16px; }
+  .lb-nav-in { padding: 0 16px; }
+  .g-head { padding: 13px 16px 0; }
+  .g-body { padding: 14px 16px 16px; }
+  .g-foot { padding: 10px 16px 14px; flex-wrap: wrap; }
+  .g-actions { flex-direction: column; }
+  .g-help { width: 100%; height: 46px; border-radius: 99px; }
+  .g-ant { flex-wrap: wrap; }
+  .g-ant .pow { width: 100%; text-align: left; margin-left: 72px; margin-top: -6px; }
+  .obs-top { flex-wrap: wrap; }
+  .obs-top .big b { font-size: 21px; }
+  .obs-top .side { margin-left: 0; text-align: left; width: 100%; }
+  .dlg { height: 380px; }
+  .boot-frame { height: 420px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sky" aria-hidden="true"></div>
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="ant-ico" viewBox="0 0 24 24">
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="9.078" r="2"/>
+      <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
+      <path d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
+      <path d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
+    </g>
+  </symbol>
+  <symbol id="ic-lock" viewBox="0 0 24 24"><path d="M7 10V8a5 5 0 0 1 10 0v2h1.5a.5.5 0 0 1 .5.5V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9.5a.5.5 0 0 1 .5-.5H7zm2 0h6V8a3 3 0 0 0-6 0v2z"/></symbol>
+  <symbol id="ic-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></symbol>
+  <symbol id="ic-play" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></symbol>
+  <symbol id="ic-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></symbol>
+  <symbol id="ic-re" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></symbol>
+  <symbol id="ic-send" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></symbol>
+</svg>
+
+<header class="lb-head">
+  <h1>Система «Линза» <span class="dim">// ревизия 3</span></h1>
+  <p class="lb-sub">Ревизия честности. <strong>Наблюдение</strong> — Апертура смотрит на посетителя: только настоящие данные, ни одного выдуманного события. <strong>Печать</strong> — интерфейс загадочной личности: знак X, подпись-частота из имени, сверка. <strong>Передатчик</strong> и <strong>Диалог</strong> — утверждены. Загрузка и Поддержка — без изменений.</p>
+</header>
+
+<nav class="lb-nav" aria-label="Терминалы">
+  <div class="lb-nav-in">
+    <a href="#boot">ЗАГРУЗКА</a>
+    <a href="#feed">НАБЛЮДЕНИЕ</a>
+    <a href="#echo">ПЕРЕДАТЧИК</a>
+    <a href="#cond">ДИАЛОГ</a>
+    <a href="#arch">ПЕЧАТЬ</a>
+    <a href="#sup">ПОДДЕРЖКА</a>
+  </div>
+</nav>
+
+<div class="stack">
+  <span class="blob" style="width:360px;height:260px;left:-6%;top:120px;background:rgba(58,66,160,0.3)"></span>
+  <span class="blob" style="width:300px;height:230px;right:-4%;top:820px;background:rgba(0,200,200,0.13)"></span>
+  <span class="blob" style="width:240px;height:200px;left:14%;top:1500px;background:rgba(192,40,40,0.12)"></span>
+  <span class="blob" style="width:300px;height:230px;right:-2%;top:2300px;background:rgba(58,66,160,0.26)"></span>
+  <span class="blob" style="width:280px;height:220px;left:-4%;top:3000px;background:rgba(0,200,200,0.11)"></span>
+
+  <!-- ═══ ЗАГРУЗКА (утверждена) ═══ -->
+  <section class="item" id="boot">
+    <p class="cap"><b>Загрузка</b> · первый вход на сайт</p>
+    <div class="boot-frame">
+      <div class="bg" aria-hidden="true"></div>
+      <div class="boot-card glass" id="bootCard" style="--sheen:2s">
+        <div class="boot-logo">
+          <svg viewBox="0 0 96 40" aria-hidden="true">
+            <rect x="0" y="0" width="9" height="40"/><rect x="13" y="0" width="4" height="40"/>
+            <rect x="21" y="0" width="6" height="40"/><rect x="31" y="0" width="2.5" height="40"/>
+            <rect x="37" y="0" width="4.5" height="40"/><rect x="46" y="0" width="8" height="40"/>
+            <rect x="58" y="0" width="3" height="40"/><rect x="65" y="0" width="5.5" height="40"/>
+            <rect x="74" y="0" width="2.5" height="40"/><rect x="81" y="0" width="7" height="40"/>
+          </svg>
+          <span class="wm">ECHOWORLD</span>
+        </div>
+        <div class="boot-log" id="bootLog">
+          <div class="ln"><span class="pfx">&gt;</span>ИНИЦИАЛИЗАЦИЯ АПЕРТУРЫ</div>
+          <div class="ln"><span class="pfx">&gt;</span>ЧАСТОТА НАЙДЕНА · 14.763 GHZ</div>
+          <div class="ln ok"><span class="pfx">&gt;</span>MARKETSPACE НА СВЯЗИ</div>
+        </div>
+        <div class="boot-bar"><i id="bootBar"></i></div>
+      </div>
+      <div class="boot-done" id="bootDone">
+        <div class="in">
+          <h3>Мир открыт</h3>
+          <p>ПЕРВЫЙ КОНТАКТ ЗАПИСАН В ПАМЯТЬ APERTURA</p>
+          <button class="g-btn quiet" id="bootReplay">Повторить загрузку</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ НАБЛЮДЕНИЕ ═══ -->
+  <section class="item" id="feed">
+    <p class="cap"><b>Наблюдение</b> · Апертура смотрит на посетителя, бывший live feed</p>
+    <div class="glass" style="--sheen:0s">
+      <div class="g-head">
+        <span class="g-chip"><span class="g-dot c"></span>APERTURA · НАБЛЮДЕНИЕ</span>
+        <span class="g-aux">КАНАЛ 14.763 GHZ</span>
+      </div>
+      <div class="g-body">
+        <div class="obs-top">
+          <div class="big"><b data-presence>00:00</b><i>ВЫ В ПОЛЕ ЗРЕНИЯ АПЕРТУРЫ</i></div>
+          <div class="side">
+            <span class="obs-kv">КОНТАКТ УСТАНОВЛЕН<b data-contact>—</b></span>
+            <span class="obs-kv">ВАШ УЗЕЛ<b data-node>—</b></span>
+          </div>
+        </div>
+        <div class="obs-wave" aria-hidden="true">
+          <svg viewBox="0 0 400 46" preserveAspectRatio="none"><path data-obs-wave d="M0,23 L400,23"/></svg>
+          <span class="cap-w">КАНАЛ НАБЛЮДЕНИЯ</span>
+        </div>
+        <div class="g-row g-sep" data-toast="ЗАПИСЬ ВЕДЁТСЯ С ПЕРВОГО КАСАНИЯ" style="cursor:pointer;overflow:hidden;border-radius:10px"><span class="g-k">ЗАПИСЬ В ПАМЯТЬ APERTURA</span><span class="g-v c">ИДЁТ</span></div>
+        <div class="g-row"><span class="g-k">РЕЛИКВИЙ В КАТАЛОГЕ 01-2026</span><span class="g-v">12</span></div>
+        <div class="g-row"><span class="g-k">ЭХО-КАНАЛ</span><span class="g-v">ОТКРЫТ</span></div>
+        <div class="g-row" data-deny style="cursor:pointer;overflow:hidden;border-radius:10px"><span class="g-k">PERIMETER.STATUS</span><span class="g-v mut">STABLE<svg class="g-lock"><use href="#ic-lock"/></svg></span></div>
+      </div>
+      <div class="g-foot"><span>АПЕРТУРА СЛУШАЕТ · НИЧЕГО НЕ ТЕРЯЕТСЯ</span><span>MARKETSPACE · 01-2026</span></div>
+    </div>
+  </section>
+
+  <!-- ═══ ПЕРЕДАТЧИК ═══ -->
+  <section class="item" id="echo">
+    <p class="cap"><b>Передатчик</b> · Эхо: послание в другой мир</p>
+    <div class="glass" data-echo style="--sheen:3s">
+      <div class="g-head">
+        <span class="g-chip"><span class="g-dot c"></span>ЭХО · ПЕРЕДАТЧИК</span>
+        <span class="g-aux">→ MARKETSPACE · БУДУЩИЙ ФРАГМЕНТ</span>
+      </div>
+      <div class="g-body">
+        <div class="aura">
+          <span class="lbl">АУРА</span>
+          <span class="aura-chip" data-aura>ШЁПОТ</span>
+          <button class="aura-re" data-aura-re aria-label="Перебрать Ауру"><svg><use href="#ic-re"/></svg></button>
+          <span class="hint">ЗВУКОВАЯ ОКРАСКА СИГНАЛА</span>
+        </div>
+        <div class="beam" aria-hidden="true">
+          <svg viewBox="0 0 400 40" preserveAspectRatio="none"><path data-osc d="M0,20 L400,20"/></svg>
+          <span class="fr">12.847 GHZ</span>
+        </div>
+        <div class="g-tabs" role="tablist">
+          <button class="g-tab on" data-tab="text" role="tab" aria-selected="true"><span>ТЕКСТ</span><span class="p">599 ₽</span></button>
+          <button class="g-tab" data-tab="voice" role="tab" aria-selected="false"><span>ГОЛОС</span><span class="p">1499 ₽</span></button>
+        </div>
+        <div class="g-stage echo-stage" style="--stage-h:126px">
+          <span class="retune-band"></span>
+          <div class="g-pane" data-pane="text">
+            <div class="slots" data-slots aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <textarea class="g-well" data-words rows="2" placeholder="Семь слов на ту сторону" maxlength="120" style="height:64px"></textarea>
+            <div class="g-meta"><span>КАЖДОЕ СЛОВО ПРОЗВУЧИТ УСТАМИ ВИША</span><span data-count>0 / 7</span></div>
+          </div>
+          <div class="g-pane off" data-pane="voice">
+            <div class="rec-zone">
+              <div class="mic-wrap">
+                <button class="mic-btn" data-rec aria-label="Записать голос"><svg><use href="#ic-mic"/></svg></button>
+                <svg class="mic-ring" viewBox="0 0 66 66" aria-hidden="true"><circle data-ring cx="33" cy="33" r="31"/></svg>
+              </div>
+              <div class="wave" data-wave aria-hidden="true"></div>
+              <div class="voice-side">
+                <div class="tm" data-rec-time>0.0</div>
+                <div class="st" data-rec-status>ДО 3 СЕК</div>
+              </div>
+            </div>
+            <div class="voice-ctl">
+              <button class="vc-btn" data-play disabled><svg class="i-play"><use href="#ic-play"/></svg>ПРОСЛУШАТЬ</button>
+              <button class="vc-btn" data-retry disabled><svg><use href="#ic-re"/></svg>ЗАНОВО</button>
+              <span class="note">ГОЛОС ПРОЗВУЧИТ УСТАМИ ВИША</span>
+            </div>
+          </div>
+        </div>
+        <div class="g-actions" style="padding-top:10px">
+          <button class="g-btn" data-send>Передать Эхо<span data-price>· 599 ₽</span></button>
+        </div>
+      </div>
+      <div class="g-foot"><span data-status>ОЖИДАНИЕ СИГНАЛА</span><span>ХРАНИТСЯ В ПАМЯТИ APERTURA</span></div>
+    </div>
+  </section>
+
+  <!-- ═══ ДИАЛОГ ═══ -->
+  <section class="item" id="cond">
+    <p class="cap"><b>Диалог</b> · заказ конденсации: Апертура спрашивает сама</p>
+    <div class="glass" data-cond style="--sheen:6s">
+      <div class="g-head">
+        <span class="g-chip"><span class="g-dot w" data-cond-dot></span>APERTURA · CONDENSATE FORMING</span>
+        <span class="g-aux" data-cond-state>ДИАЛОГ ОТКРЫТ</span>
+      </div>
+      <div class="g-body">
+        <div class="dlg">
+          <div class="dlg-log" data-dlg-log></div>
+          <div class="dlg-in" data-dlg-in>
+            <input class="g-well" data-dlg-field placeholder="">
+            <button class="dlg-send" data-dlg-send aria-label="Ответить"><svg><use href="#ic-send"/></svg></button>
+          </div>
+          <div class="dlg-consent" data-dlg-consent>
+            <button class="g-btn" data-consent-yes style="flex:1">Подтверждаю согласие</button>
+            <button class="lnk" data-toast="ПОЛИТИКА ДАННЫХ · ОТКРОЕТСЯ НА САЙТЕ">персональные данные</button>
+          </div>
+        </div>
+      </div>
+      <div class="g-foot"><span data-status>ЗОНА КОНДЕНСАЦИИ АКТИВНА</span><span>ТОЛЬКО ФИЗИЧЕСКОЕ · ДО 5 КГ</span></div>
+    </div>
+  </section>
+
+  <!-- ═══ ПЕЧАТЬ ═══ -->
+  <section class="item" id="arch">
+    <p class="cap"><b>Печать</b> · Архитектор: сверка частоты</p>
+    <div class="glass" data-seal style="--sheen:9s">
+      <span class="seal-scanline" aria-hidden="true"></span>
+      <div class="g-head">
+        <span class="g-chip"><span class="g-dot r"></span>ARCHITECT</span>
+        <span class="g-aux">ECH-0001</span>
+      </div>
+      <div class="g-body">
+        <div class="seal">
+          <button class="seal-x" data-sigil aria-label="Сверить частоту с печатью Архитектора">
+            <span class="halo" aria-hidden="true"></span>
+            <b>X</b>
+          </button>
+          <div class="seal-name">@AINTONX</div>
+          <div class="seal-des">DESIGNATION · <b>ARCHITECT</b> · УРОВЕНЬ X</div>
+          <div class="seal-status" data-seal-status>НАЖМИТЕ ПЕЧАТЬ · СВЕРКА ЧАСТОТЫ</div>
+        </div>
+        <div class="seal-wave" data-sig-wave data-deny data-deny-msg="ПОДПИСЬ НЕ ВОСПРОИЗВОДИМА">
+          <svg viewBox="0 0 400 54" preserveAspectRatio="none"><path data-sig-path d="M0,27 L400,27"/></svg>
+          <span class="cap-w">ЧАСТОТА АРХИТЕКТОРА · ВЫЧИСЛЕНА ИЗ ИМЕНИ</span>
+        </div>
+        <div class="g-row g-sep"><span class="g-k">STATUS</span><span class="g-v c">WORLD.BUILDING</span></div>
+        <div class="g-row console-row" data-deny data-deny-msg="КОНСОЛЬ АРХИТЕКТОРА · НУЖЕН УРОВЕНЬ X"><span class="g-k">APERTURA</span><span class="g-v mut">CONSOLE<svg class="g-lock"><use href="#ic-lock"/></svg></span></div>
+      </div>
+      <div class="g-foot"><span>ПРОТОКОЛ СЕМИ</span><span>ОКНО УРОВНЯ X ОТКРЫВАЕТСЯ БЕЗ ПРЕДУПРЕЖДЕНИЯ</span></div>
+    </div>
+  </section>
+
+  <!-- ═══ ПОДДЕРЖКА (утверждена) ═══ -->
+  <section class="item" id="sup">
+    <p class="cap"><b>Поддержка</b> · усиление сигнала антенны</p>
+    <div class="glass" style="--sheen:12s">
+      <div class="g-head">
+        <span class="g-chip"><span class="g-dot w"></span>SIGNAL SUPPORT</span>
+        <span class="g-aux">APERTURA · CHANNEL OPEN</span>
+      </div>
+      <div class="g-body">
+        <div class="g-ant">
+          <svg class="ico" aria-hidden="true"><use href="#ant-ico"/></svg>
+          <div class="g-seg" aria-label="Мощность передатчика 34%">
+            <span class="lit"></span><span class="lit"></span><span class="lit"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="pow"><b>34%</b><i>МОЩНОСТЬ</i></div>
+        </div>
+        <div class="g-row g-sep"><span class="g-k">АПЕРТУРА ПРИЁМА</span><span class="g-v">УЗКАЯ</span></div>
+        <div class="g-row"><span class="g-k">ШУМОВОЙ ПОРОГ</span><span class="g-v r">ВЫСОКИЙ</span></div>
+        <div class="g-row"><span class="g-k">МИРЫ В ОЧЕРЕДИ</span><span class="g-v">III · IV</span></div>
+        <div class="g-actions">
+          <button class="g-btn" data-toast="ДЕМО · ПЛАТЁЖНЫЙ КАНАЛ ОТКЛЮЧЁН">Усилить сигнал через СБП</button>
+          <button class="g-help" data-toast="КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ АНТЕННЫ" aria-label="Что значит усилить сигнал?">?</button>
+        </div>
+      </div>
+      <div class="g-foot"><span>КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ</span><span>ЧЕМ ЧИЩЕ КАНАЛ, ТЕМ ДАЛЬШЕ СЛЫШНО</span></div>
+    </div>
+  </section>
+
+  <footer style="margin-top:26px;padding:24px 0 40px;border-top:1px solid rgba(240,240,248,0.07);">
+    <p style="font-size:13px;color:var(--ink-4);max-width:70ch;">Паттерны: живой эфир — ops-дашборды; передатчик — голосовые Telegram/WhatsApp; диалог — разговорные формы Typeform; досье — монумент доступа. Дальше — перенос утверждённого в index.html.</p>
+  </footer>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  var motionOK = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Тост и рябь ── */
+  var toastEl = document.getElementById('toast'), toastT;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 2000);
+  }
+  function ripple(el, ev, kind) {
+    var r = el.getBoundingClientRect();
+    var i = document.createElement('i');
+    i.className = 'ripple' + (kind ? ' ' + kind : '');
+    i.style.left = ((ev && ev.clientX ? ev.clientX : r.left + r.width / 2) - r.left) + 'px';
+    i.style.top = ((ev && ev.clientY ? ev.clientY : r.top + r.height / 2) - r.top) + 'px';
+    el.appendChild(i);
+    setTimeout(function () { i.remove(); }, 650);
+  }
+  document.addEventListener('click', function (e) {
+    var deny = e.target.closest('[data-deny]');
+    if (deny) {
+      ripple(deny, e, 'deny');
+      deny.classList.remove('denied-pulse'); void deny.offsetWidth;
+      deny.classList.add('denied-pulse');
+      toast(deny.getAttribute('data-deny-msg') || 'ДОСТУП ОГРАНИЧЕН · ПРОТОКОЛ СЕМИ');
+      return;
+    }
+    var t = e.target.closest('[data-toast]');
+    if (t) { ripple(t, e, t.classList.contains('g-btn') ? 'warm' : ''); toast(t.getAttribute('data-toast')); return; }
+    var b = e.target.closest('.g-btn, .g-tab, .mic-btn, .vc-btn, .g-help, .aura-re, .dlg-send, .rung');
+    if (b) ripple(b, e, b.classList.contains('g-btn') && !b.classList.contains('quiet') ? 'warm' : '');
+  });
+
+  function retune(host, stage, showSel) {
+    host.classList.add('retuning');
+    stage.querySelectorAll('.g-pane').forEach(function (p) { p.classList.toggle('off', !p.matches(showSel)); });
+    setTimeout(function () { host.classList.remove('retuning'); }, 520);
+  }
+
+  /* ════════ НАБЛЮДЕНИЕ: контакт, присутствие, узел — всё честное ════════ */
+  function two(n) { return n < 10 ? '0' + n : n; }
+  var t0 = new Date();
+  document.querySelector('[data-contact]').textContent = two(t0.getHours()) + ':' + two(t0.getMinutes()) + ':' + two(t0.getSeconds());
+  var NODE_AB = 'ACEFHKMNPRTWX', NODE_D = '234679';
+  function pick(str) { return str[Math.floor(Math.random() * str.length)]; }
+  document.querySelector('[data-node]').textContent = pick(NODE_AB) + pick(NODE_D) + '-' + pick(NODE_D) + pick(NODE_AB);
+  var presenceEl = document.querySelector('[data-presence]');
+  var obsKick = 0;
+  setInterval(function () {
+    var s = Math.floor((Date.now() - t0.getTime()) / 1000);
+    presenceEl.textContent = s >= 3600
+      ? two(Math.floor(s / 3600)) + ':' + two(Math.floor(s / 60) % 60) + ':' + two(s % 60)
+      : two(Math.floor(s / 60)) + ':' + two(s % 60);
+    obsKick = Math.min(obsKick + 4, 12);
+  }, 1000);
+  var obsPath = document.querySelector('[data-obs-wave]');
+  function drawObsWave(t) {
+    var amp = 5 + obsKick; obsKick *= 0.95;
+    var d = 'M0,23';
+    for (var x = 0; x <= 400; x += 8) d += ' L' + x + ',' + (23 + amp * Math.sin(x * 0.024 + t) * Math.sin(x * 0.01 + t * 0.55)).toFixed(1);
+    obsPath.setAttribute('d', d);
+  }
+  if (motionOK) { (function loopObsW() { drawObsWave(performance.now() / 800); requestAnimationFrame(loopObsW); })(); }
+  else drawObsWave(2);
+
+  /* ════════ ПЕРЕДАТЧИК ════════ */
+  var echo = document.querySelector('[data-echo]');
+  var AURAS = ['ГУЛ', 'ШЁПОТ', 'ЗВОН', 'ХЛАД', 'СРЫВ', 'ДВОЙНИК'];
+  var auraChip = echo.querySelector('[data-aura]');
+  echo.querySelector('[data-aura-re]').addEventListener('click', function () {
+    auraChip.classList.add('spin');
+    setTimeout(function () {
+      var next; do { next = AURAS[Math.floor(Math.random() * AURAS.length)]; } while (next === auraChip.textContent);
+      auraChip.textContent = next;
+      auraChip.classList.remove('spin');
+    }, 220);
+  });
+
+  /* луч канала */
+  var osc = echo.querySelector('path[data-osc]');
+  var oscKick = 0;
+  function drawOsc(t) {
+    var hot = echo.classList.contains('hot');
+    var amp = (hot ? 11 : 5) + oscKick;
+    oscKick *= 0.94;
+    var d = 'M0,20';
+    for (var x = 0; x <= 400; x += 8) {
+      var y = 20 + amp * Math.sin(x * 0.03 + t) * Math.sin(x * 0.012 + t * 0.6);
+      d += ' L' + x + ',' + y.toFixed(1);
+    }
+    osc.setAttribute('d', d);
+  }
+  if (motionOK) { (function loop() { drawOsc(performance.now() / 650); requestAnimationFrame(loop); })(); }
+  else drawOsc(2);
+
+  /* текст: семь слотов */
+  var words = echo.querySelector('[data-words]');
+  var count = echo.querySelector('[data-count]');
+  var slots = echo.querySelector('[data-slots]');
+  var slotPips = slots.children;
+  words.addEventListener('input', function () {
+    var n = words.value.trim().split(/\s+/).filter(Boolean).length;
+    count.textContent = n + ' / 7';
+    count.style.color = n > 7 ? 'var(--red-hi)' : '';
+    slots.classList.toggle('over', n > 7);
+    for (var i = 0; i < 7; i++) slotPips[i].classList.toggle('on', i < n);
+    oscKick = Math.min(oscKick + 7, 22);
+  });
+  words.addEventListener('focus', function () { echo.classList.add('hot'); });
+  words.addEventListener('blur', function () { echo.classList.remove('hot'); });
+
+  /* вкладки */
+  var price = echo.querySelector('[data-price]');
+  echo.querySelectorAll('[data-tab]').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      if (tab.classList.contains('on')) return;
+      echo.querySelectorAll('[data-tab]').forEach(function (t) {
+        var on = t === tab;
+        t.classList.toggle('on', on);
+        t.setAttribute('aria-selected', on);
+      });
+      retune(echo, echo.querySelector('.echo-stage'), '[data-pane="' + tab.getAttribute('data-tab') + '"]');
+      price.textContent = tab.getAttribute('data-tab') === 'text' ? '· 599 ₽' : '· 1499 ₽';
+    });
+  });
+
+  /* голос: живая волна, кольцо, прослушивание */
+  var BARS = 27;
+  var waveEl = echo.querySelector('[data-wave]');
+  for (var b = 0; b < BARS; b++) waveEl.appendChild(document.createElement('i'));
+  var waveBars = waveEl.children;
+  var recBtn = echo.querySelector('[data-rec]');
+  var ring = echo.querySelector('[data-ring]');
+  var recTm = echo.querySelector('[data-rec-time]');
+  var recSt = echo.querySelector('[data-rec-status]');
+  var playBtn = echo.querySelector('[data-play]');
+  var retryBtn = echo.querySelector('[data-retry]');
+  var recIv, playIv, hasRec = false, waveShape = [];
+
+  function waveReset() {
+    waveEl.classList.remove('done');
+    for (var i = 0; i < BARS; i++) { waveBars[i].className = ''; waveBars[i].style.height = '12%'; }
+  }
+  waveReset();
+
+  recBtn.addEventListener('click', function () {
+    if (echo.classList.contains('rec')) return;
+    stopPlay(); waveReset();
+    hasRec = false; playBtn.disabled = true; retryBtn.disabled = true;
+    waveShape = [];
+    echo.classList.add('rec', 'hot');
+    recSt.textContent = 'ЗАПИСЬ';
+    var t0 = performance.now();
+    clearInterval(recIv);
+    recIv = setInterval(function () {
+      var s = Math.min((performance.now() - t0) / 1000, 3);
+      recTm.textContent = s.toFixed(1);
+      ring.style.strokeDashoffset = String(194 - (s / 3) * 194);
+      var idx = Math.min(Math.floor((s / 3) * BARS), BARS - 1);
+      if (!waveShape[idx]) {
+        var h = 18 + Math.random() * 74;
+        waveShape[idx] = h;
+        waveBars[idx].style.height = h + '%';
+        waveBars[idx].classList.add('on');
+      }
+      oscKick = Math.min(oscKick + 3, 22);
+      if (s >= 3) {
+        clearInterval(recIv);
+        echo.classList.remove('rec', 'hot');
+        recSt.textContent = 'ГОТОВО · 3.0 СЕК';
+        waveEl.classList.add('done');
+        ring.style.strokeDashoffset = '194';
+        hasRec = true; playBtn.disabled = false; retryBtn.disabled = false;
+      }
+    }, 60);
+  });
+
+  function stopPlay() { clearInterval(playIv); echo.classList.remove('playing'); }
+  playBtn.addEventListener('click', function () {
+    if (!hasRec) return;
+    if (echo.classList.contains('playing')) { stopPlay(); return; }
+    echo.classList.add('playing');
+    for (var i = 0; i < BARS; i++) waveBars[i].classList.remove('lit');
+    var t0 = performance.now();
+    clearInterval(playIv);
+    playIv = setInterval(function () {
+      var p = (performance.now() - t0) / 3000;
+      var idx = Math.floor(p * BARS);
+      for (var i = 0; i < BARS && i <= idx; i++) waveBars[i].classList.add('lit');
+      recTm.textContent = Math.min(p * 3, 3).toFixed(1);
+      oscKick = Math.min(oscKick + 2, 16);
+      if (p >= 1) { stopPlay(); recTm.textContent = '3.0'; }
+    }, 50);
+  });
+  retryBtn.addEventListener('click', function () {
+    stopPlay(); waveReset();
+    hasRec = false; playBtn.disabled = true; retryBtn.disabled = true;
+    recTm.textContent = '0.0'; recSt.textContent = 'ДО 3 СЕК';
+  });
+
+  /* отправка Эха */
+  echo.querySelector('[data-send]').addEventListener('click', function () {
+    var status = echo.querySelector('[data-status]');
+    var code = 'ИМП-' + String(Math.floor(1000 + Math.random() * 9000));
+    status.textContent = 'СИГНАЛ УШЁЛ · КОД ' + code + ' · АУРА «' + auraChip.textContent + '»';
+    status.style.color = 'var(--cyan-hi)';
+    oscKick = 26;
+    setTimeout(function () { status.textContent = 'ОЖИДАНИЕ СИГНАЛА'; status.style.color = ''; }, 3600);
+  });
+
+  /* ════════ ДИАЛОГ: Апертура спрашивает сама ════════ */
+  var cond = document.querySelector('[data-cond]');
+  var dlgLog = cond.querySelector('[data-dlg-log]');
+  var dlgIn = cond.querySelector('[data-dlg-in]');
+  var dlgField = cond.querySelector('[data-dlg-field]');
+  var dlgSend = cond.querySelector('[data-dlg-send]');
+  var dlgConsent = cond.querySelector('[data-dlg-consent]');
+  var condState = cond.querySelector('[data-cond-state]');
+  var condDot = cond.querySelector('[data-cond-dot]');
+  var answers = {};
+
+  var STEPS = [
+    { key: 'relic', q: 'Что должно появиться в вашем мире? Опишите простыми словами: форма, материал, ощущение.', ph: 'Например: медная сова размером с ладонь', validate: function (v) { return v.length >= 2 ? '' : 'Сигнал слишком короткий. Опишите желаемое.'; } },
+    { key: 'mail', q: 'Куда прислать ответ, когда Архитектор проверит поток?', ph: 'Email для связи', validate: function (v) { return v.indexOf('@') > 0 && v.indexOf('.') > 1 ? '' : 'Узел не отвечает. Проверьте адрес.'; } },
+    { key: 'consent', q: 'Осталось согласие на обработку персональных данных — без него сигнал не уйдёт.', consent: true }
+  ];
+  var stepIdx = -1, busy = false;
+
+  function scrollLog() { dlgLog.scrollTop = dlgLog.scrollHeight; }
+  function typeQuestion(text, done) {
+    var q = document.createElement('div');
+    q.className = 'dlg-q';
+    q.innerHTML = '<span class="pfx">&gt;</span><span class="txt"></span><span class="cur"></span>';
+    dlgLog.appendChild(q);
+    var span = q.querySelector('.txt'), cur = q.querySelector('.cur');
+    if (!motionOK) { span.textContent = text; cur.remove(); scrollLog(); done && done(); return; }
+    var i = 0;
+    (function step() {
+      span.textContent = text.slice(0, ++i);
+      scrollLog();
+      if (i < text.length) setTimeout(step, 16);
+      else { cur.remove(); done && done(); }
+    })();
+  }
+  function addAnswer(text) {
+    var a = document.createElement('div');
+    a.className = 'dlg-a';
+    a.innerHTML = '<span></span>';
+    a.querySelector('span').textContent = text;
+    dlgLog.appendChild(a); scrollLog();
+  }
+  function addSys(text, err) {
+    var s = document.createElement('div');
+    s.className = 'dlg-sys' + (err ? ' err' : '');
+    s.textContent = text;
+    dlgLog.appendChild(s); scrollLog();
+  }
+  function nextStep() {
+    stepIdx++;
+    var st = STEPS[stepIdx];
+    if (!st) return finale();
+    busy = true;
+    dlgIn.classList.add('lock');
+    typeQuestion(st.q, function () {
+      busy = false;
+      if (st.consent) {
+        dlgIn.style.display = 'none';
+        dlgConsent.classList.add('show');
+      } else {
+        dlgIn.classList.remove('lock');
+        dlgField.placeholder = st.ph;
+        dlgField.value = '';
+        dlgField.focus({ preventScroll: true });
+      }
+    });
+  }
+  function submitAnswer() {
+    if (busy) return;
+    var st = STEPS[stepIdx];
+    if (!st || st.consent) return;
+    var v = dlgField.value.trim();
+    var err = st.validate(v);
+    if (err) {
+      dlgField.classList.add('err');
+      setTimeout(function () { dlgField.classList.remove('err'); }, 700);
+      addSys(err, true);
+      return;
+    }
+    answers[st.key] = v;
+    addAnswer(v);
+    condState.textContent = 'SIGNAL FORMING'; condState.style.color = 'var(--warm-hi)';
+    nextStep();
+  }
+  dlgSend.addEventListener('click', submitAnswer);
+  dlgField.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); } });
+  cond.querySelector('[data-consent-yes]').addEventListener('click', function () {
+    dlgConsent.classList.remove('show');
+    addAnswer('Согласие подтверждено');
+    finale();
+  });
+  function finale() {
+    busy = true;
+    addSys('ФОРМИРУЮ ЗАПРОС…');
+    setTimeout(function () {
+      var code = 'КНД-' + String(Math.floor(1000 + Math.random() * 9000));
+      var f = document.createElement('div');
+      f.className = 'dlg-final';
+      f.innerHTML = '<div class="code">' + code + '</div><h4>Сигнал принят</h4><p>Архитектор проверит, есть ли в MARKETSPACE поток, способный принять форму желаемого. Ответ придёт на <b></b>.</p>';
+      f.querySelector('b').textContent = answers.mail || '';
+      dlgLog.appendChild(f); scrollLog();
+      condDot.classList.remove('w'); condDot.classList.add('c');
+      condState.textContent = 'SIGNAL ACCEPTED'; condState.style.color = 'var(--cyan-hi)';
+      var status = cond.querySelector('[data-status]');
+      status.textContent = 'СИГНАЛ В ПАМЯТИ APERTURA'; status.style.color = 'var(--cyan-hi)';
+      var again = document.createElement('div');
+      again.className = 'dlg-sys';
+      again.innerHTML = '<button class="vc-btn" data-dlg-again style="margin-top:6px"><svg><use href="#ic-re"/></svg>НОВЫЙ СИГНАЛ</button>';
+      dlgLog.appendChild(again); scrollLog();
+      again.querySelector('[data-dlg-again]').addEventListener('click', function () {
+        dlgLog.innerHTML = ''; answers = {}; stepIdx = -1;
+        dlgIn.style.display = ''; dlgIn.classList.remove('lock');
+        condDot.classList.remove('c'); condDot.classList.add('w');
+        condState.textContent = 'ДИАЛОГ ОТКРЫТ'; condState.style.color = '';
+        status.textContent = 'ЗОНА КОНДЕНСАЦИИ АКТИВНА'; status.style.color = '';
+        nextStep();
+      });
+    }, motionOK ? 900 : 100);
+  }
+  /* диалог стартует, когда терминал попадает в поле зрения */
+  var dlgStarted = false;
+  new IntersectionObserver(function (en, io) {
+    if (en[0].isIntersecting && !dlgStarted) { dlgStarted = true; nextStep(); io.disconnect(); }
+  }, { threshold: 0.3 }).observe(cond);
+
+  /* ════════ ПЕЧАТЬ: сверка частоты и подпись из имени ════════ */
+  var seal = document.querySelector('[data-seal]');
+  var sigil = seal.querySelector('[data-sigil]');
+  var sealSt = seal.querySelector('[data-seal-status]');
+  var sealBusy = false;
+  sigil.addEventListener('click', function () {
+    if (sealBusy) return;
+    sealBusy = true;
+    seal.classList.add('scanning');
+    sealSt.textContent = 'СКАНИРОВАНИЕ ЧАСТОТЫ…';
+    sealSt.className = 'seal-status scan';
+    setTimeout(function () {
+      seal.classList.remove('scanning');
+      sealSt.textContent = 'ВЫ НЕ АРХИТЕКТОР';
+      sealSt.className = 'seal-status no';
+      sigil.classList.remove('deny-flash'); void sigil.offsetWidth;
+      sigil.classList.add('deny-flash');
+      setTimeout(function () {
+        sealSt.textContent = 'НАЖМИТЕ ПЕЧАТЬ · СВЕРКА ЧАСТОТЫ';
+        sealSt.className = 'seal-status';
+        sealBusy = false;
+      }, 2500);
+    }, motionOK ? 1300 : 200);
+  });
+  (function () {
+    var name = 'aintonx';
+    var waves = [];
+    for (var i = 0; i < name.length; i++) {
+      var c = name.charCodeAt(i);
+      waves.push({ a: 4 + (c % 7), f: 0.012 + (c % 11) * 0.004, p: (c % 13) * 0.6 });
+    }
+    var d = 'M0,27';
+    for (var x = 0; x <= 400; x += 4) {
+      var y = 27;
+      waves.forEach(function (w) { y += w.a * Math.sin(x * w.f + w.p) / name.length * 2.4; });
+      d += ' L' + x + ',' + y.toFixed(1);
+    }
+    seal.querySelector('[data-sig-path]').setAttribute('d', d);
+  })();
+
+  /* ════════ Загрузчик (утверждён) ════════ */
+  var bootCard = document.getElementById('bootCard');
+  var bootDone = document.getElementById('bootDone');
+  var bootBar = document.getElementById('bootBar');
+  var bootLines = document.querySelectorAll('#bootLog .ln');
+  var bootTimers = [];
+  function bootRun() {
+    bootTimers.forEach(clearTimeout); bootTimers = [];
+    bootCard.classList.remove('away');
+    bootDone.classList.remove('show');
+    bootLines.forEach(function (l) { l.classList.remove('show'); });
+    bootBar.style.transition = 'none'; bootBar.style.width = '0%';
+    void bootBar.offsetWidth;
+    if (!motionOK) {
+      bootLines.forEach(function (l) { l.classList.add('show'); });
+      bootBar.style.width = '100%';
+      bootCard.classList.add('away'); bootDone.classList.add('show');
+      return;
+    }
+    bootBar.style.transition = 'width 0.25s linear';
+    bootTimers.push(setTimeout(function () { bootLines[0].classList.add('show'); }, 300));
+    bootTimers.push(setTimeout(function () { bootLines[1].classList.add('show'); }, 1050));
+    bootTimers.push(setTimeout(function () { bootLines[2].classList.add('show'); }, 1800));
+    var steps = [[350, 12], [700, 22], [1100, 37], [1500, 46], [1900, 63], [2300, 74], [2700, 88], [3050, 100]];
+    steps.forEach(function (s) { bootTimers.push(setTimeout(function () { bootBar.style.width = s[1] + '%'; }, s[0])); });
+    bootTimers.push(setTimeout(function () { bootCard.classList.add('away'); bootDone.classList.add('show'); }, 3600));
+  }
+  document.getElementById('bootReplay').addEventListener('click', function () { bootRun(); });
+  var bootStarted = false;
+  new IntersectionObserver(function (en, io) {
+    if (en[0].isIntersecting && !bootStarted) { bootStarted = true; bootRun(); io.disconnect(); }
+  }, { threshold: 0.35 }).observe(document.querySelector('.boot-frame'));
+
+  /* ── Навигация ── */
+  var links = document.querySelectorAll('.lb-nav a'), map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        links.forEach(function (a) { a.classList.remove('on'); });
+        var a = map[en.target.id];
+        if (a) a.classList.add('on');
+      }
+    });
+  }, { rootMargin: '-25% 0px -55% 0px' });
+  document.querySelectorAll('.item').forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>

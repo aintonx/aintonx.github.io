@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>EchoWorld · Усилить сигнал — 3 стеклянных варианта</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   УСИЛИТЬ СИГНАЛ · 3 варианта в направлении «жидкое стекло»
+   Ощущение: внеземная секретная технология в тёмной комнате.
+   Истоки: Apple Liquid Glass · Prometheus (Territory Studio) ·
+   Ghostty · Nothing. Элемент-выживший из прошлого лукбука:
+   антенна + сегментный индикатор мощности.
+   Только тёмная тема — свет здесь не предусмотрен конструкцией.
+   ════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --void:   #04040a;
+  --ink:    #f0f0f8;
+  --ink-2:  #c8c8dc;
+  --ink-3:  #9a9ab8;
+  --ink-4:  #6a6a8a;
+  --warm:   #d1a04a;
+  --warm-hi:#e8c37a;
+  --cyan:   #00c8c8;
+  --cyan-hi:#4ce0e0;
+  --red:    #c02828;
+  --red-hi: #e64545;
+  --mono:   'IBM Plex Mono', ui-monospace, monospace;
+  --text:   'Inter', system-ui, sans-serif;
+  --display:'Unbounded', var(--text);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html { background: var(--void); scroll-behavior: smooth; }
+body { font-family: var(--text); color: var(--ink-2); line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+/* ── Небо другого мира: фон, который стеклу есть что преломлять ── */
+.sky { position: fixed; inset: 0; z-index: -1; background: var(--void); overflow: hidden; }
+.sky::before { /* глубокие цветовые поля */
+  content: ""; position: absolute; inset: -20%;
+  background:
+    radial-gradient(46% 34% at 74% 12%, rgba(58, 66, 160, 0.16), transparent 70%),
+    radial-gradient(38% 30% at 14% 38%, rgba(0, 200, 200, 0.08), transparent 70%),
+    radial-gradient(44% 36% at 82% 78%, rgba(192, 40, 40, 0.07), transparent 70%),
+    radial-gradient(30% 24% at 40% 86%, rgba(58, 66, 160, 0.1), transparent 70%);
+  animation: skyDrift 46s ease-in-out infinite alternate;
+}
+.sky::after { /* звёзды-узлы Старых Связей */
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 22%, rgba(240,240,248,0.5), transparent 100%),
+    radial-gradient(1px 1px at 34% 64%, rgba(76,224,224,0.4), transparent 100%),
+    radial-gradient(1.4px 1.4px at 56% 18%, rgba(240,240,248,0.34), transparent 100%),
+    radial-gradient(1px 1px at 72% 46%, rgba(240,240,248,0.4), transparent 100%),
+    radial-gradient(1.2px 1.2px at 88% 26%, rgba(230,69,69,0.32), transparent 100%),
+    radial-gradient(1px 1px at 22% 84%, rgba(240,240,248,0.3), transparent 100%),
+    radial-gradient(1.3px 1.3px at 64% 82%, rgba(76,224,224,0.3), transparent 100%),
+    radial-gradient(1px 1px at 92% 64%, rgba(240,240,248,0.36), transparent 100%);
+  animation: starDrift 90s linear infinite alternate;
+}
+@keyframes skyDrift { to { transform: translate(3%, 2%) scale(1.04); } }
+@keyframes starDrift { to { transform: translate(-1.5%, -1%); } }
+
+/* ── Хром лукбука ──────────────────────────────────────────────── */
+.lb-head { max-width: 1080px; margin: 0 auto; padding: 68px 32px 20px; }
+.lb-head h1 { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 3.6vw, 44px); color: var(--ink); letter-spacing: 0; text-wrap: balance; }
+.lb-head h1 .dim { color: var(--ink-4); font-weight: 500; }
+.lb-sub { margin-top: 14px; max-width: 70ch; font-size: 15px; color: var(--ink-3); }
+.lb-sub strong { color: var(--ink-2); font-weight: 500; }
+
+.lb-nav { position: sticky; top: 0; z-index: 50; background: rgba(4,4,10,0.72); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(240,240,248,0.08); }
+.lb-nav-in { max-width: 1080px; margin: 0 auto; padding: 0 32px; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.lb-nav-in::-webkit-scrollbar { display: none; }
+.lb-nav a { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ink-4); text-decoration: none; white-space: nowrap; padding: 14px 14px 12px; border-bottom: 2px solid transparent; transition: color 0.2s; }
+.lb-nav a:hover { color: var(--ink-2); }
+.lb-nav a.on { color: var(--ink); border-bottom-color: var(--warm); }
+.lb-nav a .n { color: var(--warm); margin-right: 6px; }
+
+.var { max-width: 1080px; margin: 0 auto; padding: 64px 32px 30px; }
+.var + .var { border-top: 1px solid rgba(240,240,248,0.07); }
+.var-head { margin-bottom: 30px; max-width: 76ch; }
+.var-head .num { font-family: var(--mono); font-size: 12px; letter-spacing: 0.2em; color: var(--warm); }
+.var-head h2 { font-family: var(--display); font-weight: 700; font-size: clamp(20px, 2.4vw, 30px); color: var(--ink); margin: 8px 0 10px; }
+.var-head p { font-size: 14.5px; color: var(--ink-3); max-width: 72ch; }
+.var-head p strong { color: var(--ink-2); font-weight: 500; }
+
+/* сцена: локальные свечения позади стекла */
+.stage { position: relative; padding: 34px 0 10px; }
+.blob { position: absolute; border-radius: 50%; filter: blur(56px); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .sky::before, .sky::after { animation: none; }
+}
+
+#toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 16px); z-index: 100; pointer-events: none; opacity: 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink); background: rgba(13,13,26,0.92); border: 1px solid rgba(240,240,248,0.16); border-radius: 10px; padding: 10px 18px; transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out); backdrop-filter: blur(10px); }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+/* ════════════════════════════════════════════════════════════════
+   ВАРИАНТ 1 · ЛИНЗА — чистое жидкое стекло
+   Одна плавающая капсула над цветными полями. Свет живёт в кромке:
+   призматический кант, верхний блик, медленно проходящее сияние.
+   Антенна и сегменты — внутри стекла, светятся изнутри.
+   ════════════════════════════════════════════════════════════════ */
+.v1 { position: relative; max-width: 720px; margin: 0 auto; font-family: var(--mono); border-radius: 24px; background: rgba(14, 16, 28, 0.4); backdrop-filter: blur(26px) saturate(175%); -webkit-backdrop-filter: blur(26px) saturate(175%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -24px 48px rgba(0,0,0,0.2), 0 30px 90px rgba(0,0,0,0.55); overflow: hidden; }
+.v1::before { /* призматический кант */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.32), rgba(120,220,255,0.1) 28%, rgba(255,255,255,0.02) 46%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.18));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;
+}
+.v1::after { /* проходящее сияние */
+  content: ""; position: absolute; top: -60%; left: -45%; width: 52%; height: 220%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.05) 42%, rgba(255,255,255,0.11) 50%, rgba(255,255,255,0.05) 58%, transparent);
+  animation: v1sheen 14s ease-in-out infinite; pointer-events: none;
+}
+@keyframes v1sheen { 0%, 52% { left: -55%; } 86%, 100% { left: 115%; } }
+@media (prefers-reduced-motion: reduce) { .v1::after { animation: none; display: none; } }
+
+.v1-head { display: flex; align-items: center; gap: 12px; padding: 16px 22px 0; }
+.v1-chip { display: inline-flex; align-items: center; gap: 8px; font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-2); background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+.v1-chip .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 9px rgba(209,160,74,0.9); }
+.v1-head .aux { margin-left: auto; font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); }
+
+.v1-body { padding: 18px 22px 20px; }
+.v1-ant { display: flex; align-items: center; gap: 20px; padding: 8px 2px 16px; }
+.v1-ant svg.ico { width: 52px; height: 52px; flex-shrink: 0; color: var(--ink-3); filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+.v1-seg { display: flex; gap: 5px; flex: 1; max-width: 320px; }
+.v1-seg span { flex: 1; height: 15px; border-radius: 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 1px 2px rgba(0,0,0,0.4); }
+.v1-seg span.lit { background: linear-gradient(180deg, #edc87c, #c3943c); border-color: rgba(232,195,122,0.65); box-shadow: 0 0 16px rgba(209,160,74,0.55), inset 0 1px 0 rgba(255,255,255,0.55); }
+.v1-ant .pow { margin-left: auto; text-align: right; }
+.v1-ant .pow b { display: block; font-size: 21px; font-weight: 600; color: var(--ink); letter-spacing: 0.02em; }
+.v1-ant .pow i { font-style: normal; font-size: 8.5px; letter-spacing: 0.16em; color: var(--ink-4); }
+
+.v1-row { display: flex; align-items: center; gap: 14px; padding: 10px 2px; position: relative; }
+.v1-row + .v1-row::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(240,240,248,0.11) 16%, rgba(240,240,248,0.11) 84%, transparent); }
+.v1-row .k { font-size: 9.5px; letter-spacing: 0.14em; color: var(--ink-3); }
+.v1-row .v { margin-left: auto; font-size: 12.5px; font-weight: 500; color: var(--ink); }
+.v1-row .v.warn { color: var(--red-hi); text-shadow: 0 0 14px rgba(230,69,69,0.35); }
+
+.v1-actions { display: flex; gap: 10px; padding: 14px 2px 2px; }
+.v1-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warm-hi); padding: 15px 18px; border-radius: 99px; background: rgba(209,160,74,0.09); border: 1px solid rgba(209,160,74,0.34); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 0 26px rgba(209,160,74,0.08); transition: box-shadow 0.3s var(--ease-out), background 0.3s, transform 0.15s; }
+.v1-btn:hover { background: rgba(209,160,74,0.15); box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 0 30px rgba(209,160,74,0.13), 0 0 30px rgba(209,160,74,0.2); }
+.v1-btn:active { transform: scale(0.985); }
+.v1-help { width: 47px; height: 47px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; font-family: var(--mono); font-size: 13px; color: var(--ink-3); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.11); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); transition: color 0.2s, background 0.2s; }
+.v1-help:hover { color: var(--ink); background: rgba(255,255,255,0.09); }
+
+.v1-foot { display: flex; justify-content: space-between; gap: 12px; padding: 12px 22px 16px; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); }
+
+/* ════════════════════════════════════════════════════════════════
+   ВАРИАНТ 2 · ПРОЕКЦИЯ — голограмма Прометея
+   Почти нет корпуса: едва заметная стеклянная плоскость, в центре
+   орбитальный прибор — антенна, кольца, деления, дуга мощности.
+   Янтарь + циан аддитивно, как проекция в тёмном зале.
+   ════════════════════════════════════════════════════════════════ */
+.v2 { position: relative; max-width: 760px; margin: 0 auto; font-family: var(--mono); border-radius: 18px; background: rgba(6, 9, 16, 0.3); backdrop-filter: blur(9px) saturate(140%); -webkit-backdrop-filter: blur(9px) saturate(140%); border: 1px solid rgba(0,200,200,0.14); box-shadow: 0 0 50px rgba(0,200,200,0.05), inset 0 0 70px rgba(0,200,200,0.03); }
+.v2-head { display: flex; justify-content: space-between; gap: 12px; padding: 15px 20px 0; font-size: 9.5px; letter-spacing: 0.2em; color: rgba(122,212,212,0.85); }
+.v2-head b { font-weight: 600; color: var(--cyan-hi); text-shadow: 0 0 12px rgba(0,200,200,0.5); }
+.v2-head .aux { color: var(--ink-4); letter-spacing: 0.15em; }
+
+.v2-scene { position: relative; display: grid; place-items: center; padding: 6px 0 2px; }
+.v2-scene svg.orr { width: min(420px, 82%); height: auto; display: block; }
+.orr .ring { fill: none; stroke: rgba(76,224,224,0.16); stroke-width: 1; }
+.orr .ring.amber { stroke: rgba(209,160,74,0.28); stroke-dasharray: 3 7; }
+.orr .ring.faint { stroke: rgba(76,224,224,0.09); }
+.orr .ticks { fill: none; stroke: rgba(122,212,212,0.35); stroke-width: 1; stroke-dasharray: 1.6 9.5; }
+.orr .pulse { fill: none; stroke: rgba(76,224,224,0.5); stroke-width: 1; }
+.orr .seg { stroke: rgba(240,240,248,0.14); stroke-width: 3.6; stroke-linecap: round; }
+.orr .seg.lit { stroke: var(--warm-hi); filter: drop-shadow(0 0 5px rgba(209,160,74,0.8)); }
+.orr .ant { color: var(--cyan-hi); }
+.orr .ant path, .orr .ant circle { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 7px rgba(0,200,200,0.7)); }
+.orr text { font-family: var(--mono); letter-spacing: 0.16em; }
+.orr .lbl { font-size: 7.5px; fill: var(--ink-4); }
+.orr .val { font-size: 10.5px; font-weight: 600; fill: var(--ink); }
+.orr .val.amber { fill: var(--warm-hi); }
+.orr .val.warn { fill: var(--red-hi); }
+.orr .leader { stroke: rgba(240,240,248,0.14); stroke-width: 1; }
+@media (prefers-reduced-motion: reduce) { .orr .pulse { display: none; } }
+
+.v2-cmds { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 4px 20px 16px; }
+.v2-btn { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.2em; color: var(--warm-hi); padding: 11px 8px; text-shadow: 0 0 14px rgba(209,160,74,0.45); transition: background 0.15s, color 0.15s, text-shadow 0.15s; }
+.v2-btn::before { content: "[ "; color: rgba(209,160,74,0.5); }
+.v2-btn::after { content: " ]"; color: rgba(209,160,74,0.5); }
+.v2-btn:hover { color: #f4d795; text-shadow: 0 0 20px rgba(209,160,74,0.8); }
+.v2-help { font-family: var(--mono); font-size: 11px; color: var(--ink-4); padding: 10px 4px; transition: color 0.15s; }
+.v2-help::before { content: "[ "; } .v2-help::after { content: " ]"; }
+.v2-help:hover { color: var(--cyan-hi); }
+.v2-foot { display: flex; justify-content: space-between; gap: 12px; padding: 0 20px 14px; font-size: 8.5px; letter-spacing: 0.15em; color: var(--ink-4); }
+
+/* ════════════════════════════════════════════════════════════════
+   ВАРИАНТ 3 · ПУЛЬТ — дымчатое стекло, матрица точек
+   Плотный стеклянный слиток. Мощность — светодиодной матрицей,
+   антенна с сегментами — та самая, из «Артефакта». Монохромная
+   дисциплина Nothing: один красный акцент, всё остальное — свет.
+   ════════════════════════════════════════════════════════════════ */
+.v3 { position: relative; max-width: 680px; margin: 0 auto; font-family: var(--mono); border-radius: 16px; background: rgba(10, 10, 17, 0.74); backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%); border: 1px solid rgba(255,255,255,0.09); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 24px 60px rgba(0,0,0,0.55); overflow: hidden; }
+.v3-head { display: flex; align-items: center; gap: 10px; padding: 15px 20px 13px; }
+.v3-head .rdot { width: 6px; height: 6px; border-radius: 50%; background: var(--red-hi); box-shadow: 0 0 9px rgba(230,69,69,0.8); }
+.v3-head .ttl { font-size: 10px; font-weight: 600; letter-spacing: 0.26em; color: var(--ink); }
+.v3-head .aux { margin-left: auto; font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); }
+.v3-dots { height: 3px; margin: 0 20px; background-image: radial-gradient(circle at 1.5px 1.5px, rgba(240,240,248,0.14) 1px, transparent 1.4px); background-size: 8px 3px; background-repeat: repeat-x; }
+
+.v3-body { padding: 18px 20px 18px; }
+.v3-matrix { display: flex; align-items: flex-end; gap: 22px; padding: 2px 2px 16px; }
+.v3-led { display: grid; gap: 3px; }
+.v3-led .r { display: flex; gap: 3px; }
+.v3-led i { width: 4.5px; height: 4.5px; border-radius: 50%; background: rgba(255,255,255,0.05); }
+.v3-led i.on { background: var(--warm-hi); box-shadow: 0 0 6px rgba(232,195,122,0.75); }
+.v3-matrix .lbl { font-size: 8.5px; letter-spacing: 0.18em; color: var(--ink-4); padding-bottom: 3px; }
+
+.v3-ant { display: flex; align-items: center; gap: 18px; padding: 14px 2px; border-top: 1px solid rgba(255,255,255,0.06); }
+.v3-ant svg.ico { width: 46px; height: 46px; flex-shrink: 0; color: var(--ink-3); filter: drop-shadow(0 1px 0 rgba(0,0,0,0.9)); }
+.v3-seg { display: flex; gap: 4px; flex: 1; max-width: 300px; }
+.v3-seg span { flex: 1; height: 15px; border-radius: 3px; background: rgba(3,3,8,0.9); border: 1px solid rgba(0,0,0,0.8); box-shadow: inset 0 2px 4px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.04); }
+.v3-seg span.lit { background: var(--warm); box-shadow: 0 0 9px rgba(209,160,74,0.55), inset 0 1px 0 rgba(255,255,255,0.35); border-color: rgba(209,160,74,0.6); }
+
+.v3-row { display: flex; align-items: center; gap: 12px; padding: 9.5px 2px; border-top: 1px solid rgba(255,255,255,0.06); }
+.v3-row .k { font-size: 9.5px; letter-spacing: 0.14em; color: var(--ink-4); }
+.v3-row .v { margin-left: auto; font-size: 12px; font-weight: 500; color: var(--ink); }
+.v3-row .v.warn { color: var(--red-hi); }
+
+.v3-actions { display: flex; gap: 10px; padding-top: 15px; }
+.v3-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--void); background: var(--ink); border-radius: 12px; padding: 15px 18px; transition: filter 0.15s, transform 0.1s; }
+.v3-btn .rdot { width: 5px; height: 5px; border-radius: 50%; background: var(--red-hi); }
+.v3-btn:hover { filter: brightness(0.92); }
+.v3-btn:active { transform: translateY(1px); }
+.v3-help { width: 47px; flex-shrink: 0; display: grid; place-items: center; border-radius: 12px; font-size: 13px; color: var(--ink-3); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: color 0.15s, background 0.15s; }
+.v3-help:hover { color: var(--ink); background: rgba(255,255,255,0.08); }
+.v3-foot { display: flex; justify-content: space-between; gap: 12px; padding: 12px 20px 15px; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); border-top: 1px solid rgba(255,255,255,0.06); margin-top: 16px; }
+
+@media (max-width: 720px) {
+  .lb-head, .var { padding-left: 20px; padding-right: 20px; }
+  .lb-nav-in { padding: 0 20px; }
+  .v1-ant { flex-wrap: wrap; }
+  .v1-ant .pow { width: 100%; text-align: left; margin-left: 72px; margin-top: -6px; }
+  .v3-matrix { flex-wrap: wrap; }
+  .v1-actions, .v3-actions { flex-direction: column; }
+  .v1-help, .v3-help { width: 100%; height: 44px; border-radius: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sky" aria-hidden="true"></div>
+
+<header class="lb-head">
+  <h1>Усилить сигнал <span class="dim">// стекло</span></h1>
+  <p class="lb-sub">Три варианта одного интерфейса в новом направлении: <strong>жидкое стекло</strong> в тёмной комнате, ощущение внеземной секретной технологии. Истоки: Apple Liquid Glass, интерфейсы «Прометея» (Territory Studio), Ghostty, Nothing. Антенна с сегментным индикатором — та самая, что понравилась. Только тёмная тема.</p>
+</header>
+
+<nav class="lb-nav" aria-label="Варианты">
+  <div class="lb-nav-in">
+    <a href="#v1"><span class="n">1</span>ЛИНЗА</a>
+    <a href="#v2"><span class="n">2</span>ПРОЕКЦИЯ</a>
+    <a href="#v3"><span class="n">3</span>ПУЛЬТ</a>
+  </div>
+</nav>
+
+<!-- определение антенны: гравированная, из «Артефакта» -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="ant-ico" viewBox="0 0 24 24">
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="9.078" r="2"/>
+      <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
+      <path d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
+      <path d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
+    </g>
+  </symbol>
+</svg>
+
+<!-- ═══════════════ ВАРИАНТ 1 · ЛИНЗА ═══════════════ -->
+<section class="var" id="v1">
+  <div class="var-head">
+    <div class="num">ВАРИАНТ 1</div>
+    <h2>Линза</h2>
+    <p>Чистое жидкое стекло: одна плавающая капсула, свет живёт в кромке. Призматический кант, верхний блик, раз в четырнадцать секунд по стеклу проходит сияние. Антенна и сегменты встроены в материал и светятся изнутри. Самый близкий к Apple и самый спокойный.</p>
+  </div>
+  <div class="stage">
+    <span class="blob" style="width:340px;height:240px;left:6%;top:8%;background:rgba(58,66,160,0.34)"></span>
+    <span class="blob" style="width:280px;height:220px;right:8%;bottom:0;background:rgba(0,200,200,0.16)"></span>
+    <span class="blob" style="width:200px;height:180px;right:30%;top:-4%;background:rgba(192,40,40,0.14)"></span>
+    <div class="v1">
+      <div class="v1-head">
+        <span class="v1-chip"><span class="dot"></span>SIGNAL SUPPORT</span>
+        <span class="aux">APERTURA · CHANNEL OPEN</span>
+      </div>
+      <div class="v1-body">
+        <div class="v1-ant">
+          <svg class="ico" aria-hidden="true"><use href="#ant-ico"/></svg>
+          <div class="v1-seg" aria-label="Мощность передатчика 34%">
+            <span class="lit"></span><span class="lit"></span><span class="lit"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="pow"><b>34%</b><i>МОЩНОСТЬ</i></div>
+        </div>
+        <div class="v1-row"><span class="k">АПЕРТУРА ПРИЁМА</span><span class="v">УЗКАЯ</span></div>
+        <div class="v1-row"><span class="k">ШУМОВОЙ ПОРОГ</span><span class="v warn">ВЫСОКИЙ</span></div>
+        <div class="v1-row"><span class="k">МИРЫ В ОЧЕРЕДИ</span><span class="v">III · IV</span></div>
+        <div class="v1-actions">
+          <button class="v1-btn" data-toast="ДЕМО · ПЛАТЁЖНЫЙ КАНАЛ ОТКЛЮЧЁН">Усилить сигнал через СБП</button>
+          <button class="v1-help" data-toast="КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ АНТЕННЫ" aria-label="Что значит усилить сигнал?">?</button>
+        </div>
+      </div>
+      <div class="v1-foot"><span>КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ</span><span>ЧЕМ ЧИЩЕ КАНАЛ, ТЕМ ДАЛЬШЕ СЛЫШНО</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ВАРИАНТ 2 · ПРОЕКЦИЯ ═══════════════ -->
+<section class="var" id="v2">
+  <div class="var-head">
+    <div class="num">ВАРИАНТ 2</div>
+    <h2>Проекция</h2>
+    <p>Голограмма из «Прометея»: корпуса почти нет, только едва заметная стеклянная плоскость, а в центре — орбитальный прибор. Антенна в ядре, кольца с делениями, дуга мощности из десяти сегментов, волны сигнала расходятся наружу. Янтарь и циан, аддитивный свет. Самый секретный.</p>
+  </div>
+  <div class="stage">
+    <span class="blob" style="width:380px;height:280px;left:16%;top:6%;background:rgba(0,200,200,0.1)"></span>
+    <span class="blob" style="width:300px;height:240px;right:12%;bottom:4%;background:rgba(209,160,74,0.1)"></span>
+    <div class="v2">
+      <div class="v2-head"><span><b>SIGNAL SUPPORT</b></span><span class="aux">APERTURA · CHANNEL OPEN</span></div>
+      <div class="v2-scene">
+        <svg class="orr" viewBox="0 0 480 360" aria-label="Мощность передатчика 34%, шумовой порог высокий">
+          <!-- кольца -->
+          <circle class="ring faint" cx="240" cy="180" r="150"/>
+          <circle class="ticks" cx="240" cy="180" r="138"/>
+          <circle class="ring" cx="240" cy="180" r="104"/>
+          <circle class="ring amber" cx="240" cy="180" r="72"/>
+          <circle class="ring faint" cx="240" cy="180" r="44"/>
+          <!-- волны сигнала -->
+          <circle class="pulse" cx="240" cy="180" r="44">
+            <animate attributeName="r" values="44;150" dur="4.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.55;0" dur="4.6s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="pulse" cx="240" cy="180" r="44">
+            <animate attributeName="r" values="44;150" dur="4.6s" begin="2.3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.55;0" dur="4.6s" begin="2.3s" repeatCount="indefinite"/>
+          </circle>
+          <!-- дуга мощности: 10 сегментов, 3 горят -->
+          <g id="powArc"></g>
+          <!-- антенна в ядре -->
+          <g class="ant" transform="translate(216,156) scale(2)">
+            <circle cx="12" cy="9.078" r="2"/>
+            <path d="M12.5 11L16 22l-5.5-6.5m1-4.5L8 22l5.5-6.5"/>
+            <path d="M7.715 5.122C6.655 6.137 6 7.527 6 9.06c0 1.552.67 2.957 1.753 3.974"/>
+            <path d="M16.285 5.122C17.345 6.137 18 7.527 18 9.06c0 1.552-.67 2.957-1.753 3.974"/>
+          </g>
+          <!-- выноски -->
+          <line class="leader" x1="330" y1="86" x2="376" y2="66"/>
+          <text class="lbl" x="380" y="60">МОЩНОСТЬ</text>
+          <text class="val amber" x="380" y="74">34%</text>
+          <line class="leader" x1="352" y1="216" x2="392" y2="238"/>
+          <text class="lbl" x="352" y="256">ШУМОВОЙ ПОРОГ</text>
+          <text class="val warn" x="352" y="270">ВЫСОКИЙ</text>
+          <line class="leader" x1="140" y1="100" x2="96" y2="78"/>
+          <text class="lbl" x="34" y="72">АПЕРТУРА ПРИЁМА</text>
+          <text class="val" x="34" y="86">УЗКАЯ</text>
+          <line class="leader" x1="126" y1="242" x2="84" y2="266"/>
+          <text class="lbl" x="34" y="284">МИРЫ В ОЧЕРЕДИ</text>
+          <text class="val" x="34" y="298">III · IV</text>
+        </svg>
+      </div>
+      <div class="v2-cmds">
+        <button class="v2-btn" data-toast="ДЕМО · ПЛАТЁЖНЫЙ КАНАЛ ОТКЛЮЧЁН">УСИЛИТЬ СИГНАЛ ЧЕРЕЗ СБП</button>
+        <button class="v2-help" data-toast="КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ АНТЕННЫ" aria-label="Что значит усилить сигнал?">?</button>
+      </div>
+      <div class="v2-foot"><span>КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ</span><span>ЧЕМ ЧИЩЕ КАНАЛ, ТЕМ ДАЛЬШЕ СЛЫШНО</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ВАРИАНТ 3 · ПУЛЬТ ═══════════════ -->
+<section class="var" id="v3">
+  <div class="var-head">
+    <div class="num">ВАРИАНТ 3</div>
+    <h2>Пульт</h2>
+    <p>Дымчатое стекло и дисциплина Nothing: монохром, один красный акцент, мощность — светодиодной матрицей точек, как на задней панели их телефонов. Антенна с сегментами перенесена из «Артефакта» почти без изменений — то, что понравилось, здесь главный герой. Самый вещественный.</p>
+  </div>
+  <div class="stage">
+    <span class="blob" style="width:320px;height:240px;left:10%;top:10%;background:rgba(58,66,160,0.26)"></span>
+    <span class="blob" style="width:260px;height:200px;right:14%;bottom:2%;background:rgba(0,200,200,0.1)"></span>
+    <div class="v3">
+      <div class="v3-head">
+        <span class="rdot"></span>
+        <span class="ttl">SIGNAL SUPPORT</span>
+        <span class="aux">APERTURA · CHANNEL OPEN</span>
+      </div>
+      <div class="v3-dots" aria-hidden="true"></div>
+      <div class="v3-body">
+        <div class="v3-matrix">
+          <div class="v3-led" id="ledPower" aria-label="34%"></div>
+          <span class="lbl">МОЩНОСТЬ<br>ПЕРЕДАТЧИКА</span>
+        </div>
+        <div class="v3-ant">
+          <svg class="ico" aria-hidden="true"><use href="#ant-ico"/></svg>
+          <div class="v3-seg" aria-label="Мощность передатчика 34%">
+            <span class="lit"></span><span class="lit"></span><span class="lit"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="v3-row"><span class="k">АПЕРТУРА ПРИЁМА</span><span class="v">УЗКАЯ</span></div>
+        <div class="v3-row"><span class="k">ШУМОВОЙ ПОРОГ</span><span class="v warn">ВЫСОКИЙ</span></div>
+        <div class="v3-row"><span class="k">МИРЫ В ОЧЕРЕДИ</span><span class="v">III · IV</span></div>
+        <div class="v3-actions">
+          <button class="v3-btn" data-toast="ДЕМО · ПЛАТЁЖНЫЙ КАНАЛ ОТКЛЮЧЁН"><span class="rdot"></span>Усилить сигнал через СБП</button>
+          <button class="v3-help" data-toast="КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ АНТЕННЫ" aria-label="Что значит усилить сигнал?">?</button>
+        </div>
+      </div>
+      <div class="v3-foot"><span>КАЖДЫЙ СИГНАЛ ИДЁТ В УСИЛЕНИЕ</span><span>ЧЕМ ЧИЩЕ КАНАЛ, ТЕМ ДАЛЬШЕ СЛЫШНО</span></div>
+    </div>
+  </div>
+  <footer style="max-width:1080px;margin:26px auto 0;padding:24px 0 10px;border-top:1px solid rgba(240,240,248,0.07);">
+    <p style="font-size:13px;color:var(--ink-4);max-width:72ch;">Выбранный вариант станет основой для всех терминалов системы: живой ленты, Эха, конденсации и реестра Архитектора. Детали вариантов можно смешивать — назовите номер основы и что забрать из остальных.</p>
+  </footer>
+</section>
+
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  /* Тост */
+  var toastEl = document.getElementById('toast'), toastT;
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toast]');
+    if (!b) return;
+    toastEl.textContent = b.getAttribute('data-toast');
+    toastEl.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 2000);
+  });
+
+  /* Вариант 2: дуга мощности — 10 сегментов по верхней дуге, 3 горят */
+  var arc = document.getElementById('powArc');
+  if (arc) {
+    var cx = 240, cy = 180, r1 = 158, r2 = 172, n = 10, a0 = -148, a1 = -32;
+    for (var i = 0; i < n; i++) {
+      var a = (a0 + (a1 - a0) * (i / (n - 1))) * Math.PI / 180;
+      var l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', cx + r1 * Math.cos(a)); l.setAttribute('y1', cy + r1 * Math.sin(a));
+      l.setAttribute('x2', cx + r2 * Math.cos(a)); l.setAttribute('y2', cy + r2 * Math.sin(a));
+      l.setAttribute('class', 'seg' + (i < 3 ? ' lit' : ''));
+      arc.appendChild(l);
+    }
+  }
+
+  /* Вариант 3: матрица точек «34%» (глифы 5×7) */
+  var GLYPHS = {
+    '0': ['01110','10001','10011','10101','11001','10001','01110'],
+    '1': ['00100','01100','00100','00100','00100','00100','01110'],
+    '2': ['01110','10001','00001','00010','00100','01000','11111'],
+    '3': ['11111','00010','00100','00010','00001','10001','01110'],
+    '4': ['00010','00110','01010','10010','11111','00010','00010'],
+    '5': ['11111','10000','11110','00001','00001','10001','01110'],
+    '6': ['00110','01000','10000','11110','10001','10001','01110'],
+    '7': ['11111','00001','00010','00100','01000','01000','01000'],
+    '8': ['01110','10001','10001','01110','10001','10001','01110'],
+    '9': ['01110','10001','10001','01111','00001','00010','01100'],
+    '%': ['11001','11010','00010','00100','01000','01011','10011']
+  };
+  var led = document.getElementById('ledPower');
+  if (led) {
+    var str = '34%';
+    for (var row = 0; row < 7; row++) {
+      var r = document.createElement('div');
+      r.className = 'r';
+      for (var c = 0; c < str.length; c++) {
+        var g = GLYPHS[str[c]] || GLYPHS['0'];
+        for (var x = 0; x < 5; x++) {
+          var d = document.createElement('i');
+          if (g[row][x] === '1') d.className = 'on';
+          r.appendChild(d);
+        }
+        if (c < str.length - 1) { var gap = document.createElement('i'); gap.style.visibility = 'hidden'; r.appendChild(gap); }
+      }
+      led.appendChild(r);
+    }
+  }
+
+  /* Активный пункт навигации */
+  var links = document.querySelectorAll('.lb-nav a'), map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        links.forEach(function (a) { a.classList.remove('on'); });
+        var a = map[en.target.id];
+        if (a) a.classList.add('on');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  document.querySelectorAll('.var').forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>
