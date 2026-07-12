@@ -15853,20 +15853,43 @@ header.scrolled .header-inner { background: rgba(6, 7, 14, 0.74); }
 }
 @keyframes ewLensSheen { 0%, 55% { left: -55%; } 88%, 100% { left: 115%; } }
 @media (prefers-reduced-motion: reduce) { .hero-terminal::after { display: none; } }
-.hero-terminal .terminal-header { position: relative; z-index: 1; border-bottom: 1px solid var(--hairline); }
-.hero-terminal .terminal-title { font-family: var(--font-code); color: var(--ink-3); }
-.hero-terminal .terminal-body { position: relative; z-index: 1; }
-.hero-terminal .term-line { border-bottom: 1px solid var(--hairline); transition: background .2s; border-radius: 8px; }
-.hero-terminal .term-line:hover { background: rgba(255,255,255,0.03); }
-.hero-terminal .term-key { font-family: var(--font-code); color: var(--ink-3); }
-.hero-terminal .term-val { font-family: var(--font-code); color: var(--white); }
-.hero-terminal .term-val.white { color: var(--cyan-hi); }
-.hero-terminal .term-locked .term-lock-val { color: var(--ink-4); }
-/* macOS-«светофор» → дышащая точка своей системы (не чужая ОС) */
-.hero-terminal .terminal-dots span { background: rgba(240,240,248,0.18) !important; box-shadow: none !important; }
-.hero-terminal .terminal-dots span:first-child { background: var(--cyan) !important; box-shadow: 0 0 8px rgba(0,200,200,0.8) !important; animation: ewDotBreathe 3.2s ease-in-out infinite; }
-@keyframes ewDotBreathe { 50% { opacity: 0.45; } }
-@media (prefers-reduced-motion: reduce) { .hero-terminal .terminal-dots span:first-child { animation: none; } }
+/* Терминал «Наблюдение» — внутренняя структура obs-* */
+.ew-obs { padding: 0 !important; }
+.ew-obs .obs-head { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; padding: 15px 20px 0; }
+.ew-obs .obs-chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-code); font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-2); background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.10); border-radius: 999px; padding: 6px 12px; }
+.ew-obs .obs-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 9px rgba(0,200,200,0.9); animation: ewDotBreathe 3.2s ease-in-out infinite; }
+.ew-obs .obs-aux { margin-left: auto; font-family: var(--font-code); font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); }
+@keyframes ewDotBreathe { 50% { opacity: 0.42; } }
+.ew-obs .obs-body { position: relative; z-index: 1; padding: 16px 20px 8px; }
+.ew-obs .obs-top { display: flex; align-items: flex-end; gap: 18px; padding: 2px 2px 12px; }
+.ew-obs .obs-big b { display: block; font-family: var(--font-display); font-weight: 700; font-size: 30px; color: var(--white); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; line-height: 1; }
+.ew-obs .obs-big i { display: block; font-family: var(--font-code); font-style: normal; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); margin-top: 7px; min-height: 11px; }
+.ew-obs .obs-big i.glitch { color: var(--red-hi); }
+.ew-obs .obs-side { margin-left: auto; text-align: right; display: grid; gap: 4px; }
+.ew-obs .obs-kv { font-family: var(--font-code); font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); }
+.ew-obs .obs-kv b { color: var(--ink-2); font-weight: 500; margin-left: 8px; font-variant-numeric: tabular-nums; }
+/* эквалайзер */
+.ew-obs .obs-eq { display: flex; align-items: center; gap: 2px; height: 46px; margin-bottom: 12px; padding: 0 2px; border-radius: 10px; background: rgba(3,4,10,0.30); border: 1px solid var(--hairline); overflow: hidden; }
+.ew-obs .obs-eq span { flex: 1; min-width: 2px; height: 14%; border-radius: 2px; background: linear-gradient(180deg, var(--cyan-hi), rgba(0,200,200,0.35)); box-shadow: 0 0 6px rgba(0,200,200,0.35); transition: height .16s var(--ease-lens), background .3s, box-shadow .3s; }
+.ew-obs .obs-eq.tx span { background: linear-gradient(180deg, var(--red-hi), rgba(230,69,69,0.4)); box-shadow: 0 0 8px rgba(230,69,69,0.5); }
+/* строки-статусы */
+.ew-obs .obs-row { display: flex; align-items: center; gap: 12px; padding: 10px 2px; position: relative; }
+.ew-obs .obs-row + .obs-row::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--hairline) 16%, var(--hairline) 84%, transparent); }
+.ew-obs .obs-rk { font-family: var(--font-code); font-size: 9.5px; letter-spacing: 0.13em; color: var(--ink-3); }
+.ew-obs .obs-rv { margin-left: auto; font-family: var(--font-code); font-size: 12px; font-weight: 500; color: var(--white); display: inline-flex; align-items: center; gap: 8px; }
+.ew-obs .obs-rv.c { color: var(--cyan-hi); }
+.ew-obs .obs-rv.mut { color: var(--ink-4); font-weight: 400; }
+.ew-obs .obs-lockico { width: 11px; height: 11px; fill: var(--ink-4); flex-shrink: 0; }
+.ew-obs .obs-lock { cursor: pointer; border-radius: 8px; overflow: hidden; transition: background .2s; }
+.ew-obs .obs-lock:hover { background: rgba(255,255,255,0.03); }
+.ew-obs .obs-dots::after { content: ""; animation: ewRecDots 1.6s steps(4) infinite; }
+@keyframes ewRecDots { 0% { content: ""; } 25% { content: "·"; } 50% { content: "··"; } 75% { content: "···"; } }
+.ew-obs .obs-foot { position: relative; z-index: 1; display: flex; justify-content: space-between; gap: 12px; padding: 11px 20px 15px; font-family: var(--font-code); font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); border-top: 1px solid var(--hairline); }
+@media (prefers-reduced-motion: reduce) { .ew-obs .obs-dot { animation: none; } .ew-obs .obs-dots::after { animation: none; content: "···"; } }
+
+/* ── ТЕКСТ · органичное увеличение читаемости (правка 2) ─────────── */
+.hero-sub { font-size: 14px !important; line-height: 1.72 !important; max-width: 540px; }
+.hero-sub-echo { font-size: 12.5px !important; line-height: 1.7 !important; }
 </style>
 
 </head>
@@ -16067,19 +16090,32 @@ header.scrolled .header-inner { background: rgba(6, 7, 14, 0.74); }
     </p>
   </div>
 
-  <div class="hero-terminal" id="heroTerminal">
-    <div class="terminal-header">
-      <div class="terminal-dots"><span></span><span></span><span></span></div>
-      <div class="terminal-title">APERTURA · LIVE FEED</div>
+  <div class="hero-terminal ew-obs" id="heroTerminal">
+    <div class="obs-head">
+      <span class="obs-chip"><span class="obs-dot"></span>APERTURA · НАБЛЮДЕНИЕ</span>
+      <span class="obs-aux">КАНАЛ 14.763 GHZ</span>
     </div>
-    <div class="terminal-body" id="aperturaTerminalBody">
-      <div class="term-line" onclick="terminalAccessDenied('SYS.STATUS',this)"><span class="term-key">SYS.STATUS</span><span class="term-val">ONLINE</span></div>
-      <div class="term-line" onclick="terminalAccessDenied('ACTIVE.WORLD',this)"><span class="term-key">ACTIVE.WORLD</span><span class="term-val">MARKETSPACE</span></div>
-      <div class="term-line" onclick="terminalAccessDenied('CATALOG.ID',this)"><span class="term-key">CATALOG.ID</span><span class="term-val">01-2026</span></div>
-      <div class="term-line" onclick="terminalAccessDenied('CONDENSATS.ACTIVE',this)"><span class="term-key">CONDENSATS.ACTIVE</span><span class="term-val white">11</span></div>
-      <div class="term-line term-locked" onclick="terminalAccessDenied('APERTURA.VERSION',this)"><span class="term-key">APERTURA.VERSION</span><span class="term-val-row term-lock-val"><span>1.1.7</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-      <div class="term-line term-locked" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="term-key">PERIMETER.STATUS</span><span class="term-val-row term-lock-val"><span>STABLE</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+    <div class="obs-body" id="aperturaTerminalBody">
+      <div class="obs-top">
+        <div class="obs-big">
+          <b data-obs-presence>00:00</b>
+          <i data-obs-caption data-obs-base="СЕАНС НАБЛЮДЕНИЯ · АКТИВЕН">СЕАНС НАБЛЮДЕНИЯ · АКТИВЕН</i>
+        </div>
+        <div class="obs-side">
+          <span class="obs-kv">КОНТАКТ<b data-obs-contact>—</b></span>
+          <span class="obs-kv">УЗЕЛ<b data-obs-node>—</b></span>
+        </div>
+      </div>
+      <!-- Эквалайзер APERTURA. Раз в ~18с по нему проходит красная «передача»
+           в ритме Морзе: HELP US — сигнал бедствия Вишей, знающих правду о
+           Переходе. Пасхалка-крючок для будущих серий; полная легенда:
+           «спасите нас — мы знаем, куда ведёт Переход». -->
+      <div class="obs-eq" data-obs-eq data-morse="HELP US" aria-hidden="true"></div>
+      <div class="obs-row"><span class="obs-rk">ЗАПИСЬ В ПАМЯТЬ APERTURA</span><span class="obs-rv c" data-obs-rec>ФИКСИРУЕТСЯ<span class="obs-dots" aria-hidden="true"></span></span></div>
+      <div class="obs-row"><span class="obs-rk">РЕЛИКВИЙ В КАТАЛОГЕ 01-2026</span><span class="obs-rv">12</span></div>
+      <div class="obs-row obs-lock" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="obs-rk">PERIMETER.STATUS</span><span class="obs-rv mut">STABLE<svg class="obs-lockico" aria-hidden="true"><use href="#i-lock"/></svg></span></div>
     </div>
+    <div class="obs-foot"><span>АПЕРТУРА СЛУШАЕТ · НИЧЕГО НЕ ТЕРЯЕТСЯ</span><span>MARKETSPACE · 01-2026</span></div>
   </div>
 </section>
 
@@ -37679,6 +37715,96 @@ footer {
       grainLayerDisabled:getComputedStyle(document.body,'::after').display==='none'
     };
   };
+})();
+</script>
+
+<!-- ═══ ЛИНЗА · терминал «Наблюдение» (hero) — живая логика ═══ -->
+<script id="ew-obs-js">
+(function(){
+  var motionOK = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var term = document.getElementById('heroTerminal');
+  if(!term || !term.classList.contains('ew-obs')) return;
+  function two(n){ return n<10 ? '0'+n : n; }
+
+  /* Честные данные: момент контакта, назначенный узел, живой таймер присутствия */
+  var t0 = new Date();
+  var contactEl = term.querySelector('[data-obs-contact]');
+  if(contactEl) contactEl.textContent = two(t0.getHours())+':'+two(t0.getMinutes())+':'+two(t0.getSeconds());
+  var AB='ACEFHKMNPRTWX', DG='234679';
+  function pick(s){ return s[Math.floor(Math.random()*s.length)]; }
+  var nodeEl = term.querySelector('[data-obs-node]');
+  if(nodeEl) nodeEl.textContent = pick(AB)+pick(DG)+'-'+pick(DG)+pick(AB);
+  var presEl = term.querySelector('[data-obs-presence]');
+  var eqKick = 0, phase = 0, txMode = false;
+  setInterval(function(){
+    var s = Math.floor((Date.now()-t0.getTime())/1000);
+    if(presEl) presEl.textContent = s>=3600
+      ? two(Math.floor(s/3600))+':'+two(Math.floor(s/60)%60)+':'+two(s%60)
+      : two(Math.floor(s/60))+':'+two(s%60);
+    eqKick = Math.min(eqKick+0.28, 1);
+  }, 1000);
+
+  /* Эквалайзер: спокойный cyan-поток, раз в ~18с — красная передача Морзе. */
+  var eq = term.querySelector('[data-obs-eq]');
+  var BARS = 42, bars = [];
+  if(eq){ for(var i=0;i<BARS;i++){ var b=document.createElement('span'); eq.appendChild(b); bars.push(b); } }
+  function idleEq(){
+    phase += 0.14;
+    for(var i=0;i<BARS;i++){
+      var h = 16 + 50*Math.abs(Math.sin(phase + i*0.38)*Math.sin(phase*0.53 + i*0.12)) + eqKick*22;
+      bars[i].style.height = Math.min(h,100)+'%';
+    }
+    eqKick *= 0.92;
+  }
+  /* Морзе HELP US — сигнал бедствия Вишей (пасхалка, см. комментарий в HTML) */
+  var MORSE = {H:'....',E:'.',L:'.-..',P:'.--.',U:'..-',S:'...'};
+  var msg = (eq ? (eq.getAttribute('data-morse')||'HELP US') : 'HELP US').toUpperCase();
+  var UNIT = 90;
+  function playMorse(){
+    if(!eq || !motionOK) return;
+    txMode = true; eq.classList.add('tx');
+    var t = 0;
+    for(var k=0;k<msg.length;k++){
+      var ch = msg[k];
+      if(ch===' '){ t += UNIT*5; continue; }
+      var code = MORSE[ch]; if(!code) continue;
+      for(var j=0;j<code.length;j++){
+        (function(start){ setTimeout(function(){ eq.dataset.tx='1'; }, start); })(t);
+        t += (code[j]==='-'?3:1)*UNIT;
+        (function(start){ setTimeout(function(){ eq.dataset.tx='0'; }, start); })(t);
+        t += UNIT;
+      }
+      t += UNIT*2;
+    }
+    setTimeout(function(){ eq.classList.remove('tx'); eq.dataset.tx='0'; txMode=false; }, t+150);
+  }
+  function txEq(){
+    var on = eq.dataset.tx==='1';
+    for(var i=0;i<BARS;i++) bars[i].style.height = on ? (70+Math.random()*18)+'%' : '9%';
+  }
+  if(eq && motionOK){
+    (function loop(){ if(txMode) txEq(); else idleEq(); requestAnimationFrame(loop); })();
+    setTimeout(function(){ playMorse(); setInterval(playMorse, 30000); }, 9000);
+  } else if(eq){
+    for(var m=0;m<BARS;m++) bars[m].style.height = (18+Math.random()*40)+'%';
+  }
+
+  /* Глитч-подпись: раз в ~10с лёгкий сбой системы — место под будущую пасхалку. */
+  var cap = term.querySelector('[data-obs-caption]');
+  var base = cap ? (cap.getAttribute('data-obs-base')||cap.textContent) : '';
+  var GL = 'ДЖ#АХ0Х§Р@Т?Ы%ЖК1'.split('');
+  function glitchOnce(){
+    if(!cap || !motionOK) return;
+    var frames = 6, f = 0;
+    cap.classList.add('glitch');
+    var iv = setInterval(function(){
+      var out=''; for(var i=0;i<base.length;i++){ var c=base[i];
+        out += (c===' '||c==='·') ? c : (Math.random()<0.4 ? GL[Math.floor(Math.random()*GL.length)] : c); }
+      cap.textContent = out;
+      if(++f>=frames){ clearInterval(iv); cap.textContent = base; cap.classList.remove('glitch'); }
+    }, 55);
+  }
+  if(cap && motionOK) setInterval(glitchOnce, 9000 + Math.random()*4000);
 })();
 </script>
 
