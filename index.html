@@ -15739,8 +15739,8 @@ header.scrolled { background: transparent !important; background-image: none !im
 .header-inner {
   max-width: 1180px;
   height: 60px;
-  padding: 0 10px 0 20px;
-  gap: 8px;
+  padding: 0 18px;
+  gap: 12px;
   border-radius: 999px;
   background: rgba(8, 9, 18, 0.55);
   backdrop-filter: blur(20px) saturate(160%);
@@ -15753,6 +15753,30 @@ header.scrolled .header-inner { background: rgba(6, 7, 14, 0.74); }
 .logo-text { font-family: var(--font-display); font-weight: 800; letter-spacing: 0.14em; }
 /* тумблер темы демонтирован — тёмная тема единственная */
 .theme-switch, .theme-switch-hdr { display: none !important; }
+/* Шапка «как v2»: только логотип · навигация · корзина · бургер.
+   Статус, свитчер миров, язык, кабинет, кнопка desktop-меню переехали
+   в мембрану — в баре их нет. Бургер виден на всех разрешениях. */
+.sys-status, .wsw, .lsw, .hbtn-cabinet, .desktop-menu-wrap { display: none !important; }
+.hright { gap: 8px; align-items: center; }
+.hbtn-cart { order: 2; }
+.mob-burger { display: inline-flex !important; order: 3; }
+/* навигация видна в баре на десктопе (как v2); на мобиле — только бургер.
+   Оригинал прятал navlink через visibility:hidden ради desktop-меню —
+   перебиваем и visibility, и pointer-events. */
+@media (min-width: 961px){
+  .header-inner .navlink { display: inline-flex !important; visibility: visible !important; pointer-events: auto !important; font-size: 9px; }
+}
+/* Мобильная шапка: логотип · корзина · бургер, с симметричным отступом
+   справа (как слева до логотипа). Корзину явно показываем; правую группу
+   прижимаем к краю и не даём переполнять. */
+@media (max-width: 960px){
+  header { padding: 12px 12px 0 !important; }
+  .header-inner { padding: 0 14px !important; gap: 8px; overflow: hidden; }
+  .logo { flex-shrink: 0; min-width: 0; }
+  .hright { margin-left: auto; gap: 6px; flex-shrink: 0; }
+  .hbtn.hbtn-cart { display: inline-flex !important; flex-shrink: 0; }
+  .mob-burger { display: inline-flex !important; flex-shrink: 0; }
+}
 /* мировой и языковой переключатели — стеклянные пилюли */
 .ws {
   background: rgba(255,255,255,0.05) !important;
@@ -15874,7 +15898,7 @@ header.scrolled .header-inner { background: rgba(6, 7, 14, 0.74); }
 .ew-obs .obs-rv { margin-left: auto; font-family: var(--font-code); font-size: 12px; font-weight: 500; color: var(--white); display: inline-flex; align-items: center; gap: 8px; }
 .ew-obs .obs-rv.c { color: var(--cyan-hi); }
 .ew-obs .obs-rv.mut { color: var(--ink-4); font-weight: 400; }
-.ew-obs .obs-lockico { width: 13px; height: 13px; fill: var(--ink-3); flex-shrink: 0; margin-left: 4px; opacity: 0.85; }
+.ew-obs .obs-lockico { width: 13px; height: 13px; flex-shrink: 0; margin-left: 6px; fill: none !important; stroke: var(--ink-3); stroke-width: 2.2; opacity: 0.85; }
 .ew-obs .obs-lock { cursor: pointer; border-radius: 8px; overflow: hidden; transition: background .2s; }
 .ew-obs .obs-lock:hover { background: rgba(255,255,255,0.03); }
 .ew-obs .obs-dots::after { content: ""; animation: ewRecDots 1.6s steps(4) infinite; }
