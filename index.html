@@ -15832,19 +15832,14 @@ header.scrolled .header-inner { background: rgba(6, 7, 14, 0.74); }
   background: var(--glass-bg) !important;
   backdrop-filter: blur(var(--glass-blur)) saturate(175%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(175%);
-  border: 1px solid transparent !important;
+  border: 1px solid var(--hairline-hi) !important;
   border-radius: 22px !important;
   box-shadow: var(--lens-shadow) !important;
   overflow: hidden;
 }
-/* призматический кант (заменяет прежнюю шиммер-полоску) */
-.hero-terminal::before {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 3;
-  background: var(--lens-edge) !important;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
-  pointer-events: none; animation: none !important;
-}
+/* Старая shimmer-полоска (::before, 2px красно-cyan) и mask-кант убраны —
+   давали «полоски» по верхней кромке. Ровная тонкая рамка чище. */
+.hero-terminal::before { content: none !important; display: none !important; }
 /* медленное проходящее сияние */
 .hero-terminal::after {
   content: ""; position: absolute; top: -60%; left: -55%; width: 52%; height: 220%; z-index: 2;
@@ -15879,7 +15874,7 @@ header.scrolled .header-inner { background: rgba(6, 7, 14, 0.74); }
 .ew-obs .obs-rv { margin-left: auto; font-family: var(--font-code); font-size: 12px; font-weight: 500; color: var(--white); display: inline-flex; align-items: center; gap: 8px; }
 .ew-obs .obs-rv.c { color: var(--cyan-hi); }
 .ew-obs .obs-rv.mut { color: var(--ink-4); font-weight: 400; }
-.ew-obs .obs-lockico { width: 11px; height: 11px; fill: var(--ink-4); flex-shrink: 0; }
+.ew-obs .obs-lockico { width: 13px; height: 13px; fill: var(--ink-3); flex-shrink: 0; margin-left: 4px; opacity: 0.85; }
 .ew-obs .obs-lock { cursor: pointer; border-radius: 8px; overflow: hidden; transition: background .2s; }
 .ew-obs .obs-lock:hover { background: rgba(255,255,255,0.03); }
 .ew-obs .obs-dots::after { content: ""; animation: ewRecDots 1.6s steps(4) infinite; }
@@ -15890,6 +15885,63 @@ header.scrolled .header-inner { background: rgba(6, 7, 14, 0.74); }
 /* ── ТЕКСТ · органичное увеличение читаемости (правка 2) ─────────── */
 .hero-sub { font-size: 14px !important; line-height: 1.72 !important; max-width: 540px; }
 .hero-sub-echo { font-size: 12.5px !important; line-height: 1.7 !important; }
+
+/* ── МЕНЮ-МЕМБРАНА ─────────────────────────────────────────────── */
+.mob-nav, .mob-nav-overlay, .desktop-menu-drop { display: none !important; }
+.ew-menu { position: fixed; inset: 0; z-index: 600; display: grid; align-items: center; padding: 100px 0 44px; visibility: hidden; opacity: 0; background: rgba(4,4,10,0.62); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%); transition: opacity .45s var(--ease-lens), visibility .45s; overflow-y: auto; overscroll-behavior: contain; }
+body.ew-menu-open .ew-menu { visibility: visible; opacity: 1; }
+.ew-menu-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 44px; }
+.ew-menu-nav { display: flex; flex-direction: column; gap: 4px; }
+.ew-menu-nav a { display: flex; align-items: baseline; gap: 16px; padding: 12px 14px; border-radius: 16px; text-decoration: none; opacity: 0; transform: translateY(16px); transition: background .25s, opacity .55s var(--ease-lens), transform .55s var(--ease-lens); }
+body.ew-menu-open .ew-menu-nav a { opacity: 1; transform: none; }
+.ew-menu-nav a:nth-child(2){ transition-delay:0s,.05s,.05s } .ew-menu-nav a:nth-child(3){ transition-delay:0s,.09s,.09s } .ew-menu-nav a:nth-child(4){ transition-delay:0s,.13s,.13s } .ew-menu-nav a:nth-child(5){ transition-delay:0s,.17s,.17s } .ew-menu-nav a:nth-child(6){ transition-delay:0s,.21s,.21s } .ew-menu-nav a:nth-child(7){ transition-delay:0s,.25s,.25s }
+.ew-menu-nav a:hover { background: rgba(255,255,255,0.05); }
+.ew-menu-nav .t { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 3.2vw, 34px); letter-spacing: -0.01em; color: var(--white); }
+.ew-menu-nav .s { font-family: var(--font-code); font-size: 9px; letter-spacing: 0.16em; color: var(--ink-4); }
+.ew-menu-side { display: flex; flex-direction: column; gap: 12px; opacity: 0; transform: translateY(16px); transition: opacity .55s var(--ease-lens) .22s, transform .55s var(--ease-lens) .22s; }
+body.ew-menu-open .ew-menu-side { opacity: 1; transform: none; }
+.ew-menu-card { border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); padding: 14px 16px; }
+.ew-menu-lbl { font-family: var(--font-code); font-size: 8.5px; letter-spacing: 0.2em; color: var(--ink-4); margin-bottom: 10px; }
+.ew-worlds { display: flex; flex-direction: column; gap: 4px; }
+.ew-world { display: flex; align-items: center; gap: 10px; width: 100%; font-family: var(--font-code); font-size: 11px; letter-spacing: 0.1em; color: var(--ink-2); padding: 9px 10px; border-radius: 10px; transition: background .2s; text-align: left; }
+.ew-world:hover { background: rgba(255,255,255,0.05); }
+.ew-world .wd { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px rgba(0,200,200,0.8); flex-shrink: 0; }
+.ew-world .wd-w { background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.8); }
+.ew-world .wd-off { background: rgba(240,240,248,0.2); box-shadow: none; }
+.ew-world.locked { color: var(--ink-4); }
+.ew-world.locked .wd { background: rgba(240,240,248,0.2); box-shadow: none; }
+.ew-world .wt { margin-left: auto; font-size: 8px; letter-spacing: 0.14em; color: var(--ink-4); }
+.ew-world.on .wt { color: var(--cyan-hi); }
+.ew-menu-foot { display: flex; justify-content: space-between; font-family: var(--font-code); font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); padding: 2px 6px 0; }
+@media (max-width: 860px){ .ew-menu-in { grid-template-columns: 1fr; gap: 24px; } }
+@media (max-width: 640px){
+  .ew-menu { padding: 88px 0 40px; }
+  .ew-menu-in { width: calc(100% - 32px); gap: 20px; }
+  .ew-menu-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ew-menu-nav a { box-sizing: border-box; flex-direction: column; gap: 5px; padding: 15px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); min-height: 74px; justify-content: center; }
+  .ew-menu-nav .t { font-size: 17px; }
+  .ew-menu-nav .s { display: none; }
+  .ew-menu-card { box-sizing: border-box; }
+  .ew-world { box-sizing: border-box; }
+}
+@media (prefers-reduced-motion: reduce){ .ew-menu-nav a, .ew-menu-side { transition: opacity .2s; transform: none; } }
+
+/* ── МОБИЛЬНЫЕ СВАЙП-МАРКЕРЫ · единый стиль (правка 4) ───────────
+   Старые красные полоски → аккуратные тусклые точки, активная —
+   cyan-сегмент со свечением и плавным перетеканием ширины. */
+.swipe-dot, .relic-mobile-dot, .catalog-mobile-dot, .tech-mobile-dot, .aw-mobile-dot, .echo-swipe-dot {
+  background: rgba(240,240,248,0.20) !important;
+  box-shadow: none !important; border: none !important; border-radius: 99px !important;
+  transition: width .35s var(--ease-lens), background .35s var(--ease-lens), box-shadow .35s var(--ease-lens) !important;
+}
+.swipe-dot.on, .relic-mobile-dot.on, .catalog-mobile-dot.on, .tech-mobile-dot.on, .aw-mobile-dot.on, .echo-swipe-dot.on {
+  background: linear-gradient(90deg, var(--cyan), var(--cyan-hi)) !important;
+  box-shadow: 0 0 12px rgba(0,200,200,0.55) !important;
+}
+.catalog-mobile-dot::after { background: transparent !important; }
+.catalog-mobile-nav.updating .catalog-mobile-dot.on { background: linear-gradient(90deg, var(--warm), var(--warm-hi)) !important; box-shadow: 0 0 12px rgba(209,160,74,0.5) !important; }
+.swipe-bar { background: transparent !important; border: none !important; }
+.swipe-label { color: var(--ink-4) !important; }
 </style>
 
 </head>
@@ -16021,7 +16073,44 @@ header.scrolled .header-inner { background: rgba(6, 7, 14, 0.74); }
   </div>
 </header>
 
-<!-- ===== MOBILE NAV ===== -->
+<!-- ═══ МЕНЮ-МЕМБРАНА · единое полноэкранное меню (десктоп + мобайл) ═══
+     Открывается обоими бургерами. Навигация + мир-свитчер + язык + кабинет.
+     Функции сохранены: ссылки скроллят к секциям, миры/язык/кабинет ведут
+     к прежним уведомлениям. Старые mob-nav и desktop-menu-drop скрыты. -->
+<div class="ew-menu" id="ewMenu" aria-hidden="true">
+  <div class="ew-menu-in">
+    <nav class="ew-menu-nav" aria-label="Навигация">
+      <a href="#catalog" onclick="closeEwMenu()"><span class="t">Каталог</span><span class="s">12 РЕЛИКВИЙ · ЦИКЛ 01-2026</span></a>
+      <a href="#echo" onclick="closeEwMenu()"><span class="t">Эхо</span><span class="s">КАНАЛ ОТКРЫТ · 599 ₽</span></a>
+      <a href="#about" onclick="closeEwMenu()"><span class="t">Система</span><span class="s">МИР ПО ТУ СТОРОНУ ДАННЫХ</span></a>
+      <a href="#worlds" onclick="closeEwMenu()"><span class="t">Миры</span><span class="s">APERTURA ПРОДОЛЖАЕТ СЛУШАТЬ</span></a>
+      <a href="#faq" onclick="closeEwMenu()"><span class="t">FAQ</span><span class="s">ПРОТОКОЛ ВОПРОСОВ</span></a>
+      <a href="#collab" onclick="closeEwMenu()"><span class="t">Контакт</span><span class="s">ОТКРЫТЬ СВОЮ ВСЕЛЕННУЮ</span></a>
+      <a href="#architect" onclick="closeEwMenu()"><span class="t">Архитектор</span><span class="s">ECH-0001 · УРОВЕНЬ X</span></a>
+    </nav>
+    <div class="ew-menu-side">
+      <div class="ew-menu-card">
+        <div class="ew-menu-lbl">АКТИВНЫЙ МИР</div>
+        <div class="ew-worlds">
+          <button class="ew-world on" type="button" onclick="closeEwMenu()"><span class="wd"></span>MARKETSPACE<span class="wt">НА СВЯЗИ</span></button>
+          <button class="ew-world locked" type="button" onclick="awCardLocked(this)"><span class="wd"></span>ВСЕЛЕННАЯ II<span class="wt">СКОРО</span></button>
+          <button class="ew-world locked" type="button" onclick="awCardLocked(this)"><span class="wd"></span>ВСЕЛЕННАЯ III<span class="wt">СКОРО</span></button>
+          <button class="ew-world locked" type="button" onclick="awCardLocked(this)"><span class="wd"></span>ВСЕЛЕННАЯ IV<span class="wt">СКОРО</span></button>
+        </div>
+      </div>
+      <div class="ew-menu-card">
+        <div class="ew-menu-lbl">ДОСТУП</div>
+        <div class="ew-worlds">
+          <button class="ew-world" type="button" onclick="closeEwMenu();showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')"><span class="wd wd-w"></span>КАБИНЕТ<span class="wt">СКОРО</span></button>
+          <button class="ew-world" type="button" onclick="showNotif('// English channel — скоро. Пока система говорит по-русски.')"><span class="wd wd-off"></span>ЯЗЫК · РУССКИЙ<span class="wt">EN СКОРО</span></button>
+        </div>
+      </div>
+      <div class="ew-menu-foot"><span>СИСТЕМА АКТИВНА</span><span>MARKETSPACE · 01-2026</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MOBILE NAV (демонтирован — заменён мембраной, скрыт) ===== -->
 <div class="mob-nav-overlay" id="mobNavOverlay" onclick="closeMobNav()"></div>
 <nav class="mob-nav" id="mobNav">
   <div class="mob-nav-top">
@@ -16093,17 +16182,12 @@ header.scrolled .header-inner { background: rgba(6, 7, 14, 0.74); }
   <div class="hero-terminal ew-obs" id="heroTerminal">
     <div class="obs-head">
       <span class="obs-chip"><span class="obs-dot"></span>APERTURA · НАБЛЮДЕНИЕ</span>
-      <span class="obs-aux">КАНАЛ 14.763 GHZ</span>
     </div>
     <div class="obs-body" id="aperturaTerminalBody">
       <div class="obs-top">
         <div class="obs-big">
           <b data-obs-presence>00:00</b>
           <i data-obs-caption data-obs-base="СЕАНС НАБЛЮДЕНИЯ · АКТИВЕН">СЕАНС НАБЛЮДЕНИЯ · АКТИВЕН</i>
-        </div>
-        <div class="obs-side">
-          <span class="obs-kv">КОНТАКТ<b data-obs-contact>—</b></span>
-          <span class="obs-kv">УЗЕЛ<b data-obs-node>—</b></span>
         </div>
       </div>
       <!-- Эквалайзер APERTURA. Раз в ~18с по нему проходит красная «передача»
@@ -37805,6 +37889,40 @@ footer {
     }, 55);
   }
   if(cap && motionOK) setInterval(glitchOnce, 9000 + Math.random()*4000);
+})();
+
+/* ═══ ЛИНЗА · меню-мембрана (единое меню обоих бургеров) ═══ */
+(function(){
+  var menu = document.getElementById('ewMenu');
+  if(!menu) return;
+  var burger = document.getElementById('mobBurger');
+  var dBtn = document.getElementById('desktopMenuBtn');
+  function lock(){ try{ lockScroll(); }catch(e){ document.body.style.overflow='hidden'; } }
+  function unlock(){ try{ unlockScroll(); }catch(e){ document.body.style.overflow=''; } }
+  window.openEwMenu = function(){
+    document.body.classList.add('ew-menu-open');
+    if(burger) burger.classList.add('open');
+    if(dBtn) dBtn.setAttribute('aria-expanded','true');
+    menu.setAttribute('aria-hidden','false');
+    lock();
+    try{ if(typeof _hideAllNotifs==='function') _hideAllNotifs(); if(typeof _closeWorldDrop==='function') _closeWorldDrop(); }catch(e){}
+  };
+  window.closeEwMenu = function(){
+    document.body.classList.remove('ew-menu-open');
+    if(burger) burger.classList.remove('open');
+    if(dBtn) dBtn.setAttribute('aria-expanded','false');
+    menu.setAttribute('aria-hidden','true');
+    unlock();
+  };
+  /* прежние вызовы из разметки перенаправляем на мембрану */
+  window.openMobNav = window.openEwMenu;
+  window.closeMobNav = window.closeEwMenu;
+  window._closeDesktopMenu = window.closeEwMenu;
+  window.toggleDesktopMenu = function(e){ if(e && e.preventDefault) e.preventDefault();
+    document.body.classList.contains('ew-menu-open') ? window.closeEwMenu() : window.openEwMenu(); };
+  /* клик по фону закрывает; Escape закрывает */
+  menu.addEventListener('click', function(e){ if(e.target===menu || (e.target.classList && e.target.classList.contains('ew-menu-in'))) window.closeEwMenu(); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && document.body.classList.contains('ew-menu-open')) window.closeEwMenu(); });
 })();
 </script>
 
