@@ -15727,94 +15727,120 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
      переоформления. Тёмная тема — единственная.
      ═══════════════════════════════════════════════════════════════════ -->
 <style id="ew-lens-v2">
-/* ── ШАПКА · плавающая стеклянная капсула ─────────────────────────── */
+/* ── ШАПКА · плавающая линза ───────────────────────────────────────────
+   Чистая реализация под v2. Разметка: логотип · навигация · корзина · бургер.
+   Данные и JS-контракты взяты из старого бара (cartBtn/cartCount/toggleCart,
+   mobBurger/openMobNav), но стили написаны заново под реальные элементы —
+   без наслоений !important на демонтированные узлы (статус, свитчер миров,
+   язык, тема, кабинет — переехали в мембрану). */
 header {
-  background: transparent !important;
-  background-image: none !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
+  background: transparent;
+  background-image: none;
+  border-bottom: none;
+  box-shadow: none;
   padding: 12px 16px 0;
 }
-header.scrolled { background: transparent !important; background-image: none !important; box-shadow: none !important; }
+header.scrolled {
+  background: transparent;
+  background-image: none;
+  border-bottom: none;
+  box-shadow: none;
+}
 .header-inner {
   max-width: 1180px;
   height: 60px;
-  padding: 0 18px;
-  gap: 12px;
+  padding: 0 14px 0 22px;
+  gap: 20px;
   border-radius: 999px;
   background: rgba(8, 9, 18, 0.55);
-  backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid var(--hairline-hi);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 18px 50px rgba(0,0,0,0.45);
-  transition: background .3s var(--ease-lens);
+  transition: background .3s var(--ease-lens), box-shadow .3s var(--ease-lens);
 }
-header.scrolled .header-inner { background: rgba(6, 7, 14, 0.74); }
-.logo-text { font-family: var(--font-display); font-weight: 800; letter-spacing: 0.14em; }
-/* тумблер темы демонтирован — тёмная тема единственная */
-.theme-switch, .theme-switch-hdr { display: none !important; }
-/* Шапка «как v2»: только логотип · навигация · корзина · бургер.
-   Статус, свитчер миров, язык, кабинет, кнопка desktop-меню переехали
-   в мембрану — в баре их нет. Бургер виден на всех разрешениях. */
-.sys-status, .wsw, .lsw, .hbtn-cabinet, .desktop-menu-wrap { display: none !important; }
-.hright { gap: 8px; align-items: center; }
-.hbtn-cart { order: 2; }
-.mob-burger { display: inline-flex !important; order: 3; }
-/* навигация видна в баре на десктопе (как v2); на мобиле — только бургер.
-   Оригинал прятал navlink через visibility:hidden ради desktop-меню —
-   перебиваем и visibility, и pointer-events. */
-@media (min-width: 961px){
-  .header-inner .navlink { display: inline-flex !important; visibility: visible !important; pointer-events: auto !important; font-size: 9px; }
+header.scrolled .header-inner {
+  background: rgba(6, 7, 14, 0.74);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 12px 40px rgba(0,0,0,0.55);
 }
-/* Мобильная шапка: логотип · корзина · бургер, с симметричным отступом
-   справа (как слева до логотипа). Корзину явно показываем; правую группу
-   прижимаем к краю и не даём переполнять. */
-@media (max-width: 960px){
-  header { padding: 12px 12px 0 !important; }
-  .header-inner { padding: 0 14px !important; gap: 8px; overflow: hidden; }
-  .logo { flex-shrink: 0; min-width: 0; }
-  .hright { margin-left: auto; gap: 6px; flex-shrink: 0; }
-  .hbtn.hbtn-cart { display: inline-flex !important; flex-shrink: 0; }
-  .mob-burger { display: inline-flex !important; flex-shrink: 0; }
+.logo { gap: 0; }
+.logo svg { height: 34px; transition: opacity .2s var(--ease-lens); }
+.logo:hover svg { opacity: 0.82; }
+
+/* Навигация — чистый моно-текст, как в v2 (без иконок) */
+.ew-hnav { display: flex; align-items: center; gap: 2px; margin: 0 auto; }
+.ew-hnav a {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-decoration: none;
+  padding: 8px 13px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: color .2s var(--ease-lens), background .2s var(--ease-lens);
 }
-/* мировой и языковой переключатели — стеклянные пилюли */
-.ws {
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
-  border-radius: 999px !important;
+.ew-hnav a:hover { color: var(--ink); background: rgba(255,255,255,0.06); }
+
+/* Действия справа — корзина + бургер */
+.ew-hact { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.ew-cart {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 38px;
+  padding: 0 15px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-  transition: background .2s var(--ease-lens), border-color .2s;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s var(--ease-lens), border-color .2s var(--ease-lens);
 }
-.ws:hover { background: rgba(255,255,255,0.09) !important; }
-.wdrop {
-  background: rgba(10, 11, 20, 0.86) !important;
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  border: 1px solid var(--hairline-hi) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.55) !important;
+.ew-cart:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18); }
+.ew-cart svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
+.ew-cart-count {
+  min-width: 18px; height: 18px; padding: 0 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  background: var(--warm-hi);
+  color: #1a1204;
+  font-family: var(--font-mono);
+  font-size: 10px; font-weight: 600; letter-spacing: 0;
 }
-.wopt { border-radius: 10px !important; transition: background .18s; }
-.navlink { border-radius: 999px !important; transition: color .2s, background .2s; }
-.navlink:hover { background: rgba(255,255,255,0.06); }
-.hbtn.hbtn-cart {
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
-  border-radius: 999px !important;
+.ew-cart-count.is-empty { display: none; }
+
+/* Бургер — открывает мембрану на всех разрешениях (в ней миры/язык/кабинет) */
+.ew-burger {
+  width: 38px; height: 38px;
+  display: inline-flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-  transition: background .2s;
+  cursor: pointer;
+  transition: background .2s var(--ease-lens), border-color .2s var(--ease-lens);
 }
-.hbtn.hbtn-cart:hover { background: rgba(255,255,255,0.09) !important; }
-.hbtn.hbtn-cart .cart-count { color: var(--warm-hi); }
-.mob-burger { border-radius: 50% !important; }
-.desktop-menu-btn { border-radius: 50% !important; }
-.desktop-menu-drop {
-  background: rgba(10, 11, 20, 0.86) !important;
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  border: 1px solid var(--hairline-hi) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.55) !important;
+.ew-burger:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18); }
+.ew-burger span {
+  display: block; width: 15px; height: 1.5px; border-radius: 2px;
+  background: var(--ink);
+}
+
+/* Мобайл: навигация сворачивается в бургер, корзина — только иконка */
+@media (max-width: 900px){
+  header { padding: 12px 12px 0; }
+  .header-inner { padding: 0 12px; gap: 10px; }
+  .ew-hnav { display: none; }
+  .ew-cart-label { display: none; }
+  .ew-cart { padding: 0; width: 38px; justify-content: center; gap: 0; }
 }
 
 /* ── HERO ─────────────────────────────────────────────────────────── */
@@ -16029,70 +16055,23 @@ body.ew-menu-open .ew-menu-side { opacity: 1; transform: none; }
       </svg>
     </a>
 
-    <div class="sys-status">
-      <div class="sys-dot"></div>
-      <span>СИСТЕМА АКТИВНА</span>
-    </div>
-
-
-    <div class="wsw" id="wsw">
-      <div class="ws" onclick="toggleWorldDrop(event)">
-        <div class="wdot"></div>
-        <span class="wname">Marketspace</span>
-        <span class="whint">/ смена</span>
-        <span class="warr"><svg class="ico ew-mask-icon ew-icon--chevron-down" aria-hidden="true"><use href="#i-chevron-down"/></svg></span>
-      </div>
-      <div class="wdrop" id="wdrop">
-        <div class="wopt active" onclick="selectWorld(this,'Marketspace')"><div class="woptdot"></div>Marketspace</div>
-        <div class="wopt" onclick="selectWorld(this,'II')"><div class="woptdot"></div>Вселенная II<span class="wsoon">Скоро</span></div>
-        <div class="wopt" onclick="selectWorld(this,'III')"><div class="woptdot"></div>Вселенная III<span class="wsoon">Скоро</span></div>
-        <div class="wopt" onclick="selectWorld(this,'IV')"><div class="woptdot"></div>Вселенная IV<span class="wsoon">Скоро</span></div>
-      </div>
-    </div>
-
-    <div class="wsw lsw" id="lsw">
-      <div class="ws lang-ws" onclick="toggleLangDrop(event)" aria-label="Язык">
-        <span class="lang-cur" id="langCur">RU</span>
-        <span class="warr"><svg class="ico ew-mask-icon ew-icon--chevron-down" aria-hidden="true"><use href="#i-chevron-down"/></svg></span>
-      </div>
-      <div class="wdrop" id="ldrop">
-        <div class="wopt active" onclick="selectLang(this,'RU')"><div class="woptdot"></div>Русский</div>
-        <div class="wopt" onclick="selectLang(this,'EN')"><div class="woptdot"></div>English<span class="wsoon">Скоро</span></div>
-      </div>
-    </div>
-
-    <button class="theme-switch theme-switch-hdr" type="button" onclick="toggleTheme()" role="switch" aria-pressed="false" aria-label="Светлая или тёмная тема" title="Сменить тему">
-      <svg class="ico ts-ico ts-moon ew-mask-icon ew-icon--moon" aria-hidden="true"><use href="#i-moon"/></svg>
-      <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
-      <svg class="ico ts-ico ts-sun ew-mask-icon ew-icon--sun" aria-hidden="true"><use href="#i-sun"/></svg>
-    </button>
-
-    <div class="hright">
-      <a href="#catalog" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--grid" aria-hidden="true"><use href="#i-grid-3x3"/></svg><span>Каталог</span></a>
-      <a href="#echo" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
-      <a href="#about" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--cpu" aria-hidden="true"><use href="#i-cpu"/></svg><span>Система</span></a>
-      <a href="#worlds" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--globe" aria-hidden="true"><use href="#i-globe"/></svg><span>Миры</span></a>
-      <a href="#faq" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--circle-help" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
-      <a href="#collab" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--mail" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
-      <div class="desktop-menu-wrap" id="desktopMenuWrap">
-        <button class="desktop-menu-btn" id="desktopMenuBtn" type="button" onclick="toggleDesktopMenu(event)" aria-label="Меню разделов" aria-expanded="false"><span></span><span></span><span></span></button>
-        <div class="wdrop desktop-menu-drop" id="desktopMenuDrop">
-          <a href="#catalog" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--grid" aria-hidden="true"><use href="#i-grid-3x3"/></svg><span>Каталог</span></a>
-          <a href="#echo" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
-          <a href="#about" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--cpu" aria-hidden="true"><use href="#i-cpu"/></svg><span>Система</span></a>
-          <a href="#worlds" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--globe" aria-hidden="true"><use href="#i-globe"/></svg><span>Миры</span></a>
-          <a href="#faq" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--circle-help" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
-          <a href="#collab" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--mail" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
-          <a href="#architect" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="nav-mark" aria-hidden="true">@</span><span>Архитектор</span></a>
-        </div>
-      </div>
-      <button class="mob-burger" id="mobBurger" onclick="openMobNav()" aria-label="Меню"><span></span><span></span><span></span></button>
-      <button class="hbtn hbtn-cart" id="cartBtn" onclick="toggleCart()" aria-label="Корзина">
-        <svg class="ico ew-mask-icon ew-icon--shopping-cart" aria-hidden="true"><use href="#i-shopping-cart"/></svg><span class="hbtn-label">КОРЗИНА</span><span class="cart-count" id="cartCount">0</span>
+    <!-- Навигация (v2): чистый текст без иконок. Миры/язык/кабинет/статус
+         переехали в меню-мембрану. -->
+    <nav class="ew-hnav" aria-label="Разделы">
+      <a href="#catalog">Каталог</a>
+      <a href="#echo">Эхо</a>
+      <a href="#about">Система</a>
+      <a href="#worlds">Миры</a>
+      <a href="#faq">FAQ</a>
+      <a href="#collab">Контакт</a>
+    </nav>
+    <div class="ew-hact">
+      <button class="ew-cart" id="cartBtn" onclick="toggleCart()" aria-label="Корзина">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-shopping-cart"/></svg>
+        <span class="ew-cart-label">Корзина</span>
+        <span class="ew-cart-count is-empty" id="cartCount">0</span>
       </button>
-      <button class="hbtn hbtn-cabinet" onclick="showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')" aria-label="Кабинет — скоро" style="opacity:0.6;cursor:default">
-        <svg class="ico ew-mask-icon ew-icon--user-round" aria-hidden="true"><use href="#i-user-round"/></svg><span class="hbtn-label">КАБИНЕТ</span><span class="sbadge">СКОРО</span>
-      </button>
+      <button class="ew-burger" id="mobBurger" onclick="openMobNav()" aria-label="Меню"><span></span><span></span></button>
     </div>
   </div>
 </header>
@@ -21586,7 +21565,7 @@ function updateCartUI(){
   try { normalizeCartForApiPreparation(); } catch(e){ console.warn('normalizeCartForApiPreparation:', e); }
   const count=cart.length;
   const cartCountEl = document.getElementById('cartCount');
-  if(cartCountEl) cartCountEl.textContent=count;
+  if(cartCountEl){ cartCountEl.textContent=count; cartCountEl.classList.toggle('is-empty', count===0); }
   const body=document.getElementById('cartBody'),empty=document.getElementById('cartEmpty'),foot=document.getElementById('cartFoot');
   if(!body) return;
   const hadItems = !!body.querySelector('.cart-item');
