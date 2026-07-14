@@ -15727,18 +15727,17 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
      переоформления. Тёмная тема — единственная.
      ═══════════════════════════════════════════════════════════════════ -->
 <style id="ew-lens-v2">
-/* ── ШАПКА · плавающая линза ───────────────────────────────────────────
-   Чистая реализация под v2. Разметка: логотип · навигация · корзина · бургер.
-   Данные и JS-контракты взяты из старого бара (cartBtn/cartCount/toggleCart,
-   mobBurger/openMobNav), но стили написаны заново под реальные элементы —
-   без наслоений !important на демонтированные узлы (статус, свитчер миров,
-   язык, тема, кабинет — переехали в мембрану). */
+/* ── ШАПКА · перенос из site-v2 1:1 ────────────────────────────────────
+   Классы и стили как в v2 (.hdr-logo/.hdr-nav/.hdr-cart/.hdr-burger).
+   Капсула v2 (.hdr) наложена на .header-inner — так сохраняется встроенная
+   механика <header> (sticky/скролл/_blurW/отступ контента). Шрифты/токены —
+   финальные боевые (Exo 2 / Overpass / IBM Plex Mono). */
 header {
   background: transparent;
   background-image: none;
   border-bottom: none;
   box-shadow: none;
-  padding: 12px 16px 0;
+  padding: 14px 12px 0;
 }
 header.scrolled {
   background: transparent;
@@ -15746,101 +15745,55 @@ header.scrolled {
   border-bottom: none;
   box-shadow: none;
 }
+/* Капсула = v2 .hdr */
 .header-inner {
-  max-width: 1180px;
-  height: 60px;
-  padding: 0 14px 0 22px;
-  gap: 20px;
-  border-radius: 999px;
+  max-width: 1160px;
+  height: auto;
+  margin: 0 auto;
+  padding: 10px 12px 10px 20px;
+  gap: 6px;
+  justify-content: flex-start;
+  border-radius: 99px;
   background: rgba(8, 9, 18, 0.55);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid var(--hairline-hi);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 18px 50px rgba(0,0,0,0.45);
-  transition: background .3s var(--ease-lens), box-shadow .3s var(--ease-lens);
+  transition: background 0.3s;
 }
-header.scrolled .header-inner {
-  background: rgba(6, 7, 14, 0.74);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 12px 40px rgba(0,0,0,0.55);
-}
-.logo { gap: 0; }
-.logo svg { height: 34px; transition: opacity .2s var(--ease-lens); }
-.logo:hover svg { opacity: 0.82; }
+header.scrolled .header-inner { background: rgba(6, 7, 14, 0.78); }
 
-/* Навигация — чистый моно-текст, как в v2 (без иконок) */
-.ew-hnav { display: flex; align-items: center; gap: 2px; margin: 0 auto; }
-.ew-hnav a {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  text-decoration: none;
-  padding: 8px 13px;
-  border-radius: 999px;
-  white-space: nowrap;
-  transition: color .2s var(--ease-lens), background .2s var(--ease-lens);
-}
-.ew-hnav a:hover { color: var(--ink); background: rgba(255,255,255,0.06); }
+/* Логотип v2: штрихкод + ECHOWORLD */
+.hdr-logo { display: flex; align-items: center; gap: 10px; margin-right: 8px; text-decoration: none; }
+.hdr-logo svg { height: 20px; width: auto; }
+.hdr-logo svg rect { fill: var(--ink); }
+.hdr-logo b { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.4em; color: var(--ink); margin-left: 0.1em; }
 
-/* Действия справа — корзина + бургер */
-.ew-hact { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.ew-cart {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  height: 38px;
-  padding: 0 15px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-  color: var(--ink);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background .2s var(--ease-lens), border-color .2s var(--ease-lens);
-}
-.ew-cart:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18); }
-.ew-cart svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
-.ew-cart-count {
-  min-width: 18px; height: 18px; padding: 0 5px;
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 999px;
-  background: var(--warm-hi);
-  color: #1a1204;
-  font-family: var(--font-mono);
-  font-size: 10px; font-weight: 600; letter-spacing: 0;
-}
-.ew-cart-count.is-empty { display: none; }
+/* Навигация v2 */
+.hdr-nav { display: flex; gap: 2px; margin-left: auto; }
+.hdr-nav a { position: relative; overflow: hidden; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--ink-3); padding: 9px 13px; border-radius: 99px; text-decoration: none; transition: color 0.2s, background 0.2s; }
+.hdr-nav a:hover { color: var(--ink); background: rgba(255,255,255,0.06); }
 
-/* Бургер — открывает мембрану на всех разрешениях (в ней миры/язык/кабинет) */
-.ew-burger {
-  width: 38px; height: 38px;
-  display: inline-flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 4px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-  cursor: pointer;
-  transition: background .2s var(--ease-lens), border-color .2s var(--ease-lens);
-}
-.ew-burger:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18); }
-.ew-burger span {
-  display: block; width: 15px; height: 1.5px; border-radius: 2px;
-  background: var(--ink);
-}
+/* Корзина v2 */
+.hdr-cart { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--ink-2); padding: 9px 14px; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: background 0.2s; }
+.hdr-cart:hover { background: rgba(255,255,255,0.09); }
+.hdr-cart svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.hdr-cart .n { font-weight: 600; color: var(--warm-hi); min-width: 10px; text-align: center; }
 
-/* Мобайл: навигация сворачивается в бургер, корзина — только иконка */
-@media (max-width: 900px){
-  header { padding: 12px 12px 0; }
-  .header-inner { padding: 0 12px; gap: 10px; }
-  .ew-hnav { display: none; }
-  .ew-cart-label { display: none; }
-  .ew-cart { padding: 0; width: 38px; justify-content: center; gap: 0; }
+/* Бургер v2 → крестик при открытом меню */
+.hdr-burger { position: relative; overflow: hidden; width: 40px; height: 40px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: background 0.2s; }
+.hdr-burger:hover { background: rgba(255,255,255,0.09); }
+.hdr-burger i { position: absolute; left: 13px; right: 13px; height: 1.5px; background: var(--ink); border-radius: 2px; transition: transform 0.35s var(--ease-out), top 0.35s var(--ease-out), opacity 0.3s; }
+.hdr-burger i:nth-child(1) { top: 16px; }
+.hdr-burger i:nth-child(2) { top: 22px; }
+body.menu-open .hdr-burger i:nth-child(1) { top: 19px; transform: rotate(45deg); }
+body.menu-open .hdr-burger i:nth-child(2) { top: 19px; transform: rotate(-45deg); }
+
+/* Мобайл — брейкпоинты v2: навигация прячется, у корзины остаётся только иконка */
+@media (max-width: 1020px){ .hdr-nav { display: none; } }
+@media (max-width: 640px){
+  .header-inner { padding: 8px 8px 8px 16px; }
+  .hdr-cart .lbl-t { display: none; }
 }
 
 /* ── HERO ─────────────────────────────────────────────────────────── */
@@ -15936,45 +15889,45 @@ header.scrolled .header-inner {
 .hero-sub { font-size: 14px !important; line-height: 1.72 !important; max-width: 540px; }
 .hero-sub-echo { font-size: 12.5px !important; line-height: 1.7 !important; }
 
-/* ── МЕНЮ-МЕМБРАНА ─────────────────────────────────────────────── */
+/* ── МЕНЮ-МЕМБРАНА · перенос из site-v2 1:1 ──────────────────────
+   Стили v2 (.menu/.menu-nav/.menu-side/.menu-world). z-index 480 — ниже
+   шапки (500), чтобы бургер-крестик v2 оставался кликабельным поверх меню.
+   На мобиле навигация — плитками в 2 колонки (твоя прошлая просьба «на мобиле
+   не вертикально»), остальное как v2. Старые mob-nav/desktop-menu скрыты. */
 .mob-nav, .mob-nav-overlay, .desktop-menu-drop { display: none !important; }
-.ew-menu { position: fixed; inset: 0; z-index: 600; display: grid; align-items: center; padding: 100px 0 44px; visibility: hidden; opacity: 0; background: rgba(4,4,10,0.62); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%); transition: opacity .45s var(--ease-lens), visibility .45s; overflow-y: auto; overscroll-behavior: contain; }
-body.ew-menu-open .ew-menu { visibility: visible; opacity: 1; }
-.ew-menu-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 44px; }
-.ew-menu-nav { display: flex; flex-direction: column; gap: 4px; }
-.ew-menu-nav a { display: flex; align-items: baseline; gap: 16px; padding: 12px 14px; border-radius: 16px; text-decoration: none; opacity: 0; transform: translateY(16px); transition: background .25s, opacity .55s var(--ease-lens), transform .55s var(--ease-lens); }
-body.ew-menu-open .ew-menu-nav a { opacity: 1; transform: none; }
-.ew-menu-nav a:nth-child(2){ transition-delay:0s,.05s,.05s } .ew-menu-nav a:nth-child(3){ transition-delay:0s,.09s,.09s } .ew-menu-nav a:nth-child(4){ transition-delay:0s,.13s,.13s } .ew-menu-nav a:nth-child(5){ transition-delay:0s,.17s,.17s } .ew-menu-nav a:nth-child(6){ transition-delay:0s,.21s,.21s } .ew-menu-nav a:nth-child(7){ transition-delay:0s,.25s,.25s }
-.ew-menu-nav a:hover { background: rgba(255,255,255,0.05); }
-.ew-menu-nav .t { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 3.2vw, 34px); letter-spacing: -0.01em; color: var(--white); }
-.ew-menu-nav .s { font-family: var(--font-code); font-size: 9px; letter-spacing: 0.16em; color: var(--ink-4); }
-.ew-menu-side { display: flex; flex-direction: column; gap: 12px; opacity: 0; transform: translateY(16px); transition: opacity .55s var(--ease-lens) .22s, transform .55s var(--ease-lens) .22s; }
-body.ew-menu-open .ew-menu-side { opacity: 1; transform: none; }
-.ew-menu-card { border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); padding: 14px 16px; }
-.ew-menu-lbl { font-family: var(--font-code); font-size: 8.5px; letter-spacing: 0.2em; color: var(--ink-4); margin-bottom: 10px; }
-.ew-worlds { display: flex; flex-direction: column; gap: 4px; }
-.ew-world { display: flex; align-items: center; gap: 10px; width: 100%; font-family: var(--font-code); font-size: 11px; letter-spacing: 0.1em; color: var(--ink-2); padding: 9px 10px; border-radius: 10px; transition: background .2s; text-align: left; }
-.ew-world:hover { background: rgba(255,255,255,0.05); }
-.ew-world .wd { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px rgba(0,200,200,0.8); flex-shrink: 0; }
-.ew-world .wd-w { background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.8); }
-.ew-world .wd-off { background: rgba(240,240,248,0.2); box-shadow: none; }
-.ew-world.locked { color: var(--ink-4); }
-.ew-world.locked .wd { background: rgba(240,240,248,0.2); box-shadow: none; }
-.ew-world .wt { margin-left: auto; font-size: 8px; letter-spacing: 0.14em; color: var(--ink-4); }
-.ew-world.on .wt { color: var(--cyan-hi); }
-.ew-menu-foot { display: flex; justify-content: space-between; font-family: var(--font-code); font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); padding: 2px 6px 0; }
-@media (max-width: 860px){ .ew-menu-in { grid-template-columns: 1fr; gap: 24px; } }
+.menu { position: fixed; inset: 0; z-index: 480; display: grid; align-items: center; padding: 90px 0 40px; visibility: hidden; opacity: 0; background: rgba(4,4,10,0.6); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%); transition: opacity .45s var(--ease-out), visibility .45s; overflow-y: auto; overscroll-behavior: contain; }
+body.menu-open .menu { visibility: visible; opacity: 1; }
+.menu-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; }
+.menu-nav { display: flex; flex-direction: column; gap: 4px; }
+.menu-nav a { display: flex; align-items: baseline; gap: 16px; padding: 12px 14px; border-radius: 16px; text-decoration: none; opacity: 0; transform: translateY(14px); transition: background .25s, opacity .5s var(--ease-out), transform .5s var(--ease-out); transition-delay: 0s, var(--d, 0s), var(--d, 0s); }
+body.menu-open .menu-nav a { opacity: 1; transform: none; }
+.menu-nav a:hover { background: rgba(255,255,255,0.05); }
+.menu-nav .t { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 3.4vw, 34px); color: var(--ink); }
+.menu-nav .s { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.16em; color: var(--ink-4); }
+.menu-side { display: flex; flex-direction: column; gap: 12px; opacity: 0; transform: translateY(14px); transition: opacity .5s var(--ease-out) .25s, transform .5s var(--ease-out) .25s; }
+body.menu-open .menu-side { opacity: 1; transform: none; }
+.menu-card { border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); padding: 14px 16px; }
+.menu-card .lbl { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.2em; color: var(--ink-4); margin-bottom: 10px; }
+.menu-worlds { display: flex; flex-direction: column; gap: 4px; }
+.menu-world { position: relative; overflow: hidden; display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink-2); padding: 9px 10px; border-radius: 10px; transition: background 0.2s; cursor: pointer; }
+.menu-world:hover { background: rgba(255,255,255,0.05); }
+.menu-world .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px rgba(0,200,200,0.8); flex-shrink: 0; }
+.menu-world.locked { color: var(--ink-4); }
+.menu-world.locked .dot { background: rgba(240,240,248,0.2); box-shadow: none; }
+.menu-world .tag { margin-left: auto; font-size: 8px; letter-spacing: 0.14em; color: var(--ink-4); }
+.menu-world.on .tag { color: var(--cyan-hi); }
+.menu-foot { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); padding: 0 6px; }
+@media (max-width: 1020px){ .menu-in { grid-template-columns: 1fr; gap: 28px; } }
 @media (max-width: 640px){
-  .ew-menu { padding: 88px 0 40px; }
-  .ew-menu-in { width: calc(100% - 32px); gap: 20px; }
-  .ew-menu-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .ew-menu-nav a { box-sizing: border-box; flex-direction: column; gap: 5px; padding: 15px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); min-height: 74px; justify-content: center; }
-  .ew-menu-nav .t { font-size: 17px; }
-  .ew-menu-nav .s { display: none; }
-  .ew-menu-card { box-sizing: border-box; }
-  .ew-world { box-sizing: border-box; }
+  .menu { padding: 88px 0 40px; }
+  .menu-in { width: calc(100% - 32px); gap: 22px; }
+  .menu-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .menu-nav a { box-sizing: border-box; flex-direction: column; align-items: flex-start; gap: 5px; padding: 15px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); min-height: 74px; justify-content: center; }
+  .menu-nav .t { font-size: 17px; }
+  .menu-nav .s { display: none; }
+  .menu-card { box-sizing: border-box; }
 }
-@media (prefers-reduced-motion: reduce){ .ew-menu-nav a, .ew-menu-side { transition: opacity .2s; transform: none; } }
+@media (prefers-reduced-motion: reduce){ .menu-nav a, .menu-side { transition: opacity .2s; transform: none; } }
 
 /* ── МОБИЛЬНЫЕ СВАЙП-МАРКЕРЫ · единый стиль (правка 4) ───────────
    Старые красные полоски → аккуратные тусклые точки, активная —
@@ -16034,81 +15987,71 @@ body.ew-menu-open .ew-menu-side { opacity: 1; transform: none; }
 
 <div class="scroll-line" id="scrollLine"></div>
 
-<!-- ===== HEADER ===== -->
-<header>
+<!-- ===== HEADER · перенос из site-v2 1:1 (логотип-штрихкод + ECHOWORLD,
+     hdr-nav, hdr-cart, hdr-burger). Живой функционал подключён к реальным
+     функциям сайта: корзина→toggleCart, бургер→openMobNav (открывает мембрану). ===== -->
+<header id="hdr">
   <div class="header-inner">
-    <a href="#" class="logo">
-      <svg viewBox="258 188 496 388" xmlns="http://www.w3.org/2000/svg" style="height:42px;width:auto;flex-shrink:0;fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-        <g transform="matrix(1,0,0,1,0.109955,0)"><g transform="matrix(1,0,0,1,-1,-0)"><g transform="matrix(1,0,0,1,1,-40.961037)"><g transform="matrix(27.022233,0,0,27.022233,-9361.409366,-14376.200183)"><path d="M356.749,552.667L356.749,554.419L357.793,554.419L357.793,554.215L356.977,554.215L356.977,553.543L357.685,553.543L357.685,553.315L356.977,553.315L356.977,552.871L357.757,552.871L357.757,552.667L356.749,552.667Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M358.753,554.347L358.825,554.419L359.725,554.419L359.797,554.347L359.797,553.855L359.605,553.855C359.605,553.879 359.601,553.925 359.593,553.993C359.585,554.061 359.577,554.103 359.569,554.119C359.569,554.135 359.559,554.151 359.539,554.167C359.519,554.183 359.505,554.191 359.497,554.191L359.053,554.191L358.981,554.119L358.981,552.931L359.053,552.859L359.497,552.859C359.505,552.859 359.519,552.867 359.539,552.883C359.559,552.899 359.569,552.915 359.569,552.931C359.577,552.947 359.585,552.989 359.593,553.057C359.601,553.125 359.605,553.171 359.605,553.195L359.797,553.195L359.797,552.775L359.641,552.631L358.897,552.631L358.753,552.775L358.753,554.347Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M360.721,552.667L360.721,554.455L360.925,554.455L360.925,553.639L361.561,553.639L361.561,554.455L361.765,554.455L361.765,552.667L361.561,552.667L361.561,553.375L360.925,553.375L360.925,552.667L360.721,552.667Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M362.797,554.275L362.941,554.419L363.697,554.419L363.841,554.275L363.841,552.823L363.697,552.667L362.941,552.667L362.797,552.823L362.797,554.275ZM363.025,554.119L363.025,552.967L363.097,552.895L363.541,552.895L363.613,552.967L363.613,554.119L363.541,554.191L363.097,554.191L363.025,554.119Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M364.837,554.419C364.845,554.451 364.865,554.465 364.897,554.461C364.929,554.457 364.953,554.455 364.969,554.455L365.065,554.455C365.073,554.439 365.085,554.397 365.101,554.329C365.117,554.261 365.129,554.215 365.137,554.191C365.145,554.159 365.159,554.095 365.179,553.999C365.199,553.903 365.217,553.801 365.233,553.693C365.249,553.585 365.267,553.483 365.287,553.387C365.307,553.291 365.321,553.223 365.329,553.183C365.337,553.223 365.349,553.291 365.365,553.387C365.381,553.483 365.397,553.585 365.413,553.693C365.429,553.801 365.447,553.903 365.467,553.999C365.487,554.095 365.501,554.159 365.509,554.191C365.517,554.231 365.531,554.285 365.551,554.353C365.571,554.421 365.581,554.455 365.581,554.455L365.773,554.455L365.809,554.383C365.809,554.383 365.821,554.331 365.845,554.227C365.869,554.123 365.897,553.999 365.929,553.855C365.961,553.711 365.993,553.563 366.025,553.411C366.057,553.259 366.085,553.135 366.109,553.039C366.133,552.911 366.145,552.787 366.145,552.667L365.953,552.667C365.953,552.691 365.949,552.747 365.941,552.835C365.933,552.923 365.925,552.979 365.917,553.003C365.901,553.075 365.883,553.167 365.863,553.279C365.843,553.391 365.825,553.501 365.809,553.609C365.793,553.717 365.777,553.809 365.761,553.885C365.745,553.961 365.737,554.003 365.737,554.011L365.701,554.083C365.693,554.067 365.685,554.041 365.677,554.005C365.669,553.969 365.661,553.947 365.653,553.939C365.645,553.891 365.631,553.811 365.611,553.699C365.591,553.587 365.569,553.467 365.545,553.339C365.521,553.211 365.499,553.091 365.479,552.979C365.459,552.867 365.445,552.787 365.437,552.739C365.405,552.691 365.369,552.667 365.329,552.667C365.265,552.667 365.225,552.703 365.209,552.775L364.945,554.083C364.929,554.051 364.915,554.015 364.903,553.975C364.891,553.935 364.881,553.895 364.873,553.855C364.841,553.695 364.805,553.503 364.765,553.279C364.725,553.055 364.701,552.851 364.693,552.667L364.501,552.667C364.501,552.947 364.541,553.245 364.621,553.561C364.701,553.877 364.773,554.163 364.837,554.419Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M366.805,554.275L366.949,554.419L367.705,554.419L367.849,554.275L367.849,552.823L367.705,552.667L366.949,552.667L366.805,552.823L366.805,554.275ZM367.033,554.119L367.033,552.967L367.105,552.895L367.549,552.895L367.621,552.967L367.621,554.119L367.549,554.191L367.105,554.191L367.033,554.119Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M368.737,552.667L368.737,554.419L368.941,554.419L368.941,553.723C368.957,553.723 369.003,553.713 369.079,553.693C369.155,553.673 369.201,553.667 369.217,553.675C369.233,553.683 369.259,553.705 369.295,553.741C369.331,553.777 369.357,553.803 369.373,553.819L369.661,554.419L369.901,554.419C369.901,554.283 369.851,554.145 369.751,554.005C369.651,553.865 369.561,553.743 369.481,553.639C369.545,553.551 369.611,553.483 369.679,553.435C369.747,553.387 369.781,553.295 369.781,553.159C369.781,553.127 369.777,553.085 369.769,553.033C369.761,552.981 369.745,552.927 369.721,552.871C369.697,552.815 369.669,552.767 369.637,552.727C369.605,552.687 369.565,552.667 369.517,552.667L368.737,552.667ZM368.953,552.895L369.481,552.895C369.505,552.895 369.523,552.909 369.535,552.937C369.547,552.965 369.555,552.997 369.559,553.033C369.563,553.069 369.565,553.103 369.565,553.135L369.565,553.183C369.565,553.199 369.563,553.223 369.559,553.255C369.555,553.287 369.553,553.303 369.553,553.303L369.445,553.411L368.953,553.411L368.953,552.895Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M371.077,552.667L371.077,554.455L372.121,554.455L372.121,554.251L371.281,554.251L371.281,552.667L371.077,552.667Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M372.961,552.631L372.961,554.383L373.561,554.383C373.601,554.383 373.647,554.361 373.699,554.317C373.751,554.273 373.799,554.223 373.843,554.167C373.887,554.111 373.925,554.055 373.957,553.999C373.989,553.943 374.005,553.899 374.005,553.867L374.005,553.159C374.005,553.103 373.991,553.045 373.963,552.985C373.935,552.925 373.897,552.869 373.849,552.817C373.801,552.765 373.749,552.721 373.693,552.685C373.637,552.649 373.581,552.631 373.525,552.631L372.961,552.631ZM373.189,552.859C373.205,552.859 373.233,552.857 373.273,552.853C373.313,552.849 373.341,552.847 373.357,552.847C373.397,552.847 373.447,552.849 373.507,552.853C373.567,552.857 373.609,552.883 373.633,552.931C373.649,552.963 373.673,553.007 373.705,553.063C373.737,553.119 373.753,553.151 373.753,553.159L373.753,553.903C373.753,553.903 373.747,553.913 373.735,553.933C373.723,553.953 373.717,553.967 373.717,553.975C373.693,554.007 373.657,554.045 373.609,554.089C373.561,554.133 373.533,554.155 373.525,554.155L373.189,554.155L373.189,552.859Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/></g></g></g>
-        <g transform="matrix(1,0,0,1,6,-98.550108)">
-          <rect x="273.889" y="300.922" width="58.111" height="288.078" fill="white"/>
-          <path d="M361,300.922L361,589L389,589L390,300.922Z" fill="white"/>
-          <rect x="419" y="300.922" width="29" height="288.078" fill="white"/>
-          <path d="M477,300.922L477,589L490,589L491,300.922Z" fill="white"/>
-          <rect x="505" y="300.922" width="29" height="288.078" fill="white"/>
-          <rect x="563" y="300.922" width="14" height="288.078" fill="white"/>
-          <path d="M621,300.922L620,589L649,589L650,300.922Z" fill="white"/>
-          <path d="M664,300.922L665,589L679,589L679,300.922Z" fill="white"/>
-          <path d="M708,300.922L707,589L736.111,589L736.111,300.922Z" fill="white"/>
-        </g>
-        </g>
+    <a class="hdr-logo" href="#" aria-label="EchoWorld — наверх">
+      <svg viewBox="0 0 96 40" aria-hidden="true">
+        <rect x="0" y="0" width="9" height="40"/><rect x="13" y="0" width="4" height="40"/>
+        <rect x="21" y="0" width="6" height="40"/><rect x="31" y="0" width="2.5" height="40"/>
+        <rect x="37" y="0" width="4.5" height="40"/><rect x="46" y="0" width="8" height="40"/>
+        <rect x="58" y="0" width="3" height="40"/><rect x="65" y="0" width="5.5" height="40"/>
+        <rect x="74" y="0" width="2.5" height="40"/><rect x="81" y="0" width="7" height="40"/>
       </svg>
+      <b>ECHOWORLD</b>
     </a>
-
-    <!-- Навигация (v2): чистый текст без иконок. Миры/язык/кабинет/статус
-         переехали в меню-мембрану. -->
-    <nav class="ew-hnav" aria-label="Разделы">
-      <a href="#catalog">Каталог</a>
-      <a href="#echo">Эхо</a>
-      <a href="#about">Система</a>
-      <a href="#worlds">Миры</a>
+    <nav class="hdr-nav" aria-label="Разделы">
+      <a href="#catalog">КАТАЛОГ</a>
+      <a href="#echo">ЭХО</a>
+      <a href="#about">СИСТЕМА</a>
+      <a href="#worlds">МИРЫ</a>
       <a href="#faq">FAQ</a>
-      <a href="#collab">Контакт</a>
     </nav>
-    <div class="ew-hact">
-      <button class="ew-cart" id="cartBtn" onclick="toggleCart()" aria-label="Корзина">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-shopping-cart"/></svg>
-        <span class="ew-cart-label">Корзина</span>
-        <span class="ew-cart-count is-empty" id="cartCount">0</span>
-      </button>
-      <button class="ew-burger" id="mobBurger" onclick="openMobNav()" aria-label="Меню"><span></span><span></span></button>
-    </div>
+    <button class="hdr-cart" id="cartBtn" onclick="toggleCart()" aria-label="Корзина">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2.5l2.2 11.5a1.5 1.5 0 0 0 1.5 1.2h7.8a1.5 1.5 0 0 0 1.5-1.2L20 8H6"/></svg>
+      <span class="lbl-t">КОРЗИНА</span><span class="n" id="cartCount">0</span>
+    </button>
+    <button class="hdr-burger" id="mobBurger" onclick="openMobNav()" aria-label="Меню" aria-expanded="false"><i></i><i></i></button>
   </div>
 </header>
 
-<!-- ═══ МЕНЮ-МЕМБРАНА · единое полноэкранное меню (десктоп + мобайл) ═══
-     Открывается обоими бургерами. Навигация + мир-свитчер + язык + кабинет.
-     Функции сохранены: ссылки скроллят к секциям, миры/язык/кабинет ведут
-     к прежним уведомлениям. Старые mob-nav и desktop-menu-drop скрыты. -->
-<div class="ew-menu" id="ewMenu" aria-hidden="true">
-  <div class="ew-menu-in">
-    <nav class="ew-menu-nav" aria-label="Навигация">
-      <a href="#catalog" onclick="closeEwMenu()"><span class="t">Каталог</span><span class="s">12 РЕЛИКВИЙ · ЦИКЛ 01-2026</span></a>
-      <a href="#echo" onclick="closeEwMenu()"><span class="t">Эхо</span><span class="s">КАНАЛ ОТКРЫТ · 599 ₽</span></a>
-      <a href="#about" onclick="closeEwMenu()"><span class="t">Система</span><span class="s">МИР ПО ТУ СТОРОНУ ДАННЫХ</span></a>
-      <a href="#worlds" onclick="closeEwMenu()"><span class="t">Миры</span><span class="s">APERTURA ПРОДОЛЖАЕТ СЛУШАТЬ</span></a>
-      <a href="#faq" onclick="closeEwMenu()"><span class="t">FAQ</span><span class="s">ПРОТОКОЛ ВОПРОСОВ</span></a>
-      <a href="#collab" onclick="closeEwMenu()"><span class="t">Контакт</span><span class="s">ОТКРЫТЬ СВОЮ ВСЕЛЕННУЮ</span></a>
-      <a href="#architect" onclick="closeEwMenu()"><span class="t">Архитектор</span><span class="s">ECH-0001 · УРОВЕНЬ X</span></a>
+<!-- ═══ МЕНЮ-МЕМБРАНА · перенос из site-v2 1:1 ═══
+     Полноэкранное меню (десктоп + мобайл), открывается бургером.
+     Разметка/визуал из v2; функции подключены к реальным: миры→awCardLocked,
+     кабинет/язык→showNotif, ссылки скроллят и закрывают меню (JS в ew-obs-js).
+     Старые mob-nav и desktop-menu-drop скрыты. -->
+<div class="menu" id="menu" aria-hidden="true">
+  <div class="menu-in">
+    <nav class="menu-nav" aria-label="Навигация">
+      <a href="#catalog" style="--d:0.05s"><span class="t">Каталог</span><span class="s">12 РЕЛИКВИЙ · ЦИКЛ 01-2026</span></a>
+      <a href="#echo" style="--d:0.1s"><span class="t">Эхо</span><span class="s">КАНАЛ ОТКРЫТ · 599 ₽</span></a>
+      <a href="#about" style="--d:0.15s"><span class="t">Система</span><span class="s">МИР ПО ТУ СТОРОНУ ДАННЫХ</span></a>
+      <a href="#worlds" style="--d:0.2s"><span class="t">Миры</span><span class="s">APERTURA ПРОДОЛЖАЕТ СЛУШАТЬ</span></a>
+      <a href="#preorderSection" style="--d:0.25s"><span class="t">Конденсация</span><span class="s">ИНДИВИДУАЛЬНЫЙ СИГНАЛ</span></a>
+      <a href="#faq" style="--d:0.3s"><span class="t">FAQ</span><span class="s">ПРОТОКОЛ ВОПРОСОВ · 19 ЗАПИСЕЙ</span></a>
+      <a href="#collab" style="--d:0.35s"><span class="t">Контакт</span><span class="s">ОТКРЫТЬ СВОЮ ВСЕЛЕННУЮ</span></a>
+      <a href="#architect" style="--d:0.4s"><span class="t">Архитектор</span><span class="s">ECH-0001 · УРОВЕНЬ X</span></a>
     </nav>
-    <div class="ew-menu-side">
-      <div class="ew-menu-card">
-        <div class="ew-menu-lbl">АКТИВНЫЙ МИР</div>
-        <div class="ew-worlds">
-          <button class="ew-world on" type="button" onclick="closeEwMenu()"><span class="wd"></span>MARKETSPACE<span class="wt">НА СВЯЗИ</span></button>
-          <button class="ew-world locked" type="button" onclick="awCardLocked(this)"><span class="wd"></span>ВСЕЛЕННАЯ II<span class="wt">СКОРО</span></button>
-          <button class="ew-world locked" type="button" onclick="awCardLocked(this)"><span class="wd"></span>ВСЕЛЕННАЯ III<span class="wt">СКОРО</span></button>
-          <button class="ew-world locked" type="button" onclick="awCardLocked(this)"><span class="wd"></span>ВСЕЛЕННАЯ IV<span class="wt">СКОРО</span></button>
+    <div class="menu-side">
+      <div class="menu-card">
+        <div class="lbl">АКТИВНЫЙ МИР</div>
+        <div class="menu-worlds">
+          <div class="menu-world on"><span class="dot"></span>MARKETSPACE<span class="tag">НА СВЯЗИ</span></div>
+          <div class="menu-world locked" onclick="awCardLocked(this)"><span class="dot"></span>ВСЕЛЕННАЯ II<span class="tag">СКОРО</span></div>
+          <div class="menu-world locked" onclick="awCardLocked(this)"><span class="dot"></span>ВСЕЛЕННАЯ III<span class="tag">СКОРО</span></div>
+          <div class="menu-world locked" onclick="awCardLocked(this)"><span class="dot"></span>ВСЕЛЕННАЯ IV<span class="tag">СКОРО</span></div>
         </div>
       </div>
-      <div class="ew-menu-card">
-        <div class="ew-menu-lbl">ДОСТУП</div>
-        <div class="ew-worlds">
-          <button class="ew-world" type="button" onclick="closeEwMenu();showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')"><span class="wd wd-w"></span>КАБИНЕТ<span class="wt">СКОРО</span></button>
-          <button class="ew-world" type="button" onclick="showNotif('// English channel — скоро. Пока система говорит по-русски.')"><span class="wd wd-off"></span>ЯЗЫК · РУССКИЙ<span class="wt">EN СКОРО</span></button>
+      <div class="menu-card">
+        <div class="lbl">ДОСТУП</div>
+        <div class="menu-worlds">
+          <div class="menu-world" onclick="showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')"><span class="dot" style="background:var(--warm);box-shadow:0 0 8px rgba(209,160,74,0.8)"></span>КАБИНЕТ<span class="tag">СКОРО</span></div>
+          <div class="menu-world" onclick="showNotif('// English channel — скоро. Пока система говорит по-русски.')"><span class="dot" style="background:rgba(240,240,248,0.3);box-shadow:none"></span>ЯЗЫК · РУССКИЙ<span class="tag">EN СКОРО</span></div>
         </div>
       </div>
-      <div class="ew-menu-foot"><span>СИСТЕМА АКТИВНА</span><span>MARKETSPACE · 01-2026</span></div>
+      <div class="menu-foot"><span>СИСТЕМА АКТИВНА</span><span>14.763 GHZ</span></div>
     </div>
   </div>
 </div>
@@ -21565,7 +21508,7 @@ function updateCartUI(){
   try { normalizeCartForApiPreparation(); } catch(e){ console.warn('normalizeCartForApiPreparation:', e); }
   const count=cart.length;
   const cartCountEl = document.getElementById('cartCount');
-  if(cartCountEl){ cartCountEl.textContent=count; cartCountEl.classList.toggle('is-empty', count===0); }
+  if(cartCountEl) cartCountEl.textContent=count;
   const body=document.getElementById('cartBody'),empty=document.getElementById('cartEmpty'),foot=document.getElementById('cartFoot');
   if(!body) return;
   const hadItems = !!body.querySelector('.cart-item');
@@ -37894,38 +37837,34 @@ footer {
   if(cap && motionOK) setInterval(glitchOnce, 9000 + Math.random()*4000);
 })();
 
-/* ═══ ЛИНЗА · меню-мембрана (единое меню обоих бургеров) ═══ */
+/* ═══ ШАПКА + МЕНЮ-МЕМБРАНА · механика site-v2 (body.menu-open) ═══
+   Разметка/визуал перенесены из v2; подключено к реальным точкам входа сайта
+   (openMobNav/closeMobNav/toggleDesktopMenu). Бургер = переключатель ≡/×. */
 (function(){
-  var menu = document.getElementById('ewMenu');
+  var menu = document.getElementById('menu');
   if(!menu) return;
   var burger = document.getElementById('mobBurger');
-  var dBtn = document.getElementById('desktopMenuBtn');
   function lock(){ try{ lockScroll(); }catch(e){ document.body.style.overflow='hidden'; } }
   function unlock(){ try{ unlockScroll(); }catch(e){ document.body.style.overflow=''; } }
-  window.openEwMenu = function(){
-    document.body.classList.add('ew-menu-open');
-    if(burger) burger.classList.add('open');
-    if(dBtn) dBtn.setAttribute('aria-expanded','true');
-    menu.setAttribute('aria-hidden','false');
-    lock();
-    try{ if(typeof _hideAllNotifs==='function') _hideAllNotifs(); if(typeof _closeWorldDrop==='function') _closeWorldDrop(); }catch(e){}
-  };
-  window.closeEwMenu = function(){
-    document.body.classList.remove('ew-menu-open');
-    if(burger) burger.classList.remove('open');
-    if(dBtn) dBtn.setAttribute('aria-expanded','false');
-    menu.setAttribute('aria-hidden','true');
-    unlock();
-  };
-  /* прежние вызовы из разметки перенаправляем на мембрану */
-  window.openMobNav = window.openEwMenu;
-  window.closeMobNav = window.closeEwMenu;
-  window._closeDesktopMenu = window.closeEwMenu;
-  window.toggleDesktopMenu = function(e){ if(e && e.preventDefault) e.preventDefault();
-    document.body.classList.contains('ew-menu-open') ? window.closeEwMenu() : window.openEwMenu(); };
-  /* клик по фону закрывает; Escape закрывает */
-  menu.addEventListener('click', function(e){ if(e.target===menu || (e.target.classList && e.target.classList.contains('ew-menu-in'))) window.closeEwMenu(); });
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && document.body.classList.contains('ew-menu-open')) window.closeEwMenu(); });
+  function setMenu(open){
+    document.body.classList.toggle('menu-open', open);
+    if(burger) burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    menu.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if(open){
+      lock();
+      try{ if(typeof _hideAllNotifs==='function') _hideAllNotifs(); if(typeof _closeWorldDrop==='function') _closeWorldDrop(); }catch(e){}
+    } else { unlock(); }
+  }
+  /* прежние точки входа из разметки → мембрана. Бургер (тот же элемент,
+     что превращается в крестик) переключает открыто/закрыто. */
+  window.openMobNav = function(){ setMenu(!document.body.classList.contains('menu-open')); };
+  window.closeMobNav = function(){ setMenu(false); };
+  window._closeDesktopMenu = window.closeMobNav;
+  window.toggleDesktopMenu = function(e){ if(e && e.preventDefault) e.preventDefault(); setMenu(!document.body.classList.contains('menu-open')); };
+  /* ссылки разделов закрывают меню (как в v2) */
+  menu.querySelectorAll('.menu-nav a').forEach(function(a){ a.addEventListener('click', function(){ setMenu(false); }); });
+  /* Escape закрывает */
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && document.body.classList.contains('menu-open')) setMenu(false); });
 })();
 </script>
 
