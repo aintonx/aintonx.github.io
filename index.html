@@ -15789,8 +15789,14 @@ header.scrolled .header-inner { background: rgba(6, 7, 14, 0.78); }
 body.menu-open .hdr-burger i:nth-child(1) { top: 19px; transform: rotate(45deg); }
 body.menu-open .hdr-burger i:nth-child(2) { top: 19px; transform: rotate(-45deg); }
 
-/* Мобайл — брейкпоинты v2: навигация прячется, у корзины остаётся только иконка */
-@media (max-width: 1020px){ .hdr-nav { display: none; } }
+/* Мобайл — брейкпоинты v2: навигация прячется, у корзины остаётся только иконка.
+   Когда навигация скрыта, margin-left:auto с неё пропадает — поэтому переносим
+   его на корзину, чтобы группа корзина+бургер прижималась к правому краю капсулы
+   (а не к логотипу). */
+@media (max-width: 1020px){
+  .hdr-nav { display: none; }
+  .hdr-cart { margin-left: auto; }
+}
 @media (max-width: 640px){
   .header-inner { padding: 8px 8px 8px 16px; }
   .hdr-cart .lbl-t { display: none; }
@@ -15878,11 +15884,15 @@ body.menu-open .hdr-burger i:nth-child(2) { top: 19px; transform: rotate(-45deg)
 .ew-obs .obs-rv.c { color: var(--cyan-hi); }
 .ew-obs .obs-rv.mut { color: var(--ink-4); font-weight: 400; }
 .ew-obs .obs-lockico { width: 13px; height: 13px; flex-shrink: 0; margin-left: 6px; fill: none !important; stroke: var(--ink-3); stroke-width: 2.2; opacity: 0.85; }
-.ew-obs .obs-lock { cursor: pointer; border-radius: 8px; overflow: hidden; transition: background .2s; }
-.ew-obs .obs-lock:hover { background: rgba(255,255,255,0.03); }
+/* Строка PERIMETER.STATUS кликабельна. Расширяем зону подсветки чуть влево/вправо
+   (отрицательный margin + компенсирующий padding: текст на месте, «контейнер» шире
+   и выглядит частью интерфейса, а не чужеродной пилюлей). */
+.ew-obs .obs-lock { cursor: pointer; border-radius: 10px; overflow: hidden; transition: background .2s; margin-left: -10px; margin-right: -10px; padding-left: 12px; padding-right: 12px; }
+.ew-obs .obs-lock:hover { background: rgba(255,255,255,0.04); }
 .ew-obs .obs-dots::after { content: ""; animation: ewRecDots 1.6s steps(4) infinite; }
 @keyframes ewRecDots { 0% { content: ""; } 25% { content: "·"; } 50% { content: "··"; } 75% { content: "···"; } }
-.ew-obs .obs-foot { position: relative; z-index: 1; display: flex; justify-content: space-between; gap: 12px; padding: 11px 20px 15px; font-family: var(--font-code); font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); border-top: 1px solid var(--hairline); }
+.ew-obs .obs-foot { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 20px 15px; font-family: var(--font-code); font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); border-top: 1px solid var(--hairline); }
+.ew-obs .obs-foot span { white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .ew-obs .obs-dot { animation: none; } .ew-obs .obs-dots::after { animation: none; content: "···"; } }
 
 /* ── ТЕКСТ · органичное увеличение читаемости (правка 2) ─────────── */
@@ -15895,17 +15905,22 @@ body.menu-open .hdr-burger i:nth-child(2) { top: 19px; transform: rotate(-45deg)
    На мобиле навигация — плитками в 2 колонки (твоя прошлая просьба «на мобиле
    не вертикально»), остальное как v2. Старые mob-nav/desktop-menu скрыты. */
 .mob-nav, .mob-nav-overlay, .desktop-menu-drop { display: none !important; }
-.menu { position: fixed; inset: 0; z-index: 480; display: grid; align-items: center; padding: 90px 0 40px; visibility: hidden; opacity: 0; background: rgba(4,4,10,0.6); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%); transition: opacity .45s var(--ease-out), visibility .45s; overflow-y: auto; overscroll-behavior: contain; }
-body.menu-open .menu { visibility: visible; opacity: 1; }
+.menu { position: fixed; inset: 0; z-index: 480; display: grid; align-items: center; padding: 90px 0 40px; visibility: hidden; opacity: 0; background: rgba(4,4,10,0.6); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%); transition: opacity .45s var(--ease-out), visibility 0s linear .45s; overflow-y: auto; overscroll-behavior: contain;
+  /* Отдельный композитный слой: держит снимок для backdrop-filter стабильным,
+     чтобы контент за стеклом не «моргал» при открытии на iOS. */
+  transform: translateZ(0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+body.menu-open .menu { visibility: visible; opacity: 1; transition: opacity .45s var(--ease-out), visibility 0s linear 0s; }
 .menu-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; }
 .menu-nav { display: flex; flex-direction: column; gap: 4px; }
-.menu-nav a { display: flex; align-items: baseline; gap: 16px; padding: 12px 14px; border-radius: 16px; text-decoration: none; opacity: 0; transform: translateY(14px); transition: background .25s, opacity .5s var(--ease-out), transform .5s var(--ease-out); transition-delay: 0s, var(--d, 0s), var(--d, 0s); }
-body.menu-open .menu-nav a { opacity: 1; transform: none; }
+.menu-nav a { display: flex; align-items: baseline; gap: 16px; padding: 12px 14px; border-radius: 16px; text-decoration: none; opacity: 0; transform: translateY(14px); transition: background .25s, opacity .45s var(--ease-out), transform .45s var(--ease-out); }
+/* Каскад появления только при открытии; при закрытии задержек нет —
+   пункты гаснут одновременно с контейнером, закрытие плавное. */
+body.menu-open .menu-nav a { opacity: 1; transform: none; transition-delay: 0s, var(--d, 0s), var(--d, 0s); }
 .menu-nav a:hover { background: rgba(255,255,255,0.05); }
 .menu-nav .t { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 3.4vw, 34px); color: var(--ink); }
 .menu-nav .s { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.16em; color: var(--ink-4); }
-.menu-side { display: flex; flex-direction: column; gap: 12px; opacity: 0; transform: translateY(14px); transition: opacity .5s var(--ease-out) .25s, transform .5s var(--ease-out) .25s; }
-body.menu-open .menu-side { opacity: 1; transform: none; }
+.menu-side { display: flex; flex-direction: column; gap: 12px; opacity: 0; transform: translateY(14px); transition: opacity .45s var(--ease-out), transform .45s var(--ease-out); }
+body.menu-open .menu-side { opacity: 1; transform: none; transition-delay: .25s; }
 .menu-card { border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); padding: 14px 16px; }
 .menu-card .lbl { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.2em; color: var(--ink-4); margin-bottom: 10px; }
 .menu-worlds { display: flex; flex-direction: column; gap: 4px; }
@@ -16145,7 +16160,7 @@ body.menu-open .menu-side { opacity: 1; transform: none; }
       <div class="obs-row"><span class="obs-rk">РЕЛИКВИЙ В КАТАЛОГЕ 01-2026</span><span class="obs-rv">12</span></div>
       <div class="obs-row obs-lock" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="obs-rk">PERIMETER.STATUS</span><span class="obs-rv mut">STABLE<svg class="obs-lockico" aria-hidden="true"><use href="#i-lock"/></svg></span></div>
     </div>
-    <div class="obs-foot"><span>АПЕРТУРА СЛУШАЕТ · НИЧЕГО НЕ ТЕРЯЕТСЯ</span><span>MARKETSPACE · 01-2026</span></div>
+    <div class="obs-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>MARKETSPACE · 01-2026</span></div>
   </div>
 </section>
 
