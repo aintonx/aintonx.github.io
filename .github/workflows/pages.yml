@@ -29,6 +29,8 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html _site/
+          # ВРЕМЕННО: эксперимент по морганию iOS (удалить строку после проверки)
+          cp backup-test.html _site/ || true
           cp .nojekyll _site/
           cp CNAME _site/
           cp robots.txt sitemap.xml _site/
