@@ -15907,16 +15907,16 @@ body.menu-open .hdr-burger i:nth-child(2) { top: 21px; transform: rotate(-45deg)
 .ew-obs .obs-kv { font-family: var(--font-code); font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); }
 .ew-obs .obs-kv b { color: var(--ink-2); font-weight: 500; margin-left: 8px; font-variant-numeric: tabular-nums; }
 /* эквалайзер */
-.ew-obs .obs-eq { display: flex; align-items: center; gap: 2px; height: 46px; margin-bottom: 12px; padding: 0 2px; border-radius: 10px; background: rgba(3,4,10,0.30); border: 1px solid var(--hairline); overflow: hidden;
-  /* собственный слой: волна живёт на композиторе и не перерисовывает терминал */
+.ew-obs .obs-eq { display: flex; align-items: center; gap: 3px; height: 46px; margin-bottom: 12px; padding: 0 3px; border-radius: 10px; background: rgba(3,4,10,0.30); border: 1px solid var(--hairline); overflow: hidden;
+  /* собственный слой: спектр живёт на композиторе и не перерисовывает терминал */
   transform: translateZ(0); }
 /* Бар = span, высота живёт в transform:scaleY (пишет JS каждый кадр,
    БЕЗ transition — прежний конвейер перезапускаемых переходов height
    был одним из источников морга на iOS). Цвета — в двух псевдослоях
    (cyan ::before / red ::after): градиенты не интерполируются, поэтому
    переход в Морзе — кроссфейд opacity (редкий и дешёвый). */
-.ew-obs .obs-eq span { position: relative; flex: 1; min-width: 2px; height: 100%; transform: scaleY(0.14); transform-origin: 50% 50%; border-radius: 2px; background: none; box-shadow: 0 0 6px rgba(0,200,200,0.35); }
-.ew-obs .obs-eq span::before, .ew-obs .obs-eq span::after { content: ""; position: absolute; inset: 0; border-radius: 2px; transition: opacity 1.1s ease; }
+.ew-obs .obs-eq span { position: relative; flex: 1; min-width: 4px; height: 100%; transform: scaleY(0.14); transform-origin: 50% 50%; border-radius: 3px; background: none; box-shadow: 0 0 6px rgba(0,200,200,0.35); }
+.ew-obs .obs-eq span::before, .ew-obs .obs-eq span::after { content: ""; position: absolute; inset: 0; border-radius: 3px; transition: opacity 1.1s ease; }
 .ew-obs .obs-eq span::before { background: linear-gradient(180deg, var(--cyan-hi), rgba(0,200,200,0.35)); opacity: 1; }
 .ew-obs .obs-eq span::after { background: linear-gradient(180deg, var(--red-hi), rgba(230,69,69,0.4)); opacity: 0; }
 .ew-obs .obs-eq.tx span { box-shadow: 0 0 8px rgba(230,69,69,0.5); }
@@ -22404,6 +22404,12 @@ async function createCheckoutOrderFromReservation(opts){
   }
 })();
 function toggleCart(){
+  /* защита от двойного срабатывания (iOS ghost-click / двойной тап):
+     повторный вызов в течение 350мс игнорируется — иначе корзина
+     открывалась дважды подряд */
+  const _tcNow = Date.now();
+  if(_tcNow - (toggleCart._lastCall || 0) < 350) return;
+  toggleCart._lastCall = _tcNow;
   const panel=document.getElementById('cartPanel');
   const overlay=document.getElementById('cartOverlay');
   const isOpen=panel.classList.contains('open');
@@ -37835,23 +37841,30 @@ footer {
   var nodeEl = term.querySelector('[data-obs-node]');
   if(nodeEl) nodeEl.textContent = pick(AB)+pick(DG)+'-'+pick(DG)+pick(AB);
   var presEl = term.querySelector('[data-obs-presence]');
-  var eqKick = 0, phase = 0;
   setInterval(function(){
     var s = Math.floor((Date.now()-t0.getTime())/1000);
     if(presEl) presEl.textContent = s>=3600
       ? two(Math.floor(s/3600))+':'+two(Math.floor(s/60)%60)+':'+two(s%60)
       : two(Math.floor(s/60))+':'+two(s%60);
-    eqKick = Math.min(eqKick+0.28, 1);
   }, 1000);
 
-  /* Эквалайзер: спокойный cyan-поток, раз в 30с — красная передача Морзе
-     с плавным вливанием и выходом. */
+  /* Эквалайзер: СТАТИЧНЫЙ спектр — у каждой секции своя базовая высота
+     (арка к центру + разброс) и лёгкое собственное дыхание, без бегущей
+     волны. Раз в 30с — передача Морзе: спектр плавно затухает в ноль,
+     идёт приём послания, затем спектр так же плавно возвращается. */
   var eq = term.querySelector('[data-obs-eq]');
-  var BARS = 42, bars = [];
+  var BARS = 24, bars = [];
   if(eq){ for(var i=0;i<BARS;i++){ var b=document.createElement('span'); eq.appendChild(b); bars.push(b); } }
-  function idleH(i){
-    var h = 16 + 50*Math.abs(Math.sin(phase + i*0.38)*Math.sin(phase*0.53 + i*0.12)) + eqKick*22;
-    return Math.min(h, 100);
+  var eqBase = [], eqAmp = [], eqFrq = [], eqPh = [];
+  for(var p=0; p<BARS; p++){
+    var arc = Math.sin(Math.PI*(p+0.5)/BARS);
+    eqBase.push(16 + 52*arc*(0.62 + 0.38*Math.random()));
+    eqAmp.push(3.5 + 4*Math.random());
+    eqFrq.push(0.5 + 0.9*Math.random());
+    eqPh.push(Math.random()*Math.PI*2);
+  }
+  function idleH(i, tSec){
+    return Math.min(eqBase[i] + eqAmp[i]*Math.sin(tSec*eqFrq[i] + eqPh[i]), 100);
   }
   /* Морзе HELP US — сигнал бедствия Вишей (пасхалка, см. комментарий в HTML).
      Вход/выход из передачи плавные: цвета кроссфейдятся в CSS (~1.1s), а
@@ -37885,21 +37898,22 @@ footer {
     var _eqLast = 0;
     (function loop(now){
       requestAnimationFrame(loop);
-      /* за открытым меню волна замирает (стекло мембраны сверху) */
+      /* за открытой мембраной спектр замирает */
       if(document.body.classList.contains('menu-open')) return;
-      /* 30 к/с достаточно для спокойной волны и вдвое дешевле */
+      /* 30 к/с достаточно для спокойного дыхания */
       if(now - _eqLast < 33) return;
       _eqLast = now;
-      phase += 0.09;                                /* шаг ×2 при 30 к/с = прежний темп */
-      txBlend += (txTarget - txBlend) * 0.11;       /* экспоненциальное вливание/выход */
+      txBlend += (txTarget - txBlend) * 0.11;       /* плавное затухание/возврат */
       if(txBlend < 0.001) txBlend = 0;
+      var tSec = now * 0.001;
       for(var i=0;i<BARS;i++){
-        var tx = keyOn ? (70 + Math.random()*18) : 9;
-        var h = idleH(i)*(1-txBlend) + tx*txBlend;
+        /* передача: вспышки на ключе, ПОЧТИ НОЛЬ в паузах — к началу
+           приёма спектр уже плавно затух (txBlend→1 за время RAMP) */
+        var tx = keyOn ? (72 + Math.random()*16) : 3;
+        var h = idleH(i, tSec)*(1-txBlend) + tx*txBlend;
         /* transform вместо height: чистый композитор, ноль перерисовок */
         bars[i].style.transform = 'scaleY(' + (h/100).toFixed(3) + ')';
       }
-      eqKick *= 0.9;
     })(0);
     setTimeout(function(){ playMorse(); setInterval(playMorse, 30000); }, 9000);
   } else if(eq){
