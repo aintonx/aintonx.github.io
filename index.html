@@ -15924,23 +15924,32 @@ body.menu-open .hdr-burger i:nth-child(2) { top: 21px; transform: rotate(-45deg)
    На мобиле навигация — плитками в 2 колонки (твоя прошлая просьба «на мобиле
    не вертикально»), остальное как v2. Старые mob-nav/desktop-menu скрыты. */
 .mob-nav, .mob-nav-overlay, .desktop-menu-drop { display: none !important; }
-/* АНТИ-МОРГАНИЕ (WebKit, стекло поверх стекла — капсула шапки над мембраной):
-   1) элемент с backdrop-filter НИКОГДА не прячется через visibility/display —
-      иначе при открытии WebKit пересобирает слои и контент за стеклом моргает;
-   2) opacity самого стекла всегда 1 (opacity<1 создаёт backdrop root — блюр
-      пропадает на время анимации и «защёлкивается» в конце);
-   3) анимируются только background-color и радиус blur(0→30px); скрытие —
-      pointer-events:none (+ inert из JS). Машинерия блюра живёт постоянно →
-      пересобирать нечего → моргать нечему. */
+/* АНТИ-МОРГАНИЕ (iOS/WebKit). Уроки:
+   — visibility/display на стекле → пересборка слоёв при открытии → морг;
+   — blur(0px) как «спящее» состояние не работает: тождественный фильтр
+     браузер оптимизирует в «фильтра нет», и стекло всё равно строится заново;
+   — анимировать радиус blur на весь экран нельзя: iPhone пере-блюрит вьюпорт
+     каждый кадр → рывки.
+   Решение — ступенчатая хореография (JS .arm):
+   1) в покое стекла нет (backdrop-filter:none — скролл дешёвый), меню живёт
+      в дереве с opacity .01 (глазу невидимо, слой не выбрасывается);
+   2) тап → .arm мгновенно включает ГОТОВЫЙ blur(30px), пока меню на 1%
+      непрозрачности — глюк первого кадра стекла невидим;
+   3) через 2 кадра — чистый фейд opacity поверх уже собранного стекла;
+   4) закрытие: фейд-аут, стекло демонтируется после, невидимо. */
 .menu { position: fixed; inset: 0; z-index: 480; display: grid; align-items: center; padding: 100px 0 44px;
   pointer-events: none;
-  background: rgba(4,4,10,0);
-  backdrop-filter: blur(0px) saturate(100%);
-  -webkit-backdrop-filter: blur(0px) saturate(100%);
-  transition: background-color .45s var(--ease-out), backdrop-filter .45s var(--ease-out), -webkit-backdrop-filter .45s var(--ease-out);
+  opacity: 0.01;
+  background: rgba(4,4,10,0.6);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  transition: opacity .45s var(--ease-out);
   overflow-y: auto; overscroll-behavior: contain;
   transform: translateZ(0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
-body.menu-open .menu { pointer-events: auto; background: rgba(4,4,10,0.6); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%); }
+.menu.arm { -webkit-backdrop-filter: blur(30px) saturate(150%); backdrop-filter: blur(30px) saturate(150%); }
+body.menu-open .menu { opacity: 1; pointer-events: auto; }
+/* серый iOS-хайлайт тапа — свой вклад в «морг», глушим на элементах бара и меню */
+.hdr-burger, .hdr-cart, .hdr-nav a, .hdr-logo, .menu-nav a, .menu-world, .ew-obs .obs-lock { -webkit-tap-highlight-color: transparent; }
 .menu-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; }
 .menu-nav { display: flex; flex-direction: column; gap: 4px; }
 .menu-nav a { display: flex; align-items: baseline; gap: 16px; padding: 13px 16px; border-radius: 16px; text-decoration: none; opacity: 0; transform: translateY(14px); transition: background .25s, opacity .45s var(--ease-out), transform .45s var(--ease-out); }
@@ -37901,32 +37910,45 @@ footer {
   var menu = document.getElementById('menu');
   if(!menu) return;
   var burger = document.getElementById('mobBurger');
+  var menuOpen = false;
   function lock(){ try{ lockScroll(); }catch(e){ document.body.style.overflow='hidden'; } }
   function unlock(){ try{ unlockScroll(); }catch(e){ document.body.style.overflow=''; } }
   function setMenu(open){
-    document.body.classList.toggle('menu-open', open);
+    if(open === menuOpen) return;
+    menuOpen = open;
     if(burger) burger.setAttribute('aria-expanded', open ? 'true' : 'false');
     menu.setAttribute('aria-hidden', open ? 'false' : 'true');
-    /* стекло больше не прячется visibility (анти-моргание) — из фокуса и
+    /* стекло не прячется visibility (анти-моргание) — из фокуса и
        скринридеров закрытое меню выводит inert */
     try{ menu.inert = !open; }catch(e){}
     if(open){
+      /* ступень 1: мгновенно включаем ГОТОВОЕ стекло, пока меню невидимо */
+      menu.classList.add('arm');
+      /* ступень 2: через два кадра — чистый фейд поверх собранного стекла */
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){
+        if(menuOpen) document.body.classList.add('menu-open');
+      }); });
       lock();
       try{ if(typeof _hideAllNotifs==='function') _hideAllNotifs(); if(typeof _closeWorldDrop==='function') _closeWorldDrop(); }catch(e){}
-    } else { unlock(); }
+    } else {
+      document.body.classList.remove('menu-open');
+      /* стекло демонтируем после фейд-аута, когда меню уже невидимо */
+      setTimeout(function(){ if(!menuOpen) menu.classList.remove('arm'); }, 520);
+      unlock();
+    }
   }
   /* стартовое состояние: закрыто и inert */
   try{ menu.inert = true; }catch(e){}
   /* прежние точки входа из разметки → мембрана. Бургер (тот же элемент,
      что превращается в крестик) переключает открыто/закрыто. */
-  window.openMobNav = function(){ setMenu(!document.body.classList.contains('menu-open')); };
+  window.openMobNav = function(){ setMenu(!menuOpen); };
   window.closeMobNav = function(){ setMenu(false); };
   window._closeDesktopMenu = window.closeMobNav;
-  window.toggleDesktopMenu = function(e){ if(e && e.preventDefault) e.preventDefault(); setMenu(!document.body.classList.contains('menu-open')); };
+  window.toggleDesktopMenu = function(e){ if(e && e.preventDefault) e.preventDefault(); setMenu(!menuOpen); };
   /* ссылки разделов закрывают меню (как в v2) */
   menu.querySelectorAll('.menu-nav a').forEach(function(a){ a.addEventListener('click', function(){ setMenu(false); }); });
   /* Escape закрывает */
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && document.body.classList.contains('menu-open')) setMenu(false); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && menuOpen) setMenu(false); });
 })();
 </script>
 
