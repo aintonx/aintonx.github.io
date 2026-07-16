@@ -15939,29 +15939,39 @@ body.menu-open .hdr-burger i:nth-child(2) { top: 21px; transform: rotate(-45deg)
    На мобиле навигация — плитками в 2 колонки (твоя прошлая просьба «на мобиле
    не вертикально»), остальное как v2. Старые mob-nav/desktop-menu скрыты. */
 .mob-nav, .mob-nav-overlay, .desktop-menu-drop { display: none !important; }
-/* АНТИ-МОРГАНИЕ, редакция 8 — ФИНАЛ по матрице живых тестов на iPhone юзера
-   и его бэкапу-эталону.
-   ГЛАВНЫЙ ВЫВОД: оригинал сайта с сотнями переходов чист; морг вызывали
-   ДОБАВЛЕННЫЕ редизайном переходы — прежде всего интерполяция радиуса blur
-   на весь экран (и вообще любые transition на стеклянной мембране: fade,
-   clip — всё моргало), плюс 60-кадровый конвейер перезапусков переходов
-   в волне эквалайзера. CSS-АНИМАЦИИ чисты («рубильник 2»), мгновенное
-   рождение готового слоя чисто («рубильник 1» — резко, но не моргало).
-   ПОЭТОМУ у мембраны НЕТ НИ ОДНОГО transition:
-   — покой: display:none (слоя нет);
-   — тап → .arm (display:grid): слой рождается СРАЗУ с готовым стеклом
-     (blur 30px — константа, никогда не интерполируется);
-   — body.menu-open: пункты и карточки входят keyframe-АНИМАЦИЯМИ (каскад
-     сохранён), стекло статично;
-   — закрытие: мгновенный демонтаж (без анимации закрытия). */
+/* МЕМБРАНА, редакция 9 — МЕХАНИКА БЭКАПА (предложение юзера, верное).
+   Сайт годами открывает модалки на этом же iPhone БЕЗ миганий, и делает
+   это так: НЕ backdrop-filter на панели, а filter на самом контенте
+   (#_blurW получает blur+brightness с переходом .22s), панель — обычный
+   display-переключатель. Повторяем ровно это:
+   — тач: body.menu-open размывает контент через #_blurW (правило ниже,
+     значения и тайминги — те же, что у modal-open), панель меню — лёгкая
+     тонировка поверх уже размытого контента; никакого backdrop-filter;
+   — десктоп (никогда не моргал): статичное стекло на самой панели;
+   — панель: display:none → grid, как .moverlay в бэкапе; пункты входят
+     keyframe-анимациями (по матрице тестов анимации чисты). */
 .menu { position: fixed; inset: 0; z-index: 480; display: none; align-items: center; padding: 100px 0 44px;
-  pointer-events: none;
-  background: rgba(4,4,10,0.62);
-  -webkit-backdrop-filter: blur(30px) saturate(150%);
-  backdrop-filter: blur(30px) saturate(150%);
+  background: rgba(4,4,10,0.38);
   overflow-y: auto; overscroll-behavior: contain; }
-.menu.arm { display: grid; }
-body.menu-open .menu { pointer-events: auto; }
+body.menu-open .menu { display: grid; }
+/* десктоп: своё статичное стекло панели */
+@media (hover: hover) and (pointer: fine){
+  .menu {
+    background: rgba(4,4,10,0.62);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    backdrop-filter: blur(30px) saturate(150%);
+  }
+}
+/* тач: контент размывает сам себя — РОДНОЙ механизм модалок сайта
+   (значения и вход .22s скопированы из правила body.modal-open #_blurW) */
+@media (hover: none), (pointer: coarse){
+  body.menu-open #_blurW {
+    -webkit-filter: blur(12px) brightness(0.5);
+    filter: blur(12px) brightness(0.5);
+    -webkit-transition: -webkit-filter .22s cubic-bezier(0.23, 1, 0.32, 1);
+    transition: filter .22s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
 /* серый iOS-хайлайт тапа — свой вклад в «морг», глушим на элементах бара и меню */
 .hdr-burger, .hdr-cart, .hdr-nav a, .hdr-logo, .menu-nav a, .menu-world, .ew-obs .obs-lock { -webkit-tap-highlight-color: transparent; }
 .menu-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; }
@@ -37936,33 +37946,19 @@ footer {
   var menuOpen = false;
   function lock(){ try{ lockScroll(); }catch(e){ document.body.style.overflow='hidden'; } }
   function unlock(){ try{ unlockScroll(); }catch(e){ document.body.style.overflow=''; } }
-  var closeTimer = null;
   function setMenu(open){
     if(open === menuOpen) return;
     menuOpen = open;
     if(burger) burger.setAttribute('aria-expanded', open ? 'true' : 'false');
     menu.setAttribute('aria-hidden', open ? 'false' : 'true');
     try{ menu.inert = !open; }catch(e){}
+    /* ровно как модалки бэкапа: один класс, display через CSS, контент
+       размывает себя сам (#_blurW) — никакой слоевой хореографии */
+    document.body.classList.toggle('menu-open', open);
     if(open){
-      if(closeTimer){ clearTimeout(closeTimer); closeTimer = null; }
-      /* стекло собираем всегда С НУЛЯ: повторное включение фильтра на живом
-         слое iOS рисует чёрный задник (покадровый разбор видео юзера) */
-      if(menu.classList.contains('arm')){ menu.classList.remove('arm'); void menu.offsetHeight; }
-      /* слой рождается сразу с ГОТОВЫМ стеклом (константа, без переходов) */
-      menu.classList.add('arm');
-      void menu.offsetHeight;
-      /* через кадр — каскад пунктов keyframe-анимациями */
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){
-        if(menuOpen) document.body.classList.add('menu-open');
-      }); });
       lock();
       try{ if(typeof _hideAllNotifs==='function') _hideAllNotifs(); if(typeof _closeWorldDrop==='function') _closeWorldDrop(); }catch(e){}
-    } else {
-      document.body.classList.remove('menu-open');
-      /* закрытие мгновенное (переходов на мембране нет) — демонтаж через кадр */
-      closeTimer = setTimeout(function(){ closeTimer = null; if(!menuOpen) menu.classList.remove('arm'); }, 60);
-      unlock();
-    }
+    } else { unlock(); }
   }
   /* стартовое состояние: закрыто и inert */
   try{ menu.inert = true; }catch(e){}
