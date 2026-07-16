@@ -15951,39 +15951,15 @@ body.menu-open .hdr-burger i:nth-child(2) { top: 21px; transform: rotate(-45deg)
    На мобиле навигация — плитками в 2 колонки (твоя прошлая просьба «на мобиле
    не вертикально»), остальное как v2. Старые mob-nav/desktop-menu скрыты. */
 .mob-nav, .mob-nav-overlay, .desktop-menu-drop { display: none !important; }
-/* МЕМБРАНА, редакция 9 — МЕХАНИКА БЭКАПА (предложение юзера, верное).
-   Сайт годами открывает модалки на этом же iPhone БЕЗ миганий, и делает
-   это так: НЕ backdrop-filter на панели, а filter на самом контенте
-   (#_blurW получает blur+brightness с переходом .22s), панель — обычный
-   display-переключатель. Повторяем ровно это:
-   — тач: body.menu-open размывает контент через #_blurW (правило ниже,
-     значения и тайминги — те же, что у modal-open), панель меню — лёгкая
-     тонировка поверх уже размытого контента; никакого backdrop-filter;
-   — десктоп (никогда не моргал): статичное стекло на самой панели;
-   — панель: display:none → grid, как .moverlay в бэкапе; пункты входят
-     keyframe-анимациями (по матрице тестов анимации чисты). */
+/* МЕМБРАНА — ФИНАЛ (решение юзера): БЕЗ жидкого стекла. Сплошной
+   непрозрачный фон, как у модалок бэкапа (.moverlay = var(--void)) —
+   механика, годами чистая на его iPhone. Никаких backdrop-filter,
+   фильтров контента и переходов на панели; display-переключатель +
+   keyframe-каскад пунктов. Единый код для всех платформ. */
 .menu { position: fixed; inset: 0; z-index: 480; display: none; align-items: center; padding: 100px 0 44px;
-  background: rgba(4,4,10,0.38);
+  background: #06070e;
   overflow-y: auto; overscroll-behavior: contain; }
 body.menu-open .menu { display: grid; }
-/* десктоп: своё статичное стекло панели */
-@media (hover: hover) and (pointer: fine){
-  .menu {
-    background: rgba(4,4,10,0.62);
-    -webkit-backdrop-filter: blur(30px) saturate(150%);
-    backdrop-filter: blur(30px) saturate(150%);
-  }
-}
-/* тач: контент размывает сам себя — РОДНОЙ механизм модалок сайта
-   (значения и вход .22s скопированы из правила body.modal-open #_blurW) */
-@media (hover: none), (pointer: coarse){
-  body.menu-open #_blurW {
-    -webkit-filter: blur(12px) brightness(0.5);
-    filter: blur(12px) brightness(0.5);
-    -webkit-transition: -webkit-filter .22s cubic-bezier(0.23, 1, 0.32, 1);
-    transition: filter .22s cubic-bezier(0.23, 1, 0.32, 1);
-  }
-}
 /* серый iOS-хайлайт тапа — свой вклад в «морг», глушим на элементах бара и меню */
 .hdr-burger, .hdr-cart, .hdr-nav a, .hdr-logo, .menu-nav a, .menu-world, .ew-obs .obs-lock { -webkit-tap-highlight-color: transparent; }
 .menu-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; }
@@ -37984,12 +37960,6 @@ footer {
   menu.querySelectorAll('.menu-nav a').forEach(function(a){ a.addEventListener('click', function(){ setMenu(false); }); });
   /* Escape закрывает */
   document.addEventListener('keydown', function(e){ if(e.key==='Escape' && menuOpen) setMenu(false); });
-  /* ВРЕМЕННЫЙ СТЕНД ОТЛАДКИ МОРГАНИЯ (удалить после): ?ewtest=menu —
-     мембрана сама открывается/закрывается каждые 1.7с для записи кадров */
-  if(location.search.indexOf('ewtest=menu') !== -1){
-    var _t = false;
-    setInterval(function(){ _t = !_t; setMenu(_t); }, 1700);
-  }
 })();
 </script>
 
