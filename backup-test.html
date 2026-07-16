@@ -10,10 +10,9 @@
    Runs before the main CSS so direct/share openings do not paint the old dark shell
    while the saved/system light theme is restored later by the full theme engine. */
 (function(){try{
-  /* Тёмная тема — единственная и окончательная. Светлый режим выведен
-     из эксплуатации: prepaint всегда красит систему в тёмный. */
-  try{ localStorage.removeItem('ew-theme'); }catch(_){}
-  var light = false;
+  var saved = null;
+  try{ saved = localStorage.getItem('ew-theme'); }catch(_){ saved = null; }
+  var light = saved ? (saved === 'light') : !(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
   var root = document.documentElement;
   root.classList.add('ew-first-boot-pending');
   var color = light ? '#e7e9f1' : '#04040a';
@@ -664,11 +663,8 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
 <link rel="preconnect" href="https://mc.yandex.ru">
 <link rel="dns-prefetch" href="https://yastatic.net">
 
-<!-- Шрифты — display:swap уже в URL, защита от FOUT.
-     Exo 2 — заголовки (технологичный гротеск, техно-характер);
-     Overpass — основной текст (читаемый «инфраструктурный» гротеск);
-     IBM Plex Mono — системные лейблы (GHZ, ART, //). Все с кириллицей. -->
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700;800&family=Overpass:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<!-- Шрифты — display:swap уже в URL, защита от FOUT -->
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Syne+Mono&family=Oxanium:wght@500;600;700&display=swap" rel="stylesheet">
 
 <!-- Безопасность: CSP ограничивает источники скриптов и стилей.
      'unsafe-inline' для script и style необходим — много inline-стилей. -->
@@ -751,30 +747,13 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   --radius:       10px;
   --radius-lg:    18px;
 
-  /* ── ТИПОГРАФИКА ──
-     display — Exo 2: заголовки, технологичный гротеск (техно-характер);
-     body    — Overpass: основной читаемый «инфраструктурный» гротеск;
-     mono/code — IBM Plex Mono: системные лейблы (GHZ, ART, //). */
-  --font-display: 'Exo 2', system-ui, sans-serif;
+  /* ── ТИПОГРАФИКА ── */
+  --font-display: 'Syne', system-ui, sans-serif;
   --font-mono:    'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
-  --font-body:    'Overpass', system-ui, sans-serif;
+  /* Syne Mono упразднён — все tech-лейблы на IBM Plex Mono */
   --font-code:    'IBM Plex Mono', monospace;
-  --font-input:   'Overpass', system-ui, sans-serif;
-  --font-num:     'Overpass', 'IBM Plex Mono', monospace;
-
-  /* ── ЛИНЗА · материал интерфейса (жидкое стекло) ──
-     Единый материал панелей: полупрозрачное стекло с призматическим
-     кантом и медленным сиянием. Акценты: cyan=система живёт,
-     warm=энергия/действие, red=предупреждение/доступ. */
-  --warm-hi:      #e8c37a;
-  --glass-bg:     rgba(14, 16, 28, 0.40);
-  --glass-hi:     rgba(20, 22, 38, 0.55);
-  --glass-blur:   26px;
-  --hairline:     rgba(240, 240, 248, 0.10);
-  --hairline-hi:  rgba(240, 240, 248, 0.16);
-  --lens-edge:    linear-gradient(135deg, rgba(255,255,255,0.32), rgba(120,220,255,0.10) 28%, rgba(255,255,255,0.02) 46%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.18));
-  --lens-shadow:  inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -24px 48px rgba(0,0,0,0.20), 0 30px 90px rgba(0,0,0,0.55);
-  --ease-lens:    cubic-bezier(0.16, 1, 0.3, 1);
+  --font-input:   'IBM Plex Mono', monospace;
+  --font-num:     'Oxanium', 'IBM Plex Mono', monospace;
 
   /* ── ТЕНИ ── */
   --shadow-sm:    0 1px 0 rgba(240,240,248,0.04) inset, 0 4px 16px rgba(0,0,0,0.3);
@@ -1044,7 +1023,7 @@ html::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
 body {
   background: var(--void);
   color: var(--white);
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
   min-height: 100vh;
   overflow-x: hidden;
   cursor: default;
@@ -1072,23 +1051,9 @@ body {
    anti-reflow-flash), инфинит-анимации идут непрерывно — нет
    pause/resume-флэша. */
 body.scroll-restoring,
-body.scroll-restoring header,
-body.scroll-restoring #_blurW,
-body.scroll-restoring .pcard,
-body.scroll-restoring .pcard::before,
-body.scroll-restoring .pcard::after,
-body.scroll-restoring .pcard .pimg img,
-body.scroll-restoring .moverlay,
-body.scroll-restoring .modal,
-body.scroll-restoring .chk-overlay,
-body.scroll-restoring .chk-modal,
-body.scroll-restoring .cart-overlay,
-body.scroll-restoring .cart-panel,
-body.scroll-restoring .mob-nav,
-body.scroll-restoring .ap-console-overlay,
-body.scroll-restoring .ap-console-panel,
-body.scroll-restoring .ap-status-panel,
-body.scroll-restoring .legal-modal {
+body.scroll-restoring *,
+body.scroll-restoring *::before,
+body.scroll-restoring *::after {
   transition: none !important;
 }
 body.scroll-restoring .moverlay.closing,
@@ -1127,14 +1092,23 @@ body::before {
   z-index: 0;
 }
 
-/* Phase 2E.10 · SCROLL SURFACE STABILITY
-   The fixed SVG turbulence layer used to blend the entire viewport against
-   a changing backdrop on every desktop scroll frame. At 3.5% it was almost
-   invisible, but the full-surface reblend could checkerboard as a white flash.
-   Keep the premium surface clean and let the static gradients carry texture. */
+/* ── ПЛЁНОЧНОЕ ЗЕРНО — тонкое, не на скролл-контейнерах, не перекрывает контент ── */
 body::after {
-  content: none;
-  display: none;
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .25 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 1;
+}
+/* PERF: на мобиле зерно отключено — фиксированный слой с mix-blend-mode
+   пересчитывает смешивание со ВСЕЙ движущейся страницей каждый кадр
+   скролла (постоянная нагрузка на композитор iOS = фризы), а при
+   opacity 3.5% на маленьком экране зерно практически неразличимо. */
+@media (max-width: 960px) {
+  body::after { display: none; }
 }
 
 /* ── SCROLL BAR — отключён, индикатор убран ── */
@@ -1201,10 +1175,11 @@ body._blur-fading #_blurW {
   filter: blur(0) brightness(1) !important;
 }
 /* ── ВТОРАЯ ПОЛОВИНА ФИКСА: scroll-restoring не глушит transition ──
-   Раньше scroll-restoring глушил wildcard-правилом все потомки body. Теперь
-   список точечный, но #_blurW всё ещё входит в него: во время реального
-   восстановления позиции это защищает фон от промежуточного кадра. Для
-   синхронного закрытия возвращаем blur-transition тем же curve. */
+   scroll-restoring добавляется в финале закрытия (при unlockScroll) и через
+   wildcard «body.scroll-restoring *» ставит transition:none !important на
+   ВСЕ потомки body — включая #_blurW. Это РЕЗАЛО анимацию блюра именно в
+   момент когда юзер на него смотрит — отсюда «дёрганье». Возвращаем
+   transition с тем же curve через !important. */
 body.scroll-restoring #_blurW {
   -webkit-transition: -webkit-filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
   transition: filter .28s cubic-bezier(0.23, 1, 0.32, 1) !important;
@@ -1802,12 +1777,12 @@ header.scrolled {
 
 .hero-title {
   font-family: var(--font-display);
-  /* Exo 2 — технологичный гротеск обычного регистра; вес 700 держит
-     заголовок сильным, но не «кричащим». */
-  font-weight: 700;
-  font-size: clamp(32px, 3.9vw, 54px);
-  line-height: 1.05;
-  letter-spacing: -0.012em;
+  font-weight: 800;
+  /* HERO R6.4: чуть компактнее на десктопе, чтобы первая строка
+     «Каждая реликвия —» оставалась одной строкой и не ломала соседний терминал. */
+  font-size: clamp(42px, 4.45vw, 64px);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
   color: var(--white);
   margin-bottom: 24px;
 }
@@ -12673,8 +12648,7 @@ button, a, [role="button"], label,
 @media (max-width: 960px) and (pointer: coarse) {
   @supports (-webkit-touch-callout: none) {
     :root {
-      /* 66 = капсула v2 после укрупнения (синхронно с --ew-mobile-header-h) */
-      --ew-header-h: 66px;
+      --ew-header-h: 56px;
       --ew-safe-top: env(safe-area-inset-top, 0px);
       --ew-safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -15199,8 +15173,11 @@ body._blur-fading #_blurW {
      (особенно нижний тулбар) — стартовый #04040a «прилипал» к низу даже в
      светлой теме. Свежий узел до первой отрисовки = верный цвет бара сразу. */
   (function(){ try{
-    /* Тёмная тема — единственная и окончательная. */
-    var light = false;
+    var t=localStorage.getItem('ew-theme');
+    /* Нет сохранённого выбора — следуем теме УСТРОЙСТВА: тёмная только если
+       система в тёмном режиме, иначе светлая (светлая = дефолт). Явный выбор
+       тумблером (localStorage) всегда приоритетнее системного. */
+    var light = t ? (t==='light') : !(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     if(light){ document.documentElement.setAttribute('data-theme','light');
       var cs=document.querySelector('meta[name="color-scheme"]'); if(cs) cs.setAttribute('content','light'); }
     var col = light ? '#e7e9f1' : '#04040a';
@@ -15637,7 +15614,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 960px) {
   html.ew-pwa-mobile-shell {
-    --ew-mobile-header-h: 66px;
+    --ew-mobile-header-h: 56px;
     --ew-safe-top: 0px;
     --ew-safe-bottom: 0px;
   }
@@ -15720,326 +15697,6 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 }
 </style>
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     СИСТЕМА «ЛИНЗА» · v2 — переоформление визуала БЕЗ изменения HTML/JS.
-     Материал: тёмное жидкое стекло с призматическим кантом и сиянием.
-     Этот блок идёт последним → каскадно переопределяет прежний вид.
-     Пока покрывает: ШАПКА + HERO + ТЕРМИНАЛ. Секции добавляются по мере
-     переоформления. Тёмная тема — единственная.
-     ═══════════════════════════════════════════════════════════════════ -->
-<style id="ew-lens-v2">
-/* ── ШАПКА · перенос из site-v2 1:1 ────────────────────────────────────
-   Классы и стили как в v2 (.hdr-logo/.hdr-nav/.hdr-cart/.hdr-burger).
-   Капсула v2 (.hdr) наложена на .header-inner — так сохраняется встроенная
-   механика <header> (sticky/скролл/_blurW/отступ контента). Шрифты/токены —
-   финальные боевые (Exo 2 / Overpass / IBM Plex Mono). */
-header {
-  background: transparent;
-  background-image: none;
-  border-bottom: none;
-  box-shadow: none;
-  padding: 14px 12px 0;
-}
-header.scrolled {
-  background: transparent;
-  background-image: none;
-  border-bottom: none;
-  box-shadow: none;
-}
-/* Капсула = v2 .hdr */
-.header-inner {
-  max-width: 1160px;
-  height: auto;
-  margin: 0 auto;
-  padding: 12px 14px 12px 22px;
-  gap: 6px;
-  justify-content: flex-start;
-  border-radius: 99px;
-  background: rgba(8, 9, 18, 0.55);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 18px 50px rgba(0,0,0,0.45);
-  transition: background 0.3s;
-}
-header.scrolled .header-inner { background: rgba(6, 7, 14, 0.78); }
-
-/* Логотип v2: штрихкод + ECHOWORLD */
-.hdr-logo { display: flex; align-items: center; gap: 10px; margin-right: 8px; text-decoration: none; }
-.hdr-logo svg { height: 23px; width: auto; }
-.hdr-logo svg rect { fill: var(--ink); }
-.hdr-logo b { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.4em; color: var(--ink); margin-left: 0.1em; }
-
-/* Навигация v2 */
-.hdr-nav { display: flex; gap: 2px; margin-left: auto; }
-.hdr-nav a { position: relative; overflow: hidden; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink-3); padding: 10px 15px; border-radius: 99px; text-decoration: none; transition: color 0.2s, background 0.2s; }
-@media (hover:hover) and (pointer:fine) { .hdr-nav a:hover { color: var(--ink); background: rgba(255,255,255,0.06); } }
-
-/* Корзина v2 */
-.hdr-cart { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 9px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink-2); padding: 10px 16px; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: background 0.2s; }
-@media (hover:hover) and (pointer:fine) { .hdr-cart:hover { background: rgba(255,255,255,0.09); } }
-.hdr-cart svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.hdr-cart .n { font-weight: 600; color: var(--warm-hi); min-width: 11px; text-align: center; }
-
-/* Бургер v2 → крестик при открытом меню */
-.hdr-burger { position: relative; overflow: hidden; width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: background 0.2s; }
-@media (hover:hover) and (pointer:fine) { .hdr-burger:hover { background: rgba(255,255,255,0.09); } }
-.hdr-burger i { position: absolute; left: 14px; right: 14px; height: 1.5px; background: var(--ink); border-radius: 2px; transition: transform 0.35s var(--ease-out), top 0.35s var(--ease-out), opacity 0.3s; }
-.hdr-burger i:nth-child(1) { top: 18px; }
-.hdr-burger i:nth-child(2) { top: 24px; }
-body.menu-open .hdr-burger i:nth-child(1) { top: 21px; transform: rotate(45deg); }
-body.menu-open .hdr-burger i:nth-child(2) { top: 21px; transform: rotate(-45deg); }
-
-/* Мобайл — брейкпоинты v2: навигация прячется, у корзины остаётся только иконка.
-   Когда навигация скрыта, margin-left:auto с неё пропадает — поэтому переносим
-   его на корзину, чтобы группа корзина+бургер прижималась к правому краю капсулы
-   (а не к логотипу). */
-@media (max-width: 1020px){
-  .hdr-nav { display: none; }
-  .hdr-cart { margin-left: auto; }
-}
-/* ≤960 шапка фиксированная с высотой var(--ew-mobile-header-h)=66px:
-   паддинг капсулы 10px, чтобы контент (бургер 44) вписался ровно в 66 */
-@media (max-width: 960px){
-  .header-inner { padding: 10px 10px 10px 18px; }
-}
-/* Тач: капсула ПЛОТНАЯ, без стекла и без перехода фона — оригинал сайта
-   уже удалял блюр шапки за мигание iOS, и матрица тестов это подтвердила.
-   Стекло капсулы остаётся только на десктопе (hover+fine). */
-@media (hover: none), (pointer: coarse){
-  .header-inner {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background: rgba(8, 9, 18, 0.92);
-    transition: none;
-  }
-  header.scrolled .header-inner { background: rgba(6, 7, 14, 0.97); }
-}
-@media (max-width: 640px){
-  .hdr-cart .lbl-t { display: none; }
-}
-
-/* ── HERO ─────────────────────────────────────────────────────────── */
-.hero-eyebrow-text { font-family: var(--font-code); color: var(--cyan-hi); }
-.hero-title .dim { color: var(--white-dim); }
-.hero-title .accent { color: var(--red-hi); text-shadow: 0 0 30px rgba(230,69,69,0.32); }
-.hero-sub { font-family: var(--font-body); line-height: 1.7; letter-spacing: 0; }
-.hero-sub strong, .hero-sub em, .hero-marketspace { color: var(--warm-hi) !important; font-style: normal; }
-.hero-sub-echo { font-family: var(--font-body); line-height: 1.7; }
-.hero-sub-echo strong { color: var(--cyan-hi); }
-
-/* CTA — главная тёплая, остальные стеклянные тихие */
-.hero .cta-primary {
-  background: rgba(209,160,74,0.10) !important;
-  border: 1px solid rgba(209,160,74,0.36) !important;
-  color: var(--warm-hi) !important;
-  border-radius: 999px !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 0 26px rgba(209,160,74,0.08) !important;
-  transition: background .28s var(--ease-lens), box-shadow .28s !important;
-}
-/* hover только для мыши: на таче :hover «залипает» после отпускания пальца */
-@media (hover:hover) and (pointer:fine) {
-.hero .cta-primary:hover {
-  background: rgba(209,160,74,0.16) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 0 30px rgba(209,160,74,0.13), 0 0 30px rgba(209,160,74,0.20) !important;
-}
-}
-.hero .cta-secondary, .hero .cta-echo {
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  color: var(--white-mid) !important;
-  border-radius: 999px !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10) !important;
-  transition: background .28s var(--ease-lens) !important;
-}
-@media (hover:hover) and (pointer:fine) {
-.hero .cta-secondary:hover, .hero .cta-echo:hover { background: rgba(255,255,255,0.09) !important; color: var(--white) !important; }
-}
-.hero .cta-echo { color: var(--cyan-hi) !important; }
-
-/* ── ТЕРМИНАЛ APERTURA · материал Линза ────────────────────────────
-   ВАЖНО (iOS-морг): на таче у терминала НЕТ backdrop-filter — это было
-   единственное ПОСТОЯННОЕ стекло в контенте (в чистом бэкапе таких нет
-   вообще), и оно держало композитор iOS в хрупком режиме: любое изменение
-   на странице пересобирало слои вокруг → вспышки текста рядом (юзер видел
-   морг именно на hero). За терминалом почти чёрный фон — блюр там ничего
-   не даёт визуально; плотная поверхность выглядит так же. Стекло — только
-   на десктопе (hover+fine), он не моргал никогда. */
-.hero-terminal {
-  position: relative;
-  background: rgba(14, 16, 28, 0.82) !important;
-  border: 1px solid var(--hairline-hi) !important;
-  border-radius: 22px !important;
-  box-shadow: var(--lens-shadow) !important;
-  overflow: hidden;
-}
-@media (hover: hover) and (pointer: fine){
-  .hero-terminal {
-    background: var(--glass-bg) !important;
-    backdrop-filter: blur(var(--glass-blur)) saturate(175%);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(175%);
-  }
-}
-/* Старая shimmer-полоска (::before, 2px красно-cyan) и mask-кант убраны —
-   давали «полоски» по верхней кромке. Ровная тонкая рамка чище. */
-.hero-terminal::before { content: none !important; display: none !important; }
-/* медленное проходящее сияние */
-.hero-terminal::after {
-  content: ""; position: absolute; top: -60%; left: -55%; width: 52%; height: 220%; z-index: 2;
-  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.05) 42%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.05) 58%, transparent);
-  animation: ewLensSheen 15s ease-in-out infinite; pointer-events: none;
-}
-@keyframes ewLensSheen { 0%, 55% { left: -55%; } 88%, 100% { left: 115%; } }
-@media (prefers-reduced-motion: reduce) { .hero-terminal::after { display: none; } }
-/* Терминал «Наблюдение» — внутренняя структура obs-* */
-.ew-obs { padding: 0 !important; }
-.ew-obs .obs-head { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; padding: 15px 20px 0; }
-.ew-obs .obs-chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-code); font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-2); background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.10); border-radius: 999px; padding: 6px 12px; }
-.ew-obs .obs-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 9px rgba(0,200,200,0.9); animation: ewDotBreathe 3.2s ease-in-out infinite; }
-.ew-obs .obs-aux { margin-left: auto; font-family: var(--font-code); font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); }
-@keyframes ewDotBreathe { 50% { opacity: 0.42; } }
-.ew-obs .obs-body { position: relative; z-index: 1; padding: 16px 20px 8px; }
-.ew-obs .obs-top { display: flex; align-items: flex-end; gap: 18px; padding: 2px 2px 12px; }
-.ew-obs .obs-big b { display: block; font-family: var(--font-display); font-weight: 700; font-size: 30px; color: var(--white); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; line-height: 1; }
-.ew-obs .obs-big i { display: block; font-family: var(--font-code); font-style: normal; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); margin-top: 7px; min-height: 11px; }
-.ew-obs .obs-big i.glitch { color: var(--red-hi); }
-.ew-obs .obs-side { margin-left: auto; text-align: right; display: grid; gap: 4px; }
-.ew-obs .obs-kv { font-family: var(--font-code); font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); }
-.ew-obs .obs-kv b { color: var(--ink-2); font-weight: 500; margin-left: 8px; font-variant-numeric: tabular-nums; }
-/* эквалайзер */
-.ew-obs .obs-eq { display: flex; align-items: center; gap: 2px; height: 46px; margin-bottom: 12px; padding: 0 2px; border-radius: 10px; background: rgba(3,4,10,0.30); border: 1px solid var(--hairline); overflow: hidden;
-  /* собственный слой: волна живёт на композиторе и не перерисовывает терминал */
-  transform: translateZ(0); }
-/* Бар = span, высота живёт в transform:scaleY (пишет JS каждый кадр,
-   БЕЗ transition — прежний конвейер перезапускаемых переходов height
-   был одним из источников морга на iOS). Цвета — в двух псевдослоях
-   (cyan ::before / red ::after): градиенты не интерполируются, поэтому
-   переход в Морзе — кроссфейд opacity (редкий и дешёвый). */
-.ew-obs .obs-eq span { position: relative; flex: 1; min-width: 2px; height: 100%; transform: scaleY(0.14); transform-origin: 50% 50%; border-radius: 2px; background: none; box-shadow: 0 0 6px rgba(0,200,200,0.35); }
-.ew-obs .obs-eq span::before, .ew-obs .obs-eq span::after { content: ""; position: absolute; inset: 0; border-radius: 2px; transition: opacity 1.1s ease; }
-.ew-obs .obs-eq span::before { background: linear-gradient(180deg, var(--cyan-hi), rgba(0,200,200,0.35)); opacity: 1; }
-.ew-obs .obs-eq span::after { background: linear-gradient(180deg, var(--red-hi), rgba(230,69,69,0.4)); opacity: 0; }
-.ew-obs .obs-eq.tx span { box-shadow: 0 0 8px rgba(230,69,69,0.5); }
-.ew-obs .obs-eq.tx span::before { opacity: 0; }
-.ew-obs .obs-eq.tx span::after { opacity: 1; }
-/* строки-статусы */
-.ew-obs .obs-row { display: flex; align-items: center; gap: 12px; padding: 10px 2px; position: relative; }
-.ew-obs .obs-row + .obs-row::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--hairline) 16%, var(--hairline) 84%, transparent); }
-.ew-obs .obs-rk { font-family: var(--font-code); font-size: 9.5px; letter-spacing: 0.13em; color: var(--ink-3); }
-.ew-obs .obs-rv { margin-left: auto; font-family: var(--font-code); font-size: 12px; font-weight: 500; color: var(--white); display: inline-flex; align-items: center; gap: 8px; }
-.ew-obs .obs-rv.c { color: var(--cyan-hi); }
-.ew-obs .obs-rv.mut { color: var(--ink-4); font-weight: 400; }
-.ew-obs .obs-lockico { width: 13px; height: 13px; flex-shrink: 0; margin-left: 6px; fill: none !important; stroke: var(--ink-3); stroke-width: 2.2; opacity: 0.85; }
-/* Строка PERIMETER.STATUS кликабельна. Расширяем зону подсветки чуть влево/вправо
-   (отрицательный margin + компенсирующий padding: текст на месте, «контейнер» шире
-   и выглядит частью интерфейса, а не чужеродной пилюлей). */
-.ew-obs .obs-lock { cursor: pointer; border-radius: 10px; overflow: hidden; transition: background .2s; margin-left: -10px; margin-right: -10px; padding-left: 12px; padding-right: 12px; }
-@media (hover:hover) and (pointer:fine) { .ew-obs .obs-lock:hover { background: rgba(255,255,255,0.04); } }
-.ew-obs .obs-dots::after { content: ""; animation: ewRecDots 1.6s steps(4) infinite; }
-@keyframes ewRecDots { 0% { content: ""; } 25% { content: "·"; } 50% { content: "··"; } 75% { content: "···"; } }
-.ew-obs .obs-foot { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 20px 15px; font-family: var(--font-code); font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); border-top: 1px solid var(--hairline); }
-.ew-obs .obs-foot span { white-space: nowrap; }
-@media (prefers-reduced-motion: reduce) { .ew-obs .obs-dot { animation: none; } .ew-obs .obs-dots::after { animation: none; content: "···"; } }
-
-/* ── ТЕКСТ · органичное увеличение читаемости (правка 2) ─────────── */
-.hero-sub { font-size: 14px !important; line-height: 1.72 !important; max-width: 540px; }
-.hero-sub-echo { font-size: 12.5px !important; line-height: 1.7 !important; }
-
-/* ── МЕНЮ-МЕМБРАНА · перенос из site-v2 1:1 ──────────────────────
-   Стили v2 (.menu/.menu-nav/.menu-side/.menu-world). z-index 480 — ниже
-   шапки (500), чтобы бургер-крестик v2 оставался кликабельным поверх меню.
-   На мобиле навигация — плитками в 2 колонки (твоя прошлая просьба «на мобиле
-   не вертикально»), остальное как v2. Старые mob-nav/desktop-menu скрыты. */
-.mob-nav, .mob-nav-overlay, .desktop-menu-drop { display: none !important; }
-/* МЕМБРАНА, редакция 9 — МЕХАНИКА БЭКАПА (предложение юзера, верное).
-   Сайт годами открывает модалки на этом же iPhone БЕЗ миганий, и делает
-   это так: НЕ backdrop-filter на панели, а filter на самом контенте
-   (#_blurW получает blur+brightness с переходом .22s), панель — обычный
-   display-переключатель. Повторяем ровно это:
-   — тач: body.menu-open размывает контент через #_blurW (правило ниже,
-     значения и тайминги — те же, что у modal-open), панель меню — лёгкая
-     тонировка поверх уже размытого контента; никакого backdrop-filter;
-   — десктоп (никогда не моргал): статичное стекло на самой панели;
-   — панель: display:none → grid, как .moverlay в бэкапе; пункты входят
-     keyframe-анимациями (по матрице тестов анимации чисты). */
-.menu { position: fixed; inset: 0; z-index: 480; display: none; align-items: center; padding: 100px 0 44px;
-  background: rgba(4,4,10,0.38);
-  overflow-y: auto; overscroll-behavior: contain; }
-body.menu-open .menu { display: grid; }
-/* десктоп: своё статичное стекло панели */
-@media (hover: hover) and (pointer: fine){
-  .menu {
-    background: rgba(4,4,10,0.62);
-    -webkit-backdrop-filter: blur(30px) saturate(150%);
-    backdrop-filter: blur(30px) saturate(150%);
-  }
-}
-/* тач: контент размывает сам себя — РОДНОЙ механизм модалок сайта
-   (значения и вход .22s скопированы из правила body.modal-open #_blurW) */
-@media (hover: none), (pointer: coarse){
-  body.menu-open #_blurW {
-    -webkit-filter: blur(12px) brightness(0.5);
-    filter: blur(12px) brightness(0.5);
-    -webkit-transition: -webkit-filter .22s cubic-bezier(0.23, 1, 0.32, 1);
-    transition: filter .22s cubic-bezier(0.23, 1, 0.32, 1);
-  }
-}
-/* серый iOS-хайлайт тапа — свой вклад в «морг», глушим на элементах бара и меню */
-.hdr-burger, .hdr-cart, .hdr-nav a, .hdr-logo, .menu-nav a, .menu-world, .ew-obs .obs-lock { -webkit-tap-highlight-color: transparent; }
-.menu-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; }
-.menu-nav { display: flex; flex-direction: column; gap: 4px; }
-/* Вход пунктов — keyframe-АНИМАЦИЯ (не transition: по матрице тестов на
-   iPhone анимации чисты, переходы на мембране моргали). Каскад через
-   animation-delay: var(--d) из разметки. */
-@keyframes ewMenuItemIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-.menu-nav a { display: flex; align-items: baseline; gap: 16px; padding: 13px 16px; border-radius: 16px; text-decoration: none; opacity: 0; transition: background .25s; }
-body.menu-open .menu-nav a { animation: ewMenuItemIn .45s var(--ease-out) both; animation-delay: var(--d, 0s); }
-@media (hover:hover) and (pointer:fine) { .menu-nav a:hover { background: rgba(255,255,255,0.05); } }
-.menu-nav .t { font-family: var(--font-display); font-weight: 700; font-size: clamp(25px, 3.8vw, 38px); color: var(--ink); }
-.menu-nav .s { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-4); }
-.menu-side { display: flex; flex-direction: column; gap: 12px; opacity: 0; }
-body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; animation-delay: .25s; }
-.menu-card { border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); padding: 16px 18px; }
-.menu-card .lbl { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; color: var(--ink-4); margin-bottom: 11px; }
-.menu-worlds { display: flex; flex-direction: column; gap: 4px; }
-.menu-world { position: relative; overflow: hidden; display: flex; align-items: center; gap: 11px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--ink-2); padding: 10px 12px; border-radius: 10px; transition: background 0.2s; cursor: pointer; }
-@media (hover:hover) and (pointer:fine) { .menu-world:hover { background: rgba(255,255,255,0.05); } }
-.menu-world .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px rgba(0,200,200,0.8); flex-shrink: 0; }
-.menu-world.locked { color: var(--ink-4); }
-.menu-world.locked .dot { background: rgba(240,240,248,0.2); box-shadow: none; }
-.menu-world .tag { margin-left: auto; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); }
-.menu-world.on .tag { color: var(--cyan-hi); }
-.menu-foot { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.15em; color: var(--ink-4); padding: 0 6px; }
-@media (max-width: 1020px){ .menu-in { grid-template-columns: 1fr; gap: 28px; } }
-@media (max-width: 640px){
-  .menu { padding: 96px 0 44px; }
-  .menu-in { width: calc(100% - 32px); gap: 22px; }
-  .menu-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .menu-nav a { box-sizing: border-box; flex-direction: column; align-items: flex-start; gap: 6px; padding: 16px 15px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); min-height: 80px; justify-content: center; }
-  .menu-nav .t { font-size: 19px; }
-  .menu-nav .s { display: none; }
-  .menu-card { box-sizing: border-box; }
-}
-@media (prefers-reduced-motion: reduce){ body.menu-open .menu-nav a, body.menu-open .menu-side { animation-duration: .15s; animation-delay: 0s; } }
-
-/* ── МОБИЛЬНЫЕ СВАЙП-МАРКЕРЫ · единый стиль (правка 4) ───────────
-   Старые красные полоски → аккуратные тусклые точки, активная —
-   cyan-сегмент со свечением и плавным перетеканием ширины. */
-.swipe-dot, .relic-mobile-dot, .catalog-mobile-dot, .tech-mobile-dot, .aw-mobile-dot, .echo-swipe-dot {
-  background: rgba(240,240,248,0.20) !important;
-  box-shadow: none !important; border: none !important; border-radius: 99px !important;
-  transition: width .35s var(--ease-lens), background .35s var(--ease-lens), box-shadow .35s var(--ease-lens) !important;
-}
-.swipe-dot.on, .relic-mobile-dot.on, .catalog-mobile-dot.on, .tech-mobile-dot.on, .aw-mobile-dot.on, .echo-swipe-dot.on {
-  background: linear-gradient(90deg, var(--cyan), var(--cyan-hi)) !important;
-  box-shadow: 0 0 12px rgba(0,200,200,0.55) !important;
-}
-.catalog-mobile-dot::after { background: transparent !important; }
-.catalog-mobile-nav.updating .catalog-mobile-dot.on { background: linear-gradient(90deg, var(--warm), var(--warm-hi)) !important; box-shadow: 0 0 12px rgba(209,160,74,0.5) !important; }
-.swipe-bar { background: transparent !important; border: none !important; }
-.swipe-label { color: var(--ink-4) !important; }
-</style>
-
 </head>
 <body>
 <div id="ewSmartCaptchaRoot" aria-hidden="true"></div>
@@ -16080,76 +15737,96 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 
 <div class="scroll-line" id="scrollLine"></div>
 
-<!-- ===== HEADER · перенос из site-v2 1:1 (логотип-штрихкод + ECHOWORLD,
-     hdr-nav, hdr-cart, hdr-burger). Живой функционал подключён к реальным
-     функциям сайта: корзина→toggleCart, бургер→openMobNav (открывает мембрану). ===== -->
-<header id="hdr">
+<!-- ===== HEADER ===== -->
+<header>
   <div class="header-inner">
-    <a class="hdr-logo" href="#" aria-label="EchoWorld — наверх">
-      <svg viewBox="0 0 96 40" aria-hidden="true">
-        <rect x="0" y="0" width="9" height="40"/><rect x="13" y="0" width="4" height="40"/>
-        <rect x="21" y="0" width="6" height="40"/><rect x="31" y="0" width="2.5" height="40"/>
-        <rect x="37" y="0" width="4.5" height="40"/><rect x="46" y="0" width="8" height="40"/>
-        <rect x="58" y="0" width="3" height="40"/><rect x="65" y="0" width="5.5" height="40"/>
-        <rect x="74" y="0" width="2.5" height="40"/><rect x="81" y="0" width="7" height="40"/>
+    <a href="#" class="logo">
+      <svg viewBox="258 188 496 388" xmlns="http://www.w3.org/2000/svg" style="height:42px;width:auto;flex-shrink:0;fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+        <g transform="matrix(1,0,0,1,0.109955,0)"><g transform="matrix(1,0,0,1,-1,-0)"><g transform="matrix(1,0,0,1,1,-40.961037)"><g transform="matrix(27.022233,0,0,27.022233,-9361.409366,-14376.200183)"><path d="M356.749,552.667L356.749,554.419L357.793,554.419L357.793,554.215L356.977,554.215L356.977,553.543L357.685,553.543L357.685,553.315L356.977,553.315L356.977,552.871L357.757,552.871L357.757,552.667L356.749,552.667Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M358.753,554.347L358.825,554.419L359.725,554.419L359.797,554.347L359.797,553.855L359.605,553.855C359.605,553.879 359.601,553.925 359.593,553.993C359.585,554.061 359.577,554.103 359.569,554.119C359.569,554.135 359.559,554.151 359.539,554.167C359.519,554.183 359.505,554.191 359.497,554.191L359.053,554.191L358.981,554.119L358.981,552.931L359.053,552.859L359.497,552.859C359.505,552.859 359.519,552.867 359.539,552.883C359.559,552.899 359.569,552.915 359.569,552.931C359.577,552.947 359.585,552.989 359.593,553.057C359.601,553.125 359.605,553.171 359.605,553.195L359.797,553.195L359.797,552.775L359.641,552.631L358.897,552.631L358.753,552.775L358.753,554.347Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M360.721,552.667L360.721,554.455L360.925,554.455L360.925,553.639L361.561,553.639L361.561,554.455L361.765,554.455L361.765,552.667L361.561,552.667L361.561,553.375L360.925,553.375L360.925,552.667L360.721,552.667Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M362.797,554.275L362.941,554.419L363.697,554.419L363.841,554.275L363.841,552.823L363.697,552.667L362.941,552.667L362.797,552.823L362.797,554.275ZM363.025,554.119L363.025,552.967L363.097,552.895L363.541,552.895L363.613,552.967L363.613,554.119L363.541,554.191L363.097,554.191L363.025,554.119Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M364.837,554.419C364.845,554.451 364.865,554.465 364.897,554.461C364.929,554.457 364.953,554.455 364.969,554.455L365.065,554.455C365.073,554.439 365.085,554.397 365.101,554.329C365.117,554.261 365.129,554.215 365.137,554.191C365.145,554.159 365.159,554.095 365.179,553.999C365.199,553.903 365.217,553.801 365.233,553.693C365.249,553.585 365.267,553.483 365.287,553.387C365.307,553.291 365.321,553.223 365.329,553.183C365.337,553.223 365.349,553.291 365.365,553.387C365.381,553.483 365.397,553.585 365.413,553.693C365.429,553.801 365.447,553.903 365.467,553.999C365.487,554.095 365.501,554.159 365.509,554.191C365.517,554.231 365.531,554.285 365.551,554.353C365.571,554.421 365.581,554.455 365.581,554.455L365.773,554.455L365.809,554.383C365.809,554.383 365.821,554.331 365.845,554.227C365.869,554.123 365.897,553.999 365.929,553.855C365.961,553.711 365.993,553.563 366.025,553.411C366.057,553.259 366.085,553.135 366.109,553.039C366.133,552.911 366.145,552.787 366.145,552.667L365.953,552.667C365.953,552.691 365.949,552.747 365.941,552.835C365.933,552.923 365.925,552.979 365.917,553.003C365.901,553.075 365.883,553.167 365.863,553.279C365.843,553.391 365.825,553.501 365.809,553.609C365.793,553.717 365.777,553.809 365.761,553.885C365.745,553.961 365.737,554.003 365.737,554.011L365.701,554.083C365.693,554.067 365.685,554.041 365.677,554.005C365.669,553.969 365.661,553.947 365.653,553.939C365.645,553.891 365.631,553.811 365.611,553.699C365.591,553.587 365.569,553.467 365.545,553.339C365.521,553.211 365.499,553.091 365.479,552.979C365.459,552.867 365.445,552.787 365.437,552.739C365.405,552.691 365.369,552.667 365.329,552.667C365.265,552.667 365.225,552.703 365.209,552.775L364.945,554.083C364.929,554.051 364.915,554.015 364.903,553.975C364.891,553.935 364.881,553.895 364.873,553.855C364.841,553.695 364.805,553.503 364.765,553.279C364.725,553.055 364.701,552.851 364.693,552.667L364.501,552.667C364.501,552.947 364.541,553.245 364.621,553.561C364.701,553.877 364.773,554.163 364.837,554.419Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M366.805,554.275L366.949,554.419L367.705,554.419L367.849,554.275L367.849,552.823L367.705,552.667L366.949,552.667L366.805,552.823L366.805,554.275ZM367.033,554.119L367.033,552.967L367.105,552.895L367.549,552.895L367.621,552.967L367.621,554.119L367.549,554.191L367.105,554.191L367.033,554.119Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M368.737,552.667L368.737,554.419L368.941,554.419L368.941,553.723C368.957,553.723 369.003,553.713 369.079,553.693C369.155,553.673 369.201,553.667 369.217,553.675C369.233,553.683 369.259,553.705 369.295,553.741C369.331,553.777 369.357,553.803 369.373,553.819L369.661,554.419L369.901,554.419C369.901,554.283 369.851,554.145 369.751,554.005C369.651,553.865 369.561,553.743 369.481,553.639C369.545,553.551 369.611,553.483 369.679,553.435C369.747,553.387 369.781,553.295 369.781,553.159C369.781,553.127 369.777,553.085 369.769,553.033C369.761,552.981 369.745,552.927 369.721,552.871C369.697,552.815 369.669,552.767 369.637,552.727C369.605,552.687 369.565,552.667 369.517,552.667L368.737,552.667ZM368.953,552.895L369.481,552.895C369.505,552.895 369.523,552.909 369.535,552.937C369.547,552.965 369.555,552.997 369.559,553.033C369.563,553.069 369.565,553.103 369.565,553.135L369.565,553.183C369.565,553.199 369.563,553.223 369.559,553.255C369.555,553.287 369.553,553.303 369.553,553.303L369.445,553.411L368.953,553.411L368.953,552.895Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M371.077,552.667L371.077,554.455L372.121,554.455L372.121,554.251L371.281,554.251L371.281,552.667L371.077,552.667Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/><path d="M372.961,552.631L372.961,554.383L373.561,554.383C373.601,554.383 373.647,554.361 373.699,554.317C373.751,554.273 373.799,554.223 373.843,554.167C373.887,554.111 373.925,554.055 373.957,553.999C373.989,553.943 374.005,553.899 374.005,553.867L374.005,553.159C374.005,553.103 373.991,553.045 373.963,552.985C373.935,552.925 373.897,552.869 373.849,552.817C373.801,552.765 373.749,552.721 373.693,552.685C373.637,552.649 373.581,552.631 373.525,552.631L372.961,552.631ZM373.189,552.859C373.205,552.859 373.233,552.857 373.273,552.853C373.313,552.849 373.341,552.847 373.357,552.847C373.397,552.847 373.447,552.849 373.507,552.853C373.567,552.857 373.609,552.883 373.633,552.931C373.649,552.963 373.673,553.007 373.705,553.063C373.737,553.119 373.753,553.151 373.753,553.159L373.753,553.903C373.753,553.903 373.747,553.913 373.735,553.933C373.723,553.953 373.717,553.967 373.717,553.975C373.693,554.007 373.657,554.045 373.609,554.089C373.561,554.133 373.533,554.155 373.525,554.155L373.189,554.155L373.189,552.859Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.04px;"/></g></g></g>
+        <g transform="matrix(1,0,0,1,6,-98.550108)">
+          <rect x="273.889" y="300.922" width="58.111" height="288.078" fill="white"/>
+          <path d="M361,300.922L361,589L389,589L390,300.922Z" fill="white"/>
+          <rect x="419" y="300.922" width="29" height="288.078" fill="white"/>
+          <path d="M477,300.922L477,589L490,589L491,300.922Z" fill="white"/>
+          <rect x="505" y="300.922" width="29" height="288.078" fill="white"/>
+          <rect x="563" y="300.922" width="14" height="288.078" fill="white"/>
+          <path d="M621,300.922L620,589L649,589L650,300.922Z" fill="white"/>
+          <path d="M664,300.922L665,589L679,589L679,300.922Z" fill="white"/>
+          <path d="M708,300.922L707,589L736.111,589L736.111,300.922Z" fill="white"/>
+        </g>
+        </g>
       </svg>
-      <b>ECHOWORLD</b>
     </a>
-    <nav class="hdr-nav" aria-label="Разделы">
-      <a href="#catalog">КАТАЛОГ</a>
-      <a href="#echo">ЭХО</a>
-      <a href="#about">СИСТЕМА</a>
-      <a href="#worlds">МИРЫ</a>
-      <a href="#faq">FAQ</a>
-    </nav>
-    <button class="hdr-cart" id="cartBtn" onclick="toggleCart()" aria-label="Корзина">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2.5l2.2 11.5a1.5 1.5 0 0 0 1.5 1.2h7.8a1.5 1.5 0 0 0 1.5-1.2L20 8H6"/></svg>
-      <span class="lbl-t">КОРЗИНА</span><span class="n" id="cartCount">0</span>
+
+    <div class="sys-status">
+      <div class="sys-dot"></div>
+      <span>СИСТЕМА АКТИВНА</span>
+    </div>
+
+
+    <div class="wsw" id="wsw">
+      <div class="ws" onclick="toggleWorldDrop(event)">
+        <div class="wdot"></div>
+        <span class="wname">Marketspace</span>
+        <span class="whint">/ смена</span>
+        <span class="warr"><svg class="ico ew-mask-icon ew-icon--chevron-down" aria-hidden="true"><use href="#i-chevron-down"/></svg></span>
+      </div>
+      <div class="wdrop" id="wdrop">
+        <div class="wopt active" onclick="selectWorld(this,'Marketspace')"><div class="woptdot"></div>Marketspace</div>
+        <div class="wopt" onclick="selectWorld(this,'II')"><div class="woptdot"></div>Вселенная II<span class="wsoon">Скоро</span></div>
+        <div class="wopt" onclick="selectWorld(this,'III')"><div class="woptdot"></div>Вселенная III<span class="wsoon">Скоро</span></div>
+        <div class="wopt" onclick="selectWorld(this,'IV')"><div class="woptdot"></div>Вселенная IV<span class="wsoon">Скоро</span></div>
+      </div>
+    </div>
+
+    <div class="wsw lsw" id="lsw">
+      <div class="ws lang-ws" onclick="toggleLangDrop(event)" aria-label="Язык">
+        <span class="lang-cur" id="langCur">RU</span>
+        <span class="warr"><svg class="ico ew-mask-icon ew-icon--chevron-down" aria-hidden="true"><use href="#i-chevron-down"/></svg></span>
+      </div>
+      <div class="wdrop" id="ldrop">
+        <div class="wopt active" onclick="selectLang(this,'RU')"><div class="woptdot"></div>Русский</div>
+        <div class="wopt" onclick="selectLang(this,'EN')"><div class="woptdot"></div>English<span class="wsoon">Скоро</span></div>
+      </div>
+    </div>
+
+    <button class="theme-switch theme-switch-hdr" type="button" onclick="toggleTheme()" role="switch" aria-pressed="false" aria-label="Светлая или тёмная тема" title="Сменить тему">
+      <svg class="ico ts-ico ts-moon ew-mask-icon ew-icon--moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
+      <svg class="ico ts-ico ts-sun ew-mask-icon ew-icon--sun" aria-hidden="true"><use href="#i-sun"/></svg>
     </button>
-    <button class="hdr-burger" id="mobBurger" onclick="openMobNav()" aria-label="Меню" aria-expanded="false"><i></i><i></i></button>
+
+    <div class="hright">
+      <a href="#catalog" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--grid" aria-hidden="true"><use href="#i-grid-3x3"/></svg><span>Каталог</span></a>
+      <a href="#echo" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
+      <a href="#about" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--cpu" aria-hidden="true"><use href="#i-cpu"/></svg><span>Система</span></a>
+      <a href="#worlds" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--globe" aria-hidden="true"><use href="#i-globe"/></svg><span>Миры</span></a>
+      <a href="#faq" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--circle-help" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
+      <a href="#collab" class="navlink"><svg class="ico nav-ico ew-mask-icon ew-icon--mail" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
+      <div class="desktop-menu-wrap" id="desktopMenuWrap">
+        <button class="desktop-menu-btn" id="desktopMenuBtn" type="button" onclick="toggleDesktopMenu(event)" aria-label="Меню разделов" aria-expanded="false"><span></span><span></span><span></span></button>
+        <div class="wdrop desktop-menu-drop" id="desktopMenuDrop">
+          <a href="#catalog" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--grid" aria-hidden="true"><use href="#i-grid-3x3"/></svg><span>Каталог</span></a>
+          <a href="#echo" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg><span>Эхо</span></a>
+          <a href="#about" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--cpu" aria-hidden="true"><use href="#i-cpu"/></svg><span>Система</span></a>
+          <a href="#worlds" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--globe" aria-hidden="true"><use href="#i-globe"/></svg><span>Миры</span></a>
+          <a href="#faq" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--circle-help" aria-hidden="true"><use href="#i-circle-help"/></svg><span>FAQ</span></a>
+          <a href="#collab" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><svg class="ico ew-mask-icon ew-icon--mail" aria-hidden="true"><use href="#i-mail"/></svg><span>Контакт</span></a>
+          <a href="#architect" class="wopt desktop-menu-opt" onclick="_closeDesktopMenu()"><span class="nav-mark" aria-hidden="true">@</span><span>Архитектор</span></a>
+        </div>
+      </div>
+      <button class="mob-burger" id="mobBurger" onclick="openMobNav()" aria-label="Меню"><span></span><span></span><span></span></button>
+      <button class="hbtn hbtn-cart" id="cartBtn" onclick="toggleCart()" aria-label="Корзина">
+        <svg class="ico ew-mask-icon ew-icon--shopping-cart" aria-hidden="true"><use href="#i-shopping-cart"/></svg><span class="hbtn-label">КОРЗИНА</span><span class="cart-count" id="cartCount">0</span>
+      </button>
+      <button class="hbtn hbtn-cabinet" onclick="showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')" aria-label="Кабинет — скоро" style="opacity:0.6;cursor:default">
+        <svg class="ico ew-mask-icon ew-icon--user-round" aria-hidden="true"><use href="#i-user-round"/></svg><span class="hbtn-label">КАБИНЕТ</span><span class="sbadge">СКОРО</span>
+      </button>
+    </div>
   </div>
 </header>
 
-<!-- ═══ МЕНЮ-МЕМБРАНА · перенос из site-v2 1:1 ═══
-     Полноэкранное меню (десктоп + мобайл), открывается бургером.
-     Разметка/визуал из v2; функции подключены к реальным: миры→awCardLocked,
-     кабинет/язык→showNotif, ссылки скроллят и закрывают меню (JS в ew-obs-js).
-     Старые mob-nav и desktop-menu-drop скрыты. -->
-<div class="menu" id="menu" aria-hidden="true">
-  <div class="menu-in">
-    <nav class="menu-nav" aria-label="Навигация">
-      <a href="#catalog" style="--d:0.05s"><span class="t">Каталог</span><span class="s">12 РЕЛИКВИЙ · ЦИКЛ 01-2026</span></a>
-      <a href="#echo" style="--d:0.1s"><span class="t">Эхо</span><span class="s">КАНАЛ ОТКРЫТ · 599 ₽</span></a>
-      <a href="#about" style="--d:0.15s"><span class="t">Система</span><span class="s">МИР ПО ТУ СТОРОНУ ДАННЫХ</span></a>
-      <a href="#worlds" style="--d:0.2s"><span class="t">Миры</span><span class="s">APERTURA ПРОДОЛЖАЕТ СЛУШАТЬ</span></a>
-      <a href="#preorderSection" style="--d:0.25s"><span class="t">Конденсация</span><span class="s">ИНДИВИДУАЛЬНЫЙ СИГНАЛ</span></a>
-      <a href="#faq" style="--d:0.3s"><span class="t">FAQ</span><span class="s">ПРОТОКОЛ ВОПРОСОВ · 19 ЗАПИСЕЙ</span></a>
-      <a href="#collab" style="--d:0.35s"><span class="t">Контакт</span><span class="s">ОТКРЫТЬ СВОЮ ВСЕЛЕННУЮ</span></a>
-      <a href="#architect" style="--d:0.4s"><span class="t">Архитектор</span><span class="s">ECH-0001 · УРОВЕНЬ X</span></a>
-    </nav>
-    <div class="menu-side">
-      <div class="menu-card">
-        <div class="lbl">АКТИВНЫЙ МИР</div>
-        <div class="menu-worlds">
-          <div class="menu-world on"><span class="dot"></span>MARKETSPACE<span class="tag">НА СВЯЗИ</span></div>
-          <div class="menu-world locked" onclick="awCardLocked(this)"><span class="dot"></span>ВСЕЛЕННАЯ II<span class="tag">СКОРО</span></div>
-          <div class="menu-world locked" onclick="awCardLocked(this)"><span class="dot"></span>ВСЕЛЕННАЯ III<span class="tag">СКОРО</span></div>
-          <div class="menu-world locked" onclick="awCardLocked(this)"><span class="dot"></span>ВСЕЛЕННАЯ IV<span class="tag">СКОРО</span></div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="lbl">ДОСТУП</div>
-        <div class="menu-worlds">
-          <div class="menu-world" onclick="showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.')"><span class="dot" style="background:var(--warm);box-shadow:0 0 8px rgba(209,160,74,0.8)"></span>КАБИНЕТ<span class="tag">СКОРО</span></div>
-          <div class="menu-world" onclick="showNotif('// English channel — скоро. Пока система говорит по-русски.')"><span class="dot" style="background:rgba(240,240,248,0.3);box-shadow:none"></span>ЯЗЫК · РУССКИЙ<span class="tag">EN СКОРО</span></div>
-        </div>
-      </div>
-      <div class="menu-foot"><span>СИСТЕМА АКТИВНА</span><span>14.763 GHZ</span></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== MOBILE NAV (демонтирован — заменён мембраной, скрыт) ===== -->
+<!-- ===== MOBILE NAV ===== -->
 <div class="mob-nav-overlay" id="mobNavOverlay" onclick="closeMobNav()"></div>
 <nav class="mob-nav" id="mobNav">
   <div class="mob-nav-top">
@@ -16218,27 +15895,19 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
     </p>
   </div>
 
-  <div class="hero-terminal ew-obs" id="heroTerminal">
-    <div class="obs-head">
-      <span class="obs-chip"><span class="obs-dot"></span>APERTURA · НАБЛЮДЕНИЕ</span>
+  <div class="hero-terminal" id="heroTerminal">
+    <div class="terminal-header">
+      <div class="terminal-dots"><span></span><span></span><span></span></div>
+      <div class="terminal-title">APERTURA · LIVE FEED</div>
     </div>
-    <div class="obs-body" id="aperturaTerminalBody">
-      <div class="obs-top">
-        <div class="obs-big">
-          <b data-obs-presence>00:00</b>
-          <i data-obs-caption data-obs-base="СЕАНС НАБЛЮДЕНИЯ · АКТИВЕН">СЕАНС НАБЛЮДЕНИЯ · АКТИВЕН</i>
-        </div>
-      </div>
-      <!-- Эквалайзер APERTURA. Раз в ~18с по нему проходит красная «передача»
-           в ритме Морзе: HELP US — сигнал бедствия Вишей, знающих правду о
-           Переходе. Пасхалка-крючок для будущих серий; полная легенда:
-           «спасите нас — мы знаем, куда ведёт Переход». -->
-      <div class="obs-eq" data-obs-eq data-morse="HELP US" aria-hidden="true"></div>
-      <div class="obs-row"><span class="obs-rk">ЗАПИСЬ В ПАМЯТЬ APERTURA</span><span class="obs-rv c" data-obs-rec>ФИКСИРУЕТСЯ<span class="obs-dots" aria-hidden="true"></span></span></div>
-      <div class="obs-row"><span class="obs-rk">РЕЛИКВИЙ В КАТАЛОГЕ 01-2026</span><span class="obs-rv">12</span></div>
-      <div class="obs-row obs-lock" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="obs-rk">PERIMETER.STATUS</span><span class="obs-rv mut">STABLE<svg class="obs-lockico" aria-hidden="true"><use href="#i-lock"/></svg></span></div>
+    <div class="terminal-body" id="aperturaTerminalBody">
+      <div class="term-line" onclick="terminalAccessDenied('SYS.STATUS',this)"><span class="term-key">SYS.STATUS</span><span class="term-val">ONLINE</span></div>
+      <div class="term-line" onclick="terminalAccessDenied('ACTIVE.WORLD',this)"><span class="term-key">ACTIVE.WORLD</span><span class="term-val">MARKETSPACE</span></div>
+      <div class="term-line" onclick="terminalAccessDenied('CATALOG.ID',this)"><span class="term-key">CATALOG.ID</span><span class="term-val">01-2026</span></div>
+      <div class="term-line" onclick="terminalAccessDenied('CONDENSATS.ACTIVE',this)"><span class="term-key">CONDENSATS.ACTIVE</span><span class="term-val white">11</span></div>
+      <div class="term-line term-locked" onclick="terminalAccessDenied('APERTURA.VERSION',this)"><span class="term-key">APERTURA.VERSION</span><span class="term-val-row term-lock-val"><span>1.1.7</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
+      <div class="term-line term-locked" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="term-key">PERIMETER.STATUS</span><span class="term-val-row term-lock-val"><span>STABLE</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
     </div>
-    <div class="obs-foot"><span>АПЕРТУРА СЛУШАЕТ</span><span>MARKETSPACE · 01-2026</span></div>
   </div>
 </section>
 
@@ -16364,7 +16033,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0001</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/pepe.webp" alt="Редкая лягушка" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/pepe.webp" alt="Редкая лягушка" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16389,7 +16058,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0002</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/labubu.webp" alt="Зубастый спутник" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/labubu.webp" alt="Зубастый спутник" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16415,7 +16084,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0003</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/akula.webp" alt="Сухопутная акула" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/akula.webp" alt="Сухопутная акула" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16440,7 +16109,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0004</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/bobr.webp" alt="Лесной гость" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/bobr.webp" alt="Лесной гость" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16465,7 +16134,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0005</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/tamagochi.webp" alt="Карманное существо" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/tamagochi.webp" alt="Карманное существо" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16491,7 +16160,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0006</div>
         <div class="pbeacon" data-status="first_form"><div class="pbeacon-dot"></div><span class="pbeacon-txt">В MARKETSPACE</span></div>
-        <img src="img/ball.webp" alt="Тёмный оракул" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/ball.webp" alt="Тёмный оракул" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16516,7 +16185,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0007</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/spinner.webp" alt="Карманный вихрь" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/spinner.webp" alt="Карманный вихрь" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16541,7 +16210,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0008</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/disco-ball.webp" alt="Зеркальный идол" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/disco-ball.webp" alt="Зеркальный идол" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16567,7 +16236,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0009</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/utka.webp" alt="Жёлтая горлица" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/utka.webp" alt="Жёлтая горлица" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16592,7 +16261,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0010</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/simple-dimple.webp" alt="Карманные соты" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/simple-dimple.webp" alt="Карманные соты" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16617,7 +16286,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0011</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/grib.webp" alt="Ночной мухомор" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/grib.webp" alt="Ночной мухомор" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -16643,7 +16312,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0012</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
-        <img src="img/rash.webp" alt="Колючий страж" width="900" height="900" loading="lazy" decoding="async">
+        <img src="img/rash.webp" alt="Колючий страж" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
         <div>
@@ -19452,21 +19121,6 @@ let _scrollLockCount = 0;
    нескроллящимся зонам панелей (шапка корзины, кнопки меню) раньше
    проходил сквозь и двигал страницу за окном — «лишний свайп-скролл». */
 const _MODAL_SCROLLERS = '.modal,.mbody,.chk-modal,#returnModalPanel,.legal-modal-body,.cart-body,.mob-nav-links,.echo-order-modal,.ap-console-panel,.ap-status-panel,.ap-console-body,.ap-status-body';
-let _lockedTouchScroller = null;
-function _findLockedModalScroller(target){
-  let sc = target && target.closest && target.closest(_MODAL_SCROLLERS);
-  while(sc){
-    if(sc.scrollHeight > sc.clientHeight + 1) return sc;
-    sc = sc.parentElement ? sc.parentElement.closest(_MODAL_SCROLLERS) : null;
-  }
-  return null;
-}
-function _cacheLockedTouchScroller(e){
-  _lockedTouchScroller = _findLockedModalScroller(e && e.target);
-}
-function _clearLockedTouchScroller(){
-  _lockedTouchScroller = null;
-}
 /* ── Детектор iOS-клавиатуры ──────────────────────────────────────
    window.innerHeight для этого НЕ годится: на iOS он лениво «усыхает»
    вслед за клавиатурой (подтверждено полевыми логами EWDBG) — сравнение
@@ -19486,13 +19140,10 @@ function _preventBgScroll(e){
   // (.legal-modal-body возврата — теперь плоский), не должен глушить
   // настоящий скроллер выше (#returnModalPanel). Для одиночных
   // скроллеров (все остальные модалки) поведение прежнее.
-  /* Touch gestures keep the scroller resolved at touchstart, so the hot
-     touchmove path does not force scrollHeight/clientHeight layout reads on
-     every frame. Wheel input remains resolved from its current target. */
-  if(e.type === 'touchmove'){
-    if(_lockedTouchScroller && _lockedTouchScroller.isConnected) return;
-  }else if(_findLockedModalScroller(t)){
-    return;
+  let sc = t && t.closest && t.closest(_MODAL_SCROLLERS);
+  while(sc){
+    if(sc.scrollHeight > sc.clientHeight + 1) return;
+    sc = sc.parentElement ? sc.parentElement.closest(_MODAL_SCROLLERS) : null;
   }
   e.preventDefault();
 }
@@ -19574,10 +19225,7 @@ function lockScroll(){
   // (хедер «отлипал» и прыгал на закрытии = вспышка «бар-меню»), а position:fixed
   // сбрасывал прокрутку (вспышка контента). Перехват событий не трогает ни
   // позицию прокрутки, ни sticky, ни scrollbar.
-  document.addEventListener('touchstart', _cacheLockedTouchScroller, {capture:true, passive:true});
   document.addEventListener('touchmove', _preventBgScroll, {passive:false});
-  document.addEventListener('touchend', _clearLockedTouchScroller, {capture:true, passive:true});
-  document.addEventListener('touchcancel', _clearLockedTouchScroller, {capture:true, passive:true});
   document.addEventListener('wheel', _preventBgScroll, {passive:false});
   document.addEventListener('keydown', _preventScrollKeys, {passive:false});
   window.addEventListener('scroll', _pinLockedScroll, {passive:true});
@@ -19599,15 +19247,11 @@ function unlockScroll(){
    пользуются CSS-правила .cart-closing). Reflow и scrollTo больше нет. */
 function _forceUnlockScroll(){
   _scrollLockCount = 0;
-  document.removeEventListener('touchstart', _cacheLockedTouchScroller, true);
   document.removeEventListener('touchmove', _preventBgScroll);
-  document.removeEventListener('touchend', _clearLockedTouchScroller, true);
-  document.removeEventListener('touchcancel', _clearLockedTouchScroller, true);
   document.removeEventListener('wheel', _preventBgScroll);
   document.removeEventListener('keydown', _preventScrollKeys);
   window.removeEventListener('scroll', _pinLockedScroll);
   document.removeEventListener('focusout', _pinAfterFocusChange, true);
-  _clearLockedTouchScroller();
   /* T5: восстанавливаем позицию страницы до открытия модалки.
      Мобильный браузер при фокусе в input внутри fixed-модалки может
      «съехать» страницей (keyboard avoidance). Instant-restore не вызывает
@@ -21081,10 +20725,6 @@ function _ewMaxCssMotionMs(el){
 function _ewCancelModalExit(root){
   if(!root) return;
   root._ewCloseToken = (root._ewCloseToken || 0) + 1;
-  if(root._ewVisualExitCleanup){
-    try{ root._ewVisualExitCleanup(); }catch(_){ }
-    root._ewVisualExitCleanup = null;
-  }
   if(root._ewVisualExitTimer){
     clearTimeout(root._ewVisualExitTimer);
     root._ewVisualExitTimer = 0;
@@ -21094,7 +20734,6 @@ function _ewAfterModalExit(root, panel, done, opts){
   opts = opts || {};
   if(!root){ if(typeof done === 'function') done('missing-root'); return 0; }
   _ewCancelModalExit(root);
-  try{delete root.dataset.ewExitReason;}catch(_){ }
   const token = root._ewCloseToken;
   const closingClass = Object.prototype.hasOwnProperty.call(opts, 'closingClass') ? opts.closingClass : 'closing';
   const prefersReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -21104,93 +20743,16 @@ function _ewAfterModalExit(root, panel, done, opts){
   );
   const minMs = typeof opts.minMs === 'number' ? opts.minMs : 160;
   const maxMs = typeof opts.maxMs === 'number' ? opts.maxMs : 620;
-  /* animationend is the primary completion signal. The timer is only a
-     fail-safe for engines that do not expose CSSAnimation immediately;
-     keep its tail within one frame so the page cannot look ready while the
-     touch/wheel guard is still attached. */
-  const waitMs = prefersReduced ? 30 : Math.max(minMs, Math.min(maxMs, Math.ceil(cssMs + 16)));
-  let finished = false;
-  let eventTarget = null;
-  let expectedAnimations = null;
-  let animationProbeRaf = 0;
-  let animationPromiseStarted = false;
-  function cleanupEvent(){
-    if(eventTarget){
-      eventTarget.removeEventListener('animationend', onAnimationEnd, true);
-      eventTarget = null;
-    }
-    if(animationProbeRaf){
-      cancelAnimationFrame(animationProbeRaf);
-      animationProbeRaf = 0;
-    }
-  }
-  function finish(reason){
-    if(finished || root._ewCloseToken !== token) return;
-    if(closingClass && !root.classList.contains(closingClass)) return;
-    finished = true;
-    if(root._ewVisualExitTimer){
-      clearTimeout(root._ewVisualExitTimer);
-      root._ewVisualExitTimer = 0;
-    }
-    cleanupEvent();
-    root._ewVisualExitCleanup = null;
-    try{root.dataset.ewExitReason=reason;}catch(_){ }
-    if(typeof done === 'function') done(reason);
-  }
-  function onAnimationEnd(event){
-    if(!eventTarget || event.target !== panel) return;
-    if(expectedAnimations && expectedAnimations.size && !expectedAnimations.has(event.animationName)) return;
-    finish('css-animation-end');
-  }
-  if(!prefersReduced && panel && panel.addEventListener){
-    try{
-      const panelMotion=getComputedStyle(panel);
-      const names=String(panelMotion.animationName||'').split(',').map(function(name){return name.trim();});
-      const durations=_ewCssTimeList(panelMotion.animationDuration);
-      const delays=_ewCssTimeList(panelMotion.animationDelay);
-      let longestName='';
-      let longestMs=-1;
-      names.forEach(function(name,index){
-        if(!name || name==='none') return;
-        const total=(durations[index%durations.length]||0)+Math.max(0,delays[index%delays.length]||0);
-        if(total>longestMs){longestMs=total;longestName=name;}
-      });
-      expectedAnimations = new Set(longestName?[longestName]:[]);
-    }catch(_){ expectedAnimations = null; }
-    if(expectedAnimations && expectedAnimations.size){
-      /* Capture on the layer: this remains reliable even if an older panel
-         handler stops propagation while the closing animation is running. */
-      eventTarget = root;
-      root.addEventListener('animationend', onAnimationEnd, true);
-      root._ewVisualExitCleanup = cleanupEvent;
-      if(typeof panel.getAnimations === 'function'){
-        let probeCount=0;
-        const watchAnimations=function(){
-          animationProbeRaf=0;
-          if(finished || root._ewCloseToken !== token || animationPromiseStarted) return;
-          try{
-            const activeAnimations=panel.getAnimations().filter(function(animation){
-              return !animation.animationName || expectedAnimations.has(animation.animationName);
-            });
-            if(activeAnimations.length){
-              animationPromiseStarted=true;
-              Promise.all(activeAnimations.map(function(animation){return animation.finished.catch(function(){return null;});}))
-                .then(function(){finish('web-animation-finished');});
-              return;
-            }
-          }catch(_){ }
-          /* Some mobile engines instantiate CSSAnimation only after style
-             commit. Two probes cover that boundary without polling. */
-          if(++probeCount<3) animationProbeRaf=requestAnimationFrame(watchAnimations);
-        };
-        watchAnimations();
-      }
-    }
-  }
+  const waitMs = prefersReduced ? 30 : Math.max(minMs, Math.min(maxMs, Math.ceil(cssMs + 48)));
   root._ewVisualExitTimer = setTimeout(function(){
     if(root._ewCloseToken !== token) return;
     if(closingClass && !root.classList.contains(closingClass)) return;
-    finish('css-motion-fallback');
+    root._ewVisualExitTimer = 0;
+    requestAnimationFrame(function(){
+      if(root._ewCloseToken !== token) return;
+      if(closingClass && !root.classList.contains(closingClass)) return;
+      if(typeof done === 'function') done('css-motion-complete');
+    });
   }, waitMs);
   return root._ewVisualExitTimer;
 }
@@ -21202,9 +20764,10 @@ function _cleanupModal(){
   _cancelModalScrollHintEntry(panel);
   if(typeof _ewCancelProductSheetPreopen === 'function') _ewCancelProductSheetPreopen(ov, panel);
   closeModalFirstFormHint();
-  /* 0. Cleanup starts only after the panel's real animationend. The central
-     unlock routine will enable scroll-restoring itself if it actually has to
-     correct a keyboard-induced scroll offset. */
+  /* 0. Мгновенно замораживаем все анимации ДО любых DOM-изменений.
+     Это убирает «внезапное появление» секций и scroll-line в момент
+     когда overlay уходит, но position:fixed ещё не снят. */
+  document.body.classList.add('scroll-restoring');
   /* 1. Убираем overlay из потока — теперь страница технически скрыта.
      ВАЖНО: убираем И .open И .closing одновременно — анимация уже
      отработала, теперь скрываем модал. */
@@ -22438,6 +22001,7 @@ function toggleCart(){
     // (transition:none !important). Keyframe-анимация это переживает —
     // она ИСКЛЮЧЕНА из паузы (см. CSS body.scroll-restoring .cart-closing),
     // поэтому слайд закрытия всегда плавный.
+    document.body.classList.add('scroll-restoring'); // мобильный anti-flash: фоновые анимации уже на паузе во время закрытия
     // BLUR FADE SYNC — блюр уходит синхронно со слайдом корзины вправо.
     // cart-open оставляем (он держит header z-index до конца слайда);
     // _blur-fading перекроет blur через !important.
@@ -22575,7 +22139,6 @@ function _setupModalUnstickAfterBlur(panel, inputsOrSelector, openBodyClass){
   panel.dataset.unstickAfterBlurInit = '1';
   function unstick(){
     if(!panel.isConnected) return;
-    if(panel.closest && panel.closest('.closing')) return;
     /* Класс «модалка открыта» может жить и на body (chk-open, modal-open),
        и на html (legal-modal-open у Реквизитов/Сектора Тишины) — проверяем оба.
        Раньше проверялся только body, из-за чего у формы возврата
@@ -22600,10 +22163,7 @@ function _setupModalUnstickAfterBlur(panel, inputsOrSelector, openBodyClass){
       // каждый resize — на iOS это создаёт каскад overflow:auto↔hidden
       // длительностью ~500мс, во время которого тапы по чекбоксу и
       // крестику теряются (форма «залипала»).
-      /* closeModal adds .closing later in this same task. A microtask keeps
-         ordinary blur effectively immediate, while allowing a close-triggered
-         blur to skip the forced overflow/layout kick. */
-      Promise.resolve().then(unstick);
+      unstick();
       setTimeout(unstick, 360);
     });
   }
@@ -22693,23 +22253,15 @@ function _setupAutofillFreeze(panel, ids){
     const keep = panel.scrollTop;
     const prev = panel.style.overflowY;
     panel.style.overflowY = 'hidden';
-    function release(){
-      panel.style.overflowY = prev || '';
-      panel.scrollTop = keep;
-      frozenUntil = 0;
-    }
     (function hold(){
-      const owner = panel.closest && panel.closest('.moverlay,.chk-overlay,#reqModal,#offerModal,#privacyModal');
-      if(owner && (!owner.classList.contains('open') || owner.classList.contains('closing'))){
-        release();
-        return;
-      }
       if(performance.now() < frozenUntil){
         if(Math.abs(panel.scrollTop - keep) > 0) panel.scrollTop = keep;
         requestAnimationFrame(hold);
         return;
       }
-      release();
+      panel.style.overflowY = prev || '';
+      panel.scrollTop = keep;
+      frozenUntil = 0;
     })();
   }
   ids.forEach(function(id){
@@ -22804,6 +22356,7 @@ function closeCheckout(){
   document.body.classList.add('_blur-fading');
   const panel = document.getElementById('chkModalPanel');
   _ewAfterModalExit(ov, panel, function(){
+    document.body.classList.add('scroll-restoring');
     ov.classList.remove('open');
     ov.classList.remove('closing');
     document.body.classList.remove('chk-open');
@@ -24577,10 +24130,8 @@ function _syncSafariTintSurfaces(t){
   }catch(e){}
 }
 function applyTheme(t, persist){
-  /* Тёмная тема — единственная. Любой запрос темы форсится в dark, поэтому
-     светлый режим невозможен даже при клике по старому тумблеру. */
-  t = 'dark';
-  document.documentElement.removeAttribute('data-theme');
+  if(t==='light') document.documentElement.setAttribute('data-theme','light');
+  else document.documentElement.removeAttribute('data-theme');
   /* Хром браузера (iOS Safari красит зоны за safe-area сверху/снизу по
      meta theme-color) перекрашивается вместе с темой — без этого верх и низ
      оставались в цвете прежней темы до перезагрузки страницы. */
@@ -26364,10 +25915,9 @@ function _apCloseOverlay(id, opts){
     if(!keepLock && !_apAnyMounted()){
       document.body.classList.remove('ap-console-open','_blur-fading');
       if(document.body.dataset.apConsoleLocked==='1'){
+        document.body.classList.add('scroll-restoring');
         delete document.body.dataset.apConsoleLocked;
-        /* If a non-Apertura layer opened during this exit, the one existing
-           lock becomes its ownership instead of being released underneath it. */
-        if(!(typeof _hasScrollLockedLayer === 'function' && _hasScrollLockedLayer())) unlockScroll();
+        unlockScroll();
       }
     }
     if(typeof opts.onDone === 'function') opts.onDone();
@@ -27653,10 +27203,7 @@ function _apOpenCartAfterClose(){
 }
 function _apScrollTo(id){
   const el=document.getElementById(id);
-  if(el){
-    if(typeof window._ewRevealForTarget === 'function') window._ewRevealForTarget(el, 'apertura-anchor');
-    el.scrollIntoView({behavior:'smooth', block:'start'});
-  }
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
 }
 function _resetEchoForNew(){
   const ta=document.getElementById('echoTextInput');
@@ -29951,7 +29498,11 @@ function closeMobNav(){
   nav.classList.remove('open');
   document.getElementById('mobNavOverlay').classList.remove('open');
   document.getElementById('mobBurger').classList.remove('open');
+  // scroll-restoring замораживает анимации на время unlockScroll,
+  // чтобы pulse/scanline не «дёрнулись» в момент возврата body
+  // из position:fixed (это и было визуально «рваным»).
   setTimeout(()=>{
+    document.body.classList.add('scroll-restoring');
     nav.classList.remove('closing');
     document.body.classList.remove('mob-nav-open');
     unlockScroll();
@@ -29968,7 +29519,6 @@ function _smoothScrollToHash(hash){
   let target;
   try { target = document.querySelector(hash); } catch(e) { return; }
   if(!target) return;
-  if(typeof window._ewRevealForTarget === 'function') window._ewRevealForTarget(target, 'anchor');
   const header = document.querySelector('header');
   const offset = header ? header.offsetHeight : 0;
   const rect = target.getBoundingClientRect();
@@ -31745,6 +31295,7 @@ function closeReturnModal(){
   document.body.classList.add('_blur-fading');
   const panel = document.getElementById('returnModalPanel');
   _ewAfterModalExit(ov, panel, function(){
+    document.body.classList.add('scroll-restoring');
     ov.classList.remove('open');
     ov.classList.remove('closing');
     document.body.classList.remove('chk-open');
@@ -31909,7 +31460,6 @@ function acceptCookies(){
   var KEY='ew:architect-trace:v3';
   var ANCHORS=['relic','catalog','echo','impulse','about','worlds','collab','preorderSection','faq','architect'];
   var restoring=false;
-  var scrollSaveTimer=0;
   var last=0, lastSavedY=-1, lastSavedKey='';
   try{
     ['ew:architect-trace:v2','ew:architect-trace:pending:v2'].forEach(function(k){
@@ -31950,13 +31500,7 @@ function acceptCookies(){
       localStorage.setItem(KEY, payload);
     }catch(e){}
   }
-  /* Geometry for ten anchors plus two storage writes does not belong in the
-     wheel hot path. Keep the existing 650ms safety interval and add one
-     trailing save after the user pauses. */
-  window.addEventListener('scroll', function(){
-    if(scrollSaveTimer) clearTimeout(scrollSaveTimer);
-    scrollSaveTimer=setTimeout(function(){ scrollSaveTimer=0; save(false); }, 240);
-  }, {passive:true});
+  window.addEventListener('scroll', function(){ save(false); }, {passive:true});
   ['touchend','pointerup','mouseup','keyup','resize'].forEach(function(ev){
     window.addEventListener(ev, function(){ save(true); }, {passive:true});
   });
@@ -33313,8 +32857,7 @@ svg.ew-mask-icon use,
    донат-звёздочка и глитч остаются только на SVG-антенне. */
 @media (max-width: 960px) {
   :root {
-    /* 66 = капсула v2 после укрупнения: 10+10 padding + бургер 44 + 2 рамки */
-    --ew-mobile-header-h: 66px;
+    --ew-mobile-header-h: 56px;
   }
   html {
     scroll-padding-top: calc(var(--ew-mobile-header-h) + 14px);
@@ -34487,25 +34030,13 @@ body.modal-open .pcard.reading::before {
   };
 
   /* Низкоприоритетная подготовка уже отрисованных карточек: не грузим
-     насильно весь каталог, но декодируем то, что браузер уже успел загрузить.
-     One image per idle slice avoids uploading twelve 900×900 textures in one
-     compositor burst while the user starts scrolling. */
+     насильно весь каталог, но декодируем то, что браузер уже успел загрузить. */
   function idleDecodeLoadedCatalogImages(){
     try{
-      const queue=Array.prototype.slice.call(document.querySelectorAll('.pcard img')).filter(function(img){
-        return !!(img && img.complete && img.currentSrc && typeof img.decode === 'function');
+      document.querySelectorAll('.pcard img').forEach(function(img){
+        if(!img || !img.complete || !img.currentSrc) return;
+        if(typeof img.decode === 'function') img.decode().catch(function(){});
       });
-      let index=0;
-      function scheduleNext(){
-        if(index>=queue.length) return;
-        if('requestIdleCallback' in window) requestIdleCallback(decodeNext,{timeout:800});
-        else setTimeout(decodeNext,48);
-      }
-      function decodeNext(){
-        const img=queue[index++];
-        Promise.resolve().then(function(){return img.decode();}).catch(function(){}).then(scheduleNext);
-      }
-      scheduleNext();
     }catch(_){ }
   }
   if('requestIdleCallback' in window) requestIdleCallback(idleDecodeLoadedCatalogImages, {timeout:2500});
@@ -37568,428 +37099,6 @@ window.inspectPwaMobileParityRootFix = function(){
       mechanicsPreserved:true
     };
   };
-})();
-</script>
-
-<style id="ew-scroll-reveal-stability-v1">
-/* Phase 2E.10 · SCROLL / REVEAL STABILITY
-   Anchor geometry stays native; reveal never changes layout dimensions. */
-#relic,
-#catalog,
-#echo,
-#about,
-#worlds,
-#collab,
-#preorderSection,
-#faq,
-#architect,
-footer {
-  scroll-margin-top: 86px;
-}
-
-/* These badges already have nearly opaque surfaces. Removing backdrop blur
-   preserves their appearance while avoiding three extra backdrop layers per
-   catalog card during desktop scroll. */
-.pcard-power,
-.arttag,
-.pbeacon {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-
-@media (min-width: 961px) {
-  /* Safari tint sampling probes are only useful in the mobile shell. */
-  .safari-tint-probe { display: none !important; }
-
-  /* A stationary pointer must not start twelve hover/compositor scenes while
-     the catalog moves underneath it. Interaction returns 140ms after scroll. */
-  body.ew-user-scrolling .pcard {
-    transition: none !important;
-  }
-  body.ew-user-scrolling .pcard:not(.sold):hover {
-    background: var(--surface) !important;
-    border-color: var(--line) !important;
-    box-shadow: none !important;
-    transform: translateZ(0) !important;
-  }
-  body.ew-user-scrolling .pcard.sold:hover {
-    box-shadow: none !important;
-    transform: translateZ(0) !important;
-  }
-  body.ew-user-scrolling .pcard:hover::after {
-    left: -100% !important;
-    transition: none !important;
-  }
-  body.ew-user-scrolling .pcard:hover .pimg img {
-    transform: none !important;
-    transition: none !important;
-  }
-  body.ew-user-scrolling .pcard:hover .pimg-scan {
-    animation: none !important;
-    opacity: 0 !important;
-  }
-  body.ew-user-scrolling .pcard:hover .pimg::before {
-    opacity: 0 !important;
-    transition: none !important;
-  }
-}
-
-@media (max-width: 960px) {
-  #relic,
-  #catalog,
-  #echo,
-  #about,
-  #worlds,
-  #collab,
-  #preorderSection,
-  #faq,
-  #architect,
-  footer { scroll-margin-top: 70px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-ew-reveal-state="running"] {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-</style>
-<script id="ew-scroll-reveal-stability-js-v1">
-(function(){
-  const PATCH='Phase 2E.10 · SCROLL / REVEAL STABILITY';
-  const REVEAL_SELECTOR='.hero,#relic,#catalog,#echo,#about,#worlds,#collab,#preorderSection,#faq,#architect,footer';
-  const targets=Array.prototype.slice.call(document.querySelectorAll(REVEAL_SELECTOR));
-  const seen=new WeakSet();
-  const animations=new WeakMap();
-  const reduceMotion=window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : {matches:false};
-  let observer=null;
-  let scrollCalmTimer=0;
-  let hashPositionTimer=0;
-
-  function revealElementForNode(node){
-    if(!node || node.nodeType!==1) return null;
-    if(node.matches && node.matches(REVEAL_SELECTOR)) return node;
-    return node.closest ? node.closest(REVEAL_SELECTOR) : null;
-  }
-  function finishReveal(el,reason){
-    if(!el) return false;
-    seen.add(el);
-    if(observer) observer.unobserve(el);
-    const active=animations.get(el);
-    if(active){
-      active.onfinish=null;
-      active.oncancel=null;
-      try{active.cancel();}catch(_){ }
-      animations.delete(el);
-    }
-    el.classList.remove('ew-reveal-running');
-    el.classList.add('ew-revealed');
-    el.dataset.ewRevealState=reason||'revealed';
-    return true;
-  }
-  function playReveal(el){
-    if(!el || seen.has(el)) return;
-    if(reduceMotion.matches || typeof el.animate!=='function'){
-      finishReveal(el,'reduced-or-fallback');
-      return;
-    }
-    seen.add(el);
-    if(observer) observer.unobserve(el);
-    el.classList.add('ew-reveal-running');
-    el.dataset.ewRevealState='running';
-    const mobile=window.matchMedia && window.matchMedia('(max-width: 960px)').matches;
-    const animation=el.animate([
-      {opacity:0.01,transform:'translate3d(0,'+(mobile?'14px':'20px')+',0)'},
-      {offset:0.72,opacity:1,transform:'translate3d(0,-2px,0)'},
-      {opacity:1,transform:'translate3d(0,0,0)'}
-    ],{
-      duration:mobile?440:540,
-      easing:'cubic-bezier(.16,1,.3,1)',
-      fill:'both'
-    });
-    animations.set(el,animation);
-    animation.onfinish=function(){finishReveal(el,'complete');};
-    animation.oncancel=function(){
-      animations.delete(el);
-      el.classList.remove('ew-reveal-running');
-      el.classList.add('ew-revealed');
-      el.dataset.ewRevealState='cancelled-visible';
-    };
-  }
-  function hashTarget(){
-    if(!location.hash || location.hash.length<2) return null;
-    try{return document.getElementById(decodeURIComponent(location.hash.slice(1)));}catch(_){return null;}
-  }
-  function revealForTarget(node,reason){
-    const el=revealElementForNode(node);
-    return finishReveal(el,reason||'targeted');
-  }
-  function revealViewport(reason){
-    const h=window.innerHeight||document.documentElement.clientHeight||0;
-    targets.forEach(function(el){
-      const rect=el.getBoundingClientRect();
-      if(rect.bottom>=-24 && rect.top<=h+24) finishReveal(el,reason||'viewport');
-    });
-  }
-  function revealAll(reason){
-    targets.forEach(function(el){finishReveal(el,reason||'all-visible');});
-  }
-
-  /* history.scrollRestoration is intentionally manual elsewhere on the
-     site. On a back/forward entry with a real #hash that can suppress the
-     browser's native anchor jump, so verify the final position once and use
-     the site's existing cinematic scroll only when the target is genuinely
-     off-position. This never runs for ordinary scroll restoration. */
-  function ensureHashPosition(reason){
-    const requestedHash=location.hash;
-    if(!requestedHash || requestedHash.length<2) return;
-    if(hashPositionTimer) clearTimeout(hashPositionTimer);
-    hashPositionTimer=setTimeout(function(){
-      hashPositionTimer=0;
-      if(location.hash!==requestedHash || window.__EW_SCROLL_RESTORE_ACTIVE__) return;
-      const target=hashTarget();
-      if(!target) return;
-      revealForTarget(target,reason||'hash-position');
-      const header=document.querySelector('header');
-      const expectedTop=(header ? header.offsetHeight : 0)+6;
-      const rect=target.getBoundingClientRect();
-      if(Math.abs(rect.top-expectedTop)<=30) return;
-      if(reduceMotion.matches){
-        window.scrollTo(0,Math.max(0,(window.scrollY||window.pageYOffset||0)+rect.top-expectedTop));
-      }else if(typeof _smoothScrollToHash==='function'){
-        _smoothScrollToHash(requestedHash);
-      }else{
-        target.scrollIntoView({behavior:'smooth',block:'start'});
-      }
-    },0);
-  }
-
-  window._ewRevealForTarget=revealForTarget;
-
-  const finePointer=window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)');
-  function markWindowScrolling(){
-    if(!finePointer || !finePointer.matches || !document.body) return;
-    if(!document.body.classList.contains('ew-user-scrolling')) document.body.classList.add('ew-user-scrolling');
-    if(scrollCalmTimer) clearTimeout(scrollCalmTimer);
-    scrollCalmTimer=setTimeout(function(){
-      scrollCalmTimer=0;
-      document.body.classList.remove('ew-user-scrolling');
-    },140);
-  }
-  window.addEventListener('scroll',markWindowScrolling,{passive:true});
-
-  targets.forEach(function(el){el.dataset.ewReveal='1';});
-  const directTarget=hashTarget();
-  if(directTarget){
-    revealForTarget(directTarget,'initial-hash');
-    requestAnimationFrame(function(){ensureHashPosition('initial-hash');});
-  }
-
-  if(reduceMotion.matches || !('IntersectionObserver' in window) || !Element.prototype.animate || document.visibilityState==='hidden'){
-    revealAll(reduceMotion.matches?'reduced-motion':'fallback-visible');
-  }else{
-    observer=new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){if(entry.isIntersecting) playReveal(entry.target);});
-    },{root:null,rootMargin:'0px 0px 8% 0px',threshold:0.01});
-    const h=window.innerHeight||document.documentElement.clientHeight||0;
-    targets.forEach(function(el){
-      if(seen.has(el)) return;
-      const rect=el.getBoundingClientRect();
-      if(rect.bottom>=-24 && rect.top<=h+24) finishReveal(el,'initial-viewport');
-      else observer.observe(el);
-    });
-  }
-
-  function syncLocation(reason){
-    const target=hashTarget();
-    if(target) revealForTarget(target,reason);
-    revealViewport(reason);
-    ensureHashPosition(reason);
-  }
-  window.addEventListener('hashchange',function(){syncLocation('hashchange');});
-  window.addEventListener('popstate',function(){setTimeout(function(){syncLocation('popstate');},0);});
-  window.addEventListener('pageshow',function(event){
-    if(event && event.persisted) revealViewport('bfcache');
-    ensureHashPosition(event && event.persisted?'bfcache':'pageshow');
-  });
-  window.addEventListener('ew:scroll-restore-done',function(){
-    revealViewport('scroll-restore-done');
-    ensureHashPosition('scroll-restore-done');
-  });
-  setTimeout(function(){
-    if(window.__EW_SCROLL_RESTORE_ACTIVE__) revealAll('scroll-restore-active');
-  },32);
-  const onMotionChange=function(event){if(event.matches) revealAll('reduced-motion-change');};
-  if(reduceMotion.addEventListener) reduceMotion.addEventListener('change',onMotionChange);
-  else if(reduceMotion.addListener) reduceMotion.addListener(onMotionChange);
-
-  window.inspectScrollRevealStability=function(){
-    const running=targets.filter(function(el){return el.dataset.ewRevealState==='running';}).length;
-    const revealed=targets.filter(function(el){return seen.has(el);}).length;
-    return {
-      ok:true,
-      patch:PATCH,
-      targets:targets.length,
-      revealed:revealed,
-      running:running,
-      reducedMotion:!!reduceMotion.matches,
-      intersectionObserver:!!observer,
-      failOpen:true,
-      contentVisibilityUsed:false,
-      grainLayerDisabled:getComputedStyle(document.body,'::after').display==='none'
-    };
-  };
-})();
-</script>
-
-<!-- ═══ ЛИНЗА · терминал «Наблюдение» (hero) — живая логика ═══ -->
-<script id="ew-obs-js">
-(function(){
-  var motionOK = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var term = document.getElementById('heroTerminal');
-  if(!term || !term.classList.contains('ew-obs')) return;
-  function two(n){ return n<10 ? '0'+n : n; }
-
-  /* Честные данные: момент контакта, назначенный узел, живой таймер присутствия */
-  var t0 = new Date();
-  var contactEl = term.querySelector('[data-obs-contact]');
-  if(contactEl) contactEl.textContent = two(t0.getHours())+':'+two(t0.getMinutes())+':'+two(t0.getSeconds());
-  var AB='ACEFHKMNPRTWX', DG='234679';
-  function pick(s){ return s[Math.floor(Math.random()*s.length)]; }
-  var nodeEl = term.querySelector('[data-obs-node]');
-  if(nodeEl) nodeEl.textContent = pick(AB)+pick(DG)+'-'+pick(DG)+pick(AB);
-  var presEl = term.querySelector('[data-obs-presence]');
-  var eqKick = 0, phase = 0;
-  setInterval(function(){
-    var s = Math.floor((Date.now()-t0.getTime())/1000);
-    if(presEl) presEl.textContent = s>=3600
-      ? two(Math.floor(s/3600))+':'+two(Math.floor(s/60)%60)+':'+two(s%60)
-      : two(Math.floor(s/60))+':'+two(s%60);
-    eqKick = Math.min(eqKick+0.28, 1);
-  }, 1000);
-
-  /* Эквалайзер: спокойный cyan-поток, раз в 30с — красная передача Морзе
-     с плавным вливанием и выходом. */
-  var eq = term.querySelector('[data-obs-eq]');
-  var BARS = 42, bars = [];
-  if(eq){ for(var i=0;i<BARS;i++){ var b=document.createElement('span'); eq.appendChild(b); bars.push(b); } }
-  function idleH(i){
-    var h = 16 + 50*Math.abs(Math.sin(phase + i*0.38)*Math.sin(phase*0.53 + i*0.12)) + eqKick*22;
-    return Math.min(h, 100);
-  }
-  /* Морзе HELP US — сигнал бедствия Вишей (пасхалка, см. комментарий в HTML).
-     Вход/выход из передачи плавные: цвета кроссфейдятся в CSS (~1.1s), а
-     амплитуда экспоненциально перетекает между волной и ключом (txBlend). */
-  var MORSE = {H:'....',E:'.',L:'.-..',P:'.--.',U:'..-',S:'...'};
-  var msg = (eq ? (eq.getAttribute('data-morse')||'HELP US') : 'HELP US').toUpperCase();
-  var UNIT = 120;                    /* спокойнее прежних 90мс */
-  var RAMP = 900;                    /* мс вливания: ключ стартует после перехода */
-  var txTarget = 0, txBlend = 0, keyOn = false;
-  function playMorse(){
-    if(!eq || !motionOK) return;
-    eq.classList.add('tx');          /* цвета плавно уходят в красный */
-    txTarget = 1;                    /* амплитуда плавно уходит в режим передачи */
-    var t = RAMP;
-    for(var k=0;k<msg.length;k++){
-      var ch = msg[k];
-      if(ch===' '){ t += UNIT*5; continue; }
-      var code = MORSE[ch]; if(!code) continue;
-      for(var j=0;j<code.length;j++){
-        (function(start){ setTimeout(function(){ keyOn = true; }, start); })(t);
-        t += (code[j]==='-'?3:1)*UNIT;
-        (function(start){ setTimeout(function(){ keyOn = false; }, start); })(t);
-        t += UNIT;
-      }
-      t += UNIT*2;
-    }
-    /* выход так же плавен: цвета и амплитуда возвращаются одновременно */
-    setTimeout(function(){ eq.classList.remove('tx'); txTarget = 0; keyOn = false; }, t+150);
-  }
-  if(eq && motionOK){
-    var _eqLast = 0;
-    (function loop(now){
-      requestAnimationFrame(loop);
-      /* за открытым меню волна замирает (стекло мембраны сверху) */
-      if(document.body.classList.contains('menu-open')) return;
-      /* 30 к/с достаточно для спокойной волны и вдвое дешевле */
-      if(now - _eqLast < 33) return;
-      _eqLast = now;
-      phase += 0.09;                                /* шаг ×2 при 30 к/с = прежний темп */
-      txBlend += (txTarget - txBlend) * 0.11;       /* экспоненциальное вливание/выход */
-      if(txBlend < 0.001) txBlend = 0;
-      for(var i=0;i<BARS;i++){
-        var tx = keyOn ? (70 + Math.random()*18) : 9;
-        var h = idleH(i)*(1-txBlend) + tx*txBlend;
-        /* transform вместо height: чистый композитор, ноль перерисовок */
-        bars[i].style.transform = 'scaleY(' + (h/100).toFixed(3) + ')';
-      }
-      eqKick *= 0.9;
-    })(0);
-    setTimeout(function(){ playMorse(); setInterval(playMorse, 30000); }, 9000);
-  } else if(eq){
-    for(var m=0;m<BARS;m++) bars[m].style.transform = 'scaleY(' + (0.18 + Math.random()*0.4).toFixed(2) + ')';
-  }
-
-  /* Глитч-подпись: раз в ~10с лёгкий сбой системы — место под будущую пасхалку. */
-  var cap = term.querySelector('[data-obs-caption]');
-  var base = cap ? (cap.getAttribute('data-obs-base')||cap.textContent) : '';
-  var GL = 'ДЖ#АХ0Х§Р@Т?Ы%ЖК1'.split('');
-  function glitchOnce(){
-    if(!cap || !motionOK) return;
-    var frames = 6, f = 0;
-    cap.classList.add('glitch');
-    var iv = setInterval(function(){
-      var out=''; for(var i=0;i<base.length;i++){ var c=base[i];
-        out += (c===' '||c==='·') ? c : (Math.random()<0.4 ? GL[Math.floor(Math.random()*GL.length)] : c); }
-      cap.textContent = out;
-      if(++f>=frames){ clearInterval(iv); cap.textContent = base; cap.classList.remove('glitch'); }
-    }, 55);
-  }
-  if(cap && motionOK) setInterval(glitchOnce, 9000 + Math.random()*4000);
-})();
-
-/* ═══ ШАПКА + МЕНЮ-МЕМБРАНА · механика site-v2 (body.menu-open) ═══
-   Разметка/визуал перенесены из v2; подключено к реальным точкам входа сайта
-   (openMobNav/closeMobNav/toggleDesktopMenu). Бургер = переключатель ≡/×. */
-(function(){
-  var menu = document.getElementById('menu');
-  if(!menu) return;
-  var burger = document.getElementById('mobBurger');
-  var menuOpen = false;
-  function lock(){ try{ lockScroll(); }catch(e){ document.body.style.overflow='hidden'; } }
-  function unlock(){ try{ unlockScroll(); }catch(e){ document.body.style.overflow=''; } }
-  function setMenu(open){
-    if(open === menuOpen) return;
-    menuOpen = open;
-    if(burger) burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-    menu.setAttribute('aria-hidden', open ? 'false' : 'true');
-    try{ menu.inert = !open; }catch(e){}
-    /* ровно как модалки бэкапа: один класс, display через CSS, контент
-       размывает себя сам (#_blurW) — никакой слоевой хореографии */
-    document.body.classList.toggle('menu-open', open);
-    if(open){
-      lock();
-      try{ if(typeof _hideAllNotifs==='function') _hideAllNotifs(); if(typeof _closeWorldDrop==='function') _closeWorldDrop(); }catch(e){}
-    } else { unlock(); }
-  }
-  /* стартовое состояние: закрыто и inert */
-  try{ menu.inert = true; }catch(e){}
-  /* прежние точки входа из разметки → мембрана. Бургер (тот же элемент,
-     что превращается в крестик) переключает открыто/закрыто. */
-  window.openMobNav = function(){ setMenu(!menuOpen); };
-  window.closeMobNav = function(){ setMenu(false); };
-  window._closeDesktopMenu = window.closeMobNav;
-  window.toggleDesktopMenu = function(e){ if(e && e.preventDefault) e.preventDefault(); setMenu(!menuOpen); };
-  /* ссылки разделов закрывают меню (как в v2) */
-  menu.querySelectorAll('.menu-nav a').forEach(function(a){ a.addEventListener('click', function(){ setMenu(false); }); });
-  /* Escape закрывает */
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && menuOpen) setMenu(false); });
-  /* ВРЕМЕННЫЙ СТЕНД ОТЛАДКИ МОРГАНИЯ (удалить после): ?ewtest=menu —
-     мембрана сама открывается/закрывается каждые 1.7с для записи кадров */
-  if(location.search.indexOf('ewtest=menu') !== -1){
-    var _t = false;
-    setInterval(function(){ _t = !_t; setMenu(_t); }, 1700);
-  }
 })();
 </script>
 
