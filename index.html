@@ -21339,6 +21339,9 @@ function _quickHideModal(){
 function _quickHideCart(){
   const panel = document.getElementById('cartPanel');
   const ov = document.getElementById('cartOverlay');
+  /* метка закрытия для кулдауна ewOpenCart: пока чекаут поднимается поверх,
+     «призрачный» тап не должен открыть корзину обратно */
+  if(typeof toggleCart==='function') toggleCart._lastClose = Date.now();
   if(panel){
     panel.classList.remove('open');
     panel.classList.remove('to-checkout-out');
@@ -22438,6 +22441,16 @@ window.EWCARTDUMP = function(){ return window.__cartLogArr.map(function(e){retur
 function ewOpenCart(){
   var panel=document.getElementById('cartPanel');
   if(!panel) return;
+  /* КУЛДАУН ПОСЛЕ ЗАКРЫТИЯ — главная причина «двойного открытия» на iOS:
+     крестик закрытия и кнопка корзины в одной точке (верх-право). После
+     закрытия крестиком панель уезжает, под ней оказывается кнопка корзины,
+     и iOS докидывает по ней «призрачный» тап → корзина открывалась заново
+     (лог юзера: переоткрытие через 231мс). Гасим любое открытие в течение
+     650мс после закрытия; осознанное переоткрытие (обычно >1с) не страдает. */
+  if(Date.now() - (toggleCart._lastClose || 0) < 650){
+    if(window.__cartDiag) __cartLog('ewOpenCart ИГНОР (кулдаун '+(Date.now()-(toggleCart._lastClose||0))+'мс после закрытия)');
+    return;
+  }
   if(panel.classList.contains('open') || panel.classList.contains('cart-opening') || panel.classList.contains('cart-closing')){
     if(window.__cartDiag) __cartLog('ewOpenCart ИГНОР (уже открыта/анимируется)');
     return;
@@ -22498,6 +22511,9 @@ function toggleCart(){
     // BLUR FADE SYNC — блюр уходит синхронно со слайдом корзины вправо.
     // cart-open оставляем (он держит header z-index до конца слайда);
     // _blur-fading перекроет blur через !important.
+    /* метка закрытия — кулдаун ewOpenCart отсчитывает от неё 650мс,
+       чтобы «призрачный» тап по кнопке под крестиком не переоткрыл корзину */
+    toggleCart._lastClose = _tcNow;
     document.body.classList.add('_blur-fading');
     if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(overlay);
     if(overlay) overlay.style.pointerEvents='none';
@@ -28036,6 +28052,8 @@ function initCartSwipeClose(){
     dragging=false;
     if(dirLocked==='h' && lastDx>60){
       // Close
+      /* метка закрытия для кулдауна ewOpenCart (анти-«призрачное» переоткрытие) */
+      if(typeof toggleCart==='function') toggleCart._lastClose = Date.now();
       panel.style.transition='transform .28s cubic-bezier(.4,0,.2,1)';
       panel.style.transform='translateX(100%)';
       if(overlay){
