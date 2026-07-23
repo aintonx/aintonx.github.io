@@ -8606,24 +8606,48 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
 /* ══════════════════════════════════════════════════
    CATALOG — COMPACT REGISTRY
 ══════════════════════════════════════════════════ */
+/* ═══ КАТАЛОГ · перенос визуала из site-v2 (стеклянные карточки-плитки)
+   на боевых классах: вся машинерия (openModal, setCatalogCategory,
+   searchCards, hidden/catalog-hidden, swap, лента ≤960) сохранена.
+   Стекло карточек СТАТИЧНОЕ (политика юзера); анимации — только
+   transform/border/shadow, фильтры не анимируются никогда. ═══ */
 .catwrap {
   max-width: none;
-  padding: 0 0 72px;
+  padding: 110px 0 30px;
   overflow: hidden;
+  scroll-margin-top: 80px;
 }
+/* Шапка секции — v2 sec-head */
 .cat-header {
-  /* Подпись «КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE» — строго посередине
-     между переливающейся полоской сверху и разделительной линией снизу:
-     симметричные вертикальные отступы вместо прежних 48px/0. */
-  padding: 26px 32px;
+  display: block;
+  padding: 0 32px;
   max-width: 1360px;
-  margin: 0 auto;
+  margin: 0 auto 26px;
+}
+.cat-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
   align-items: center;
+  gap: 10px;
+}
+.cat-kicker::before { content: ""; width: 26px; height: 1px; background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.6); }
+.cat-h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(26px, 4vw, 44px);
+  line-height: 1.12;
+  color: var(--ink);
+  letter-spacing: 0;
 }
 .cat-controls {
   max-width: 1360px;
   margin: 0 auto;
-  padding: 18px 32px 0;
+  padding: 0 32px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -8635,215 +8659,343 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   justify-content: space-between;
   gap: 12px;
 }
+/* Поиск — пилюля v2 */
 .cat-search {
   flex: 1;
   min-width: 220px;
-  max-width: 420px;
+  max-width: 300px;
 }
-.filters {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+.cat-search input {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 99px;
+  padding: 10px 16px 10px 36px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
+.cat-search input::placeholder { color: var(--ink-4); }
+.cat-search input:focus { border-color: rgba(0,200,200,0.4); box-shadow: 0 0 0 3px rgba(0,200,200,0.07); outline: none; }
+.cat-search-icon {
+  position: absolute;
+  left: 14px; right: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-4);
+  pointer-events: none;
+}
+.cat-search-icon svg { width: 13px; height: 13px; display: block; }
+.cat-search input:focus + .cat-search-icon,
+.cat-search:focus-within .cat-search-icon { color: var(--cyan); }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.cat-cats { display: flex; gap: 6px; flex-wrap: wrap; }
+/* Чипы категорий — v2 */
 .ftag,
-.cat-chip {
-  min-height: 32px;
-}
-.cat-cats {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+.cat-chip { min-height: 0; }
 .cat-chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-family: var(--font-code);
-  font-size: 8px;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  padding: 9px 13px;
-  background: rgba(4,4,10,.42);
-  border: 1px solid var(--border);
-  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: none;
+  color: var(--ink-3);
+  padding: 9px 14px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
   cursor: pointer;
-  transition: border-color .22s ease, background .22s ease, color .22s ease,
-              box-shadow .22s ease, transform .15s ease;
   white-space: nowrap;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
 }
-/* Единый отклик на клик для всех устройств — как на телефоне:
-   без scale-сжатия, без расходящихся колец. Чистое переключение:
-   красный контур + визуально жирный текст (см. .cat-chip.active). */
-.cat-chip:active {
-  transform: none;
-}
-.cat-chip.chip-activating {
-  animation: none !important;
-}
+.cat-chip:active { transform: none; }
+.cat-chip.chip-activating { animation: none !important; }
 .cat-chip span {
-  min-width: 18px;
-  height: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border);
-  color: var(--cyan);
-  background: rgba(0,200,200,0.06);
-  font-size: 9px;
+  min-width: 0; height: auto;
+  display: inline;
+  border: none;
+  background: none;
+  color: var(--ink-4);
+  font-size: 10px;
+  margin-left: 7px;
 }
 @media (hover:hover) and (pointer:fine) {
-
-.cat-chip:hover {
-  border-color: var(--border2);
-  color: var(--white);
-}
+  .cat-chip:hover { color: var(--ink); background: rgba(255,255,255,0.07); }
 }
 .cat-chip.active {
-  color: var(--white);
-  border-color: var(--red2);
-  background: rgba(192,40,40,.14);
-  box-shadow: 0 0 18px rgba(192,40,40,.08);
-  /* «Жирность» через text-stroke — не меняет ширину кнопки, строка не дёргается */
-  -webkit-text-stroke: 0.4px currentColor;
-  text-shadow: 0 0 0.4px currentColor;
+  color: var(--ink);
+  background: rgba(209,160,74,0.12);
+  border-color: rgba(209,160,74,0.4);
+  box-shadow: none;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
 }
-.cat-chip.active span {
-  border-color: rgba(192,40,40,.55);
-  color: var(--red2);
-  background: rgba(192,40,40,.1);
-}
+.cat-chip.active span { border: none; background: none; color: var(--warm-hi); }
+/* Нота каталога — v2 cat-note с янтарной точкой */
 .cat-expand {
   max-width: 1296px;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
 }
+.cat-expand-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--warm);
+  box-shadow: 0 0 8px rgba(209,160,74,0.7);
+  flex-shrink: 0;
+  transform: translateY(-2px);
+  animation: none;
+}
+.cat-expand-text {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  letter-spacing: 0;
+  color: var(--ink-4);
+  line-height: 1.55;
+  max-width: 78ch;
+}
+.cat-expand-text em { color: var(--ink-3); font-style: normal; }
 .catalog-stage {
   max-width: 1360px;
-  margin: 22px auto 0;
+  margin: 30px auto 0;
   padding: 0 32px;
   position: relative;
 }
 .pgrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
   max-width: none;
   margin: 0;
   padding: 0;
   border-top: none;
 }
+/* ── Карточка реликвии — v2 .pcard: статичное стекло ── */
 .pcard {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: none;
+  grid-template-rows: none;
   min-height: 0;
-  border: 1px solid var(--border);
-  background: rgba(13,13,26,.72);
-  box-shadow: 0 8px 28px rgba(0,0,0,.22);
+  border-radius: 22px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 20px 50px rgba(0,0,0,0.4);
+  overflow: hidden;
+  transition: transform 0.35s var(--ease-out), box-shadow 0.35s, border-color 0.3s;
 }
-.pcard.catalog-hidden {
-  display: none !important;
-}
-/* Desktop: keep grid consistent when filtering */
+.pcard.catalog-hidden { display: none !important; }
+.pcard[hidden] { display: none !important; }
 @media(min-width:961px) {
-  .pgrid {
-    /* Use auto-fill so remaining cards stay same size */
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    align-items: stretch;
-  }
-  /* Единая высота карточек: тянутся по ряду, футер прижат к низу */
+  .pgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
   .pgrid .pcard { height: 100%; }
 }
 @media (hover:hover) and (pointer:fine) {
-
-.pcard:hover {
-  border-color: var(--border2);
-  background: rgba(18,18,42,.88);
+  .pcard:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255,255,255,0.18);
+    background: var(--glass-bg);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 30px 70px rgba(0,0,0,0.5);
+  }
 }
-}
-.pcard::after {
-  height: 1px;
-}
-.sstrip {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 2px;
-  z-index: 2;
-}
-.sstrip.av {
-  box-shadow: 0 2px 14px rgba(192,40,40,.28);
-}
+/* красная hover-полоска и скан-луч легаси — в v2 их нет */
+.pcard::after { content: none !important; }
+.pcard .pimg::before { content: none !important; }
+.pimg-scan { display: none !important; }
+.sstrip { display: none !important; }
+/* Изображение — v2 .pimg */
 .pimg {
-  grid-column: 1;
-  grid-row: 1;
+  grid-column: auto; grid-row: auto;
   width: 100%;
   height: auto;
-  aspect-ratio: 1.12 / 1;
+  aspect-ratio: 1 / 0.92;
   min-height: 0;
+  position: relative;
+  overflow: hidden;
+  background: #07070f;
 }
+.pimg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(4,4,10,0.55)); pointer-events: none; }
+.pimg img { transition: transform 0.6s var(--ease-out), opacity 0.4s, filter 0.3s; }
+@media (hover:hover) and (pointer:fine) {
+  .pcard:hover .pimg img { transform: scale(1.035); }
+}
+/* Артикул — видимая пилюля v2 .p-art (нужна и для поиска) */
+.arttag {
+  display: inline-flex !important;
+  align-items: center;
+  top: 12px; left: 12px;
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: var(--ink-2);
+  background: rgba(4,4,10,0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 99px;
+  padding: 5px 10px;
+}
+/* Кружок Мощи — v2 .p-pw */
+.p-pw {
+  position: absolute;
+  top: 12px; right: 12px;
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  width: 26px; height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(4,4,10,0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.16);
+  color: var(--ink);
+}
+.p-pw.S { color: var(--red-hi); border-color: rgba(230,69,69,0.5); }
+.p-pw.R { color: var(--warm-hi); border-color: rgba(232,195,122,0.45); }
+.p-pw.C { color: var(--cyan); border-color: rgba(0,200,200,0.35); }
+.p-pw.K { color: #8e8eb0; border-color: rgba(142,142,176,0.45); }
+/* Статус — видимая пилюля v2 .p-status (низ-лево) */
+.pbeacon {
+  display: inline-flex !important;
+  position: absolute;
+  bottom: 12px; left: 12px; top: auto; right: auto;
+  z-index: 2;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  color: var(--ink-2);
+  background: rgba(4,4,10,0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 99px;
+  padding: 5px 11px;
+}
+.pbeacon-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 7px rgba(0,200,200,0.9);
+  animation: none;
+}
+.pbeacon-txt {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  color: var(--ink-2);
+  text-transform: uppercase;
+}
+/* Тело карточки — v2 .pbody */
 .pbody {
-  grid-column: 1;
-  grid-row: 2;
+  grid-column: auto; grid-row: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   min-height: 0;
-  padding: 16px;
+  padding: 16px 18px 16px;
   gap: 0;
+  justify-content: flex-start;
 }
-.pmeta {
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.pwrld,
-.pstatus {
-  font-size: 6px;
-  line-height: 1.35;
-}
+/* meta-строка легаси (Marketspace/статус) — в v2 статус живёт на изображении */
+.pmeta { display: none !important; }
 .pname {
-  font-size: 18px;
-  margin-bottom: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15.5px;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  margin-bottom: 0;
 }
 .pdesc {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  min-height: 56px;
-  margin-bottom: 14px;
-  line-height: 1.75;
+  display: block !important;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.55;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  margin: 9px 0 0;
+  min-height: 0;
+  flex: 1;
 }
-.preadiness {
-  margin-bottom: 14px;
-}
+.pdesc em { color: var(--ink-2); font-style: normal; }
+/* Футер — v2 .pfoot: волосяная линия, цена mono, кнопка-пилюля */
 .pfooter {
-  gap: 10px;
-  padding-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: none;
+  position: relative;
 }
-.pprice {
-  font-size: 20px;
+.pfooter::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--hairline) 16%, var(--hairline) 84%, transparent); }
+.pcard .pprice {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
 }
-.pbtn {
-  padding: 9px 13px;
+.pcard .pprice span { font-size: 11px; color: var(--ink-4); font-family: var(--font-mono); font-weight: 400; }
+.pcard .pbtn {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--warm-hi);
+  padding: 9px 16px;
+  border-radius: 99px;
+  background: rgba(209,160,74,0.08);
+  border: 1px solid rgba(209,160,74,0.3);
+  transition: background 0.2s, box-shadow 0.2s;
 }
+.pcard .pbtn::after { content: none; }
+@media (hover:hover) and (pointer:fine) {
+  .pcard .pbtn:hover { background: rgba(209,160,74,0.14); box-shadow: 0 0 18px rgba(209,160,74,0.18); }
+}
+.pcard .sbtn {
+  color: var(--ink-4);
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.12);
+  cursor: default;
+}
+@media (hover:hover) and (pointer:fine) {
+  .pcard .sbtn:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); box-shadow: none; }
+}
+/* Sold: приглушение как раньше */
+.pcard.sold .pname { color: var(--ink-4); }
+.pcard.sold .pprice { color: var(--ink-4); }
 .catalog-arrow,
-.catalog-mobile-nav {
-  display: none;
-}
+.catalog-mobile-nav { display: none; }
+/* Пустой результат */
 .cat-empty-state {
   display: none;
   max-width: 1296px;
   margin: 18px auto 0;
-  padding: 18px 20px;
-  border: 1px solid var(--border);
-  background: rgba(4,4,10,.56);
+  padding: 16px 20px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
 }
-.cat-empty-state.show {
-  display: block;
-}
+.cat-empty-state.show { display: block; }
 .cat-empty-kicker {
-  font-family: var(--font-code);
-  font-size: 7px;
-  letter-spacing: .2em;
-  color: var(--red2);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--warm-hi);
   text-transform: uppercase;
   margin-bottom: 8px;
 }
@@ -8851,18 +9003,17 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 18px;
-  color: var(--white);
+  color: var(--ink);
   margin-bottom: 6px;
 }
 .cat-empty-text {
-  font-size: 10px;
-  line-height: 1.8;
-  color: var(--white-dim);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-4);
 }
 @media(max-width:1180px) and (min-width:961px) {
-  .pgrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  .pgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media(max-width:960px) {
@@ -8961,9 +9112,15 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
     flex: 0 0 calc(100vw - 40px);
     max-width: 420px;
     scroll-snap-align: center;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
+    /* v2: цельная стеклянная плитка со скруглением 22 (легаси-полосы по
+       бокам и разный радиус убираем — на мобиле карточка = как десктоп) */
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 22px !important;
   }
+  /* Пилюли v2 на мобиле (перебиваем «призрачный» радиус 6/10px, который
+     на десктопе давится блоком min-width:961) */
+  .arttag { border-radius: 99px !important; }
+  .pcard .pbtn { border-radius: 99px !important; }
   .pimg {
     height: 180px;
     aspect-ratio: auto;
@@ -11663,12 +11820,20 @@ input, select, textarea {
 /* autopick-анимация чипа каталога упразднена (см. T24) — класс-маркер остаётся */
 .cat-chip.cat-chip-autopick { animation: none; }
 
+/* Классовые акценты (по просьбе юзера — прежняя палитра): литера и
+   фрагменты красятся цветом своей Мощи, геометрия остаётся v2 */
+.relic-card[data-class="K"] { --_glow: rgba(140,140,180,0.18); --_accent: #8e8eb0; }
+.relic-card[data-class="C"] { --_glow: rgba(0,200,200,0.16);   --_accent: #00c8c8; }
+.relic-card[data-class="R"] { --_glow: rgba(209,160,74,0.18);  --_accent: #d1a04a; }
+.relic-card[data-class="S"] { --_glow: rgba(192,40,40,0.20);   --_accent: #e63838; }
+
 .relic-letter {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 30px;
   line-height: 1;
-  color: var(--ink);
+  color: var(--_accent, var(--ink));
+  text-shadow: 0 0 24px var(--_glow, transparent);
 }
 .relic-name {
   font-family: var(--font-mono);
@@ -11688,7 +11853,7 @@ input, select, textarea {
 }
 .relic-frags { display: flex; gap: 5px; margin-top: 12px; }
 .relic-frag { width: 18px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); }
-.relic-frag.on { background: linear-gradient(90deg, #edc87c, #c3943c); box-shadow: 0 0 9px rgba(209,160,74,0.5); }
+.relic-frag.on { background: var(--_accent, #d1a04a); box-shadow: 0 0 9px var(--_glow, rgba(209,160,74,0.5)); }
 .relic-desc {
   font-family: var(--font-body);
   font-size: 12.5px;
@@ -12345,164 +12510,87 @@ button, a, [role="button"], label,
    Десктоп ≥961px — pcard как чистая surface-карточка с beacon в углу.
    ══════════════════════════════════════════════════════════════ */
 @media (min-width: 961px) {
-  .pgrid { gap: 16px !important; padding: 0 32px !important; max-width: 1320px !important; margin: 0 auto !important; }
-  .pcard {
-    background: var(--surface) !important;
-    border: 1px solid var(--line) !important;
-    border-radius: var(--radius-lg) !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
-    transition: background var(--t-med) var(--ease-out), border-color var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out) !important;
-  }
-  @media (hover:hover) and (pointer:fine) {
-    .pcard:hover {
-      border-color: var(--line-hi) !important;
-      background: var(--surface-hi) !important;
-      transform: translateY(-3px) !important;
-      box-shadow: 0 16px 36px rgba(0,0,0,0.45), 0 0 0 1px var(--line-hi) !important;
-    }
-    .pcard.sold:hover { transform: none !important; box-shadow: none !important; border-color: var(--line) !important; background: var(--deep) !important; }
-  }
-  .pcard.sold { background: var(--deep) !important; }
+  /* Десктопный каталог — визуал v2 (перебиваем легаси-!important начисто).
+     Стекло СТАТИЧНОЕ; анимируются только transform/тень/рамка. */
+  .pgrid { gap: 20px !important; padding: 0 !important; max-width: none !important; margin: 0 !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .catalog-stage { max-width: 1360px !important; margin: 30px auto 0 !important; padding: 0 32px !important; }
+  .cat-header { max-width: 1360px; margin: 0 auto 26px; }
+  .cat-controls { max-width: 1360px; margin: 0 auto; padding: 0 32px; }
 
-  /* Изображение карточки */
+  .pcard {
+    background: var(--glass-bg) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 22px !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 20px 50px rgba(0,0,0,0.4) !important;
+    overflow: hidden !important;
+    transition: transform 0.35s var(--ease-out), box-shadow 0.35s, border-color 0.3s !important;
+  }
+  .pcard:hover {
+    border-color: rgba(255,255,255,0.18) !important;
+    background: var(--glass-bg) !important;
+    transform: translateY(-5px) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 30px 70px rgba(0,0,0,0.5) !important;
+  }
   .pimg { border-radius: 0 !important; overflow: hidden; }
   .pcard .pimg::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(180deg, transparent 55%, rgba(8,8,26,0.65) 100%);
+    background: linear-gradient(180deg, transparent 60%, rgba(4,4,10,0.55));
     pointer-events: none; z-index: 1;
   }
-
-  /* Beacon — пилюля в правом нижнем углу изображения */
-  .pbeacon {
-    position: absolute !important;
-    top: auto !important; bottom: 12px !important; right: 12px !important; left: auto !important;
-    z-index: 3;
-    padding: 5px 10px 5px 8px;
-    background: rgba(8,8,26,0.78);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--line-hi);
-    border-radius: 999px;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-  .pcard:not(.sold) .pbeacon { border-color: rgba(0,200,200,0.32); }
-  .pcard.sold .pbeacon { border-color: rgba(192,40,40,0.32); }
-  .pbeacon-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
-  }
-  .pcard.sold .pbeacon-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
-  .pbeacon-txt {
-    font-family: var(--font-mono); font-size: 9px;
-    letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--ink-2);
-  }
-  .pcard.sold .pbeacon-txt { color: var(--ink-3); }
-
-  /* Артикул — пилюля в верхнем левом */
+  /* Артикул — пилюля v2 (радиус/цвет/шрифт) */
   .arttag {
-    position: absolute !important;
-    top: 12px !important; left: 12px !important;
-    z-index: 3;
-    padding: 4px 9px !important;
-    background: rgba(8,8,26,0.72) !important;
-    backdrop-filter: blur(6px);
-    border: 1px solid var(--line-hi) !important;
-    border-radius: 6px !important;
-    font-family: var(--font-num) !important; font-size: 10px !important;
-    color: var(--ink-2) !important; letter-spacing: 0.06em !important;
+    position: absolute !important; top: 12px !important; left: 12px !important; z-index: 3;
+    padding: 5px 10px !important;
+    background: rgba(4,4,10,0.55) !important;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 99px !important;
+    font-family: var(--font-mono) !important; font-size: 8px !important;
+    color: var(--ink-2) !important; letter-spacing: 0.16em !important;
   }
-
-  /* Бейдж класса Мощи — верхний правый угол */
-  .pcard-power {
-    top: 12px !important; right: 12px !important;
-    width: 28px; height: 28px;
-    border-radius: 6px;
-    font-size: 14px;
-    z-index: 4;
-  }
-
-  /* Body */
-  .pbody { padding: 20px 20px 22px !important; gap: 12px !important; }
-  .pmeta { gap: 10px !important; margin-bottom: 4px !important; }
-  .pwrld, .pstatus {
-    font-family: var(--font-mono) !important;
-    font-size: 9px !important; letter-spacing: 0.18em !important;
-  }
-  .pwrld { color: var(--ink-3) !important; }
-  .pstatus { color: var(--red-hi) !important; }
-  .pcard.sold .pstatus { color: var(--white-dim) !important; }
+  /* Тело */
+  .pbody { padding: 16px 18px 16px !important; gap: 0 !important; }
+  .pmeta { display: none !important; }
   .pname {
-    font-family: var(--font-display) !important;
-    font-weight: 700 !important;
-    font-size: 20px !important;
-    letter-spacing: -0.01em !important;
-    color: var(--ink) !important;
-    line-height: 1.15 !important;
+    font-family: var(--font-display) !important; font-weight: 700 !important;
+    font-size: 15.5px !important; letter-spacing: 0.01em !important;
+    color: var(--ink) !important; line-height: 1.25 !important;
   }
   .pdesc {
-    font-size: 11px !important;
-    line-height: 1.65 !important;
-    letter-spacing: 0.02em !important;
-    color: var(--ink-2) !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 3 !important;
-    -webkit-box-orient: vertical !important;
-    overflow: hidden !important;
+    font-family: var(--font-body) !important;
+    font-size: 12.5px !important; line-height: 1.55 !important; letter-spacing: 0 !important;
+    color: var(--ink-3) !important; margin: 9px 0 0 !important;
+    display: -webkit-box !important; -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important; overflow: hidden !important;
   }
-  .pcard.sold .pdesc { color: var(--ink-3) !important; opacity: 0.7 !important; }
+  .pdesc em { color: var(--ink-2) !important; font-style: normal; }
+  .pcard.sold .pdesc { color: var(--ink-4) !important; opacity: 0.7 !important; }
   .pfooter {
-    padding-top: 14px !important;
-    border-top: 1px solid var(--line) !important;
-    margin-top: auto;
+    padding-top: 13px !important; border-top: none !important; margin-top: 14px !important; gap: 12px;
   }
   .pprice {
-    font-family: var(--font-num) !important;
-    font-weight: 600 !important;
-    font-size: 22px !important;
-    color: var(--ink) !important;
-    letter-spacing: -0.01em !important;
-    white-space: nowrap;
-    flex-shrink: 0;
+    font-family: var(--font-mono) !important; font-weight: 600 !important;
+    font-size: 14px !important; color: var(--ink) !important; letter-spacing: 0 !important;
+    white-space: nowrap; flex-shrink: 0;
   }
-  .pprice span {
-    font-size: 11px !important;
-    color: var(--ink-3) !important;
-    margin-left: 4px;
-    white-space: nowrap;
-  }
-  /* На sold-карточках кнопка-история не должна выдавливать цену */
-  .pfooter { gap: 10px; }
-  .pcard.sold .pbtn { white-space: nowrap; font-size: 8px !important; padding: 10px 12px !important; }
+  .pprice span { font-size: 11px !important; color: var(--ink-4) !important; margin-left: 4px; white-space: nowrap; }
   .pbtn {
-    font-family: var(--font-mono) !important;
-    letter-spacing: 0.18em !important;
-    font-size: 9px !important;
-    padding: 10px 16px !important;
-    background: transparent !important;
-    border: 1px solid var(--line-hi) !important;
-    color: var(--ink) !important;
-    transition: background var(--t-med) var(--ease-out), border-color var(--t-med) var(--ease-out), color var(--t-med) var(--ease-out) !important;
+    margin-left: auto;
+    font-family: var(--font-mono) !important; letter-spacing: 0.18em !important; font-size: 9px !important;
+    padding: 9px 16px !important; border-radius: 99px !important;
+    background: rgba(209,160,74,0.08) !important;
+    border: 1px solid rgba(209,160,74,0.3) !important;
+    color: var(--warm-hi) !important;
+    transition: background 0.2s, box-shadow 0.2s !important;
   }
-  @media (hover:hover) and (pointer:fine) {
-    .pbtn:hover {
-      background: var(--red) !important;
-      border-color: var(--red) !important;
-      color: #fff !important;
-    }
+  .pbtn:hover {
+    background: rgba(209,160,74,0.14) !important;
+    box-shadow: 0 0 18px rgba(209,160,74,0.18) !important;
+    border-color: rgba(209,160,74,0.3) !important; color: var(--warm-hi) !important;
   }
-  .pcard.sold .pbtn {
-    opacity: 0.45 !important;
-    pointer-events: none !important;
-  }
+  .pcard.sold .pbtn { opacity: 0.5 !important; }
   .sstrip { display: none !important; }
   .catalog-arrow { display: none !important; }
-  /* Вертикальные отступы НЕ перебиваем: базовое правило .cat-header задаёт
-     симметричные 26px — подпись «КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE» стоит
-     по центру между переливающейся полоской и нижней линией. */
-  .cat-header { max-width: 1320px; margin: 0 auto 20px; }
-  .cat-controls { max-width: 1320px; margin: 0 auto; padding: 0 32px; }
 }
 
 /* Чипы фильтров — цветовая логика по классу */
@@ -16208,10 +16296,8 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 <!-- ===== CATALOG ===== -->
 <div id="catalog" class="catwrap catalog-main-section">
   <div class="cat-header">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div style="width:8px;height:8px;background:var(--red2);border-radius:50%;box-shadow:0 0 10px var(--red);animation:pulse 1.8s ease-in-out infinite;flex-shrink:0;"></div>
-      <span class="cat-title" style="color:var(--white);font-size:10px;letter-spacing:.16em;">КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE</span>
-    </div>
+    <div class="cat-kicker">ЦИКЛ 01-2026</div>
+    <h2 class="cat-h2">Каталог реликвий</h2>
   </div>
   <div class="cat-controls">
     <div class="cat-control-row">
@@ -16247,6 +16333,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0001</div>
+        <div class="p-pw S">S</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/pepe.webp" alt="Редкая лягушка" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16272,6 +16359,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0002</div>
+        <div class="p-pw S">S</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/labubu.webp" alt="Зубастый спутник" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16298,6 +16386,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0003</div>
+        <div class="p-pw R">R</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/akula.webp" alt="Сухопутная акула" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16323,6 +16412,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0004</div>
+        <div class="p-pw R">R</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/bobr.webp" alt="Лесной гость" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16348,6 +16438,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0005</div>
+        <div class="p-pw R">R</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/tamagochi.webp" alt="Карманное существо" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16374,6 +16465,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0006</div>
+        <div class="p-pw C">C</div>
         <div class="pbeacon" data-status="first_form"><div class="pbeacon-dot"></div><span class="pbeacon-txt">В MARKETSPACE</span></div>
         <img src="img/ball.webp" alt="Тёмный оракул" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16399,6 +16491,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0007</div>
+        <div class="p-pw C">C</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/spinner.webp" alt="Карманный вихрь" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16424,6 +16517,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0008</div>
+        <div class="p-pw C">C</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/disco-ball.webp" alt="Зеркальный идол" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16450,6 +16544,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0009</div>
+        <div class="p-pw K">K</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/utka.webp" alt="Жёлтая горлица" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16475,6 +16570,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0010</div>
+        <div class="p-pw K">K</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/simple-dimple.webp" alt="Карманные соты" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16500,6 +16596,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0011</div>
+        <div class="p-pw K">K</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/grib.webp" alt="Ночной мухомор" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -16526,6 +16623,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="pimg">
         <div class="pimg-scan"></div>
         <div class="arttag">ART. 01-0012</div>
+        <div class="p-pw K">K</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
         <img src="img/rash.webp" alt="Колючий страж" width="900" height="900" loading="lazy" decoding="async">
       </div>
@@ -32076,8 +32174,9 @@ function acceptCookies(){
   box-shadow: 0 0 0 1px rgba(0,200,200,0.18), 0 0 14px rgba(0,200,200,0.08) !important;
 }
 
-/* 4) Product status: diagonal left ribbon; no beacon dot.
-   Status may change, but card surface/hover/media must remain identical. */
+/* 4) Статус реликвии — пилюля v2 (низ-лево изображения), цветовая система
+   статусов сохранена: cyan = доступна, red = первая форма (Тёмный оракул),
+   приглушённый = переход завершён. Диагональная лента упразднена. */
 .pmeta .pstatus {
   display: none !important;
 }
@@ -32086,49 +32185,53 @@ function acceptCookies(){
   overflow: hidden !important;
 }
 .pbeacon {
-  display: flex !important;
+  display: inline-flex !important;
   position: absolute !important;
-  top: 16px !important;
-  left: -46px !important;
-  right: auto !important;
-  bottom: auto !important;
-  width: 164px !important;
-  height: 24px !important;
+  bottom: 12px !important; left: 12px !important;
+  top: auto !important; right: auto !important;
+  width: auto !important; height: auto !important;
   z-index: 8 !important;
   align-items: center !important;
-  justify-content: center !important;
-  gap: 0 !important;
-  padding: 0 !important;
-  border: 1px solid var(--line-hi) !important;
-  border-radius: 0 !important;
-  background: rgba(4,4,10,.82) !important;
-  color: var(--cyan) !important;
-  transform: rotate(-38deg) translateZ(0) !important;
+  justify-content: flex-start !important;
+  gap: 7px !important;
+  padding: 5px 11px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 99px !important;
+  background: rgba(4,4,10,0.55) !important;
+  color: var(--ink-2) !important;
+  transform: none !important;
   pointer-events: none !important;
-  box-shadow: 0 5px 16px rgba(0,0,0,.24) !important;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  box-shadow: none !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .pbeacon-dot {
-  display: none !important;
+  display: inline-block !important;
+  width: 4px !important; height: 4px !important;
+  border-radius: 50% !important;
+  background: var(--cyan) !important;
+  box-shadow: 0 0 7px rgba(0,200,200,0.9) !important;
+  animation: none !important;
 }
 .pbeacon-txt {
-  font-family: var(--font-code) !important;
-  font-size: 7px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 8.5px !important;
   line-height: 1 !important;
   letter-spacing: .14em !important;
   white-space: nowrap !important;
   text-transform: uppercase !important;
-  color: var(--cyan) !important;
+  color: var(--ink-2) !important;
 }
 .pbeacon.status-first_form .pbeacon-txt,
 .pbeacon.status-first-form .pbeacon-txt,
 .pbeacon[data-status="first_form"] .pbeacon-txt {
-  color: var(--red2) !important;
-  max-width: 86px !important;
-  white-space: normal !important;
-  line-height: 1.04 !important;
-  text-align: center !important;
+  color: var(--red-hi) !important;
+}
+.pbeacon.status-first_form .pbeacon-dot,
+.pbeacon.status-first-form .pbeacon-dot,
+.pbeacon[data-status="first_form"] .pbeacon-dot {
+  background: var(--red-hi) !important;
+  box-shadow: 0 0 7px rgba(230,69,69,0.9) !important;
 }
 .pbtn[data-status-button="1"] {
   white-space: normal !important;
@@ -32137,21 +32240,22 @@ function acceptCookies(){
 }
 .pbeacon.status-transition-complete .pbeacon-txt,
 .pbeacon[data-status="transition_complete"] .pbeacon-txt {
-  color: var(--white-mid) !important;
+  color: var(--ink-4) !important;
 }
-:root[data-theme="light"] .pbeacon {
-  background: rgba(255,255,255,.86) !important;
-  border-color: rgba(18,22,45,.18) !important;
-  box-shadow: 0 5px 16px rgba(18,22,45,.12) !important;
+.pbeacon.status-transition-complete .pbeacon-dot,
+.pbeacon[data-status="transition_complete"] .pbeacon-dot {
+  background: var(--ink-4) !important;
+  box-shadow: none !important;
 }
 
-/* Dark Oracle / awaiting transition (legacy first_form API key) / completed cards: same visual shell as every card. */
+/* Тёмный оракул / ожидание Перехода / завершённые: тот же стеклянный
+   корпус v2, что у всех карточек (различие — контентом, не поверхностью). */
 .pcard.locked,
 .pcard.reserved,
 .pcard.sold {
-  background: var(--surface) !important;
-  border-color: var(--line) !important;
-  box-shadow: var(--shadow-sm) !important;
+  background: var(--glass-bg) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 20px 50px rgba(0,0,0,0.4) !important;
   opacity: 1 !important;
   cursor: pointer !important;
 }
@@ -32160,10 +32264,10 @@ function acceptCookies(){
 .pcard.locked:hover,
 .pcard.reserved:hover,
 .pcard.sold:hover {
-  background: var(--surface-hi) !important;
-  border-color: var(--line-hi) !important;
-  transform: translateY(-3px) !important;
-  box-shadow: 0 16px 36px rgba(0,0,0,0.45), 0 0 0 1px var(--line-hi) !important;
+  background: var(--glass-bg) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+  transform: translateY(-5px) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 30px 70px rgba(0,0,0,0.5) !important;
 }
 }
 .pcard.locked .pimg img,
