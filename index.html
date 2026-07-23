@@ -16078,7 +16078,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <a href="#worlds">МИРЫ</a>
       <a href="#faq">FAQ</a>
     </nav>
-    <button class="hdr-cart" id="cartBtn" onclick="ewOpenCart()" aria-label="Корзина">
+    <button class="hdr-cart" id="cartBtn" aria-label="Корзина">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2.5l2.2 11.5a1.5 1.5 0 0 0 1.5 1.2h7.8a1.5 1.5 0 0 0 1.5-1.2L20 8H6"/></svg>
       <span class="lbl-t">КОРЗИНА</span><span class="n" id="cartCount">0</span>
     </button>
@@ -22445,6 +22445,35 @@ function ewOpenCart(){
   if(window.__cartDiag) __cartLog('ewOpenCart → toggleCart');
   toggleCart();
 }
+/* ПРИВЯЗКА КНОПКИ КОРЗИНЫ — лечение iOS-дубля (доказано логом юзера:
+   на ?cartdiag=1 с тач-слушателями дубля НЕТ, без них — есть).
+   На тач-устройстве открываем по touchend и ПОДАВЛЯЕМ синтетический click
+   (preventDefault) — iOS больше не шлёт второй «призрачный» клик. Свайп по
+   кнопке игнорируем. Мышь/клавиатура — обычный click с дедупом по времени. */
+(function bindCartButton(){
+  var btn = document.getElementById('cartBtn');
+  if(!btn){ return document.addEventListener('DOMContentLoaded', bindCartButton, {once:true}); }
+  if(btn.dataset.ewBound === '1') return;
+  btn.dataset.ewBound = '1';
+  var sx=0, sy=0, moved=false, lastTouchEnd=0;
+  btn.addEventListener('touchstart', function(e){
+    var t = e.touches && e.touches[0]; sx = t?t.clientX:0; sy = t?t.clientY:0; moved=false;
+  }, {passive:true});
+  btn.addEventListener('touchmove', function(e){
+    var t = e.touches && e.touches[0]; if(!t) return;
+    if(Math.abs(t.clientX-sx) > 10 || Math.abs(t.clientY-sy) > 10) moved=true;
+  }, {passive:true});
+  btn.addEventListener('touchend', function(e){
+    if(moved) return;                 /* это был свайп/скролл — не открываем */
+    e.preventDefault();               /* гасим синтетический click iOS → нет дубля */
+    lastTouchEnd = Date.now();
+    ewOpenCart();
+  }, {passive:false});
+  btn.addEventListener('click', function(){
+    if(Date.now() - lastTouchEnd < 700) return;  /* тап уже обработан через touchend */
+    ewOpenCart();
+  });
+})();
 function toggleCart(){
   const panel=document.getElementById('cartPanel');
   const overlay=document.getElementById('cartOverlay');
