@@ -11567,80 +11567,50 @@ input, select, textarea {
 .relic-section {
   position: relative;
   z-index: 2;
-  padding: clamp(64px, 9vw, 120px) max(20px, 4vw);
-  background: linear-gradient(to bottom, transparent, rgba(8,8,26,0.45) 30%, transparent);
+  padding: 110px 0 30px;
+  scroll-margin-top: 80px;
 }
-/* T3: на мобиле секция «Мощь Реликвии» имела ~64px воздуха сверху и снизу +
-   крупный отступ под шапкой — раздел выглядел разрежённым. Сжимаем. */
 @media(max-width:720px){
-  .relic-section { padding-top: 40px; padding-bottom: 40px; }
-  .relic-head { margin-bottom: 26px; padding-bottom: 22px; }
-  .relic-title {
-    font-size: clamp(26px, 8vw, 36px);
-    font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    white-space: normal;
-  }
+  .relic-section { padding-top: 56px; padding-bottom: 10px; }
+  .relic-head { margin-bottom: 26px; }
 }
-.relic-in {
-  max-width: 1320px;
-  margin: 0 auto;
-}
-.relic-head {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(28px, 5vw, 80px);
-  align-items: center;
-  margin-bottom: clamp(36px, 5vw, 64px);
-  padding-bottom: clamp(28px, 4vw, 48px);
-  border-bottom: 1px solid var(--line);
-}
+.relic-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; position: relative; }
+
+/* ── Шапка секции — v2 .sec-head: марка с янтарным штрихом, заголовок, лид ── */
+.relic-head { max-width: 76ch; margin-bottom: 40px; }
 .relic-kicker {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.22em;
-  color: var(--ink-3);
+  color: var(--ink-4);
   text-transform: uppercase;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
+.relic-kicker::before { content: ""; width: 26px; height: 1px; background: var(--warm); box-shadow: 0 0 8px rgba(209,160,74,0.6); }
 .relic-title {
   font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(34px, 4.4vw, 56px);
-  letter-spacing: -0.02em;
-  line-height: 1.02;
+  font-weight: 700;
+  font-size: clamp(26px, 4vw, 44px);
+  line-height: 1.12;
   color: var(--ink);
-  white-space: nowrap;
+  letter-spacing: 0;
+  text-wrap: balance;
 }
 .relic-lede {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.9;
-  letter-spacing: 0.03em;
-  color: var(--ink-2);
-  max-width: 62ch;
-  align-self: center;
+  margin: 18px 0 0;
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+  max-width: 66ch;
 }
-.relic-lede em {
-  color: var(--ink);
-  font-style: normal;
-  font-weight: 500;
-}
-.relic-lede p { margin: 0; }
-.relic-lede p + p { margin-top: 12px; }
-.relic-spec .echo-proper { text-transform: none; }
-@media (min-width: 961px) {
-  .relic-lede {
-    max-width: 84ch;
-  }
-}
+.relic-lede em { font-style: normal; color: var(--cyan-hi); }
+.relic-lede strong { color: var(--ink-2); font-weight: 600; }
 
-.relic-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: clamp(14px, 1.6vw, 22px);
-}
+.relic-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .relic-mobile-nav {
   display: none;
 }
@@ -11665,121 +11635,81 @@ input, select, textarea {
   box-shadow: 0 0 4px var(--red);
 }
 
-/* ── Карточка класса ── */
+/* ── Карточка класса — v2 .power-card: стеклянная плитка, малая литера,
+      янтарные фрагменты, лифт на ховере с рамкой цвета класса ── */
 .relic-card {
   position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: clamp(20px, 2vw, 28px);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  cursor: pointer;   /* T17: карточка ведёт в каталог соответствующей категории */
-  transition: transform var(--t-med) var(--ease-out), border-color var(--t-med) var(--ease-out), background var(--t-med) var(--ease-out);
+  border-radius: 20px;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.09);
+  padding: 20px 20px 18px;
+  cursor: pointer;   /* карточка ведёт в каталог соответствующей категории */
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: background 0.3s, border-color 0.3s, transform 0.3s var(--ease-out);
 }
 .relic-card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-/* T17→T24: autopick-анимация упразднена на всех устройствах — единый
-   «телефонный» отклик: рамка активной категории появляется мгновенно
-   и чисто, без сжатий и колец. Класс остаётся как маркер состояния. */
-.cat-chip.cat-chip-autopick { animation: none; }
-.relic-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(280px 200px at 80% -20%, var(--_glow, transparent), transparent 60%);
-  opacity: 0.5;
-  pointer-events: none;
-  transition: opacity var(--t-med) var(--ease-out);
-}
 @media (hover:hover) and (pointer:fine) {
-  .relic-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--line-hi);
-    background: var(--surface-hi);
-  }
-  .relic-card:hover::before { opacity: 1; }
+  .relic-card:hover { background: rgba(255,255,255,0.055); transform: translateY(-3px); }
+  .relic-card[data-class="K"]:hover { border-color: rgba(232,195,122,0.3); }
+  .relic-card[data-class="C"]:hover { border-color: rgba(76,224,224,0.3); }
+  .relic-card[data-class="R"]:hover { border-color: rgba(76,224,224,0.4); }
+  .relic-card[data-class="S"]:hover { border-color: rgba(230,69,69,0.35); }
 }
-.relic-card.relic-press {
-  transform: translateY(-2px);
-  border-color: var(--line-hi);
-  background: var(--surface-hi);
-}
-.relic-card.relic-press::before { opacity: 1; }
-
-/* Цветовая маркировка по классу */
-.relic-card[data-class="K"] { --_glow: rgba(140,140,180,0.18); --_accent: #8e8eb0; }
-.relic-card[data-class="C"] { --_glow: rgba(0,200,200,0.16);   --_accent: #00c8c8; }
-.relic-card[data-class="R"] { --_glow: rgba(209,160,74,0.18);  --_accent: #d1a04a; }
-.relic-card[data-class="S"] { --_glow: rgba(192,40,40,0.20);   --_accent: #e63838; }
+/* тап-отклик на мобиле — тот же вид, что ховер v2 */
+.relic-card.relic-press { background: rgba(255,255,255,0.055); transform: translateY(-3px); }
+/* autopick-анимация чипа каталога упразднена (см. T24) — класс-маркер остаётся */
+.cat-chip.cat-chip-autopick { animation: none; }
 
 .relic-letter {
-  position: relative;
-  z-index: 1;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(56px, 6vw, 88px);
-  line-height: 0.9;
-  letter-spacing: -0.04em;
-  color: var(--_accent, var(--ink));
-  margin-bottom: 8px;
-  text-shadow: 0 0 32px var(--_glow);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--ink);
 }
 .relic-name {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 22px;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-  margin-bottom: 6px;
-}
-.relic-spec {
-  position: relative;
-  z-index: 1;
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--ink-4);
-  text-transform: none;
-  margin-bottom: 18px;
-}
-.relic-frags {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  gap: 4px;
-  margin-bottom: 18px;
-}
-.relic-frag {
-  flex: 1;
-  height: 4px;
-  background: var(--line);
-  border-radius: 2px;
-  transition: background var(--t-med) var(--ease-out);
-}
-.relic-frag.on {
-  background: var(--_accent, var(--ink));
-  box-shadow: 0 0 12px var(--_glow);
-}
-.relic-desc {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.55;
+  letter-spacing: 0.18em;
   color: var(--ink-2);
-  margin: 0;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+.relic-spec {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--ink-4);
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+.relic-frags { display: flex; gap: 5px; margin-top: 12px; }
+.relic-frag { width: 18px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); }
+.relic-frag.on { background: linear-gradient(90deg, #edc87c, #c3943c); box-shadow: 0 0 9px rgba(209,160,74,0.5); }
+.relic-desc {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  margin: 14px 0 0;
 }
 
-/* ── Моб-версия: горизонтальная snap-лента ── */
+/* ── Финальная строка после сетки — v2 .power-lede ── */
+.relic-lede-after {
+  margin: 26px 0 0;
+  max-width: 72ch;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  color: var(--ink-4);
+}
+.relic-lede-after strong { color: var(--ink-3); font-weight: 600; }
+
+/* ── Моб-версия: горизонтальная snap-лента (машинерия сохранена) ── */
 @media (max-width: 860px) {
-  .relic-head {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    align-items: start;
-  }
+  .relic-head { max-width: none; }
   .relic-lede { max-width: none; }
 }
 @media (max-width: 720px) {
@@ -11788,6 +11718,7 @@ input, select, textarea {
     padding-right: 0;
   }
   .relic-in {
+    width: auto;
     padding-left: max(20px, 4vw);
     padding-right: max(20px, 4vw);
   }
@@ -11817,28 +11748,9 @@ input, select, textarea {
     max-width: none;
     scroll-snap-align: center;
     scroll-snap-stop: always;
-    min-height: 224px;
+    min-height: 208px;
     touch-action: auto;
   }
-@media (hover:hover) and (pointer:fine) {
-
-  .relic-card:hover {
-    transform: none;
-    border-color: var(--line);
-    background: var(--surface);
-  }
-}
-@media (hover:hover) and (pointer:fine) {
-
-  .relic-card:hover::before { opacity: .5; }
-}
-  .relic-card.relic-press {
-    transform: translateY(-2px) scale(.992);
-    border-color: var(--line-hi);
-    background: var(--surface-hi);
-  }
-  .relic-card.relic-press::before { opacity: 1; }
-  .relic-letter { font-size: 64px; }
   .relic-mobile-nav {
     display: flex;
     align-items: center;
@@ -15865,27 +15777,22 @@ body.menu-open .hdr-burger i:nth-child(2) { top: 21px; transform: rotate(-45deg)
 .hero .cta-echo { color: var(--cyan-hi) !important; }
 
 /* ── ТЕРМИНАЛ APERTURA · материал Линза ────────────────────────────
-   ВАЖНО (iOS-морг): на таче у терминала НЕТ backdrop-filter — это было
-   единственное ПОСТОЯННОЕ стекло в контенте (в чистом бэкапе таких нет
-   вообще), и оно держало композитор iOS в хрупком режиме: любое изменение
-   на странице пересобирало слои вокруг → вспышки текста рядом (юзер видел
-   морг именно на hero). За терминалом почти чёрный фон — блюр там ничего
-   не даёт визуально; плотная поверхность выглядит так же. Стекло — только
-   на десктопе (hover+fine), он не моргал никогда. */
+   Стекло СТАТИЧНОЕ на всех платформах (политика юзера: стеклим везде,
+   где нет вреда производительности). Итог саги с миганием: убивали не
+   статичные стёкла, а АНИМАЦИИ на стекле — интерполяция blur, фейды
+   стеклянных панелей, transition-after-animation. Правила безопасности:
+   filter/backdrop-filter НИКОГДА не анимируются; переходы на стеклянном
+   элементе запрещены; анимации внутри — только transform (эквалайзер
+   уже на scaleY): дети не инвалидируют backdrop-снимок. */
 .hero-terminal {
   position: relative;
-  background: rgba(14, 16, 28, 0.82) !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(175%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(175%);
   border: 1px solid var(--hairline-hi) !important;
   border-radius: 22px !important;
   box-shadow: var(--lens-shadow) !important;
   overflow: hidden;
-}
-@media (hover: hover) and (pointer: fine){
-  .hero-terminal {
-    background: var(--glass-bg) !important;
-    backdrop-filter: blur(var(--glass-blur)) saturate(175%);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(175%);
-  }
 }
 /* Старая shimmer-полоска (::before, 2px красно-cyan) и mask-кант убраны —
    давали «полоски» по верхней кромке. Ровная тонкая рамка чище. */
@@ -16233,16 +16140,9 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 <section class="relic-section" id="relic" aria-labelledby="relicTitle">
   <div class="relic-in">
     <div class="relic-head">
-      <div>
-        <div class="relic-kicker">// КАК ЧИТАТЬ КАТАЛОГ · МОЩЬ РЕЛИКВИИ</div>
-        <h2 class="relic-title" id="relicTitle">Мощь Реликвии.</h2>
-      </div>
-      <div class="relic-lede">
-        <p>Это глубина контакта с <strong>MARKETSPACE</strong>.</p>
-        <p>За каждой реликвией стоит <strong>Виш</strong> — житель MARKETSPACE. Он живёт, мечтает об Истоке и не знает, что однажды его путь завершится <strong>Переходом</strong> — конвертацией в физический объект.</p>
-        <p><strong>Мощь</strong> показывает силу этой связи: от короткого импульса до полного резонанса.</p>
-        <p>Чем выше Мощь, тем больше видео-фрагментов из жизни Виша станет доступно в EchoWorld — и тем больше слотов <strong>Эхо</strong> откроется для ваших слов, которые однажды прозвучат его устами.</p>
-      </div>
+      <div class="relic-kicker">КАК ЧИТАТЬ КАТАЛОГ</div>
+      <h2 class="relic-title" id="relicTitle">Мощь Реликвии</h2>
+      <p class="relic-lede">Это глубина контакта с <strong>MARKETSPACE</strong>. За каждой реликвией стоит <strong>Виш</strong> — житель MARKETSPACE. Он живёт, мечтает об Истоке и не знает, что однажды его путь завершится <strong>Переходом</strong> — конвертацией в физический объект. <em>Мощь</em> показывает силу этой связи: от короткого импульса до полного резонанса.</p>
     </div>
 
     <div class="relic-grid">
@@ -16301,6 +16201,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
     <div class="relic-mobile-nav" id="relicMobileNav">
       <div class="relic-mobile-dots" id="relicMobileDots"></div>
     </div>
+    <p class="relic-lede-after">Чем выше Мощь, тем больше видео-фрагментов из жизни Виша станет доступно в EchoWorld — и тем больше слотов <strong>Эхо</strong> откроется для ваших слов, которые однажды прозвучат его устами.</p>
   </div>
 </section>
 
