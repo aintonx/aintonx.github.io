@@ -16078,7 +16078,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <a href="#worlds">МИРЫ</a>
       <a href="#faq">FAQ</a>
     </nav>
-    <button class="hdr-cart" id="cartBtn" onclick="toggleCart()" aria-label="Корзина">
+    <button class="hdr-cart" id="cartBtn" onclick="ewOpenCart()" aria-label="Корзина">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2.5l2.2 11.5a1.5 1.5 0 0 0 1.5 1.2h7.8a1.5 1.5 0 0 0 1.5-1.2L20 8H6"/></svg>
       <span class="lbl-t">КОРЗИНА</span><span class="n" id="cartCount">0</span>
     </button>
@@ -22403,19 +22403,62 @@ async function createCheckoutOrderFromReservation(opts){
     bind();
   }
 })();
+/* ── ДИАГНОСТИКА КОРЗИНЫ (включается ?cartdiag=1) ──────────────────────
+   Логирует каждое событие на кнопке корзины и каждый вход в toggleCart
+   с меткой времени. Если на iPhone корзина всё ещё «двоится» — открыть
+   echoworld.space/?cartdiag=1, тапнуть корзину, вызвать в консоли
+   EWCARTDUMP() и прислать вывод. Тогда видно ТОЧНО, что и когда стреляет. */
+window.__cartDiag = /(?:\?|&)cartdiag=1/.test(location.search);
+window.__cartLogArr = [];
+window.__cartLog = function(msg){
+  var e = { t: Math.round(performance.now()), msg: msg };
+  window.__cartLogArr.push(e);
+  try{ console.log('%c[CART] +'+e.t+'ms · '+msg, 'color:#e8c37a'); }catch(_){}
+};
+window.EWCARTDUMP = function(){ return window.__cartLogArr.map(function(e){return '+'+e.t+'ms  '+e.msg;}).join('\n'); };
+(function(){
+  if(!window.__cartDiag) return;
+  function attach(){
+    var btn = document.getElementById('cartBtn');
+    if(!btn) { return setTimeout(attach, 200); }
+    ['pointerdown','pointerup','touchstart','touchend','click','dblclick'].forEach(function(type){
+      btn.addEventListener(type, function(ev){
+        __cartLog('RAW '+type+'  (detail='+(ev.detail||0)+', isTrusted='+ev.isTrusted+')');
+      }, true);
+    });
+    __cartLog('диагностика активна — тапни корзину, затем EWCARTDUMP()');
+  }
+  attach();
+})();
+
+/* Кнопка корзины в шапке = ТОЛЬКО ОТКРЫТЬ (идемпотентно). Ни ghost-click,
+   ни двойной тап iOS не откроют корзину дважды и не закроют её: если она
+   уже открыта или анимируется — вызов игнорируется. Закрытие — крестиком
+   и кликом по фону. */
+function ewOpenCart(){
+  var panel=document.getElementById('cartPanel');
+  if(!panel) return;
+  if(panel.classList.contains('open') || panel.classList.contains('cart-opening') || panel.classList.contains('cart-closing')){
+    if(window.__cartDiag) __cartLog('ewOpenCart ИГНОР (уже открыта/анимируется)');
+    return;
+  }
+  if(window.__cartDiag) __cartLog('ewOpenCart → toggleCart');
+  toggleCart();
+}
 function toggleCart(){
-  /* защита от двойного срабатывания (iOS ghost-click / двойной тап):
-     повторный вызов в течение 350мс игнорируется — иначе корзина
-     открывалась дважды подряд */
-  const _tcNow = Date.now();
-  if(_tcNow - (toggleCart._lastCall || 0) < 350) return;
-  toggleCart._lastCall = _tcNow;
   const panel=document.getElementById('cartPanel');
   const overlay=document.getElementById('cartOverlay');
-  /* пока играет анимация открытия/закрытия — любые вызовы игнорируются:
-     каким бы ни был источник повторного клика, панель не дёрнется дважды */
-  if(panel.classList.contains('cart-opening') || panel.classList.contains('cart-closing')) return;
+  if(!panel) return;
+  /* ЕДИНЫЙ ЗАМОК от двойного срабатывания на iOS (ghost-click / двойной тап /
+     синтетический click после touch). Любой вызов — открыть ИЛИ закрыть —
+     в течение 420мс после предыдущего смена состояния игнорируется, как и
+     вызовы во время анимации. Ставится ПЕРВЫМ, до чтения состояния. */
+  const _tcNow = Date.now();
+  if(_tcNow - (toggleCart._lock || 0) < 420) { if(window.__cartDiag) __cartLog('toggleCart BLOCKED (lock '+(_tcNow-(toggleCart._lock||0))+'ms)'); return; }
+  if(panel.classList.contains('cart-opening') || panel.classList.contains('cart-closing')) { if(window.__cartDiag) __cartLog('toggleCart BLOCKED (animating)'); return; }
+  toggleCart._lock = _tcNow;
   const isOpen=panel.classList.contains('open');
+  if(window.__cartDiag) __cartLog('toggleCart RUN → '+(isOpen?'close':'OPEN'));
   if(isOpen){
     // ── ЗАКРЫТИЕ корзины: keyframe-анимация уезда вправо ──────────
     // Через transition закрытие иногда «съедалось»: остаточный inline
