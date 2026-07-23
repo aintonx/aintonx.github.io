@@ -4841,10 +4841,12 @@ body.cart-open header { z-index: 398 !important; }
    карточки товара, когда body ещё может быть в scroll-restoring и
    глобально глушить transitions. Animation не срезается, поэтому панель
    въезжает плавно, без резкого появления. */
+/* Только transform: opacity/filter в кейфреймах заставляли iOS пересобирать
+   слой посреди анимации → визуальный ПОВТОР въезда («двойное открытие»).
+   Чистый transform едет целиком на композиторе. */
 @keyframes cartSlideIn {
-  0%   { transform: translateX(100%); opacity: .96; filter: blur(1px); }
-  70%  { opacity: 1; filter: blur(0); }
-  100% { transform: translateX(0); opacity: 1; filter: none; }
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(0); }
 }
 @keyframes cartOverlayFadeIn {
   from { opacity: 0; }
@@ -4852,7 +4854,11 @@ body.cart-open header { z-index: 398 !important; }
 }
 .cart-panel.cart-opening {
   animation: cartSlideIn .42s cubic-bezier(.16,1,.3,1) both;
-  will-change: transform, opacity, filter;
+  will-change: transform;
+  /* Глушим transition на время анимации: Safari при снятии анимационного
+     класса мог взять «прежний» transform БЕЗ учёта анимации (за экраном)
+     и проиграть transition заново → панель въезжала ВТОРОЙ раз. */
+  transition: none;
 }
 .cart-overlay.cart-opening {
   animation: cartOverlayFadeIn .28s ease-out both;
@@ -15110,15 +15116,16 @@ body._blur-fading #_blurW {
 .cart-overlay.cart-opening {
   animation: ewModalLayerBackdropIn .24s ease-out both !important;
 }
+/* Только transform (см. комментарий у первого определения): opacity/filter
+   в кейфреймах панели → пересборка слоя на iOS → визуальный повтор въезда. */
 @keyframes cartSlideOut {
-  0%   { transform: translateX(0); opacity: 1; }
-  72%  { transform: translateX(92%); opacity: 1; }
-  100% { transform: translateX(100%); opacity: .98; }
+  0%   { transform: translateX(0); }
+  72%  { transform: translateX(92%); }
+  100% { transform: translateX(100%); }
 }
 @keyframes cartSlideIn {
-  0%   { transform: translateX(100%); opacity: .98; filter: blur(1px); }
-  70%  { opacity: 1; filter: blur(0); }
-  100% { transform: translateX(0); opacity: 1; filter: none; }
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(0); }
 }
 
 /* APERTURA STATUS / Architect уже имеют отдельный overlay; меняем только
@@ -22544,8 +22551,18 @@ function toggleCart(){
     panel.classList.add('open','cart-opening');
     if(panel._cartOpeningTimer) clearTimeout(panel._cartOpeningTimer);
     panel._cartOpeningTimer = setTimeout(()=>{
+      /* Снятие анимационного класса — БЕЗ переходов: Safari при удалении
+         анимации мог посчитать «прежним» transform без её учёта (панель
+         за экраном) и проиграть transition .32s заново — панель видимо
+         въезжала ВТОРОЙ раз («двойное открытие» на iPhone юзера).
+         transition:none на момент снятия делает повтор невозможным. */
+      panel.style.transition = 'none';
+      if(overlay) overlay.style.transition = 'none';
       panel.classList.remove('cart-opening');
       if(overlay) overlay.classList.remove('cart-opening');
+      void panel.offsetHeight; /* применить снятие класса без переходов */
+      panel.style.transition = '';
+      if(overlay) overlay.style.transition = '';
     }, 460);
     _hideAllNotifs(); _closeWorldDrop();
   }
