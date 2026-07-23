@@ -8735,18 +8735,25 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
 }
 .cat-chip.active span { border: none; background: none; color: var(--warm-hi); }
 /* Нота каталога — v2 cat-note с янтарной точкой */
+/* Нота каталога — простой текст с точкой (v2, без бокса-обёртки), по ширине
+   ряда карточек: те же max-width/padding, что у .catalog-stage/.pgrid */
 .cat-expand {
-  max-width: 1296px;
+  max-width: 1360px;
+  margin: 16px auto 0;
+  padding: 0 32px;
   display: flex;
   gap: 10px;
   align-items: baseline;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
 }
 .cat-expand-dot {
   width: 5px; height: 5px; border-radius: 50%;
   background: var(--warm);
   box-shadow: 0 0 8px rgba(209,160,74,0.7);
   flex-shrink: 0;
-  transform: translateY(-2px);
+  transform: translateY(4px);
   animation: none;
 }
 .cat-expand-text {
@@ -9083,8 +9090,11 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
     touch-action: auto;
   }
   .cat-expand {
-    margin: 14px 20px 0 !important;
+    /* 13px = выравнивание по левому краю карточки: catwrap смещён на 7px
+       (margin 6 + рамка 1), карточка стоит на 20 → нота margin 13 = left 20 */
+    margin: 14px 13px 2px !important;
     max-width: none !important;
+    padding: 0 !important;
   }
   .catalog-stage {
     max-width: none;
@@ -12599,8 +12609,11 @@ button, a, [role="button"], label,
   transition: background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
 }
 .cat-chip span {
-  font-family: var(--font-num);
+  /* счётчик тем же моно-шрифтом, что и название — иначе цифра «плавала»
+     по вертикали относительно текста (разные метрики шрифтов) */
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 .cat-chip[data-pwr="K"].active { border-color: rgba(140,140,180,0.55); background: rgba(140,140,180,0.10); color: var(--ink); }
 .cat-chip[data-pwr="K"].active span { color: #8e8eb0; border-color: rgba(140,140,180,0.4); background: rgba(140,140,180,0.10); }
@@ -16314,7 +16327,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <button class="cat-chip" data-cat="K" data-pwr="K" onclick="setCatalogCategory('K',this)">K · Излом<span>4</span></button>
     </div>
   </div>
-  <div class="cat-expand" style="margin:16px 32px 0; max-width:calc(1360px - 0px);">
+  <div class="cat-expand">
     <div class="cat-expand-dot"></div>
     <div class="cat-expand-text">Каталог формируется из самых плотных потоков желаний — тех, что звучат сейчас, и тех, что не стихают годами. Новые реликвии появятся по мере завершения текущих циклов конденсации.</div>
   </div>
@@ -17440,21 +17453,17 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
    с тёплым переходом красный→циан и мягкое свечение строго ВНУТРЬ
    контейнера (overflow:hidden не выпускает его наружу). Один темп
    перелива на весь сайт. */
+/* Переливающиеся полоски убраны со ВСЕХ контейнеров-разделов (просьба юзера):
+   ни shimmer-градиента, ни свечения — чистая кромка контейнера. */
 .architect-terminal::before, .donate-right::before, .cond-screen::before,
 .preorder-terminal::before, .hero-terminal::before, .echo-right::before,
 .faq-unlock-strip, .swipe-overlay-card::before,
 .apertura-worlds::before, .catalog-main-section::before,
 .cookie-banner-strip {
-  top: 0 !important;
-  height: 2px;
-  background: linear-gradient(90deg,
-    var(--red) 0%, #d4503f 20%, #8f7f86 38%,
-    var(--cyan) 50%, #8f7f86 62%, #d4503f 80%, var(--red) 100%);
-  background-size: 220% 100%;
-  animation: shimmer 4.2s linear infinite;
-  opacity: 1;
-  filter: none;
-  box-shadow: 0 1px 10px -2px rgba(192,40,40,0.42), 0 2px 18px -6px rgba(0,200,200,0.32);
+  display: none !important;
+  animation: none !important;
+  background: none !important;
+  box-shadow: none !important;
 }
 /* Кромка без «волоска»: у носителей полоски верхний сегмент рамки снят */
 .hero-terminal, .architect-terminal, .donate-right, .cond-screen,
