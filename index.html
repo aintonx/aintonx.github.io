@@ -10863,8 +10863,11 @@ input, select, textarea {
   /* 40px max / 3vw — «MARKETSPACE» помещается в половину контейнера на всех
      десктоп-ширинах (961→1440+), чтобы левая колонка не распирала сетку. */
   font-size: clamp(28px, 3vw, 40px);
-  line-height: 1.04;
-  letter-spacing: -0.02em;
+  /* Интерлиньяж и трекинг подняты: при -0.02em и 1.04 «Отправить Эхо»
+     читалось слипшимся комом (правка юзера 2026-07-30). */
+  line-height: 1.14;
+  letter-spacing: 0;
+  word-spacing: 0.04em;
   color: var(--white);
   word-break: keep-all;
 }
@@ -16358,7 +16361,8 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   <symbol id="i-grid-3x3" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M3 15h18" /><path d="M9 3v18" /><path d="M15 3v18" /></symbol>
   <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 19v3" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><rect x="9" y="2" width="6" height="13" rx="3" /></symbol>
   <symbol id="i-mic-vocal" viewBox="0 0 24 24"><path d="m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12" /><path d="M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5" /><circle cx="16" cy="7" r="5" /></symbol>
-  <symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></symbol>
+  <symbol id="i-re" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="3" width="5" height="18" rx="1" /><rect x="5" y="3" width="5" height="18" rx="1" /></symbol>
   <symbol id="i-cpu" viewBox="0 0 24 24"><path d="M12 20v2" /><path d="M12 2v2" /><path d="M17 20v2" /><path d="M17 2v2" /><path d="M2 12h2" /><path d="M2 17h2" /><path d="M2 7h2" /><path d="M20 12h2" /><path d="M20 17h2" /><path d="M20 7h2" /><path d="M7 20v2" /><path d="M7 2v2" /><rect x="4" y="4" width="16" height="16" rx="2" /><rect x="8" y="8" width="8" height="8" rx="1" /></symbol>
   <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></symbol>
@@ -17019,14 +17023,13 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
     <div class="echo-right" id="echoPaneForm">
       <!-- Шапка панели по образцу v2: слева чип передатчика, справа —
            куда уходит сигнал. Частота переехала в луч (см. ниже). -->
-      <div class="echo-channel">
-        <div class="echo-channel-state">
-          <div class="echo-channel-dot"></div>
-          <span>ЭХО · ПЕРЕДАТЧИК</span>
-        </div>
-        <span class="echo-channel-aux">→ MARKETSPACE · БУДУЩИЙ ФРАГМЕНТ</span>
+      <div class="echo-channel g-head">
+        <span class="echo-channel-state g-chip">
+          <span class="echo-channel-dot g-dot c"></span>ЭХО · ПЕРЕДАТЧИК
+        </span>
+        <span class="echo-channel-aux g-aux">→ MARKETSPACE · БУДУЩИЙ ФРАГМЕНТ</span>
       </div>
-      <div class="echo-radar-wrap">
+      <div class="echo-radar-wrap beam">
         <!-- Осциллограф-консоль: graticule (CSS) + светящийся cyan-луч (echoOscPath,
              анимируется в _echoStartOsc). При смене канала — «перенастройка сигнала». -->
         <div class="echo-scope-grat"></div>
@@ -17037,19 +17040,19 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
           <path class="echo-osc-ghost echo-osc-ghost-r" id="echoOscGhostR" d="M0,100 L400,100"></path>
           <path class="echo-osc-path" id="echoOscPath" d="M0,100 L400,100"></path>
         </svg>
-        <span class="echo-beam-freq" id="echoFreqDisplay">12.847 GHz</span>
+        <span class="echo-beam-freq fr" id="echoFreqDisplay">12.847 GHZ</span>
       </div>
 
       <div class="echo-form">
         <div class="echo-mode-toggle" role="tablist">
-          <div class="echo-mode-track">
-            <button type="button" class="echo-mode-pill active" data-echo-mode="text" onclick="setEchoMode('text')" role="tab" aria-selected="true">
+          <div class="echo-mode-track g-tabs">
+            <button type="button" class="echo-mode-pill g-tab on active" data-echo-mode="text" onclick="setEchoMode('text')" role="tab" aria-selected="true">
               <span class="echo-mode-pill-label">Текст</span>
-              <span class="echo-mode-pill-price">599 ₽</span>
+              <span class="echo-mode-pill-price p">599 ₽</span>
             </button>
-            <button type="button" class="echo-mode-pill" data-echo-mode="voice" onclick="setEchoMode('voice')" role="tab" aria-selected="false">
+            <button type="button" class="echo-mode-pill g-tab" data-echo-mode="voice" onclick="setEchoMode('voice')" role="tab" aria-selected="false">
               <span class="echo-mode-pill-label">Голос</span>
-              <span class="echo-mode-pill-price">1499 ₽</span>
+              <span class="echo-mode-pill-price p">1499 ₽</span>
             </button>
             <span class="echo-mode-indicator" id="echoModeIndicator"></span>
           </div>
@@ -17058,48 +17061,51 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <!-- Stage для содержимого вкладок Текст/Голос. При переключении
              вкладки контейнер запускает overlay-глитч с звуковой волной,
              которая «съедает» старый контент и обнажает новый. -->
-        <div class="echo-tab-stage" id="echoTabStage">
-          <div class="echo-tab-pane echo-tab-pane-text" id="echoTabPaneText">
+        <div class="echo-tab-stage g-stage" id="echoTabStage">
+          <div class="echo-tab-pane echo-tab-pane-text g-pane" id="echoTabPaneText">
             <!-- Слоты слов (v2): семь делений загораются по мере набора,
                  восьмое и дальше — красным: сигнал не влезает в канал. -->
-            <div class="echo-slots" id="echoSlots" aria-hidden="true">
+            <div class="echo-slots slots" id="echoSlots" aria-hidden="true">
               <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
             </div>
-            <textarea class="echo-text-area" id="echoTextInput"
+            <textarea class="echo-text-area g-well" id="echoTextInput"
               placeholder="Семь слов на ту сторону"
               maxlength="120" autocomplete="off" autocorrect="off" autocapitalize="off"
               spellcheck="false" oninput="updateEchoTextMeta()"
               onfocus="_echoSetTyping(true)" onblur="_echoSetTyping(false)"></textarea>
-            <div class="echo-text-meta">
+            <div class="echo-text-meta g-meta">
               <span>до 7 слов</span>
               <span id="echoWordCount">0 / 7 слов</span>
             </div>
           </div>
 
-          <div class="echo-tab-pane echo-tab-pane-voice hidden" id="echoTabPaneVoice">
-            <div class="echo-voice" id="echoVoiceBlock">
-              <button type="button" class="echo-voice-btn" id="echoVoiceBtn" onclick="toggleEchoRecord()" aria-label="Записать голос">
-                <svg class="ico echo-voice-icon ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg>
-              </button>
-              <div class="echo-voice-time" id="echoVoiceTime">0.0 сек</div>
-              <div class="echo-voice-status" id="echoVoiceStatus">Нажмите для записи · до 3 сек</div>
-              <div class="echo-voice-preview" id="echoVoicePreview">
-                <!-- T21: свой технологичный плеер вместо нативного iOS <audio controls> -->
-                <audio id="echoVoiceAudio" preload="auto" playsinline style="display:none"></audio>
-                <div class="echo-player" id="echoPlayer">
-                  <button type="button" class="echo-player-btn" id="echoPlayBtn" onclick="_echoTogglePlay()" aria-label="Воспроизвести запись">
-                    <svg class="echo-player-ico-play ew-mask-icon ew-icon--play" aria-hidden="true"><use href="#i-play"/></svg>
-                    <svg class="echo-player-ico-pause ew-mask-icon ew-icon--pause" aria-hidden="true"><use href="#i-pause"/></svg>
-                  </button>
-                  <div class="echo-player-track" id="echoPlayerTrack" onclick="_echoSeek(event)">
-                    <div class="echo-player-scan" aria-hidden="true"></div>
-                    <div class="echo-player-prog"><div class="echo-player-fill" id="echoPlayerFill"></div></div>
-                  </div>
-                  <span class="echo-player-time" id="echoPlayerTime">0.0</span>
-                </div>
-                <button type="button" class="echo-voice-retry" onclick="resetEchoVoice()">Перезаписать</button>
+          <div class="echo-tab-pane echo-tab-pane-voice hidden g-pane" id="echoTabPaneVoice">
+            <!-- Голосовая зона эталона: микрофон 56px с кольцом прогресса,
+                 живая волна (реальная амплитуда с микрофона), время и статус
+                 справа, под ними две кнопки ПРОСЛУШАТЬ / ЗАНОВО. -->
+            <div class="rec-zone" id="echoVoiceBlock">
+              <div class="mic-wrap">
+                <button type="button" class="mic-btn echo-voice-btn" id="echoVoiceBtn" onclick="toggleEchoRecord()" aria-label="Записать голос">
+                  <svg class="ico echo-voice-icon ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg>
+                </button>
+                <svg class="mic-ring" viewBox="0 0 66 66" aria-hidden="true"><circle id="echoMicRing" cx="33" cy="33" r="31"></circle></svg>
+              </div>
+              <div class="wave" id="echoWave" aria-hidden="true"></div>
+              <div class="voice-side">
+                <div class="tm echo-voice-time" id="echoVoiceTime">0.0</div>
+                <div class="st echo-voice-status" id="echoVoiceStatus">ДО 3 СЕК</div>
               </div>
             </div>
+            <div class="voice-ctl">
+              <button type="button" class="vc-btn" id="echoPlayBtn" onclick="_echoTogglePlay()" disabled>
+                <svg class="ew-mask-icon ew-icon--play" aria-hidden="true"><use href="#i-play"/></svg><span id="echoPlayLabel">ПРОСЛУШАТЬ</span>
+              </button>
+              <button type="button" class="vc-btn" id="echoRetryBtn" onclick="resetEchoVoice()" disabled>
+                <svg class="ew-mask-icon ew-icon--re" aria-hidden="true"><use href="#i-re"/></svg>ЗАНОВО
+              </button>
+              <span class="note">ГОЛОС ПРОЗВУЧИТ УСТАМИ ВИША</span>
+            </div>
+            <audio id="echoVoiceAudio" preload="auto" playsinline style="display:none"></audio>
           </div>
 
           <!-- Overlay для глитч-перехода между вкладками -->
@@ -17112,12 +17118,14 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
           </div>
         </div>
 
-        <button type="button" class="echo-submit" id="echoSubmitBtn" onclick="openEchoOrder()">
-          Передать Эхо<span class="echo-submit-price" id="echoSubmitPrice" style="display:none">· 599 ₽</span>
-        </button>
+        <div class="g-actions">
+          <button type="button" class="echo-submit g-btn" id="echoSubmitBtn" onclick="openEchoOrder()">
+            Передать Эхо<span class="echo-submit-price" id="echoSubmitPrice" style="display:none">· 599 ₽</span>
+          </button>
+        </div>
       </div>
       <!-- Подвал панели (v2): состояние канала слева, куда ложится Эхо — справа -->
-      <div class="echo-foot">
+      <div class="echo-foot g-foot">
         <span id="echoFootStatus">ОЖИДАНИЕ СИГНАЛА</span>
         <span>ХРАНИТСЯ В ПАМЯТИ APERTURA</span>
       </div>
@@ -17843,21 +17851,21 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   .catalog-main-section { box-shadow: inset 0 1px 0 rgba(255,255,255,0.07) !important; }
 }
 /* ══════════════════════════════════════════════════════════════════
-   ЭХО · ТЕРМИНАЛ ПО ЭТАЛОНУ v2 (.glass) — жидкое стекло, 2026-07-30
-   Перенос из design/site-v2.html один в один: материал панели, канты,
-   блик, вкладки-пилюли, поле-«колодец», кнопки. Раньше внутренности
-   остались в старом языке (плоские прямоугольники, циановая заливка) —
-   правка юзера: «терминалы берутся с эталона, кнопки под стекло».
-   Блок стоит поздно в каскаде, потому что легаси-правила Эхо местами
-   с !important; повторяем !important ровно там, где иначе не победить.
-   Политика стекла соблюдена: backdrop-filter СТАТИЧЕН, единственная
-   анимация поверх стекла — блик, и он едет transform'ом.
+   ЭХО · ТЕРМИНАЛ — ПЕРЕНОС ИЗ design/site-v2.html ОДИН В ОДИН
+   Правила ниже — эталонные, с подстановкой токенов сайта
+   (--mono→--font-mono, --text→--font-body). Разметка получила классы
+   эталона, боевые id и классы машинерии остались на местах.
+   Блок стоит поздно в каскаде: легаси-правила Эхо местами с !important,
+   поэтому !important повторяется ровно там, где иначе не победить.
+   Единственное отступление: блик стекла едет transform, а не left —
+   сдвиг слоя не заставляет WebKit пересобирать backdrop-снимок.
    ══════════════════════════════════════════════════════════════════ */
 .echo-right {
-  /* v2 .glass */
+  position: relative;
+  font-family: var(--font-mono);
+  border-radius: 24px !important;
   background: var(--glass-bg) !important;
   border: 0 !important;
-  border-radius: 24px !important;
   -webkit-backdrop-filter: blur(26px) saturate(175%);
   backdrop-filter: blur(26px) saturate(175%);
   box-shadow:
@@ -17866,16 +17874,14 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
     0 30px 90px rgba(0,0,0,0.55) !important;
   overflow: hidden;
 }
-/* Призматический кант (v2 .glass::before): рамка-градиент, вырезанная маской */
 .echo-right::before {
   content: "" !important;
   display: block !important;
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   border-radius: inherit;
   padding: 1px;
   z-index: 6;
-  background: var(--lens-edge) !important;
+  background: linear-gradient(135deg, rgba(255,255,255,0.32), rgba(120,220,255,0.1) 28%, rgba(255,255,255,0.02) 46%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.18)) !important;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -17885,8 +17891,6 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   height: auto !important;
   pointer-events: none;
 }
-/* Блик, проходящий по стеклу (v2 .glass::after). В v2 едет через left —
-   здесь через transform: сдвиг слоя не инвалидирует backdrop-снимок. */
 .echo-right::after {
   content: "";
   position: absolute;
@@ -17897,113 +17901,108 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   animation: ewGlassSheen 16s ease-in-out infinite;
   pointer-events: none;
 }
-@keyframes ewGlassSheen {
-  0%, 58% { transform: translateX(0); }
-  90%, 100% { transform: translateX(330%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .echo-right::after { animation: none; opacity: .5; }
-}
+@keyframes ewGlassSheen { 0%, 58% { transform: translateX(0); } 90%, 100% { transform: translateX(330%); } }
+@media (prefers-reduced-motion: reduce) { .echo-right::after { animation: none; opacity: .5; } }
 
-/* Вкладки ТЕКСТ / ГОЛОС — v2 .g-tabs / .g-tab */
-.echo-mode-track {
-  background: rgba(255,255,255,0.04) !important;
-  border: 1px solid rgba(255,255,255,0.08) !important;
-  border-radius: 99px !important;
-  padding: 4px !important;
-  gap: 4px !important;
-}
-.echo-mode-pill {
-  border-radius: 99px !important;
-  padding: 9px 12px !important;
-  color: var(--ink-3) !important;
-  letter-spacing: 0.12em;
-}
-.echo-mode-pill.active { color: var(--ink) !important; }
-.echo-mode-pill-price { color: var(--ink-4) !important; }
-.echo-mode-pill.active .echo-mode-pill-price { color: var(--warm-hi) !important; }
-.echo-mode-indicator {
-  border-radius: 99px !important;
-  background: rgba(255,255,255,0.08) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
-  border: 0 !important;
-}
+/* ── шапка ── */
+.echo-right .g-head { display: flex; align-items: center; gap: 12px; padding: 15px 20px 0; position: relative; z-index: 1; font-size: 0; }
+.echo-right .g-chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-2); background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); white-space: nowrap; text-transform: uppercase; }
+.echo-right .g-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.echo-right .g-dot.c { background: var(--cyan); box-shadow: 0 0 9px rgba(0,200,200,0.9); animation: ewBreathe 3.2s ease-in-out infinite; }
+@keyframes ewBreathe { 50% { opacity: 0.45; } }
+.echo-right .g-aux { margin-left: auto; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); text-align: right; text-transform: uppercase; }
 
-/* Поле ввода — v2 .g-well */
-.echo-text-area {
-  font-family: var(--font-body) !important;
-  font-size: 13.5px !important;
-  color: var(--ink) !important;
-  background: rgba(255,255,255,0.045) !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
-  border-radius: 14px !important;
-  padding: 12px 15px !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06) !important;
-}
-.echo-text-area::placeholder { color: var(--ink-3) !important; opacity: .8; }
-.echo-text-area:focus {
-  border-color: rgba(0,200,200,0.4) !important;
-  background: rgba(255,255,255,0.06) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    0 0 0 3px rgba(0,200,200,0.08),
-    0 0 18px rgba(0,200,200,0.1) !important;
-}
+/* ── луч ── */
+.echo-right .beam { position: relative; height: 40px !important; margin: 14px 20px 12px !important; border-radius: 10px !important; background: rgba(4,4,5,0.35) !important; border: 1px solid rgba(255,255,255,0.07) !important; overflow: hidden; }
+.echo-right .beam svg { display: block; width: 100%; height: 100%; }
+.echo-right .beam .fr { position: absolute; top: 5px; right: 9px; bottom: auto; font-size: 8.5px; letter-spacing: 0.13em; color: var(--ink-4); }
 
-/* Кнопка передачи — v2 .g-btn (янтарная пилюля, а не циановый прямоугольник) */
-.echo-submit {
-  display: inline-flex !important;
-  align-items: center; justify-content: center; gap: 10px;
-  width: 100%;
-  font-family: var(--font-mono) !important;
-  font-size: 10px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.2em !important;
-  text-transform: uppercase !important;
-  color: var(--warm-hi) !important;
-  padding: 15px 20px !important;
-  border-radius: 99px !important;
-  background: rgba(209,160,74,0.09) !important;
-  border: 1px solid rgba(209,160,74,0.34) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.12),
-    inset 0 0 26px rgba(209,160,74,0.08) !important;
-  transition: box-shadow .3s var(--ease-out), background .3s, transform .15s !important;
-}
-.echo-submit-price { color: var(--warm-hi) !important; }
+/* ── тело ── */
+.echo-right .echo-form { padding: 0 20px 4px !important; }
+
+/* ── вкладки ── */
+.echo-right .g-tabs { position: relative; display: flex !important; border-radius: 99px !important; gap: 4px !important; padding: 4px !important; background: rgba(255,255,255,0.04) !important; border: 1px solid rgba(255,255,255,0.08) !important; margin-bottom: 12px; grid-template-columns: none; overflow: visible; }
+.echo-right .g-tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; padding: 9px 12px !important; color: var(--ink-3); border-radius: 99px !important; transition: background 0.3s var(--ease-out), color 0.25s, box-shadow 0.3s; position: relative; overflow: hidden; text-transform: uppercase; background: none; border: 0; }
+.echo-right .g-tab .p { color: var(--ink-4); transition: color 0.25s; }
+.echo-right .g-tab.active { color: var(--ink) !important; background: rgba(255,255,255,0.08) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important; }
+.echo-right .g-tab.active .p { color: var(--warm-hi); }
+.echo-right .echo-mode-indicator { display: none !important; }
+
+/* ── сцена и пейны ── */
+.echo-right .g-stage { position: relative; }
+.echo-right .g-pane { transition: opacity 0.38s var(--ease-out), filter 0.38s var(--ease-out), transform 0.38s var(--ease-out); }
+
+/* ── слоты слов ── */
+.echo-right .slots { display: flex; gap: 6px; padding: 2px 2px 10px; }
+.echo-right .slots i { flex: 1; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.07); transition: background 0.3s, box-shadow 0.3s; }
+.echo-right .slots i.on { background: linear-gradient(90deg, #edc87c, #c3943c); box-shadow: 0 0 10px rgba(209,160,74,0.5); }
+.echo-right .slots.over i.on { background: var(--red-hi); box-shadow: 0 0 10px rgba(230,69,69,0.5); }
+
+/* ── поле ввода ── */
+.echo-right .g-well { display: block; width: 100%; font-family: var(--font-body) !important; font-size: 13.5px !important; color: var(--ink) !important; background: rgba(255,255,255,0.045) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 14px !important; padding: 12px 15px !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06) !important; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; resize: none; letter-spacing: 0 !important; }
+.echo-right .g-well::placeholder { color: var(--ink-3) !important; opacity: 0.8; }
+.echo-right .g-well:focus { border-color: rgba(0,200,200,0.4) !important; background: rgba(255,255,255,0.06) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 3px rgba(0,200,200,0.08), 0 0 18px rgba(0,200,200,0.1) !important; }
+.echo-right .g-meta { display: flex; justify-content: space-between; margin: 8px 3px 0; font-size: 9px; letter-spacing: 0.13em; color: var(--ink-4); font-family: var(--font-mono); text-transform: uppercase; }
+
+/* ── голосовая зона ── */
+.echo-right .rec-zone { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 16px; height: 64px; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; }
+.echo-right .mic-wrap { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+.echo-right .mic-btn { position: relative; overflow: hidden; width: 56px !important; height: 56px !important; display: grid !important; place-items: center; border-radius: 50% !important; background: rgba(255,255,255,0.055) !important; border: 1px solid rgba(255,255,255,0.12) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important; transition: background 0.25s, border-color 0.25s, box-shadow 0.25s; margin: 0 !important; }
+.echo-right .mic-btn .ico { width: 20px; height: 20px; color: var(--ink-2); transition: color 0.25s; }
+.echo-right .mic-btn.recording { border-color: rgba(230,69,69,0.55) !important; background: rgba(230,69,69,0.12) !important; box-shadow: 0 0 22px rgba(230,69,69,0.3) !important; }
+.echo-right .mic-btn.recording .ico { color: var(--red-hi); }
+.echo-right .mic-ring { position: absolute; inset: -3px; pointer-events: none; width: calc(100% + 6px); height: calc(100% + 6px); }
+.echo-right .mic-ring circle { fill: none; stroke: var(--red-hi); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 194; stroke-dashoffset: 194; filter: drop-shadow(0 0 5px rgba(230,69,69,0.7)); transform: rotate(-90deg); transform-origin: center; transition: stroke-dashoffset .1s linear; }
+.echo-right .wave { flex: 1 1 auto; display: flex; align-items: flex-end; gap: 3px; height: 56px; min-width: 0; }
+.echo-right .wave i { flex: 1; min-width: 3px; height: 12%; border-radius: 3px; background: rgba(255,255,255,0.1); transition: height 0.12s var(--ease-out), background 0.2s; }
+.echo-right .wave i.on { background: var(--red-hi); box-shadow: 0 0 6px rgba(230,69,69,0.4); }
+.echo-right .wave.done i.on { background: rgba(240,240,248,0.4); box-shadow: none; }
+.echo-right .voice-side { flex-shrink: 0; text-align: right; width: 74px; }
+.echo-right .voice-side .tm { font-family: var(--font-mono) !important; font-size: 16px !important; font-weight: 600; color: var(--ink) !important; font-variant-numeric: tabular-nums; margin: 0 !important; }
+.echo-right .voice-side .st { font-size: 8px !important; letter-spacing: 0.13em; color: var(--ink-4) !important; font-family: var(--font-mono); text-transform: uppercase; margin: 0 !important; }
+.echo-right .voice-ctl { display: flex; align-items: center; gap: 12px; margin-top: 10px; height: 26px; }
+.echo-right .vc-btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--ink-3); padding: 6px 10px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); transition: color 0.2s, background 0.2s, opacity 0.3s; }
+@media (hover:hover) and (pointer:fine) { .echo-right .vc-btn:hover { color: var(--ink); background: rgba(255,255,255,0.08); } }
+.echo-right .vc-btn .ew-mask-icon { width: 9px; height: 9px; color: currentColor; }
+.echo-right .vc-btn[disabled] { opacity: 0.3; pointer-events: none; }
+.echo-right .voice-ctl .note { margin-left: auto; font-size: 8.5px; letter-spacing: 0.12em; color: var(--ink-4); font-family: var(--font-mono); text-transform: uppercase; }
+
+/* ── действие ── */
+.echo-right .g-actions { display: flex; gap: 10px; padding-top: 14px; }
+.echo-right .g-btn { position: relative; overflow: hidden; flex: 1; display: inline-flex !important; align-items: center; justify-content: center; gap: 10px; font-family: var(--font-mono) !important; font-size: 10px !important; font-weight: 600 !important; letter-spacing: 0.2em !important; text-transform: uppercase !important; color: var(--warm-hi) !important; padding: 15px 20px !important; border-radius: 99px !important; background: rgba(209,160,74,0.09) !important; border: 1px solid rgba(209,160,74,0.34) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 0 26px rgba(209,160,74,0.08) !important; transition: box-shadow 0.3s var(--ease-out), background 0.3s, transform 0.15s !important; }
+.echo-right .g-btn .echo-submit-price { color: var(--warm-hi) !important; }
 @media (hover:hover) and (pointer:fine) {
-  .echo-submit:hover {
-    background: rgba(209,160,74,0.15) !important;
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.14),
-      inset 0 0 30px rgba(209,160,74,0.13),
-      0 0 30px rgba(209,160,74,0.2) !important;
+  .echo-right .g-btn:hover { background: rgba(209,160,74,0.15) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 0 30px rgba(209,160,74,0.13), 0 0 30px rgba(209,160,74,0.2) !important; }
+}
+.echo-right .g-btn:active { transform: scale(0.985) !important; }
+
+/* ── подвал ── */
+.echo-right .g-foot { display: flex; justify-content: space-between; gap: 12px; padding: 11px 20px 15px !important; font-family: var(--font-mono); font-size: 8.5px !important; letter-spacing: 0.14em; color: var(--ink-4) !important; text-transform: uppercase; border: 0 !important; position: relative; z-index: 1; }
+
+/* ── СТЫКОВКА ПЕЙНОВ НА МОБИЛЕ ──────────────────────────────────────
+   «Открыть канал» должна стоять вровень с нижней гранью панели
+   передатчика на соседнем экране. Делаем это конструкцией, а не
+   подбором пикселей: панель растягивается на всю высоту ряда и
+   получает такой же нижний отступ, как у пейна-описания, а кнопка
+   внутри описания прижата к низу (margin-top:auto). Тогда обе нижние
+   грани лежат на одной линии при любой высоте контента. */
+@media (max-width: 960px) {
+  .echo-right {
+    align-self: stretch !important;
+    min-height: 0 !important;
+    margin: var(--sec-y) 20px var(--sec-y) !important;
+    display: flex !important;
+    flex-direction: column;
   }
-}
-.echo-submit:active { transform: scale(0.985) !important; }
-
-/* Тихая кнопка канала на мобиле — v2 .g-btn.quiet */
-.echo-pane-cta {
-  border-radius: 99px !important;
-  color: var(--ink-2) !important;
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
+  .echo-right .echo-form { flex: 1 1 auto; }
+  .echo-right .g-foot { margin-top: auto; }
+  .echo-left { padding-bottom: var(--sec-y) !important; }
+  .echo-pane-cta { margin-top: auto !important; margin-bottom: 0 !important; }
 }
 
-/* Голосовые органы управления — то же стекло */
-.echo-voice-btn {
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
-}
-.echo-voice-retry, .echo-player-btn {
-  border-radius: 99px !important;
-  color: var(--ink-2) !important;
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
-}
+/* Тихая кнопка канала на мобиле — эталонная .g-btn.quiet */
+.echo-pane-cta { border-radius: 99px !important; color: var(--ink-2) !important; background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.12) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important; }
+.echo-pane-cta:active { transform: scale(0.985) !important; }
 
 /* ЧИТАЕМОСТЬ МЕЛКИХ КРАСНЫХ ЛЕЙБЛОВ (2026-07-30). Метки 8–10px шли
    цветом --red2 и давали ≈4.0:1 при норме 4.5:1 — на ярком свету
@@ -31187,10 +31186,10 @@ function _echoResetMicRequestState(stream){
     status.classList.remove('active');
     if(!_echoMedia.blob){
       status.classList.remove('ready');
-      status.textContent = 'Голосовой канал не открылся · используйте текст';
+      status.textContent = 'КАНАЛ НЕ ОТКРЫЛСЯ';
     }
   }
-  if(time && !_echoMedia.blob) time.textContent = '0.0 сек';
+  if(time && !_echoMedia.blob) time.textContent = '0.0';
 }
 // Real microphone failures must use the existing Apertura status state 'mic-denied'.
 // Do not create separate inline/toast notifications for this scenario.
@@ -31243,6 +31242,7 @@ async function toggleEchoRecord(opts = {}){
       }
       _echoMedia.duration = (Date.now() - _echoMedia.startedAt)/1000;  // T21: fallback-длительность (iOS даёт Infinity)
       _echoInitPlayer();                                             // T21: подключаем свой плеер
+      _echoVoiceCtl(true);                                           // ПРОСЛУШАТЬ / ЗАНОВО становятся доступны
       const preview = document.getElementById('echoVoicePreview');
       if(preview) preview.classList.add('show');
       // Окно ввода зафиксировано по высоте (overflow:hidden) — после
@@ -31261,12 +31261,14 @@ async function toggleEchoRecord(opts = {}){
     _echoMedia.recording = true;
     _echoMedia.startedAt = Date.now();
     if(btn) btn.classList.add('recording');
-    if(status){ status.textContent = 'Запись · нажмите чтобы остановить'; status.classList.add('active'); status.classList.remove('ready'); }
+    if(status){ status.textContent = 'ИДЁТ ЗАПИСЬ'; status.classList.add('active'); status.classList.remove('ready'); }
     if(section) section.classList.add('recording');
+    _echoWaveStart(_echoMedia.stream);
     _echoMedia.timer = setInterval(()=>{
       const elapsed = (Date.now() - _echoMedia.startedAt)/1000;
+      _echoRingSet(elapsed / ECHO_VOICE_MAX_SEC);
       const t = document.getElementById('echoVoiceTime');
-      if(t) t.textContent = elapsed.toFixed(1) + ' сек';
+      if(t) t.textContent = elapsed.toFixed(1);
       if(elapsed >= ECHO_VOICE_MAX_SEC){ _stopEchoRecording(false); }
     }, 100);
   } catch(err){
@@ -31289,10 +31291,12 @@ function _stopEchoRecording(silent){
   if(status){
     status.classList.remove('active');
     if(!silent){
-      status.textContent = 'Запись готова · можно прослушать';
+      status.textContent = 'ЗАПИСЬ ГОТОВА';
       status.classList.add('ready');
     }
   }
+  _echoWaveStop(!silent);
+  if(!silent) _echoVoiceCtl(true);
 }
 function resetEchoVoice(){
   _stopEchoRecording(true);
@@ -31311,11 +31315,14 @@ function resetEchoVoice(){
   // Плеер скрыт — окно ввода плавно сжимается обратно.
   _resizeEchoStageToVoice();
   const t = document.getElementById('echoVoiceTime');
-  if(t) t.textContent = '0.0 сек';
+  if(t) t.textContent = '0.0';
   const status = document.getElementById('echoVoiceStatus');
-  if(status){ status.textContent = 'Нажмите для записи · до 3 сек'; status.classList.remove('ready','active'); }
+  if(status){ status.textContent = 'ДО 3 СЕК'; status.classList.remove('ready','active'); }
   const recBtn = document.getElementById('echoVoiceBtn');
   if(recBtn) recBtn.classList.remove('disabled');
+  _echoRingSet(0);
+  _echoWaveReset();
+  _echoVoiceCtl(false);
   // T21: сброс своего плеера
   const player = document.getElementById('echoPlayer');
   if(player) player.classList.remove('playing');
@@ -31323,6 +31330,82 @@ function resetEchoVoice(){
   if(fill) fill.style.width = '0%';
   const ptime = document.getElementById('echoPlayerTime');
   if(ptime) ptime.textContent = '0.0';
+}
+
+document.addEventListener('DOMContentLoaded', function(){ try{ _echoWaveInit(); _echoRingSet(0); }catch(e){} });
+/* ─── ГОЛОСОВАЯ ЗОНА ЭТАЛОНА: кольцо прогресса, живая волна, кнопки ───
+   Волна берёт РЕАЛЬНУЮ амплитуду с микрофона (AnalyserNode), а не рисует
+   случайный шум: полоски показывают то, что действительно записывается.
+   После остановки полоски замирают в достигнутых высотах (.done). */
+const ECHO_WAVE_BARS = 28;
+let _echoWaveCtx = null, _echoWaveRaf = 0, _echoWaveAnalyser = null;
+function _echoWaveInit(){
+  const wave = document.getElementById('echoWave');
+  if(!wave || wave.children.length) return wave;
+  let html = '';
+  for(let i=0;i<ECHO_WAVE_BARS;i++) html += '<i></i>';
+  wave.innerHTML = html;
+  return wave;
+}
+function _echoWaveReset(){
+  const wave = _echoWaveInit();
+  if(!wave) return;
+  wave.classList.remove('done');
+  Array.prototype.forEach.call(wave.children, b => { b.style.height = ''; b.classList.remove('on'); });
+}
+function _echoWaveStart(stream){
+  const wave = _echoWaveInit();
+  if(!wave) return;
+  _echoWaveReset();
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC || !stream) return;
+    _echoWaveCtx = new AC();
+    const srcNode = _echoWaveCtx.createMediaStreamSource(stream);
+    _echoWaveAnalyser = _echoWaveCtx.createAnalyser();
+    _echoWaveAnalyser.fftSize = 256;
+    srcNode.connect(_echoWaveAnalyser);
+    const buf = new Uint8Array(_echoWaveAnalyser.frequencyBinCount);
+    const bars = wave.children;
+    const step = Math.floor(buf.length / ECHO_WAVE_BARS) || 1;
+    (function tick(){
+      if(!_echoWaveAnalyser) return;
+      _echoWaveAnalyser.getByteFrequencyData(buf);
+      for(let i=0;i<bars.length;i++){
+        let sum = 0;
+        for(let k=0;k<step;k++) sum += buf[i*step+k] || 0;
+        const v = Math.min(100, 12 + (sum/step) / 255 * 150);
+        bars[i].style.height = v.toFixed(1) + '%';
+        bars[i].classList.toggle('on', v > 18);
+      }
+      _echoWaveRaf = requestAnimationFrame(tick);
+    })();
+  }catch(e){ /* нет Web Audio — волна просто останется в покое */ }
+}
+function _echoWaveStop(keep){
+  if(_echoWaveRaf){ cancelAnimationFrame(_echoWaveRaf); _echoWaveRaf = 0; }
+  _echoWaveAnalyser = null;
+  if(_echoWaveCtx){ try{ _echoWaveCtx.close(); }catch(e){} _echoWaveCtx = null; }
+  const wave = document.getElementById('echoWave');
+  if(!wave) return;
+  if(keep) wave.classList.add('done'); else _echoWaveReset();
+}
+function _echoRingSet(p){
+  const ring = document.getElementById('echoMicRing');
+  if(!ring) return;
+  const total = 194;
+  const clamped = Math.max(0, Math.min(1, p || 0));
+  ring.style.strokeDashoffset = String(total - total * clamped);
+}
+function _echoVoiceCtl(enabled){
+  ['echoPlayBtn','echoRetryBtn'].forEach(id => {
+    const b = document.getElementById(id);
+    if(b) b.disabled = !enabled;
+  });
+  if(!enabled){
+    const lbl = document.getElementById('echoPlayLabel');
+    if(lbl) lbl.textContent = 'ПРОСЛУШАТЬ';
+  }
 }
 
 /* ── T21: СВОЙ аудио-плеер Эхо (вместо нативного <audio controls>) ── */
@@ -31334,8 +31417,10 @@ function _echoPlayerDur(){
 }
 function _echoInitPlayer(){
   const audio = document.getElementById('echoVoiceAudio');
-  const player = document.getElementById('echoPlayer');
-  if(!audio || !player || audio._echoPlayerBound) return;
+  /* В эталоне отдельного контейнера-плеера нет: слушатели вешаем на audio,
+     а состояние показываем подписью кнопки. player может отсутствовать. */
+  const player = document.getElementById('echoPlayer') || document.createElement('div');
+  if(!audio || audio._echoPlayerBound) return;
   audio._echoPlayerBound = true;
   const fill  = document.getElementById('echoPlayerFill');
   const ptime = document.getElementById('echoPlayerTime');
@@ -31346,8 +31431,8 @@ function _echoInitPlayer(){
   }
   audio.addEventListener('timeupdate', paint);
   audio.addEventListener('loadedmetadata', paint);
-  audio.addEventListener('play',  ()=>player.classList.add('playing'));
-  audio.addEventListener('pause', ()=>player.classList.remove('playing'));
+  audio.addEventListener('play',  ()=>{ player.classList.add('playing'); const l=document.getElementById('echoPlayLabel'); if(l) l.textContent='ПАУЗА'; });
+  audio.addEventListener('pause', ()=>{ player.classList.remove('playing'); const l=document.getElementById('echoPlayLabel'); if(l) l.textContent='ПРОСЛУШАТЬ'; });
   audio.addEventListener('ended', ()=>{ player.classList.remove('playing'); if(fill) fill.style.width='100%'; });
 }
 function _echoTogglePlay(){
