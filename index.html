@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#04040a">
+<meta name="theme-color" content="#050506">
 <meta name="color-scheme" content="dark">
 <script id="ew-prepaint-theme-bootstrap-v1">
 /* Phase 2E.7t · SHARE HANDOFF + PREPAINT THEME SYNC
@@ -16,7 +16,7 @@
   var light = false;
   var root = document.documentElement;
   root.classList.add('ew-first-boot-pending');
-  var color = light ? '#e7e9f1' : '#04040a';
+  var color = light ? '#e7e9f1' : '#050506';
   if(light){ root.setAttribute('data-theme','light'); }
   root.style.backgroundColor = color;
   var cs = document.querySelector('meta[name="color-scheme"]');
@@ -30,7 +30,7 @@
    Self-contained first-visit overlay. The full site CSS stays inline and untouched. */
 html.ew-first-boot-pending,
 html.ew-first-boot-pending body{
-  background:#04040a;
+  background:#050506;
 }
 html[data-theme="light"].ew-first-boot-pending,
 html[data-theme="light"].ew-first-boot-pending body{
@@ -50,7 +50,7 @@ html[data-theme="light"].ew-first-boot-pending body{
   background:
     radial-gradient(circle at 50% 46%, rgba(227,36,43,.10), transparent 31%),
     linear-gradient(180deg, rgba(255,255,255,.028), transparent 42%),
-    #04040a;
+    #050506;
   color:#f6f4ef;
   overflow:hidden;
   opacity:1;
@@ -860,23 +860,30 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   color-scheme: dark;
 
   /* ── ПОВЕРХНОСТИ ── */
-  --void:        #04040a;          /* фон страницы */
-  --deep:        #08081a;          /* секции (визуал) */
-  --raised:      #0e0e22;          /* плотные блоки */
-  --surface:     #14142a;          /* карточки (визуал) */
-  --surface-hi:  #1a1a36;          /* hover / выделение */
+  /* ── ОНИКС ──
+     Палитра подложек была сине-фиолетовой (синий канал на +18…+28 выше
+     красного), и все контейнеры читались «синими». Переведена в чёрный
+     оникс: нейтральный камень с еле уловимой холодной ноткой (+1…+5),
+     ступени по светлоте сохранены, чтобы плиты по-прежнему отделялись
+     от подложки. Блик и отражение живут не в цвете, а в градиенте и
+     световом канте (см. «ОНИКС · БЛИК» ниже по файлу). */
+  --void:        #050506;          /* фон страницы */
+  --deep:        #0a0a0c;          /* секции (визуал) */
+  --raised:      #101013;          /* плотные блоки */
+  --surface:     #141418;          /* карточки (визуал) */
+  --surface-hi:  #1c1c21;          /* hover / выделение */
 
   /* Safari 26+ берёт цвет верхней/нижней панели не только из theme-color,
      а из background-color body или fixed/sticky-слоёв у краёв viewport.
      Поэтому визуальные полупрозрачные слои кладём в background-image, а
      background-color оставляем темовым и стабильным для сэмплера Safari. */
-  --safari-header-bg: rgba(4,4,10,0.92);
-  --safari-header-bg-scrolled: rgba(6,4,10,0.98);
-  --safari-nav-scrim: rgba(4,4,10,0.82);
+  --safari-header-bg: rgba(5,5,6,0.93);
+  --safari-header-bg-scrolled: rgba(7,7,9,0.98);
+  --safari-nav-scrim: rgba(5,5,6,0.84);
 
   /* legacy-алиасы из канона — оставлены, чтобы не ломать массу старых селекторов */
-  --surface2: #12122a;
-  --panel: rgba(13,13,26,0.85);
+  --surface2: #121216;
+  --panel: rgba(14,14,17,0.85);
 
   /* ── ЛИНИИ ── */
   --line:        rgba(240,240,248,0.07);
@@ -895,7 +902,7 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
      и слепнул при ярком свете) и подняты нижние ступени до нормы
      контраста WCAG. Синева оставлена лёгкая, чтобы шкала не стала
      «офисно-серой»: дельта синего 4…21 вместо 8…34.
-     Контраст на тёмном фоне секций (#14142a): ink 16 · ink-2 12 ·
+     Контраст на тёмном фоне секций (#141418): ink 16 · ink-2 12 ·
      ink-3 7.4 · ink-4 5.0 — всё, что несёт слова, выше 4.5:1. */
   --ink:         #f2f2f6;          /* заголовки */
   --ink-2:       #d2d2dc;          /* основной body */
@@ -907,7 +914,7 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   --white: #f2f2f6;
   --white-mid: #d2d2dc;
   --white-dim: #a4a4b6;
-  --white-ghost: #1a1a2e;
+  --white-ghost: #1a1a1f;
 
   /* ── АКЦЕНТЫ ── */
   --red:         #c02828;          /* EchoWorld · сканер · технология */
@@ -975,8 +982,8 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
      кантом и медленным сиянием. Акценты: cyan=система живёт,
      warm=энергия/действие, red=предупреждение/доступ. */
   --warm-hi:      #e8c37a;
-  --glass-bg:     rgba(14, 16, 28, 0.40);
-  --glass-hi:     rgba(20, 22, 38, 0.55);
+  --glass-bg:     rgba(17, 17, 21, 0.46);   /* оникс за стеклом, без синевы */
+  --glass-hi:     rgba(24, 24, 29, 0.58);
   --glass-blur:   26px;
   --hairline:     rgba(240, 240, 248, 0.10);
   --hairline-hi:  rgba(240, 240, 248, 0.16);
@@ -1194,7 +1201,7 @@ html { background: var(--void); }
   right: 0;
   top: 14px;
   bottom: 14px;
-  background: var(--theme-fade-veil, var(--theme-fade-void, #04040a));
+  background: var(--theme-fade-veil, var(--theme-fade-void, #050506));
   pointer-events: none;
   z-index: 997;
   opacity: 0;
@@ -2331,7 +2338,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
 #closeGlass .cg-vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(4,4,10,0.6) 100%);
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(5,5,6,0.6) 100%);
 }
 
 /* ── CATALOG CARD BLUEPRINT ANIMATION ── */
@@ -3221,7 +3228,7 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
 .arttag {
   position: absolute; top: 10px; left: 10px;
   font-family: var(--font-code); font-size: 7px; letter-spacing: .14em;
-  color: var(--white-dim); background: rgba(4,4,10,0.88);
+  color: var(--white-dim); background: rgba(5,5,6,0.88);
   padding: 3px 8px; border: 1px solid var(--border); backdrop-filter: blur(4px);
   display: none !important;
 }
@@ -3242,7 +3249,7 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
 .sold-ov {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(4,4,10,0.55); opacity: 0; transition: opacity .3s;
+  background: rgba(5,5,6,0.55); opacity: 0; transition: opacity .3s;
 }
 .pcard.sold .sold-ov { opacity: 1; }
 .sold-ov-txt {
@@ -3254,7 +3261,7 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   position: absolute; bottom: 10px; right: 10px;
   display: flex; align-items: center; gap: 5px;
   font-family: var(--font-code); font-size: 7px; letter-spacing: .1em;
-  color: white; background: rgba(4,4,10,0.88);
+  color: white; background: rgba(5,5,6,0.88);
   padding: 5px 10px; text-decoration: none; text-transform: uppercase;
   transition: background .2s; border: 1px solid var(--border); backdrop-filter: blur(4px);
 }
@@ -3461,7 +3468,7 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
 }
 .moverlay.open { display: flex; }
 .moverlay.closing {
-  background: rgba(4,4,10,0);
+  background: rgba(5,5,6,0);
   transition: background .28s ease;
   backdrop-filter: blur(0);
   -webkit-backdrop-filter: blur(0);
@@ -3700,7 +3707,7 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   position: sticky; top: 0; z-index: 30; flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 16px;
-  background: rgba(4,4,10,0.97);
+  background: rgba(5,5,6,0.97);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
 }
@@ -4758,7 +4765,7 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   border: 1px solid var(--border2);
   border-radius: 12px;
   outline: none;
-  background: rgba(4,4,10,.34);
+  background: rgba(5,5,6,.34);
   color: var(--white);
   padding: 12px 13px;
   font-family: var(--font-input);
@@ -5349,7 +5356,7 @@ body.scroll-restoring .cart-overlay.cart-closing { animation-play-state: running
   border-radius: var(--radius-sm);
 }
 /* CLOSE — мягкий fade + slide (тот же паттерн что в карточке товара) */
-.chk-overlay.closing { background: rgba(4,4,10,0); transition: background .28s ease; backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); }
+.chk-overlay.closing { background: rgba(5,5,6,0); transition: background .28s ease; backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); }
 .chk-overlay.closing .chk-modal {
   animation: chkClose .28s cubic-bezier(.55,0,.78,1) both;
 }
@@ -5374,7 +5381,7 @@ body.scroll-restoring .cart-overlay.cart-closing { animation-play-state: running
 .chk-head {
   padding: 12px 18px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
-  background: rgba(4,4,10,0.97);
+  background: rgba(5,5,6,0.97);
   position: sticky; top: 0; z-index: 10; flex-shrink: 0;
 }
 @media(max-width:960px){
@@ -6863,7 +6870,7 @@ footer {
 #reqModal.closing,
 #offerModal.closing,
 #privacyModal.closing {
-  background: rgba(4,4,10,0); /* оверлей плавно гаснет */
+  background: rgba(5,5,6,0); /* оверлей плавно гаснет */
   transition: background .32s ease;
   backdrop-filter: blur(0);
   -webkit-backdrop-filter: blur(0);
@@ -6936,7 +6943,7 @@ footer {
   justify-content: space-between;
   gap: 14px;
   padding: 10px 12px 10px 16px;
-  background: rgba(4,4,10,0.97);
+  background: rgba(5,5,6,0.97);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
@@ -7661,19 +7668,19 @@ html.legal-modal-open .cookie-banner.show {
 .aw-canvas-warm .aw-overlay {
   background:
     linear-gradient(135deg, rgba(225, 100, 40, 0.18), rgba(70, 20, 0, 0.42)),
-    linear-gradient(180deg, transparent 60%, rgba(4,4,10,0.7) 100%);
+    linear-gradient(180deg, transparent 60%, rgba(5,5,6,0.7) 100%);
   mix-blend-mode: multiply;
 }
 .aw-canvas-cold .aw-overlay {
   background:
     linear-gradient(135deg, rgba(40, 100, 180, 0.22), rgba(8, 16, 50, 0.55)),
-    linear-gradient(180deg, transparent 60%, rgba(4,4,10,0.7) 100%);
+    linear-gradient(180deg, transparent 60%, rgba(5,5,6,0.7) 100%);
   mix-blend-mode: multiply;
 }
 .aw-canvas-mist .aw-overlay {
   background:
     linear-gradient(135deg, rgba(70, 130, 90, 0.18), rgba(15, 30, 25, 0.5)),
-    linear-gradient(180deg, transparent 60%, rgba(4,4,10,0.7) 100%);
+    linear-gradient(180deg, transparent 60%, rgba(5,5,6,0.7) 100%);
   mix-blend-mode: multiply;
 }
 /* Глитч-оверлей: тонкие сканлайны, появляется при hover */
@@ -9043,9 +9050,9 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   min-height: 0;
   position: relative;
   overflow: hidden;
-  background: #07070f;
+  background: #0a0a0c;
 }
-.pimg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(4,4,10,0.55)); pointer-events: none; }
+.pimg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(5,5,6,0.55)); pointer-events: none; }
 .pimg img { transition: transform 0.6s var(--ease-out), opacity 0.4s, filter 0.3s; }
 @media (hover:hover) and (pointer:fine) {
   .pcard:hover .pimg img { transform: scale(1.035); }
@@ -9060,7 +9067,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   font-size: 8px;
   letter-spacing: 0.16em;
   color: var(--ink-2);
-  background: rgba(4,4,10,0.55);
+  background: rgba(5,5,6,0.55);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.12);
@@ -9080,7 +9087,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: rgba(4,4,10,0.6);
+  background: rgba(5,5,6,0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.16);
@@ -9102,7 +9109,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   font-size: 8.5px;
   letter-spacing: 0.14em;
   color: var(--ink-2);
-  background: rgba(4,4,10,0.55);
+  background: rgba(5,5,6,0.55);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.12);
@@ -9833,11 +9840,11 @@ input, select, textarea {
 }
 .attr-drum-window::before{
   top:0;
-  background: linear-gradient(to bottom, var(--void) 0%, rgba(4,4,10,0.55) 60%, transparent);
+  background: linear-gradient(to bottom, var(--void) 0%, rgba(5,5,6,0.55) 60%, transparent);
 }
 .attr-drum-window::after{
   bottom:0;
-  background: linear-gradient(to top, var(--void) 0%, rgba(4,4,10,0.55) 60%, transparent);
+  background: linear-gradient(to top, var(--void) 0%, rgba(5,5,6,0.55) 60%, transparent);
 }
 /* highlight zone — ПОЛНОСТЬЮ без подсветки. Любой цветной слой под
    движущейся лентой читался как «тянущаяся» циановая обводка за текстом
@@ -10172,7 +10179,7 @@ input, select, textarea {
   z-index: 9000;
   backdrop-filter: blur(18px) saturate(0.4);
   -webkit-backdrop-filter: blur(18px) saturate(0.4);
-  background: rgba(4,4,10,0.6);
+  background: rgba(5,5,6,0.6);
   align-items: center;
   justify-content: center;
   pointer-events: none;
@@ -10876,7 +10883,7 @@ input, select, textarea {
   margin-top: 8px;
   padding: 14px 16px;
   border: 1px solid var(--border);
-  background: rgba(4,4,10,0.5);
+  background: rgba(5,5,6,0.5);
   font-family: var(--font-code);
   font-size: 9.5px;
   letter-spacing: 0.03em;
@@ -11074,7 +11081,7 @@ input, select, textarea {
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 36px;
-  background: linear-gradient(180deg, transparent, rgba(4,4,10,0.85));
+  background: linear-gradient(180deg, transparent, rgba(5,5,6,0.85));
   display: flex; align-items: center;
   padding: 0 12px;
   z-index: 4;
@@ -11097,7 +11104,7 @@ input, select, textarea {
 .echo-scope-grat {
   position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background:
-    radial-gradient(circle at 50% 50%, rgba(0,200,200,0.08), #04040a 65%),
+    radial-gradient(circle at 50% 50%, rgba(0,200,200,0.08), #050506 65%),
     linear-gradient(rgba(0,200,200,0.07) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,200,200,0.07) 1px, transparent 1px);
   background-size: 100% 100%, 24px 24px, 24px 24px;
@@ -11709,10 +11716,10 @@ input, select, textarea {
   background:
     linear-gradient(90deg,
       var(--void) 0%,
-      rgba(4,4,10,0.85) 4%,
+      rgba(5,5,6,0.85) 4%,
       transparent 22%,
       transparent 78%,
-      rgba(4,4,10,0.85) 96%,
+      rgba(5,5,6,0.85) 96%,
       var(--void) 100%);
 }
 /* Центральная подсветка удалена: полоска создавала артефакт —
@@ -12348,7 +12355,7 @@ button, a, [role="button"], label,
   background:
     linear-gradient(100deg, rgba(72,76,94,0.30), rgba(42,46,62,0.20) 44%, rgba(24,27,38,0.14)),
     radial-gradient(520px 190px at 88% 50%, rgba(128,136,160,0.16), transparent 70%),
-    rgba(18,20,34,0.58);
+    rgba(20,20,24,0.60);
   box-shadow: none !important;
 }
 .classified-outer::before {
@@ -12549,7 +12556,7 @@ button, a, [role="button"], label,
     background:
       linear-gradient(100deg, rgba(72,76,94,0.30), rgba(42,46,62,0.20) 44%, rgba(24,27,38,0.14)),
       radial-gradient(420px 180px at 84% 50%, rgba(128,136,160,0.16), transparent 70%),
-      rgba(18,20,34,0.58);
+      rgba(20,20,24,0.60);
   }
   .classified-kicker {
     margin-bottom: 10px;
@@ -12779,14 +12786,14 @@ button, a, [role="button"], label,
   .pimg { border-radius: 0 !important; overflow: hidden; }
   .pcard .pimg::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(180deg, transparent 60%, rgba(4,4,10,0.55));
+    background: linear-gradient(180deg, transparent 60%, rgba(5,5,6,0.55));
     pointer-events: none; z-index: 1;
   }
   /* Артикул — пилюля v2 (радиус/цвет/шрифт) */
   .arttag {
     position: absolute !important; top: 12px !important; left: 12px !important; z-index: 3;
     padding: 5px 10px !important;
-    background: rgba(4,4,10,0.55) !important;
+    background: rgba(5,5,6,0.55) !important;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255,255,255,0.12) !important;
     border-radius: 99px !important;
@@ -13075,7 +13082,7 @@ button, a, [role="button"], label,
 :root[data-theme="light"] .chk-head,
 :root[data-theme="light"] .legal-modal-head { background: rgba(255,255,255,0.92); }
 :root[data-theme="light"] .notif { background: var(--surface); }
-/* A3: шапка модалки товара (хардкод rgba(4,4,10,.97)) → светлая в светлой теме */
+/* A3: шапка модалки товара (хардкод rgba(5,5,6,.97)) → светлая в светлой теме */
 :root[data-theme="light"] .mhead { background: rgba(255,255,255,0.95); }
 
 /* ── M2: убираем нимб body::before в светлой теме (нет затемнения по краям) ── */
@@ -13088,7 +13095,7 @@ button, a, [role="button"], label,
    Контейнеры (.echo-radar-wrap/.architect-terminal/.cond-screen/
    .donate-right/.preorder-terminal) уже светлеют через var(--void).
    Здесь гасим хардкод-тёмные ОВЕРЛЕИ поверх них. */
-/* Осциллограф Эхо: экран #04040a → светлый, луч neon → глубокий teal */
+/* Осциллограф Эхо: экран #050506 → светлый, луч neon → глубокий teal */
 :root[data-theme="light"] .echo-scope-grat {
   background-image:
     radial-gradient(circle at 50% 50%, rgba(11,118,126,0.10), #eef1f8 65%),
@@ -13109,7 +13116,7 @@ button, a, [role="button"], label,
 /* Голова preorder-терминала rgba(0,0,0,.4) → светлая */
 :root[data-theme="light"] .pt-head { background: var(--surface2); }
 /* T12: барабан атрибутов — виньетки краёв были хардкод-тёмные
-   (rgba(4,4,10,.55)) → «тёмные края» на белом. В светлой теме виньетка
+   (rgba(5,5,6,.55)) → «тёмные края» на белом. В светлой теме виньетка
    из светлого void, чтобы соседи-значения читались, без тёмных полос. */
 :root[data-theme="light"] .attr-drum-window::before{
   background: linear-gradient(to bottom, var(--void) 0%, rgba(231,233,241,0.55) 60%, transparent);
@@ -13120,7 +13127,7 @@ button, a, [role="button"], label,
 
 /* ── T14: АУДИТ ОСТАТКОВ ТЁМНОЙ ТЕМЫ В СВЕТЛОЙ ──────────────────────
    Барабан Ауры (АУРА · РЕЗОНАНС ЭХО): боковые маски хардкод-тёмные
-   rgba(4,4,10,.85) → тёмные «обрывки» по краям ленты на белом. Светлим. */
+   rgba(5,5,6,.85) → тёмные «обрывки» по краям ленты на белом. Светлим. */
 :root[data-theme="light"] .echo-aura-drum-mask {
   background: linear-gradient(90deg,
     var(--void) 0%, rgba(231,233,241,0.85) 4%, transparent 22%,
@@ -13129,7 +13136,7 @@ button, a, [role="button"], label,
 /* Центральное значение ленты Ауры было var(--white) (в светлой = тёмный) —
    уже читается; cyan-неактивные значения тоже ок. Тень делаем под teal. */
 /* text-shadow в span.center удалён полностью — в тёмной и светлой темах */
-/* Сканер-баркод конденсации (.cond-barcode) — тёмная панель rgba(4,4,10,.94),
+/* Сканер-баркод конденсации (.cond-barcode) — тёмная панель rgba(5,5,6,.94),
    всплывает при отправке. В светлой теме делаем светлую «приборную» панель,
    красные полосы остаются как сигнал сканирования. */
 :root[data-theme="light"] .cond-barcode { background: rgba(231,233,241,0.96); }
@@ -13234,8 +13241,8 @@ button, a, [role="button"], label,
    на белом), а органичность задаётся блоком .signal-strip ниже. */
 
 /* ── M5: «серая вспышка» при закрытии модалок в светлой теме ──────
-   Оверлеи фейдят фон var(--void)→rgba(4,4,10,0). В тёмной чисто
-   (void=#04040a=rgb(4,4,10)). В светлой void=#e7e9f1 → переход к
+   Оверлеи фейдят фон var(--void)→rgba(5,5,6,0). В тёмной чисто
+   (void=#050506=rgb(5,5,6)). В светлой void=#e7e9f1 → переход к
    прозрачно-чёрному идёт ЧЕРЕЗ серое = вспышка. Фейдим к прозрачному
    light-void (тот же цвет, alpha 0) — без промежуточного серого. */
 :root[data-theme="light"] .moverlay.closing,
@@ -13274,7 +13281,7 @@ button, a, [role="button"], label,
 .pcard.sold {
   background:
     repeating-linear-gradient(45deg, transparent 0 9px, rgba(192,40,40,0.14) 9px 11px),
-    linear-gradient(180deg, rgba(4,4,10,0.42), rgba(4,4,10,0.58)),
+    linear-gradient(180deg, rgba(5,5,6,0.42), rgba(5,5,6,0.58)),
     var(--surface) !important;
   border-color: rgba(192,40,40,0.34) !important;
   box-shadow: inset 0 0 0 1px rgba(192,40,40,0.08) !important;
@@ -13285,7 +13292,7 @@ button, a, [role="button"], label,
 .pcard.sold:hover {
   background:
     repeating-linear-gradient(45deg, transparent 0 9px, rgba(192,40,40,0.18) 9px 11px),
-    linear-gradient(180deg, rgba(4,4,10,0.48), rgba(4,4,10,0.66)),
+    linear-gradient(180deg, rgba(5,5,6,0.48), rgba(5,5,6,0.66)),
     var(--surface) !important;
   border-color: rgba(192,40,40,0.48) !important;
   transform: none !important;
@@ -13407,7 +13414,7 @@ button, a, [role="button"], label,
   background:
     radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.14), transparent 46%),
     radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.14), transparent 54%),
-    rgba(4,4,10,.82);
+    rgba(5,5,6,.82);
   opacity: 0;
   transition: opacity .28s ease;
   overscroll-behavior: contain;
@@ -14303,7 +14310,7 @@ button, a, [role="button"], label,
   background:
     radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.10), transparent 46%),
     radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.10), transparent 54%),
-    rgba(4,4,10,.46) !important;
+    rgba(5,5,6,.46) !important;
 }
 :root[data-theme="light"] #apStatusOverlay[data-status-key="entry-instagram"] {
   background:
@@ -15451,14 +15458,14 @@ body._blur-fading #_blurW {
   /* Тема — выставляем как можно раньше, чтобы не было вспышки при загрузке.
      theme-color НЕ просто setAttribute, а ПЕРЕСОЗДаём мета-тег: iOS Safari
      читает theme-color один раз и от смены content не перерисовывает бары
-     (особенно нижний тулбар) — стартовый #04040a «прилипал» к низу даже в
+     (особенно нижний тулбар) — стартовый #050506 «прилипал» к низу даже в
      светлой теме. Свежий узел до первой отрисовки = верный цвет бара сразу. */
   (function(){ try{
     /* Тёмная тема — единственная и окончательная. */
     var light = false;
     if(light){ document.documentElement.setAttribute('data-theme','light');
       var cs=document.querySelector('meta[name="color-scheme"]'); if(cs) cs.setAttribute('content','light'); }
-    var col = light ? '#e7e9f1' : '#04040a';
+    var col = light ? '#e7e9f1' : '#050506';
     var olds=document.querySelectorAll('meta[name="theme-color"]');
     for(var i=0;i<olds.length;i++) olds[i].parentNode.removeChild(olds[i]);
 	    var m=document.createElement('meta'); m.setAttribute('name','theme-color'); m.setAttribute('content',col);
@@ -15702,7 +15709,7 @@ body._blur-fading #_blurW {
    только убирает непроглядный var(--void) / тяжёлый page blur под модалками
    и оставляет нейтральную защитную плёнку без cyan/red glow. */
 :root {
-  --ew-neutral-modal-backdrop: rgba(4,4,10,.88);
+  --ew-neutral-modal-backdrop: rgba(5,5,6,.88);
   --ew-neutral-modal-backdrop-light: rgba(244,247,252,.68);
 }
 
@@ -16010,7 +16017,7 @@ header.scrolled {
   gap: 6px;
   justify-content: flex-start;
   border-radius: 99px;
-  background: rgba(8, 9, 18, 0.55);
+  background: rgba(10, 10, 12, 0.58);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
   backdrop-filter: blur(22px) saturate(160%);
   border: 1px solid rgba(255,255,255,0.1);
@@ -16065,7 +16072,7 @@ body.menu-open .hdr-burger i:nth-child(2) { top: 21px; transform: rotate(-45deg)
   .header-inner {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    background: rgba(8, 9, 18, 0.92);
+    background: rgba(10, 10, 12, 0.93);
     transition: none;
   }
   header.scrolled .header-inner { background: rgba(6, 7, 14, 0.97); }
@@ -16157,7 +16164,7 @@ body.menu-open .hdr-burger i:nth-child(2) { top: 21px; transform: rotate(-45deg)
 .ew-obs .obs-kv { font-family: var(--font-code); font-size: 9px; letter-spacing: 0.12em; color: var(--ink-4); }
 .ew-obs .obs-kv b { color: var(--ink-2); font-weight: 500; margin-left: 8px; font-variant-numeric: tabular-nums; }
 /* эквалайзер */
-.ew-obs .obs-eq { display: flex; align-items: center; gap: 3px; height: 46px; margin-bottom: 12px; padding: 0 3px; border-radius: 10px; background: rgba(3,4,10,0.30); border: 1px solid var(--hairline); overflow: hidden;
+.ew-obs .obs-eq { display: flex; align-items: center; gap: 3px; height: 46px; margin-bottom: 12px; padding: 0 3px; border-radius: 10px; background: rgba(4,4,5,0.30); border: 1px solid var(--hairline); overflow: hidden;
   /* собственный слой: спектр живёт на композиторе и не перерисовывает терминал */
   transform: translateZ(0); }
 /* Бар = span, высота живёт в transform:scaleY (пишет JS каждый кадр,
@@ -16207,7 +16214,7 @@ body.menu-open .hdr-burger i:nth-child(2) { top: 21px; transform: rotate(-45deg)
    фильтров контента и переходов на панели; display-переключатель +
    keyframe-каскад пунктов. Единый код для всех платформ. */
 .menu { position: fixed; inset: 0; z-index: 480; display: none; align-items: center; padding: 100px 0 44px;
-  background: #06070e;
+  background: #0a0a0c;
   overflow-y: auto; overscroll-behavior: contain; }
 body.menu-open .menu { display: grid; }
 /* серый iOS-хайлайт тапа — свой вклад в «морг», глушим на элементах бара и меню */
@@ -17718,8 +17725,37 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   border-top: 1px solid var(--border) !important;      /* кромка раздела = 0.09 */
 }
 /* catalog-main-section: прежние красные тени-ореолы вокруг верхней
-   кромки убраны — их работу теперь выполняет сама полоска */
-.catalog-main-section { box-shadow: none !important; }
+   кромки убраны — их работу теперь выполняет сама кромка */
+.catalog-main-section { box-shadow: inset 0 1px 0 rgba(255,255,255,0.06) !important; }
+
+/* ══ ОНИКС · БЛИК ══════════════════════════════════════════════════
+   Плита раздела — не заливка краской, а срез камня: свет ложится на
+   верхнюю грань и коротко гаснет вглубь. Реализовано статикой:
+   градиент уходит в background-image (заливка --surface/--raised
+   остаётся на background-color), световой кант — inset-тенью. Без
+   backdrop-filter и без переходов — политика стекла проекта запрещает
+   анимировать стеклянные поверхности на iOS. */
+.about, .apertura-worlds, .collab, #preorderSection, .architect-section {
+  background-image: linear-gradient(180deg,
+    rgba(255,255,255,0.042) 0,
+    rgba(255,255,255,0.012) 110px,
+    rgba(255,255,255,0) 300px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.065);
+}
+@media (max-width: 720px) {
+  /* На мобиле разделы — карточки со скруглением: блик короче, чтобы
+     читался отражением на грани, а не засветкой полотна. */
+  .about, .tech-block, .apertura-worlds, .echo-section, .relic-section,
+  .collab, .architect-section, .faq-section,
+  #preorderSection, .catwrap {
+    background-image: linear-gradient(180deg,
+      rgba(255,255,255,0.05) 0,
+      rgba(255,255,255,0.014) 64px,
+      rgba(255,255,255,0) 180px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .catalog-main-section { box-shadow: inset 0 1px 0 rgba(255,255,255,0.07) !important; }
+}
 /* ЧИТАЕМОСТЬ МЕЛКИХ КРАСНЫХ ЛЕЙБЛОВ (2026-07-30). Метки 8–10px шли
    цветом --red2 и давали ≈4.0:1 при норме 4.5:1 — на ярком свету
    пропадали первыми. Тон сохранён, светлее на две ступени. */
@@ -17855,7 +17891,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   justify-content: stretch;
   gap: 3px;
   padding: 10px 8px;
-  background: rgba(4,4,10,.94);
+  background: rgba(5,5,6,.94);
   opacity: 0;
   transform: translateY(-110%);
   pointer-events: none;
@@ -24699,7 +24735,7 @@ function _animateThemeSwitchToggle(fromTheme, toTheme){
        rgba(255,255,255,…): на финише WAAPI отпускала свойство, и дорожка
        ступенькой прыгала на реальный цвет — «резкое затухание» зоны
        переключения при возврате в тёмную тему. */
-    var darkTrack = '#14142a';                 /* var(--surface), тёмная тема */
+    var darkTrack = '#141418';                 /* var(--surface), тёмная тема */
     var darkBorder = 'rgba(255,255,255,0.12)'; /* var(--border2), тёмная тема */
     var fromTrack = fromTheme === 'light' ? '#e0a23c' : darkTrack;
     var toTrack = toTheme === 'light' ? '#e0a23c' : darkTrack;
@@ -24725,14 +24761,14 @@ function _animateThemeSwitchToggle(fromTheme, toTheme){
     });
   }catch(e){}
 }
-function _themeVoidColor(t){ return t==='light' ? '#e7e9f1' : '#04040a'; }
-function _themeSurfaceColor(t){ return t==='light' ? '#ffffff' : '#14142a'; }
+function _themeVoidColor(t){ return t==='light' ? '#e7e9f1' : '#050506'; }
+function _themeSurfaceColor(t){ return t==='light' ? '#ffffff' : '#141418'; }
 function _themeNavVeilColor(t){
   /* Цвет видимой области вне drawer при открытом мобильном меню:
      --void под --safari-nav-scrim своей темы. Держим его цельным слоем,
      чтобы живая страница за меню не вспыхивала при смене CSS-переменных.
      Светлое значение = композит rgba(12,14,26,0.30) поверх #e7e9f1. */
-  return t==='light' ? 'rgb(165,167,177)' : '#04040a';
+  return t==='light' ? 'rgb(165,167,177)' : '#050506';
 }
 function _freezeThemeVars(el){
   try{
@@ -28212,7 +28248,7 @@ function showCloseGlass(progress, dir){
   // Tint shifts based on direction
   const redA=progress*0.12;
   const cyanA=progress*0.06;
-  el.style.background=`linear-gradient(${dir==='right'?'90deg':'to bottom'}, rgba(192,40,40,${redA}), rgba(0,200,200,${cyanA}), rgba(4,4,10,${progress*0.3}))`;
+  el.style.background=`linear-gradient(${dir==='right'?'90deg':'to bottom'}, rgba(192,40,40,${redA}), rgba(0,200,200,${cyanA}), rgba(5,5,6,${progress*0.3}))`;
   // Scanlines opacity
   const scanlines=el.querySelector('.cg-scanlines');
   if(scanlines) scanlines.style.opacity=Math.min(progress*3, 1);
@@ -32458,7 +32494,7 @@ function acceptCookies(){
   padding: 5px 11px !important;
   border: 1px solid rgba(255,255,255,0.12) !important;
   border-radius: 99px !important;
-  background: rgba(4,4,10,0.55) !important;
+  background: rgba(5,5,6,0.55) !important;
   color: var(--ink-2) !important;
   transform: none !important;
   pointer-events: none !important;
@@ -33934,7 +33970,7 @@ svg.ew-mask-icon use,
   background:
     radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.14), transparent 46%),
     radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.14), transparent 54%),
-    rgba(4,4,10,.82);
+    rgba(5,5,6,.82);
   will-change: opacity;
 }
 #apStatusOverlay.open::before {
@@ -33957,7 +33993,7 @@ svg.ew-mask-icon use,
   background:
     radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.10), transparent 46%),
     radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.10), transparent 54%),
-    rgba(4,4,10,.46) !important;
+    rgba(5,5,6,.46) !important;
 }
 :root[data-theme="light"] #apStatusOverlay[data-status-key="entry-instagram"] {
   background: transparent !important;
@@ -35431,7 +35467,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 #apStatusOverlay.closing::before,
 #apStatusOverlay.ew-ap-status-pivoting::before,
 #apStatusOverlay[data-status-key="entry-instagram"]::before {
-  background: rgba(4,4,10,.88) !important;
+  background: rgba(5,5,6,.88) !important;
 }
 :root[data-theme="light"] #apStatusOverlay::before,
 :root[data-theme="light"] #apStatusOverlay.open::before,
