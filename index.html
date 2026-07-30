@@ -6725,11 +6725,11 @@ select:-webkit-autofill {
   margin-top: 14px;
   padding-top: 10px;
   border-top: 1px dashed rgba(0,234,255,0.18);
-  font-family: var(--font-code);
-  font-size: 9px;
-  line-height: 1.75;
-  color: var(--white-dim);
-  letter-spacing: 0.02em;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--ink-4);
+  letter-spacing: 0;
   display: flex;
   gap: 8px;
   font-style: italic;
@@ -10869,14 +10869,16 @@ input, select, textarea {
   word-break: keep-all;
 }
 .echo-title span { color: var(--cyan); }
-.echo-title .echo-signal-word { color: var(--white); }
 .echo-lead {
-  font-family: var(--font-code);
-  font-size: 11px;
-  line-height: 1.9;
-  color: var(--white-mid);
-  letter-spacing: 0.03em;
-  max-width: 460px;
+  /* Лид раздела — тот же голос, что у первого экрана и «Мощи»:
+     body-шрифт 14/1.72, а не моно 11px (длинный абзац моноширинным
+     кеглем 11px читался как техлог). */
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.72;
+  color: var(--ink-3);
+  letter-spacing: 0;
+  max-width: 62ch;
 }
 .echo-lead strong { color: var(--white); font-weight: 600; }
 .echo-rules {
@@ -10903,9 +10905,19 @@ input, select, textarea {
 }
 
 /* ─── ПРАВЫЙ БЛОК: РАДАР + ИНТЕРФЕЙС ────────────────────────── */
+/* ПЕРЕДАТЧИК — панель по образцу v2 (.glass): шапка с чипом, тело, подвал.
+   Материал плотный, БЕЗ backdrop-filter: внутри живёт rAF-осциллограф, а
+   анимация не-transform внутри стекла обнуляет backdrop-снимок на iOS
+   (та же сага, что была с мембраной). Стеклянность даём кантом и тенью. */
 .echo-right {
-  background: var(--surface);
-  border: 1px solid var(--border2);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0) 180px),
+    var(--glass-hi);
+  border: 1px solid var(--hairline-hi);
+  border-radius: var(--radius-lg);   /* единый радиус панелей сайта */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 24px 60px rgba(0,0,0,0.45);
   position: relative;
   overflow: hidden;
 }
@@ -10920,18 +10932,34 @@ input, select, textarea {
 }
 .echo-channel {
   padding: 14px 16px 0;
-  display: flex; align-items: center; justify-content: space-between;
-  font-family: var(--font-code); font-size: 8px;
-  letter-spacing: 0.2em; color: var(--white-dim);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.18em; color: var(--ink-4);
   text-transform: uppercase;
 }
-.echo-channel-state { display: flex; align-items: center; gap: 7px; }
+/* Чип передатчика — пилюля v2 */
+.echo-channel-state {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 11px;
+  border: 1px solid var(--hairline);
+  border-radius: 99px;
+  background: rgba(255,255,255,0.035);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
 .echo-channel-dot {
   width: 5px; height: 5px; border-radius: 50%;
   background: var(--cyan); box-shadow: 0 0 6px var(--cyan);
   animation: pulse 1.8s ease-in-out infinite;
 }
-.echo-channel-freq { color: var(--cyan); letter-spacing: 0.12em; }
+.echo-channel-aux { text-align: right; }
+/* Частота живёт в луче — как в v2 */
+.echo-beam-freq {
+  position: absolute; right: 10px; bottom: 6px;
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.14em; color: var(--cyan);
+  pointer-events: none;
+}
 .echo-osc-path {
   will-change: filter;
 }
@@ -11011,14 +11039,20 @@ input, select, textarea {
 }
 
 /* Радар — концентрические окружности + осциллограф снизу */
+/* ЛУЧ (v2 .beam): вместо радара 200px — узкая полоса сигнала. Осциллограф
+   тот же (viewBox 400×200 сжимается по высоте), сетка и оси спрятаны —
+   в полосе они превращались бы в шум. */
 .echo-radar-wrap {
   position: relative;
-  height: 200px;
+  height: 58px;
   margin: 12px 16px 0;
-  border: 1px solid var(--border);
-  background: radial-gradient(circle at center, rgba(0,200,200,0.06) 0%, var(--void) 60%);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(0,200,200,0.05), rgba(0,0,0,0) 70%), var(--void);
   overflow: hidden;
 }
+.echo-radar-wrap .echo-scope-grat,
+.echo-radar-wrap .echo-scope-axis { display: none; }
 .echo-radar-rings {
   position: absolute;
   top: 50%; left: 50%;
@@ -11152,7 +11186,46 @@ input, select, textarea {
 }
 
 /* ─── ИНТЕРФЕЙС ВВОДА ───────────────────────────────────────── */
-.echo-form { padding: 18px 16px 18px; }
+.echo-form { padding: 18px 16px 4px; }
+
+/* СЛОТЫ СЛОВ (v2 .slots): семь делений — визуальный счётчик набора.
+   Загораются янтарём по мере слов, при перерасходе весь ряд краснеет. */
+.echo-slots {
+  display: flex;
+  gap: 6px;
+  padding: 0 2px 12px;
+}
+.echo-slots i {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.07);
+  transition: background .3s var(--ease-out), box-shadow .3s var(--ease-out);
+}
+.echo-slots i.on {
+  background: linear-gradient(90deg, #edc87c, #c3943c);
+  box-shadow: 0 0 10px rgba(209,160,74,0.5);
+}
+.echo-slots.over i.on {
+  background: var(--red-hi);
+  box-shadow: 0 0 10px rgba(230,69,69,0.5);
+}
+
+/* ПОДВАЛ ПАНЕЛИ (v2 .g-foot): состояние канала и куда ложится Эхо. */
+.echo-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 18px 15px;
+  border-top: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.echo-foot #echoFootStatus { transition: color .3s; }
+.echo-section.echo-typing .echo-foot #echoFootStatus { color: var(--cyan-hi); }
 
 /* ─── ПИЛЛ-ТОГГЛ ТЕКСТ/ГОЛОС — технологичный двухпозиционный переключатель
        Скользящий индикатор за активной позицией, как у радио-приёмника.
@@ -11351,12 +11424,13 @@ input, select, textarea {
   transform: translateY(-50%) rotate(45deg);
 }
 .echo-lead-sub {
-  font-family: var(--font-code);
-  font-size: 11px;
-  line-height: 1.9;
-  color: var(--white-dim);
-  letter-spacing: 0.03em;
-  max-width: 460px;
+  /* Подлид — ступенью ниже лида, тем же body-шрифтом (v2 .side-note) */
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--ink-4);
+  letter-spacing: 0;
+  max-width: 62ch;
 }
 .echo-lead-sub strong { color: var(--white-mid); font-weight: 600; }
 
@@ -11861,9 +11935,9 @@ input, select, textarea {
     overflow: hidden;
   }
   .echo-title { font-size: clamp(18px, 5vw, 24px); line-height: 1.1; }
-  .echo-lead { font-size: 12px; }
-  .echo-lead-sub { font-size: 10.5px; }
-  .echo-radar-wrap { height: 160px; margin: 12px 14px 0; }
+  .echo-lead { font-size: 13px; }
+  .echo-lead-sub { font-size: 11.5px; }
+  .echo-radar-wrap { height: 58px; margin: 12px 14px 0; }
   .echo-channel { padding: 14px 14px 0; font-size: 7.5px; }
   .echo-form { padding: 16px 14px; }
   /* Кнопка живёт внутри .echo-form (боковые 14px у формы) и при
@@ -16920,7 +16994,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="echo-kicker-dot"></div>
         <span>// ЭХО · СИСТЕМА АПЕРТУРА</span>
       </div>
-      <h2 class="echo-title">Отправить <span class="echo-signal-word">сигнал</span> <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>
+      <h2 class="echo-title">Отправить <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>
       <p class="echo-lead">
         7 слов или 3 секунды голоса. Эхо можно отправить отдельно —
         не покупая реликвию. Виш произнесёт ваши слова в одном из будущих
@@ -16943,13 +17017,14 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
     </div>
 
     <div class="echo-right" id="echoPaneForm">
+      <!-- Шапка панели по образцу v2: слева чип передатчика, справа —
+           куда уходит сигнал. Частота переехала в луч (см. ниже). -->
       <div class="echo-channel">
         <div class="echo-channel-state">
           <div class="echo-channel-dot"></div>
-          <span>APERTURA</span>
+          <span>ЭХО · ПЕРЕДАТЧИК</span>
         </div>
-        <span class="echo-channel-freq" id="echoFreqDisplay">12.847 GHz</span>
-        <span>SIGNAL ACCEPTED</span>
+        <span class="echo-channel-aux">→ MARKETSPACE · БУДУЩИЙ ФРАГМЕНТ</span>
       </div>
       <div class="echo-radar-wrap">
         <!-- Осциллограф-консоль: graticule (CSS) + светящийся cyan-луч (echoOscPath,
@@ -16962,6 +17037,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
           <path class="echo-osc-ghost echo-osc-ghost-r" id="echoOscGhostR" d="M0,100 L400,100"></path>
           <path class="echo-osc-path" id="echoOscPath" d="M0,100 L400,100"></path>
         </svg>
+        <span class="echo-beam-freq" id="echoFreqDisplay">12.847 GHz</span>
       </div>
 
       <div class="echo-form">
@@ -16984,6 +17060,11 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
              которая «съедает» старый контент и обнажает новый. -->
         <div class="echo-tab-stage" id="echoTabStage">
           <div class="echo-tab-pane echo-tab-pane-text" id="echoTabPaneText">
+            <!-- Слоты слов (v2): семь делений загораются по мере набора,
+                 восьмое и дальше — красным: сигнал не влезает в канал. -->
+            <div class="echo-slots" id="echoSlots" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
             <textarea class="echo-text-area" id="echoTextInput"
               placeholder="Семь слов на ту сторону"
               maxlength="120" autocomplete="off" autocorrect="off" autocapitalize="off"
@@ -17034,6 +17115,11 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <button type="button" class="echo-submit" id="echoSubmitBtn" onclick="openEchoOrder()">
           Передать Эхо<span class="echo-submit-price" id="echoSubmitPrice" style="display:none">· 599 ₽</span>
         </button>
+      </div>
+      <!-- Подвал панели (v2): состояние канала слева, куда ложится Эхо — справа -->
+      <div class="echo-foot">
+        <span id="echoFootStatus">ОЖИДАНИЕ СИГНАЛА</span>
+        <span>ХРАНИТСЯ В ПАМЯТИ APERTURA</span>
       </div>
     </div>
   </div>
@@ -19221,7 +19307,7 @@ function inspectPatch6CopyStates(){
     echoSlotFilledCaption: html.includes("has ? 'Эхо' : 'пусто'") || bodyText.includes('Эхо'),
     echoEmptyGrammar: html.includes('Эхо пусто.'),
     echoSlotHint: html.includes('Чем выше Мощь, тем больше слотов Эхо откроется для ваших слов.'),
-    echoCtaCaps: html.includes('<h2 class="echo-title">Отправить <span class="echo-signal-word">сигнал</span> <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>'),
+    echoCtaCaps: html.includes('<h2 class="echo-title">Отправить <span>Эхо</span><br>в&nbsp;MARKETSPACE</h2>'),
     consentNoCaps: !html.includes('ПОДТВЕР' + 'ДИТЕ ОБРАБОТКУ ДАННЫХ')
   };
   Object.keys(requiredCopy).forEach(key => { if(!requiredCopy[key]) issues.push('missing-copy-' + key); });
@@ -30805,6 +30891,15 @@ function updateEchoTextMeta(){
   const n = ta.value.trim().length ? words.length : 0;
   wc.textContent = `${n} / 7 слов`;
   wc.classList.toggle('over', n > 7);
+  /* Слоты слов (v2): деления зажигаются по числу слов, перерасход красит ряд */
+  const slots = document.getElementById('echoSlots');
+  if(slots){
+    const cells = slots.querySelectorAll('i');
+    cells.forEach((cell, i) => cell.classList.toggle('on', i < Math.min(n, cells.length)));
+    slots.classList.toggle('over', n > cells.length);
+  }
+  const foot = document.getElementById('echoFootStatus');
+  if(foot) foot.textContent = n ? 'СИГНАЛ НАБИРАЕТСЯ' : 'ОЖИДАНИЕ СИГНАЛА';
 }
 /* T20: пока пользователь пишет текст (поле в фокусе) — осциллограф «ловит
    сигнал» и становится красным, как при записи голоса. Тот же визуальный
@@ -33770,22 +33865,25 @@ svg.ew-mask-icon use,
     padding: var(--sec-y) 16px var(--sec-y) !important;
     justify-content: center !important;
   }
+  /* Кегли подняты 2026-07-30 (правка «читаемость везде»): было 12 / 10.2 /
+     8.6 — на солнце пропадало. Тречинг убран: разрядка на body-шрифте
+     разваливала абзац. Высота пейна проверена на 390 — влезает. */
   .echo-lead {
-    font-size: 12px !important;
+    font-size: 13px !important;
     line-height: 1.72 !important;
-    letter-spacing: 0.026em !important;
+    letter-spacing: 0 !important;
   }
   .echo-lead-sub {
-    font-size: 10.2px !important;
-    line-height: 1.5 !important;
-    letter-spacing: 0.045em !important;
+    font-size: 11.5px !important;
+    line-height: 1.6 !important;
+    letter-spacing: 0 !important;
   }
   .echo-left .nft-footnote {
     margin-top: 0 !important;
     padding-top: 10px !important;
-    font-size: 8.6px !important;
-    line-height: 1.48 !important;
-    letter-spacing: 0.018em !important;
+    font-size: 10px !important;
+    line-height: 1.55 !important;
+    letter-spacing: 0 !important;
     gap: 7px !important;
   }
   .echo-left .nft-footnote-mark {
@@ -37769,23 +37867,25 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
 })();
 
 window.inspectEchoTitleSignalWordPatch = function(){
+  /* 2026-07-30: слово «сигнал» из заголовка убрано по правке юзера —
+     инспектор теперь сторожит новую формулировку и отсутствие старой. */
   const title = document.querySelector('.echo-title');
   const signal = document.querySelector('.echo-title .echo-signal-word');
   const echo = title ? Array.from(title.querySelectorAll('span')).find(el => (el.textContent || '').trim() === 'Эхо') : null;
   const csTitle = title ? getComputedStyle(title) : null;
-  const csSignal = signal ? getComputedStyle(signal) : null;
   const csEcho = echo ? getComputedStyle(echo) : null;
+  const text = title ? (title.textContent || '').replace(/\s+/g, ' ').trim() : null;
   return {
-    ok: !!(title && signal && echo && /Отправить\s+сигнал\s+Эхо/.test((title.textContent || '').replace(/\s+/g, ' '))),
-    patch: 'Phase 2E.7r · ECHO TITLE SIGNAL WORD',
-    text: title ? (title.textContent || '').replace(/\s+/g, ' ').trim() : null,
-    signalWord: signal ? signal.textContent : null,
+    ok: !!(title && echo && !signal && !/сигнал/i.test(text || '')
+           && /Отправить/.test(text || '') && /MARKETSPACE/.test(text || '')),
+    patch: 'Phase 2E.7r · ECHO TITLE — «сигнал» убран',
+    text: text,
+    signalWordRemoved: !signal,
     colors: {
       title: csTitle ? csTitle.color : null,
-      signal: csSignal ? csSignal.color : null,
       echo: csEcho ? csEcho.color : null
     },
-    layoutSafe: 'Only the Echo title copy and inline signal-word color override were changed. No layout, sizes, mobile/desktop media rules, backend, payment, reservation or scroll logic changes.'
+    layoutSafe: 'Only the Echo title copy changed. No layout, sizes, mobile/desktop media rules, backend, payment, reservation or scroll logic changes.'
   };
 };
 
