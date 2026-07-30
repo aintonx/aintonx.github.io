@@ -885,27 +885,36 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   --line-cyan:   rgba(0,200,200,0.30);
 
   /* legacy-алиасы */
-  --border: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.09);   /* кромка контейнера — как у .power-card */
   --border2: rgba(255,255,255,0.12);
   --border-hot: rgba(192,40,40,0.4);
 
-  /* ── ТЕКСТ ── */
-  --ink:         #f0f0f8;          /* заголовки */
-  --ink-2:       #c8c8dc;          /* основной body */
-  --ink-3:       #8e8eb0;          /* meta */
-  --ink-4:       #5a5a78;          /* sub-meta, hint */
-  --ink-5:       #3a3a52;          /* почти невидимый */
+  /* ── ТЕКСТ ──
+     Чернильная шкала пересобрана (2026-07-30): убран сиреневый увод
+     (синий канал был на +30…+34 выше красного — текст читался «синим»
+     и слепнул при ярком свете) и подняты нижние ступени до нормы
+     контраста WCAG. Синева оставлена лёгкая, чтобы шкала не стала
+     «офисно-серой»: дельта синего 4…21 вместо 8…34.
+     Контраст на тёмном фоне секций (#14142a): ink 16 · ink-2 12 ·
+     ink-3 7.4 · ink-4 5.0 — всё, что несёт слова, выше 4.5:1. */
+  --ink:         #f2f2f6;          /* заголовки */
+  --ink-2:       #d2d2dc;          /* основной body */
+  --ink-3:       #a4a4b6;          /* meta */
+  --ink-4:       #85859a;          /* sub-meta, hint */
+  --ink-5:       #4b4b5e;          /* декоративный, почти невидимый */
 
   /* legacy-алиасы */
-  --white: #f0f0f8;
-  --white-mid: #c8c8dc;
-  --white-dim: #9494b4;
+  --white: #f2f2f6;
+  --white-mid: #d2d2dc;
+  --white-dim: #a4a4b6;
   --white-ghost: #1a1a2e;
 
   /* ── АКЦЕНТЫ ── */
   --red:         #c02828;          /* EchoWorld · сканер · технология */
   --red-hi:      #e63838;
   --red2:        #e03030;          /* legacy */
+  --red-label:   #f05252;          /* мелкие красные лейблы 8–10px: тот же
+                                      тон, но добирает контраст (5.2:1) */
   --red-glow:    rgba(192,40,40,0.18);
   --cyan:        #00c8c8;          /* Apertura · сигналы · мир-II */
   --cyan-hi:     #4ce0e0;
@@ -5162,7 +5171,9 @@ body.scroll-restoring .cart-overlay.cart-closing { animation-play-state: running
 }
 .cart-empty-num {
   font-family: var(--font-num); font-weight: 700; font-size: 40px;
-  letter-spacing: 0.02em; color: var(--ink-5); margin-bottom: 16px; line-height: 1;
+  /* Водяной знак пустой корзины: --ink-5 давал 1.6:1 — знак попросту
+     не читался. Тон тот же, но выше нормы 3:1 для крупного текста. */
+  letter-spacing: 0.02em; color: #626276; margin-bottom: 16px; line-height: 1;
 }
 .cart-empty-h {
   font-family: var(--font-display); font-weight: 800; font-size: 24px;
@@ -8937,7 +8948,11 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   padding: 11px 16px;
   display: flex;
   gap: 10px;
-  align-items: baseline;
+  /* Точка — маркер списка: её центр совпадает с серединой прописной «К»
+     первой строки, поэтому выравниваем по верху, а не по базовой линии.
+     font-size здесь задан, чтобы em у точки считался от размера ноты. */
+  align-items: flex-start;
+  font-size: 12.5px;
   background: var(--glass-bg);
   border: 1px solid var(--hairline);
   border-radius: var(--radius-lg);
@@ -8949,7 +8964,11 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   background: var(--warm);
   box-shadow: 0 0 8px rgba(209,160,74,0.7);
   flex-shrink: 0;
-  transform: translateY(4px);
+  /* 0.665em = середина прописной буквы от верха строки (замерено по
+     метрикам Overpass: полустрочный интервал + подъём − высота/2),
+     минус радиус точки — центр в центр. */
+  margin-top: calc(0.665em - 2.5px);
+  transform: none;
   animation: none;
 }
 .cat-expand-text {
@@ -12721,6 +12740,13 @@ button, a, [role="button"], label,
   .catalog-stage { max-width: 1360px !important; margin: var(--sp-6) auto 0 !important; padding: 0 var(--gutter) !important; }
   .cat-header { max-width: 1360px; margin: 0 auto var(--sp-5); }
   .cat-controls { max-width: 1360px; margin: 0 auto; padding: 0 var(--gutter); }
+  /* Поиск ровно по ширине ряда чипов Мощи. Колонка грида берётся по
+     максимуму содержимого — это ряд чипов; поле поиска растягивается
+     на всю колонку, поэтому его правая грань совпадает с правой
+     гранью последнего чипа («K · Излом»). */
+  .cat-controls { display: grid; grid-template-columns: minmax(0, max-content); }
+  .cat-control-row { width: 100%; }
+  .cat-search { max-width: none; width: 100%; }
 
   .pcard {
     background: var(--glass-bg) !important;
@@ -17660,16 +17686,33 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   background: none !important;
   box-shadow: none !important;
 }
-/* Кромка без «волоска»: у носителей полоски верхний сегмент рамки снят */
-.hero-terminal, .architect-terminal, .donate-right, .cond-screen,
-.preorder-terminal, .echo-right, .faq-unlock,
-.swipe-overlay-card, .cookie-banner,
-.apertura-worlds, .catalog-main-section {
-  border-top: 0 !important;
+/* КРОМКА ВМЕСТО ПОЛОСКИ (правка 2026-07-30). Раньше верхний сегмент
+   рамки снимался, потому что кромкой контейнера СЛУЖИЛА сама полоска.
+   Полоски больше нет — без верхней грани контейнеры «раскрывались»
+   вверх и читались пустотой. Возвращаем грань рамкой ровно того тона,
+   каким нарисованы остальные грани того же контейнера (как у карточек
+   в «Мощи Реликвии», где границы контейнера видны). */
+.architect-terminal, .donate-right, .cond-screen,
+.preorder-terminal, .echo-right,
+.swipe-overlay-card, .cookie-banner {
+  border-top: 1px solid var(--border2) !important;   /* бока этих панелей = 0.12 */
+}
+.hero-terminal {
+  border-top: 1px solid var(--hairline-hi) !important; /* стекло «Линзы» = 0.16 */
+}
+.faq-unlock, .apertura-worlds, .catalog-main-section {
+  border-top: 1px solid var(--border) !important;      /* кромка раздела = 0.09 */
 }
 /* catalog-main-section: прежние красные тени-ореолы вокруг верхней
    кромки убраны — их работу теперь выполняет сама полоска */
 .catalog-main-section { box-shadow: none !important; }
+/* ЧИТАЕМОСТЬ МЕЛКИХ КРАСНЫХ ЛЕЙБЛОВ (2026-07-30). Метки 8–10px шли
+   цветом --red2 и давали ≈4.0:1 при норме 4.5:1 — на ярком свету
+   пропадали первыми. Тон сохранён, светлее на две ступени. */
+.aw-kicker, .clabel, .architect-label, .cookie-banner-label,
+.cookie-banner-ok, .donate-channel-freq, .tech-card-kicker {
+  color: var(--red-label);
+}
 /* ── Полоски УБРАНЫ из модальных окон ── */
 .mhead::before,
 .chk-modal::before,
