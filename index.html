@@ -288,6 +288,13 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   var FRAME_FALLBACK_MS = 96;
   var FIRST_PAINT_FALLBACK_MS = 180;
   var WATCHDOG_AT = MAX_WAIT - EXIT_CLEANUP_MS - FINAL_SEGMENT_MS - FRAME_FALLBACK_MS;
+  /* Холодная повторная загрузка: шрифты реально идут по сети, поэтому
+     даём им больше времени — иначе окно уйдёт раньше шрифтов и мы снова
+     увидим ту самую перевёрстку. Первый визит эти лимиты не трогают. */
+  var FONT_WAIT_COLD = 1700;
+  var MAX_WAIT_COLD = 2600;
+  var WATCHDOG_AT_COLD = MAX_WAIT_COLD - EXIT_CLEANUP_MS - FINAL_SEGMENT_MS - FRAME_FALLBACK_MS;
+  var coldMode = false;
   var finishing = false;
   var removed = false;
   var progress = 0;
@@ -316,13 +323,33 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
        1) ждём, пока браузер зарегистрирует @font-face из css шрифтов
           (document.fonts.size > 0 — до этого check() врёт «да»);
        2) сами инициируем загрузку критических начертаний;
-       3) если уложились в бюджет — кеш тёплый, страница нарисуется
-          сразу набело; не уложились — кеш холодный, показываем окно. */
-  var PROBE_BUDGET = 240;
+       3) успели раньше бюджета и раньше готовности DOM — кеш тёплый,
+          страница нарисуется сразу набело, окно не нужно; не успели —
+          текст пойдёт подложкой и перевёрстается, показываем окно.
+     Решение НЕ висит на одном таймере: бюджет проверяется по часам на
+     каждом тике (таймеры голодают, пока парсится 1.7 МБ разметки), плюс
+     отдельный сигнал «DOM готов, а шрифтов всё ещё нет». */
+  var PROBE_BUDGET = 300;          /* пока про кеш ничего не известно */
+  var PROBE_BUDGET_CACHED = 900;   /* css шрифтов пришёл из кеша — даём дозагрузиться */
   var CRITICAL_FONTS = ['700 16px "Exo 2"', '400 16px "Overpass"', '400 16px "IBM Plex Mono"'];
-  var probeInfo = { supported: false, facesMs: -1, fontsMs: -1, cold: null, totalMs: -1 };
+  var probeInfo = { supported: false, css: null, facesMs: -1, fontsMs: -1, cold: null, why: '', totalMs: -1 };
   function fontsRegistered(){
     try{ return !!(document.fonts && document.fonts.size > 0); }catch(_){ return false; }
+  }
+  /* Прямой ответ на вопрос «данные на месте или их тянут по сети»:
+     у ресурса из кеша transferSize === 0 при живом размере тела.
+     Google Fonts отдаёт Timing-Allow-Origin, поэтому цифры видны. */
+  function fontsCssCacheState(){
+    try{
+      var list = performance.getEntriesByType('resource');
+      for(var i = list.length - 1; i >= 0; i--){
+        var e = list[i];
+        if(!/fonts\.googleapis\.com/.test(e.name)) continue;
+        if(!e.decodedBodySize) return null;      /* тайминг закрыт — не знаем */
+        return e.transferSize === 0 ? 'cache' : 'network';
+      }
+    }catch(_){ }
+    return null;                                  /* ещё не догрузился */
   }
   function fontsAvailable(){
     try{
@@ -340,31 +367,53 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
       probeInfo.supported = api;
       if(!api){ probeInfo.cold = false; resolve(true); return; }   /* нечем измерить — не задерживаем */
       var settled = false;
-      function finish(warm){
+      function finish(warm, why){
         if(settled) return;
         settled = true;
         probeInfo.cold = !warm;
+        probeInfo.why = why || '';
         probeInfo.totalMs = Math.round(clockNow() - t0);
         resolve(warm);
       }
-      var deadline = setTimeout(function(){ finish(false); }, PROBE_BUDGET);
+      var budget = PROBE_BUDGET;
+      var kicked = false;
       function loadCritical(){
+        kicked = true;
         probeInfo.facesMs = Math.round(clockNow() - t0);
+        probeInfo.css = fontsCssCacheState();
+        /* css шрифтов приехал по сети → и сами файлы приедут по сети,
+           текст точно нарисуется подложкой. Ждать нечего — окно нужно. */
+        if(probeInfo.css === 'network'){ finish(false, 'css-from-network'); return; }
+        if(probeInfo.css === 'cache'){ budget = PROBE_BUDGET_CACHED; }
         var kick;
         try{
           kick = Promise.all(CRITICAL_FONTS.map(function(f){ return document.fonts.load(f); }));
-        }catch(_){ clearTimeout(deadline); finish(true); return; }
+        }catch(_){ finish(true, 'load-throw'); return; }
         kick.then(function(){
           probeInfo.fontsMs = Math.round(clockNow() - t0);
-          clearTimeout(deadline);
-          finish(fontsAvailable());
-        }).catch(function(){ clearTimeout(deadline); finish(true); });
+          finish(fontsAvailable(), 'fonts-resolved');
+        }).catch(function(){ finish(true, 'fonts-failed'); });
       }
-      (function waitFaces(){
+      /* Единый тик: сначала ждём регистрацию @font-face, потом — загрузку.
+         Бюджет меряем часами, а не доверием к таймеру: пока парсится
+         1.7 МБ разметки, таймеры голодают и врут. */
+      (function tick(){
         if(settled) return;
-        if(fontsRegistered()){ loadCritical(); return; }
-        setTimeout(waitFaces, 12);
+        var ms = clockNow() - t0;
+        if(!kicked){
+          if(fontsRegistered()){ loadCritical(); }
+          else if(ms > budget){ finish(false, 'budget-faces'); return; }
+        }else if(ms > budget){
+          finish(fontsAvailable(), fontsAvailable() ? 'budget-ready' : 'budget');
+          return;
+        }
+        if(!settled){ setTimeout(tick, 16); }
       })();
+      /* Разметка уже разобрана, а шрифтов нет → страница точно нарисуется
+         подложкой и потом перевёрстается. Показываем окно, не дожидаясь сети. */
+      afterDom().then(function(){
+        if(!settled && !fontsAvailable()){ finish(false, 'dom-before-fonts'); }
+      }).catch(function(){});
     });
   }
 
@@ -468,10 +517,12 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
       else{ clearInterval(fastTimer); }
     }, SEGMENT_FAST_MS);
     afterDom().then(afterFonts).then(reveal).catch(fallbackReveal);
-    setTimeout(fallbackReveal, WATCHDOG_AT);
+    setTimeout(fallbackReveal, coldMode ? WATCHDOG_AT_COLD : WATCHDOG_AT);
   }
   function goLoud(){
     if(removed || loud) return;
+    coldMode = true;
+    bootState.coldMode = true;
     if(el){ el.classList.remove('ew-boot-quiet'); }
     startLoudPipeline();
   }
@@ -486,9 +537,10 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
     return new Promise(function(resolve){ document.addEventListener('DOMContentLoaded', resolve, {once:true}); });
   }
   function afterFonts(){
+    var cap = coldMode ? FONT_WAIT_COLD : FONT_WAIT;
     try{
       if(document.fonts && document.fonts.ready){
-        return Promise.race([document.fonts.ready, new Promise(function(resolve){ setTimeout(resolve, FONT_WAIT); })]);
+        return Promise.race([document.fonts.ready, new Promise(function(resolve){ setTimeout(resolve, cap); })]);
       }
     }catch(_){ }
     return Promise.resolve();
@@ -567,7 +619,7 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
     startLoudPipeline();
   }
   /* Жёсткая страховка: заставка не имеет права остаться на экране. */
-  setTimeout(function(){ if(!removed){ removeShell(); } }, MAX_WAIT + 900);
+  setTimeout(function(){ if(!removed){ removeShell(); } }, MAX_WAIT_COLD + 900);
 })();
 </script>
 
