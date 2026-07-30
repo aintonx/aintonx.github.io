@@ -2646,11 +2646,13 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   white-space: nowrap;
 }
 .about-text {
-  font-size: 11px;
+  /* Читаемость (2026-07-30): абзацы шли 11px — на десктопе это подпись,
+     а не текст. Кегль подтянут к лиду первого экрана; мобила 13, десктоп 14. */
+  font-size: clamp(13px, 1vw, 14px);
   color: var(--white-mid);
-  line-height: 1.9;
+  line-height: 1.8;
   margin-bottom: 20px;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.01em;
 }
 .about-text em { color: var(--white-mid); font-style: normal; }
 .about-text strong { color: var(--white-mid); font-weight: 400; }
@@ -2793,10 +2795,12 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   line-height: 1.2;
 }
 .tech-card-text {
-  font-size: 10px;
+  /* Было 10px — предел читаемости. Карточек шесть, поэтому кегль чуть
+     меньше абзацного: мобила 12, десктоп 13. */
+  font-size: clamp(12px, 0.9vw, 13px);
   color: var(--ink-2);
-  line-height: 1.8;
-  letter-spacing: 0.03em;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
   align-self: start;
 }
 .tech-card-text em { color: var(--white-mid); font-style: normal; }
@@ -5795,9 +5799,9 @@ select:-webkit-autofill {
 }
 .faq-sub {
   font-family: var(--font-code);
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--white-dim);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 /* ── FAQ КАК ЗАКРЫТАЯ СЕКЦИЯ ─────────────────────────────────────
    База вопросов спрятана за кнопкой-разлочкой. После разлочки —
@@ -7552,10 +7556,10 @@ html.legal-modal-open .cookie-banner.show {
   margin-bottom: 22px;
 }
 .aw-lead {
-  font-size: 11px;
+  font-size: clamp(13px, 1vw, 14px);   /* см. .about-text — тот же голос */
   color: var(--white-mid);
-  line-height: 1.9;
-  letter-spacing: 0.03em;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
 }
 .aw-lead em {
   color: var(--cyan);
@@ -7781,7 +7785,7 @@ html.legal-modal-open .cookie-banner.show {
     font-size: clamp(18px, 5vw, 24px);
     line-height: 1.1;
   }
-  .aw-lead { font-size: 12px; }
+  /* кегль лида задан текучим clamp в базовом правиле — развилка не нужна */
   /* Горизонтальный свайп — одна карточка вселенной в зоне видимости, без
      «торчания» соседней. Ширина = контент-область контейнера (поля 6px +
      рамка 1px + внутр. padding 12px = вычитаем 38px из 100vw). Снизу —
@@ -9243,12 +9247,16 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
     overflow: visible; /* разрешаем видимость горизонтального скролла категорий */
   }
   .cat-header {
-    padding: 18px 20px;            /* заголовок по центру между border-top и border-bottom */
+    /* Между заголовком и поиском копилось три отступа подряд: низ шапки
+       18 + разделитель + внешний отступ 24 + верх контролов 14 = 57px.
+       Оставляем один шаг: до разделителя 14, после разделителя 16. */
+    padding: 18px 20px 14px;       /* заголовок по центру между border-top и border-bottom */
     align-items: center;
     gap: 8px;
+    margin-bottom: var(--sp-4);
   }
   .cat-controls {
-    padding: 14px 20px 0;
+    padding: 0 20px;
     gap: 12px;
   }
   .cat-control-row {
@@ -9497,8 +9505,12 @@ input, select, textarea {
   -webkit-text-size-adjust: 100%;
 }
 @media(min-width:961px) {
+  /* На мобиле кегль инпутов держит 16px (защита от зума iOS), на десктопе
+     поле поиска было 10px — при ширине во весь ряд чипов оно читалось
+     как техподпись. 13px = кегль остальных полей сайта. */
   .cat-search input {
-    font-size: 10px !important;
+    font-size: 13px !important;
+    padding: 12px 16px 12px 40px !important;
   }
 }
 
@@ -11981,10 +11993,12 @@ input, select, textarea {
   text-wrap: balance;
 }
 .relic-lede {
-  margin: 18px 0 0;
+  margin: var(--head-lede) 0 0;
   font-family: var(--font-body);
-  font-size: 15.5px;
-  line-height: 1.6;
+  /* Кегль и интерлиньяж один в один с лидом первого экрана (.hero-sub):
+     это один и тот же голос — вводный абзац раздела. */
+  font-size: 14px;
+  line-height: 1.72;
   color: var(--ink-3);
   max-width: 66ch;
 }
