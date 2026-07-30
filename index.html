@@ -17842,6 +17842,169 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   }
   .catalog-main-section { box-shadow: inset 0 1px 0 rgba(255,255,255,0.07) !important; }
 }
+/* ══════════════════════════════════════════════════════════════════
+   ЭХО · ТЕРМИНАЛ ПО ЭТАЛОНУ v2 (.glass) — жидкое стекло, 2026-07-30
+   Перенос из design/site-v2.html один в один: материал панели, канты,
+   блик, вкладки-пилюли, поле-«колодец», кнопки. Раньше внутренности
+   остались в старом языке (плоские прямоугольники, циановая заливка) —
+   правка юзера: «терминалы берутся с эталона, кнопки под стекло».
+   Блок стоит поздно в каскаде, потому что легаси-правила Эхо местами
+   с !important; повторяем !important ровно там, где иначе не победить.
+   Политика стекла соблюдена: backdrop-filter СТАТИЧЕН, единственная
+   анимация поверх стекла — блик, и он едет transform'ом.
+   ══════════════════════════════════════════════════════════════════ */
+.echo-right {
+  /* v2 .glass */
+  background: var(--glass-bg) !important;
+  border: 0 !important;
+  border-radius: 24px !important;
+  -webkit-backdrop-filter: blur(26px) saturate(175%);
+  backdrop-filter: blur(26px) saturate(175%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.16),
+    inset 0 -24px 48px rgba(0,0,0,0.2),
+    0 30px 90px rgba(0,0,0,0.55) !important;
+  overflow: hidden;
+}
+/* Призматический кант (v2 .glass::before): рамка-градиент, вырезанная маской */
+.echo-right::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  z-index: 6;
+  background: var(--lens-edge) !important;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: none !important;
+  box-shadow: none !important;
+  height: auto !important;
+  pointer-events: none;
+}
+/* Блик, проходящий по стеклу (v2 .glass::after). В v2 едет через left —
+   здесь через transform: сдвиг слоя не инвалидирует backdrop-снимок. */
+.echo-right::after {
+  content: "";
+  position: absolute;
+  top: -60%; left: -55%;
+  width: 52%; height: 220%;
+  z-index: 5;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.05) 42%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 58%, transparent);
+  animation: ewGlassSheen 16s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes ewGlassSheen {
+  0%, 58% { transform: translateX(0); }
+  90%, 100% { transform: translateX(330%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-right::after { animation: none; opacity: .5; }
+}
+
+/* Вкладки ТЕКСТ / ГОЛОС — v2 .g-tabs / .g-tab */
+.echo-mode-track {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 99px !important;
+  padding: 4px !important;
+  gap: 4px !important;
+}
+.echo-mode-pill {
+  border-radius: 99px !important;
+  padding: 9px 12px !important;
+  color: var(--ink-3) !important;
+  letter-spacing: 0.12em;
+}
+.echo-mode-pill.active { color: var(--ink) !important; }
+.echo-mode-pill-price { color: var(--ink-4) !important; }
+.echo-mode-pill.active .echo-mode-pill-price { color: var(--warm-hi) !important; }
+.echo-mode-indicator {
+  border-radius: 99px !important;
+  background: rgba(255,255,255,0.08) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
+  border: 0 !important;
+}
+
+/* Поле ввода — v2 .g-well */
+.echo-text-area {
+  font-family: var(--font-body) !important;
+  font-size: 13.5px !important;
+  color: var(--ink) !important;
+  background: rgba(255,255,255,0.045) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 14px !important;
+  padding: 12px 15px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+.echo-text-area::placeholder { color: var(--ink-3) !important; opacity: .8; }
+.echo-text-area:focus {
+  border-color: rgba(0,200,200,0.4) !important;
+  background: rgba(255,255,255,0.06) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 0 0 3px rgba(0,200,200,0.08),
+    0 0 18px rgba(0,200,200,0.1) !important;
+}
+
+/* Кнопка передачи — v2 .g-btn (янтарная пилюля, а не циановый прямоугольник) */
+.echo-submit {
+  display: inline-flex !important;
+  align-items: center; justify-content: center; gap: 10px;
+  width: 100%;
+  font-family: var(--font-mono) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase !important;
+  color: var(--warm-hi) !important;
+  padding: 15px 20px !important;
+  border-radius: 99px !important;
+  background: rgba(209,160,74,0.09) !important;
+  border: 1px solid rgba(209,160,74,0.34) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    inset 0 0 26px rgba(209,160,74,0.08) !important;
+  transition: box-shadow .3s var(--ease-out), background .3s, transform .15s !important;
+}
+.echo-submit-price { color: var(--warm-hi) !important; }
+@media (hover:hover) and (pointer:fine) {
+  .echo-submit:hover {
+    background: rgba(209,160,74,0.15) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.14),
+      inset 0 0 30px rgba(209,160,74,0.13),
+      0 0 30px rgba(209,160,74,0.2) !important;
+  }
+}
+.echo-submit:active { transform: scale(0.985) !important; }
+
+/* Тихая кнопка канала на мобиле — v2 .g-btn.quiet */
+.echo-pane-cta {
+  border-radius: 99px !important;
+  color: var(--ink-2) !important;
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+/* Голосовые органы управления — то же стекло */
+.echo-voice-btn {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+.echo-voice-retry, .echo-player-btn {
+  border-radius: 99px !important;
+  color: var(--ink-2) !important;
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
 /* ЧИТАЕМОСТЬ МЕЛКИХ КРАСНЫХ ЛЕЙБЛОВ (2026-07-30). Метки 8–10px шли
    цветом --red2 и давали ≈4.0:1 при норме 4.5:1 — на ярком свету
    пропадали первыми. Тон сохранён, светлее на две ступени. */
