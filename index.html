@@ -243,6 +243,14 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
 @keyframes ewBootShellOut{0%{opacity:1}100%{opacity:0}}
 @keyframes ewBootCardOut{0%{opacity:1;transform:translate3d(0,0,0) scale(1)}100%{opacity:0;transform:translate3d(0,-3px,0) scale(.992)}}
 @keyframes ewBootCardIn{0%{opacity:0;transform:translateY(5px) scale(.992)}58%{opacity:1;transform:translateY(-1px)}100%{opacity:1;transform:translateY(0) scale(1)}}
+/* ── ТИХАЯ ПРОБА ────────────────────────────────────────────────────
+   Повторный визит: поверхность заставки есть (глухая, ровно того же
+   цвета, что фон страницы), но интерфейса загрузки нет — пользователь
+   видит просто «страница ещё грузится». Если проба покажет, что шрифты
+   придётся тянуть по сети, класс снимается и карточка появляется. */
+#ewFirstBoot.ew-boot-quiet .ew-boot-card{display:none;}
+#ewFirstBoot.ew-boot-quiet::before{opacity:0;}
+#ewFirstBoot.ew-boot-quiet::after{animation:none;opacity:0;}
 @media (max-width:720px){
   #ewFirstBoot{padding:16px;}
   .ew-boot-card{width:min(360px, calc(100vw - 28px));border-radius:10px;}
@@ -287,11 +295,79 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   var params = null;
   try{ params = new URLSearchParams(location.search || ''); }catch(_){ params = {get:function(){return null;}}; }
   try{ if(params.get('boot') === 'reset'){ localStorage.removeItem(KEY); } }catch(_){ storeOk = false; }
-  var force = false;
+  var force = false, skip = false;
   try{ force = params.get('boot') === '1'; }catch(_){ force = false; }
+  try{ skip = params.get('boot') === 'off'; }catch(_){ skip = false; }
   var alreadyShown = false;
   try{ alreadyShown = localStorage.getItem(KEY) === '1'; }catch(_){ storeOk = false; alreadyShown = false; }
-  var shouldShow = force || !alreadyShown;
+  /* Новичку — заставка всегда. Повторному визиту — сначала ТИХАЯ ПРОБА:
+     оверлей уже стоит, но выглядит как пустой фон страницы; карточку
+     показываем только если проба поймала холодный кеш (шрифты придут
+     по сети → текст перевёрстывается на глазах). */
+  var quiet = !force && alreadyShown;
+  var shouldShow = !skip;
+  var loud = false;
+
+  /* ── ПРОБА АССЕТОВ ─────────────────────────────────────────────────
+     Повторный визит ≠ тёплый кеш: localStorage живёт заметно дольше
+     HTTP-кеша (Safari/iOS чистит кеш агрессивно, приватные окна, режим
+     экономии данных, обновление ассетов). Проверяем не «был ли ты тут»,
+     а «доступны ли шрифты прямо сейчас»:
+       1) ждём, пока браузер зарегистрирует @font-face из css шрифтов
+          (document.fonts.size > 0 — до этого check() врёт «да»);
+       2) сами инициируем загрузку критических начертаний;
+       3) если уложились в бюджет — кеш тёплый, страница нарисуется
+          сразу набело; не уложились — кеш холодный, показываем окно. */
+  var PROBE_BUDGET = 240;
+  var CRITICAL_FONTS = ['700 16px "Exo 2"', '400 16px "Overpass"', '400 16px "IBM Plex Mono"'];
+  var probeInfo = { supported: false, facesMs: -1, fontsMs: -1, cold: null, totalMs: -1 };
+  function fontsRegistered(){
+    try{ return !!(document.fonts && document.fonts.size > 0); }catch(_){ return false; }
+  }
+  function fontsAvailable(){
+    try{
+      for(var i = 0; i < CRITICAL_FONTS.length; i++){
+        if(!document.fonts.check(CRITICAL_FONTS[i])) return false;
+      }
+      return true;
+    }catch(_){ return true; }
+  }
+  function probeAssets(){
+    var t0 = clockNow();
+    return new Promise(function(resolve){
+      var api = false;
+      try{ api = !!(document.fonts && document.fonts.load && document.fonts.check); }catch(_){ api = false; }
+      probeInfo.supported = api;
+      if(!api){ probeInfo.cold = false; resolve(true); return; }   /* нечем измерить — не задерживаем */
+      var settled = false;
+      function finish(warm){
+        if(settled) return;
+        settled = true;
+        probeInfo.cold = !warm;
+        probeInfo.totalMs = Math.round(clockNow() - t0);
+        resolve(warm);
+      }
+      var deadline = setTimeout(function(){ finish(false); }, PROBE_BUDGET);
+      function loadCritical(){
+        probeInfo.facesMs = Math.round(clockNow() - t0);
+        var kick;
+        try{
+          kick = Promise.all(CRITICAL_FONTS.map(function(f){ return document.fonts.load(f); }));
+        }catch(_){ clearTimeout(deadline); finish(true); return; }
+        kick.then(function(){
+          probeInfo.fontsMs = Math.round(clockNow() - t0);
+          clearTimeout(deadline);
+          finish(fontsAvailable());
+        }).catch(function(){ clearTimeout(deadline); finish(true); });
+      }
+      (function waitFaces(){
+        if(settled) return;
+        if(fontsRegistered()){ loadCritical(); return; }
+        setTimeout(waitFaces, 12);
+      })();
+    });
+  }
+
   window.inspectAperturaBootShellCodexFix = function(){
     return {
       ok: true,
@@ -300,14 +376,20 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
       bootShellFound: !!document.getElementById('ew-first-boot-shell-style') && !!document.getElementById('ew-first-boot-shell-codex-fix'),
       segments: 10,
       beamRemoved: true,
-      firstVisitOnly: true,
+      firstVisitOnly: false,
+      repeatVisitProbe: true,
+      quietStart: quiet,
+      wentLoud: loud,
+      probe: probeInfo,
       controls: {
         force: '?boot=1',
-        reset: '?boot=reset'
+        reset: '?boot=reset',
+        off: '?boot=off'
       },
       timing: {
         minShowMs: MIN_SHOW,
-        maxWaitMs: MAX_WAIT
+        maxWaitMs: MAX_WAIT,
+        probeBudgetMs: PROBE_BUDGET
       }
     };
   };
@@ -317,6 +399,9 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
     key: KEY,
     shouldShow: shouldShow,
     forced: force,
+    quiet: quiet,
+    loud: loud,
+    probe: probeInfo,
     alreadyShown: alreadyShown,
     storeOk: storeOk,
     startedAt: started,
@@ -337,6 +422,7 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   el.setAttribute('role','status');
   el.setAttribute('aria-live','polite');
   el.setAttribute('aria-label','Apertura: сигнал стабилизируется');
+  if(quiet){ el.className = 'ew-boot-quiet'; }   /* класс ДО вставки — карточка не мелькнёт */
   el.innerHTML = '<div class="ew-boot-card" aria-hidden="true">'+
     '<div class="ew-boot-inner">'+
       '<div class="ew-boot-kicker"><span>APERTURA · ENTRY</span><span class="ew-boot-led"></span></div>'+
@@ -365,13 +451,36 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   }
   setProgress(1);
   var firstPaintAt = 0;
-  var firstPaintReady = afterFrames(FIRST_PAINT_FALLBACK_MS).then(function(){
-    firstPaintAt = clockNow();
-  });
-  var fastTimer = setInterval(function(){
-    if(progress < 8){ setProgress(progress + 1); }
-    else{ clearInterval(fastTimer); }
-  }, SEGMENT_FAST_MS);
+  var firstPaintReady = null;
+  var fastTimer = null;
+  /* Громкий режим: карточка видна, бежит прогресс, ждём DOM + шрифты.
+     Для новичка стартует сразу; для повторного визита — только если
+     проба поймала холодный кеш. */
+  function startLoudPipeline(){
+    if(loud || removed) return;
+    loud = true;
+    bootState.loud = true;
+    firstPaintReady = afterFrames(FIRST_PAINT_FALLBACK_MS).then(function(){
+      firstPaintAt = clockNow();
+    });
+    fastTimer = setInterval(function(){
+      if(progress < 8){ setProgress(progress + 1); }
+      else{ clearInterval(fastTimer); }
+    }, SEGMENT_FAST_MS);
+    afterDom().then(afterFonts).then(reveal).catch(fallbackReveal);
+    setTimeout(fallbackReveal, WATCHDOG_AT);
+  }
+  function goLoud(){
+    if(removed || loud) return;
+    if(el){ el.classList.remove('ew-boot-quiet'); }
+    startLoudPipeline();
+  }
+  /* Тёплый кеш: карточку не показывали ни кадра — уходим без анимации. */
+  function warmSkip(){
+    if(removed || loud) return;
+    bootState.warmSkip = true;
+    removeShell();
+  }
   function afterDom(){
     if(document.readyState === 'interactive' || document.readyState === 'complete') return Promise.resolve();
     return new Promise(function(resolve){ document.addEventListener('DOMContentLoaded', resolve, {once:true}); });
@@ -443,8 +552,22 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   function fallbackReveal(){
     afterDom().then(reveal).catch(reveal);
   }
-  afterDom().then(afterFonts).then(reveal).catch(fallbackReveal);
-  setTimeout(fallbackReveal, WATCHDOG_AT);
+
+  if(quiet){
+    /* Повторный визит: сначала молча меряем кеш. */
+    try{
+      probeAssets().then(function(warm){
+        if(warm){ warmSkip(); }
+        else{ goLoud(); }
+      }).catch(goLoud);
+    }catch(_){ goLoud(); }
+    /* Если проба зависла где-то внутри — всё равно решаем судьбу окна. */
+    setTimeout(function(){ if(!removed && !loud){ goLoud(); } }, PROBE_BUDGET + 160);
+  }else{
+    startLoudPipeline();
+  }
+  /* Жёсткая страховка: заставка не имеет права остаться на экране. */
+  setTimeout(function(){ if(!removed){ removeShell(); } }, MAX_WAIT + 900);
 })();
 </script>
 
@@ -750,6 +873,30 @@ html[data-theme="light"] .ew-boot-status{color:rgba(18,22,34,.48);}
   --radius-sm:    6px;
   --radius:       10px;
   --radius-lg:    18px;
+
+  /* ── РИТМ · вертикальная система отступов ──
+     Шкала 8-pt (4/8/12/16/24/32/40/56/72/96) + текучие токены ритма.
+     Правило близости: внутренний отступ блока всегда меньше внешнего —
+     тогда связанное читается как одна группа, а секции — как разные.
+     Токены текучие (clamp), поэтому отдельные медиа-развилки под отступы
+     больше не нужны: 390px → минимум шкалы, 1440px → максимум. */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  24px;
+  --sp-6:  32px;
+  --sp-7:  40px;
+  --sp-8:  56px;
+  --sp-9:  72px;
+  --sp-10: 96px;
+  --gutter:      clamp(20px, 2.5vw, 32px);  /* боковые поля страницы */
+  --sec-y:       clamp(44px, 5vw, 72px);    /* вертикальный ритм секции */
+  --sec-y-join:  clamp(28px, 3.2vw, 46px);  /* стык СВЯЗАННЫХ секций */
+  --head-gap:    clamp(28px, 3.1vw, 44px);  /* шапка секции → контент */
+  --head-kicker: 12px;                      /* марка → заголовок */
+  --head-lede:   16px;                      /* заголовок → лид */
+  --block-gap:   clamp(20px, 2.5vw, 32px);  /* блок → блок внутри секции */
 
   /* ── ТИПОГРАФИКА ──
      display — Exo 2: заголовки, технологичный гротеск (техно-характер);
@@ -1766,7 +1913,7 @@ header.scrolled {
 .hero {
   max-width: 1360px;
   margin: 0 auto;
-  padding: 80px 32px 72px;
+  padding: var(--sec-y) var(--gutter);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 64px;
@@ -2380,7 +2527,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   background: var(--surface);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: 72px 32px;
+  padding: var(--sec-y) var(--gutter);
   position: relative;
   z-index: 2;
   overflow: hidden;
@@ -2410,8 +2557,8 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 20px;
-  margin-bottom: 40px;
-  padding-bottom: 20px;
+  margin-bottom: var(--head-gap);
+  padding-bottom: var(--sp-5);
   border-bottom: 1px solid var(--line);
 }
 .about-body { max-width: 880px; }
@@ -2487,7 +2634,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
 .tech-block {
   background: var(--void);
   border-top: 1px solid var(--border);
-  padding: 72px 32px;
+  padding: var(--sec-y) var(--gutter);
   position: relative;
   z-index: 2;
 }
@@ -2499,8 +2646,8 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 40px;
-  padding-bottom: 20px;
+  margin-bottom: var(--head-gap);
+  padding-bottom: var(--sp-5);
   border-bottom: 1px solid var(--border);
 }
 .tech-title {
@@ -2600,7 +2747,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   background: var(--surface);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: 64px 32px;
+  padding: var(--sec-y) var(--gutter);
   position: relative;
   z-index: 2;
 }
@@ -5569,19 +5716,19 @@ select:-webkit-autofill {
 
 /* ── FAQ ── */
 .faq-section {
-  padding: 64px 24px 24px;
+  padding: var(--sec-y) var(--gutter);
   background: var(--bg);
   border-top: 1px solid var(--border);
 }
 .faq-in { max-width: 1360px; margin: 0 auto; }
-.faq-header { margin-bottom: 18px; }
+.faq-header { margin-bottom: var(--head-gap); }
 .faq-title {
   font-family: var(--font-display);
   font-size: clamp(28px, 4vw, 48px);
   font-weight: 700;
   color: var(--white);
   line-height: 1.1;
-  margin: 12px 0 16px;
+  margin: var(--head-kicker) 0 var(--head-lede);
 }
 .faq-sub {
   font-family: var(--font-code);
@@ -5901,7 +6048,6 @@ select:-webkit-autofill {
 }
 @media(max-width:700px){
   .faq-grid { grid-template-columns: 1fr; }
-  .faq-section { padding: 44px 14px 20px; }
   .faq-item { padding: 22px 20px; }
 }
 
@@ -5972,7 +6118,7 @@ select:-webkit-autofill {
   background: var(--surface);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: 72px 32px;
+  padding: var(--sec-y) var(--gutter);
   position: relative; z-index: 2;
   overflow: visible;
 }
@@ -5990,7 +6136,7 @@ select:-webkit-autofill {
 .architect-label {
   font-family: var(--font-code); font-size: 8px;
   letter-spacing: 0.28em; color: var(--red2);
-  text-transform: uppercase; margin-bottom: 32px;
+  text-transform: uppercase; margin-bottom: var(--head-gap);
   display: flex; align-items: center; gap: 10px;
 }
 .architect-label-pre { color: var(--white-dim); }
@@ -6050,7 +6196,7 @@ select:-webkit-autofill {
 .architect-term-body { padding: 8px 0; position: relative; overflow: hidden; isolation: isolate; }
 .architect-term-body .term-line { padding: 5px 16px; font-size: 9px; }
 @media(max-width:960px) {
-  .architect-section { padding: 52px 20px; overflow: hidden; }
+  .architect-section { overflow: hidden; }
   .architect-body { grid-template-columns: 1fr; gap: 32px; }
   .architect-name { font-size: 36px; }
   .architect-right { display: none; }
@@ -6526,7 +6672,7 @@ select:-webkit-autofill {
 footer {
   background: var(--void);
   border-top: 1px solid var(--border);
-  padding: 40px 32px;
+  padding: var(--sp-7) var(--gutter);
   position: relative;
   z-index: 2;
 }
@@ -7293,7 +7439,7 @@ html.legal-modal-open .cookie-banner.show {
   background: var(--surface);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: 84px 32px;
+  padding: var(--sec-y) var(--gutter);
   position: relative;
   z-index: 2;
 }
@@ -7313,7 +7459,7 @@ html.legal-modal-open .cookie-banner.show {
 }
 .aw-header {
   max-width: 720px;
-  margin-bottom: 56px;
+  margin-bottom: var(--head-gap);
 }
 .aw-kicker {
   display: inline-flex;
@@ -7324,7 +7470,7 @@ html.legal-modal-open .cookie-banner.show {
   letter-spacing: .26em;
   color: var(--red2);
   text-transform: uppercase;
-  margin-bottom: 18px;
+  margin-bottom: var(--head-kicker);
 }
 .aw-dot {
   width: 7px; height: 7px;
@@ -7565,9 +7711,9 @@ html.legal-modal-open .cookie-banner.show {
 }
 
 @media(max-width: 960px) {
-  .apertura-worlds { padding: 48px 0 22px; overflow: hidden; }
+  .apertura-worlds { padding: var(--sec-y) 0; overflow: hidden; }
   .aw-in { padding: 0; }
-  .aw-header { margin-bottom: 24px; padding: 0 18px; }
+  .aw-header { padding: 0 18px; }
   .aw-title {
     font-size: clamp(18px, 5vw, 24px);
     line-height: 1.1;
@@ -8151,7 +8297,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
     max-width: 100vw;
     flex-shrink: 0;
     scroll-snap-align: start;
-    padding: 44px 20px 30px;
+    padding: var(--sec-y) var(--gutter) var(--block-gap);
     box-sizing: border-box;
     overflow: hidden;
   }
@@ -8224,16 +8370,13 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   }
 
   /* ── ABOUT ── */
-  .about { padding: 48px 20px; }
   .about-in { padding: 0; }
-  .about-header { padding-bottom: 16px; margin-bottom: 28px; }
   .about-title { font-size: clamp(26px, 8vw, 36px); white-space: normal; }
 
   /* ── TECH — горизонтальная лента карточек по свайпу ──────────────
      Тот же проверенный паттерн, что у каталога и .aw-grid: горизонтальный
      scroll-snap + touch-action:auto + overscroll-behavior-x:contain.
      Вертикальный свайп уходит к странице — общий скролл не ломается. */
-  .tech-block { padding: 48px 20px; }
   .tech-header { flex-direction: column; align-items: flex-start; gap: 8px; }
   .tech-grid {
     display: flex;
@@ -8314,11 +8457,9 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   }
 
   /* ── COLLAB ── */
-  .collab { padding: 48px 20px; }
   .collab-in { grid-template-columns: 1fr; gap: 28px; }
 
   /* ── CATALOG — мобильный фид ── */
-  .catwrap { padding: 0 0 56px; }
   .cat-header { padding: 18px 20px; align-items: center; }
   .cat-controls { padding: 14px 20px 0; flex-wrap: wrap; gap: 10px; }
   .cat-search { min-width: 100%; }
@@ -8345,12 +8486,10 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   .pbtn { width: 100%; text-align: center; padding: 12px; }
 
   /* ── FAQ ── */
-  .faq-section { padding: 40px 20px; }
   .faq-grid { grid-template-columns: 1fr; }
   .faq-item { padding: 22px 20px; }
 
   /* ── FOOTER ── */
-  footer { padding: 36px 20px; }
   .foot-in { flex-direction: column; align-items: center; gap: 14px; text-align: center; }
   .foot-copy { text-align: center; }
   .foot-legal {
@@ -8442,7 +8581,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   .pre-swipe-pane {
     width: 100%; min-width: 100%; flex-shrink: 0;
     scroll-snap-align: start;
-    padding: 40px 20px 48px;
+    padding: var(--sec-y) var(--gutter) var(--sec-y);
     box-sizing: border-box;
     background: var(--surface);
     display: flex; flex-direction: column;
@@ -8613,16 +8752,16 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
    transform/border/shadow, фильтры не анимируются никогда. ═══ */
 .catwrap {
   max-width: none;
-  padding: 110px 0 30px;
+  padding: var(--sec-y-join) 0 var(--sec-y);
   overflow: hidden;
   scroll-margin-top: 80px;
 }
 /* Шапка секции — v2 sec-head */
 .cat-header {
   display: block;
-  padding: 0 32px;
+  padding: 0 var(--gutter);
   max-width: 1360px;
-  margin: 0 auto 26px;
+  margin: 0 auto var(--sp-5);
 }
 .cat-kicker {
   font-family: var(--font-mono);
@@ -8630,7 +8769,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   letter-spacing: 0.22em;
   color: var(--ink-4);
   text-transform: uppercase;
-  margin-bottom: 14px;
+  margin-bottom: var(--head-kicker);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -8647,7 +8786,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
 .cat-controls {
   max-width: 1360px;
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 var(--gutter);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -8738,15 +8877,20 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
 /* Нота каталога — простой текст с точкой (v2, без бокса-обёртки), по ширине
    ряда карточек: те же max-width/padding, что у .catalog-stage/.pgrid */
 .cat-expand {
-  max-width: 1360px;
-  margin: 16px auto 0;
-  padding: 0 32px;
+  /* Контейнер ноты. Ширина строго равна ряду карточек: та же максимальная
+     ширина и те же боковые поля, что у .catalog-stage / .pgrid, поэтому
+     левая и правая грань рамки совпадают с гранью карточки товара ниже. */
+  width: min(calc(1360px - var(--gutter) * 2), calc(100% - var(--gutter) * 2));
+  margin: var(--sp-4) auto 0;
+  padding: 11px 16px;
   display: flex;
   gap: 10px;
   align-items: baseline;
-  background: none !important;
-  border: none !important;
-  border-radius: 0 !important;
+  background: var(--glass-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  backdrop-filter: blur(20px) saturate(120%);
 }
 .cat-expand-dot {
   width: 5px; height: 5px; border-radius: 50%;
@@ -8767,8 +8911,8 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
 .cat-expand-text em { color: var(--ink-3); font-style: normal; }
 .catalog-stage {
   max-width: 1360px;
-  margin: 30px auto 0;
-  padding: 0 32px;
+  margin: var(--sp-6) auto 0;
+  padding: 0 var(--gutter);
   position: relative;
 }
 .pgrid {
@@ -9025,7 +9169,6 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
 
 @media(max-width:960px) {
   .catwrap {
-    padding: 0 0 52px;
     overflow: visible; /* разрешаем видимость горизонтального скролла категорий */
   }
   .cat-header {
@@ -9091,10 +9234,12 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   }
   .cat-expand {
     /* 13px = выравнивание по левому краю карточки: catwrap смещён на 7px
-       (margin 6 + рамка 1), карточка стоит на 20 → нота margin 13 = left 20 */
-    margin: 14px 13px 2px !important;
+       (margin 6 + рамка 1), карточка стоит на 20 → нота margin 13 = left 20.
+       Ширина рамки при этом равна ширине карточки (350 при вьюпорте 390). */
+    width: auto !important;
     max-width: none !important;
-    padding: 0 !important;
+    margin: var(--sp-3) 13px 0 !important;
+    padding: 10px 14px !important;
   }
   .catalog-stage {
     max-width: none;
@@ -10578,7 +10723,7 @@ input, select, textarea {
    передачи сигнала через Систему Апертура.
    ════════════════════════════════════════════════════════════════════ */
 .echo-section {
-  padding: 80px 32px;
+  padding: var(--sec-y) var(--gutter);
   background: linear-gradient(180deg, var(--void) 0%, var(--deep) 50%, var(--void) 100%);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -11734,24 +11879,22 @@ input, select, textarea {
 .relic-section {
   position: relative;
   z-index: 2;
-  padding: 110px 0 30px;
+  padding: var(--sec-y) 0 var(--sec-y-join);
   scroll-margin-top: 80px;
 }
 @media(max-width:720px){
-  .relic-section { padding-top: 56px; padding-bottom: 10px; }
-  .relic-head { margin-bottom: 26px; }
 }
 .relic-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; position: relative; }
 
 /* ── Шапка секции — v2 .sec-head: марка с янтарным штрихом, заголовок, лид ── */
-.relic-head { max-width: 76ch; margin-bottom: 40px; }
+.relic-head { max-width: 76ch; margin-bottom: var(--head-gap); }
 .relic-kicker {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.22em;
   color: var(--ink-4);
   text-transform: uppercase;
-  margin-bottom: 14px;
+  margin-bottom: var(--head-kicker);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -12417,7 +12560,7 @@ button, a, [role="button"], label,
   background: var(--surface);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  padding: 64px 32px;
+  padding: var(--sec-y) var(--gutter);
   position: relative;
   z-index: 2;
 }
@@ -12523,9 +12666,9 @@ button, a, [role="button"], label,
   /* Десктопный каталог — визуал v2 (перебиваем легаси-!important начисто).
      Стекло СТАТИЧНОЕ; анимируются только transform/тень/рамка. */
   .pgrid { gap: 20px !important; padding: 0 !important; max-width: none !important; margin: 0 !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-  .catalog-stage { max-width: 1360px !important; margin: 30px auto 0 !important; padding: 0 32px !important; }
-  .cat-header { max-width: 1360px; margin: 0 auto 26px; }
-  .cat-controls { max-width: 1360px; margin: 0 auto; padding: 0 32px; }
+  .catalog-stage { max-width: 1360px !important; margin: var(--sp-6) auto 0 !important; padding: 0 var(--gutter) !important; }
+  .cat-header { max-width: 1360px; margin: 0 auto var(--sp-5); }
+  .cat-controls { max-width: 1360px; margin: 0 auto; padding: 0 var(--gutter); }
 
   .pcard {
     background: var(--glass-bg) !important;
@@ -33479,7 +33622,7 @@ svg.ew-mask-icon use,
 @media (max-width: 960px) {
   .echo-left {
     gap: 14px !important;
-    padding: 36px 16px 30px !important;
+    padding: var(--sec-y) 16px var(--sec-y) !important;
     justify-content: center !important;
   }
   .echo-lead {
