@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EchoWorld · Модальные окна в «Линзе» — макет механик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700;800&family=Overpass:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   МАКЕТ МОДАЛЬНЫХ ОКОН · СИСТЕМА «ЛИНЗА» · ЖИВЫЕ МЕХАНИКИ
+   Файл НЕ подключён к сайту — витрина для приёмки.
+
+   ГЛАВНОЕ ОТЛИЧИЕ ОТ ПРОШЛОЙ ВЕРСИИ: окна не нарисованы статично, а
+   реально открываются. Одна кнопка открывает окно СРАЗУ В ДВУХ
+   устройствах, чтобы разницу механик было видно в одном движении.
+
+   МОБИЛА — механика сайта не тронута: лист выезжает снизу вверх,
+            ручка сверху, закрытие вниз. Аварийные окна так же.
+   ДЕСКТОП — окно не ползёт снизу, а проявляется по центру на месте
+            (масштаб 0.96→1 + прозрачность), корзина — боковой лист
+            справа. Так привычнее для мыши и большого экрана.
+
+   Политика стекла проекта соблюдена: анимируются только transform и
+   opacity, backdrop-filter статичен и на анимируемых слоях не висит.
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --void:#050506; --deep:#0a0a0c; --raised:#101013; --surface:#141418;
+  --ink:#f2f2f6; --ink-2:#d2d2dc; --ink-3:#a4a4b6; --ink-4:#85859a; --ink-5:#4b4b5e;
+  --cyan:#00c8c8; --cyan-hi:#4ce0e0;
+  --warm:#d1a04a; --warm-hi:#e8c37a;
+  --red:#c02828; --red-hi:#e63838; --red-label:#f05252;
+  --glass-bg:rgba(17,17,21,.46); --glass-hi:rgba(24,24,29,.58);
+  --hairline:rgba(240,240,248,.10); --hairline-hi:rgba(240,240,248,.16);
+  --lens-edge:linear-gradient(135deg,rgba(255,255,255,.32),rgba(120,220,255,.10) 28%,rgba(255,255,255,.02) 46%,rgba(255,175,120,.08) 72%,rgba(255,255,255,.18));
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  /* Единая шкала движения: всё, что открывается, закрывается и
+     переключается, тянется из этих четырёх значений. */
+  --t-in:.42s;      /* появление окна */
+  --t-out:.30s;     /* уход окна */
+  --t-swap:.34s;    /* смена содержимого внутри окна */
+  --t-veil:.36s;    /* затемнение и размытие подложки */
+  --font-display:'Exo 2',system-ui,sans-serif;
+  --font-body:'Overpass',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:
+    radial-gradient(1200px 600px at 15% -5%, rgba(0,200,200,.05), transparent 60%),
+    radial-gradient(900px 500px at 95% 10%, rgba(209,160,74,.045), transparent 60%),
+    var(--void);
+  color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased;
+  padding:44px 24px 110px;
+}
+.wrap{max-width:1400px;margin:0 auto}
+
+/* ── ШАПКА ─────────────────────────────────────────────────────── */
+.page-kicker{font-family:var(--font-mono);font-size:10px;letter-spacing:.22em;color:var(--ink-4);
+  text-transform:uppercase;display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.page-kicker::before{content:"";width:26px;height:1px;background:var(--warm);box-shadow:0 0 8px rgba(209,160,74,.6)}
+h1{font-family:var(--font-display);font-weight:800;font-size:clamp(28px,3vw,42px);line-height:1.14}
+.page-lead{margin-top:16px;font-size:14px;line-height:1.72;color:var(--ink-3);max-width:66ch}
+.page-lead b{color:var(--ink-2);font-weight:600}
+
+/* ── ПУЛЬТ ─────────────────────────────────────────────────────── */
+.deck{position:sticky;top:0;z-index:50;margin:30px 0 34px;padding:14px 0;
+  background:linear-gradient(180deg,var(--void) 62%,rgba(5,5,6,0));}
+.deck-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.deck-lbl{font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;color:var(--ink-4);
+  text-transform:uppercase;margin-right:6px}
+.pick{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+  border-radius:99px;padding:9px 14px;cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1);transition:background .25s var(--ease-out),color .2s,transform .15s}
+.pick:hover{background:rgba(255,255,255,.09);color:var(--ink)}
+.pick:active{transform:scale(.97)}
+.pick.on{color:var(--warm-hi);background:rgba(209,160,74,.12);border-color:rgba(209,160,74,.36)}
+.pick.danger{color:var(--red-label);border-color:rgba(240,82,82,.3);background:rgba(240,82,82,.08)}
+.pick.alt{opacity:.55}
+
+/* ── УСТРОЙСТВА ────────────────────────────────────────────────── */
+.rig{scroll-margin-top:16px;display:flex;gap:34px;align-items:flex-start;flex-wrap:wrap}
+.dev{position:relative}
+.dev-cap{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.dev-cap b{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink)}
+.dev-cap span{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--ink-4);text-transform:uppercase}
+
+.screen{position:relative;overflow:hidden;background:var(--void);
+  border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 90px rgba(0,0,0,.55)}
+.screen--mobile{width:375px;height:720px;border-radius:34px}
+.screen--desktop{width:880px;height:560px;border-radius:16px}
+@media (max-width:1360px){.screen--desktop{width:720px}}
+@media (max-width:820px){.screen--mobile,.screen--desktop{width:100%;max-width:375px}
+  .screen--desktop{height:460px}}
+
+/* подложка-«страница» внутри устройства */
+.fake{position:absolute;inset:0;padding:18px;overflow:hidden;
+  transition:filter var(--t-veil) var(--ease-out),transform var(--t-veil) var(--ease-out)}
+.screen.busy .fake{filter:blur(9px) brightness(.55);transform:scale(1.012)}
+.fake-bar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:99px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.fake-logo{font-family:var(--font-mono);font-size:9px;letter-spacing:.22em;color:var(--ink-2)}
+.fake-nav{margin-left:auto;display:flex;gap:12px;font-family:var(--font-mono);font-size:8px;
+  letter-spacing:.15em;color:var(--ink-4)}
+.fake-h{font-family:var(--font-display);font-weight:800;font-size:26px;line-height:1.15;margin-bottom:10px}
+.fake-h em{font-style:normal;color:var(--cyan-hi)}
+.fake-p{font-size:12.5px;line-height:1.7;color:var(--ink-4);max-width:44ch}
+.fake-grid{display:grid;gap:10px;margin-top:16px}
+.screen--desktop .fake-grid{grid-template-columns:repeat(3,1fr)}
+.screen--mobile .fake-grid{grid-template-columns:1fr 1fr}
+.fake-card{height:88px;border-radius:16px;background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+
+/* ── СЛОИ ОКОН ─────────────────────────────────────────────────── */
+.scrim{position:absolute;inset:0;background:rgba(3,3,5,.62);opacity:0;pointer-events:none;
+  transition:opacity var(--t-veil) var(--ease-out);z-index:10}
+.screen.busy .scrim{opacity:1;pointer-events:auto}
+
+.sheet{position:absolute;z-index:20;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;will-change:transform,opacity}
+.sheet.on{opacity:1;pointer-events:auto}
+
+/* МОБИЛА · лист снизу вверх — механика сайта, не тронута */
+/* Вход медленнее выхода: так шторка «приезжает» вальяжно, а уходит
+   собранно — приём системных листов iOS. Кривая одна на всё. */
+.screen--mobile .sheet{left:0;right:0;bottom:0;max-height:88%;
+  border-radius:24px 24px 0 0;transform:translateY(100%);
+  transition:transform var(--t-out) var(--ease-out),opacity var(--t-out) var(--ease-out)}
+.screen--mobile .sheet.on{transform:translateY(0);
+  transition:transform var(--t-in) var(--ease-out),opacity .26s var(--ease-out)}
+/* аварийное окно на мобиле выезжает так же */
+.screen--mobile .sheet.alert{max-height:none}
+
+/* ДЕСКТОП · окно проявляется по центру на месте */
+.screen--desktop .sheet{left:50%;top:50%;width:min(520px,86%);max-height:84%;
+  border-radius:24px;transform:translate(-50%,-50%) scale(.965) translateY(6px);
+  transition:transform var(--t-out) var(--ease-out),opacity var(--t-out) var(--ease-out)}
+.screen--desktop .sheet.on{transform:translate(-50%,-50%) scale(1) translateY(0);
+  transition:transform var(--t-in) var(--ease-out),opacity .26s var(--ease-out)}
+.screen--desktop .sheet.wide{width:min(660px,92%)}
+/* ДЕСКТОП · корзина — боковой лист справа */
+.screen--desktop .sheet.side{left:auto;right:0;top:0;bottom:0;transform:translateX(100%);
+  width:min(400px,64%);max-height:none;border-radius:24px 0 0 24px}
+.screen--desktop .sheet.side.on{transform:translateX(0);
+  transition:transform var(--t-in) var(--ease-out),opacity .26s var(--ease-out)}
+/* ДЕСКТОП · аварийное окно — компактное, у верхней кромки */
+.screen--desktop .sheet.alert{top:22px;transform:translate(-50%,-8px) scale(.97);width:min(400px,78%)}
+.screen--desktop .sheet.alert.on{transform:translate(-50%,0) scale(1);
+  transition:transform var(--t-in) var(--ease-out),opacity .26s var(--ease-out)}
+
+@media (prefers-reduced-motion:reduce){
+  .sheet{transition:opacity .2s linear !important;transform:none !important}
+  .screen--mobile .sheet,.screen--desktop .sheet{transform:none !important}
+  .screen--desktop .sheet{left:50%;margin-left:-260px}
+}
+
+/* ── МАТЕРИАЛ ──────────────────────────────────────────────────── */
+.glass{position:relative;flex:1 1 auto;background:var(--glass-bg);
+  -webkit-backdrop-filter:blur(26px) saturate(175%);backdrop-filter:blur(26px) saturate(175%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -24px 48px rgba(0,0,0,.2),0 -20px 60px rgba(0,0,0,.5);
+  border-radius:inherit;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;z-index:6;
+  background:var(--lens-edge);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.tile{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);
+  border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+
+/* ручка листа — только на мобиле */
+.grab{display:none;padding:9px 0 2px;place-items:center;flex-shrink:0}
+.screen--mobile .grab{display:grid}
+.grab i{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,.18);display:block}
+
+.m-head{display:flex;align-items:center;gap:12px;padding:14px 18px 0;flex-shrink:0;position:relative;z-index:1}
+.screen--mobile .m-head{padding-top:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.15em;color:var(--ink-2);background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.1);border-radius:99px;padding:6px 11px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1);white-space:nowrap;text-transform:uppercase}
+.dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.dot.c{background:var(--cyan);box-shadow:0 0 9px rgba(0,200,200,.9);animation:breathe 3.2s ease-in-out infinite}
+.dot.w{background:var(--warm);box-shadow:0 0 9px rgba(209,160,74,.9)}
+.dot.r{background:var(--red-hi);box-shadow:0 0 9px rgba(230,69,69,.9)}
+@keyframes breathe{50%{opacity:.45}}
+.m-aux{margin-left:auto;font-family:var(--font-mono);font-size:8.5px;letter-spacing:.14em;
+  color:var(--ink-4);text-align:right;text-transform:uppercase}
+.x{margin-left:auto;width:29px;height:29px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:var(--ink-3);
+  font-size:12px;cursor:pointer;transition:background .2s,color .2s}
+.x:hover{background:rgba(255,255,255,.09);color:var(--ink)}
+.m-body{padding:14px 18px 16px;position:relative;z-index:1;overflow-y:auto;min-height:0;flex:1;
+  scrollbar-width:thin}
+.m-body::-webkit-scrollbar{width:3px}
+.m-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:3px}
+.m-foot{display:flex;justify-content:space-between;gap:12px;padding:10px 18px 14px;flex-shrink:0;
+  font-family:var(--font-mono);font-size:8px;letter-spacing:.13em;color:var(--ink-4);
+  text-transform:uppercase;position:relative;z-index:1;border-top:1px solid var(--hairline)}
+
+h3.m-title{font-family:var(--font-display);font-weight:700;font-size:18px;margin:10px 0 5px}
+.m-sub{font-size:12px;line-height:1.65;color:var(--ink-4)}
+
+/* ── КНОПКИ ────────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:.18em;
+  text-transform:uppercase;padding:14px 18px;border-radius:99px;cursor:pointer;
+  border:1px solid transparent;transition:box-shadow .3s var(--ease-out),background .3s,transform .15s,color .2s}
+.btn-primary{color:var(--warm-hi);background:rgba(209,160,74,.09);border-color:rgba(209,160,74,.34);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 26px rgba(209,160,74,.08)}
+.btn-primary:hover{background:rgba(209,160,74,.15);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 30px rgba(209,160,74,.13),0 0 30px rgba(209,160,74,.2)}
+.btn-quiet{color:var(--ink-2);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.btn-quiet:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+.btn:active{transform:scale(.985)}
+.btn-row{display:flex;gap:9px;padding-top:12px}
+.btn-row .btn{flex:1}
+
+/* ── ЭЛЕМЕНТЫ ──────────────────────────────────────────────────── */
+.field{margin-bottom:11px}
+.field label{display:block;font-family:var(--font-mono);font-size:8.5px;letter-spacing:.14em;
+  color:var(--ink-4);text-transform:uppercase;margin-bottom:6px}
+.req{color:var(--red-label);margin-left:3px}
+.well{display:block;width:100%;font-family:var(--font-body);font-size:13px;color:var(--ink);
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:13px;
+  padding:11px 14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+  transition:border-color .2s,box-shadow .2s,background .2s}
+.well::placeholder{color:var(--ink-3);opacity:.75}
+.well:focus{outline:none;border-color:rgba(0,200,200,.4);background:rgba(255,255,255,.06);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 0 3px rgba(0,200,200,.08)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.screen--mobile .pair{grid-template-columns:1fr}
+
+.row{display:flex;align-items:center;gap:12px;padding:9px 2px;position:relative}
+.row+.row::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--hairline) 16%,var(--hairline) 84%,transparent)}
+.row .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.13em;color:var(--ink-3);text-transform:uppercase}
+.row .v{margin-left:auto;font-size:12.5px;font-weight:500;color:var(--ink);text-align:right}
+.row .v.c{color:var(--cyan-hi)} .row .v.w{color:var(--warm-hi)} .row .v.mut{color:var(--ink-4);font-weight:400}
+
+.opts{display:grid;gap:8px}.opts.two{grid-template-columns:1fr 1fr}
+.screen--mobile .opts.two{grid-template-columns:1fr}
+.opt{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:13px;cursor:pointer;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+  transition:background .25s var(--ease-out),border-color .25s,box-shadow .25s}
+.opt:hover{background:rgba(255,255,255,.055)}
+.opt.on{background:rgba(0,200,200,.06);border-color:rgba(0,200,200,.32);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 22px rgba(0,200,200,.08)}
+.opt-mark{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;
+  font-family:var(--font-mono);font-size:10.5px;color:var(--ink-3);
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
+.opt.on .opt-mark{color:var(--cyan-hi);border-color:rgba(0,200,200,.4);background:rgba(0,200,200,.1)}
+.opt-t{display:block;font-size:12.5px;font-weight:600;color:var(--ink)}
+.opt-s{display:block;font-family:var(--font-mono);font-size:8.5px;letter-spacing:.12em;
+  color:var(--ink-4);text-transform:uppercase;margin-top:3px}
+
+details.hint{margin:8px 0 4px;border-radius:12px;background:rgba(255,255,255,.025);
+  border:1px solid rgba(255,255,255,.07)}
+details.hint>summary{list-style:none;cursor:pointer;padding:9px 12px;display:flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:8.5px;letter-spacing:.13em;color:var(--ink-4);text-transform:uppercase}
+details.hint>summary::-webkit-details-marker{display:none}
+details.hint>summary::before{content:"?";width:15px;height:15px;border-radius:50%;flex-shrink:0;
+  display:grid;place-items:center;font-size:8.5px;color:var(--cyan-hi);
+  background:rgba(0,200,200,.08);border:1px solid rgba(0,200,200,.28)}
+details.hint[open]>summary{color:var(--ink-3)}
+details.hint p{padding:0 12px 11px;font-size:11.5px;line-height:1.6;color:var(--ink-4)}
+
+.steps{display:flex;align-items:center;gap:7px;padding:12px 18px 0;flex-shrink:0}
+.step{display:flex;align-items:center;gap:7px}
+.step-num{width:21px;height:21px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
+  font-family:var(--font-mono);font-size:8.5px;color:var(--ink-4);
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
+.step.on .step-num{color:var(--void);background:var(--warm-hi);border-color:var(--warm-hi);
+  box-shadow:0 0 16px rgba(232,195,122,.35)}
+.step.done .step-num{color:var(--cyan-hi);border-color:rgba(0,200,200,.4);background:rgba(0,200,200,.1)}
+.step-t{font-family:var(--font-mono);font-size:8px;letter-spacing:.12em;color:var(--ink-4);text-transform:uppercase}
+.step.on .step-t{color:var(--ink-2)}
+.step-line{flex:1;height:1px;background:var(--hairline)}
+.screen--mobile .step-t{display:none}
+.screen--mobile .steps{gap:10px}
+
+.cart-item{display:flex;gap:11px;align-items:center;padding:11px;border-radius:15px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);margin-bottom:9px}
+.cart-img{width:56px;height:56px;border-radius:11px;flex-shrink:0;
+  background:linear-gradient(140deg,#1b2a2a,#0d1414);border:1px solid rgba(255,255,255,.08);
+  display:grid;place-items:center;font-family:var(--font-mono);font-size:7.5px;color:var(--ink-5)}
+.cart-name{font-size:12.5px;font-weight:600;color:var(--ink)}
+.cart-art{font-family:var(--font-mono);font-size:8px;letter-spacing:.13em;color:var(--ink-4);margin-top:3px}
+.cart-price{font-family:var(--font-mono);font-size:11px;color:var(--warm-hi);white-space:nowrap}
+.cart-del{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--ink-4);font-size:11px}
+.cart-del:hover{color:var(--red-label);border-color:rgba(240,82,82,.35)}
+.total{display:flex;align-items:baseline;gap:12px;padding:13px 2px 2px;
+  border-top:1px solid var(--hairline);margin-top:6px}
+.total .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.15em;color:var(--ink-4);text-transform:uppercase}
+.total .v{margin-left:auto;font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--warm-hi)}
+
+.p-img{position:relative;height:180px;border-radius:16px;overflow:hidden;
+  background:linear-gradient(150deg,#16302b,#0a1412 60%,#080d0c);
+  border:1px solid rgba(255,255,255,.08);display:grid;place-items:center}
+.p-img>span{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.18em;color:var(--ink-5)}
+.p-tag{position:absolute;top:11px;left:11px;font-family:var(--font-mono);font-size:8px;
+  letter-spacing:.13em;color:var(--ink-2);background:rgba(8,8,10,.6);border:1px solid rgba(255,255,255,.12);
+  border-radius:99px;padding:5px 9px}
+.p-pw{position:absolute;top:11px;right:11px;width:24px;height:24px;border-radius:50%;display:grid;
+  place-items:center;font-family:var(--font-mono);font-size:10px;color:var(--red-hi);
+  background:rgba(192,40,40,.14);border:1px solid rgba(230,56,56,.45)}
+.acc{border-radius:13px;overflow:hidden;border:1px solid rgba(255,255,255,.08);margin-top:12px}
+.acc details{border-bottom:1px solid rgba(255,255,255,.06)}
+.acc details:last-child{border-bottom:0}
+.acc summary{list-style:none;cursor:pointer;padding:11px 13px;display:flex;align-items:center;gap:9px;
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.13em;color:var(--ink-3);text-transform:uppercase}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"+";margin-left:auto;color:var(--ink-4);font-size:13px}
+.acc details[open] summary::after{content:"–"}
+.acc details[open] summary{color:var(--ink)}
+.acc p{padding:0 13px 12px;font-size:12px;line-height:1.65;color:var(--ink-4)}
+
+.slot{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:13px;margin-bottom:7px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
+.slot-n{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
+  font-family:var(--font-mono);font-size:8.5px;color:var(--ink-4);
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}
+.slot.filled .slot-n{color:var(--warm-hi);border-color:rgba(209,160,74,.4);background:rgba(209,160,74,.1)}
+.slot-txt{font-size:12px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot.filled .slot-txt{color:var(--ink)}
+.slot-act{margin-left:auto;font-family:var(--font-mono);font-size:8px;letter-spacing:.12em;
+  color:var(--cyan-hi);text-transform:uppercase;cursor:pointer;white-space:nowrap}
+
+.consent{display:flex;gap:9px;align-items:flex-start;padding:11px 0 3px;cursor:pointer}
+.consent-box{width:16px;height:16px;border-radius:5px;flex-shrink:0;margin-top:1px;position:relative;
+  background:rgba(0,200,200,.14);border:1px solid rgba(0,200,200,.45)}
+.consent-box::after{content:"";position:absolute;left:4.5px;top:1.5px;width:4px;height:8px;
+  border:solid var(--cyan-hi);border-width:0 1.6px 1.6px 0;transform:rotate(45deg)}
+.consent span{font-size:11px;line-height:1.55;color:var(--ink-4)}
+.consent a{color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
+
+.legal-scroll{max-height:210px;overflow:auto;padding-right:6px;
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 5%,#000 93%,transparent);
+  mask-image:linear-gradient(180deg,transparent,#000 5%,#000 93%,transparent)}
+.legal-scroll::-webkit-scrollbar{width:3px}
+.legal-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:3px}
+.legal-h{font-family:var(--font-mono);font-size:9px;letter-spacing:.15em;color:var(--cyan-hi);
+  text-transform:uppercase;margin:14px 0 6px}
+.legal-scroll p{font-size:12px;line-height:1.7;color:var(--ink-3);margin-bottom:9px}
+
+.status-ico{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;margin:0 auto 12px;
+  background:rgba(0,200,200,.08);border:1px solid rgba(0,200,200,.3);color:var(--cyan-hi);font-size:17px}
+.status-ico.warn{background:rgba(240,82,82,.09);border-color:rgba(240,82,82,.32);color:var(--red-label)}
+.note-line{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.12em;color:var(--ink-4);
+  text-transform:uppercase;margin-top:9px}
+
+/* ── БАРАБАН · вертикальные ленты ──────────────────────────────────
+   Геометрия боевого барабана атрибутов: окно фиксированной высоты,
+   лента едет сверху вниз, выпавший вариант стоит по центру, соседи
+   сверху и снизу приглушены. Едет только transform. */
+.reel-stage{--item:46px;--win:162px}
+.screen--mobile .reel-stage{--item:42px;--win:126px}
+.reel-head{text-align:center;margin-bottom:14px}
+.reel-head .rc{display:block;font-family:var(--font-mono);font-size:8.5px;letter-spacing:.15em;
+  color:var(--red-label);text-transform:uppercase;margin-bottom:6px}
+.reel-head .rm{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink)}
+.reel-cols{display:grid;gap:10px}
+.reel-cols.three{grid-template-columns:repeat(3,1fr)}
+.reel-cols.one{grid-template-columns:1fr;max-width:260px;margin:0 auto}
+.reel-col{display:flex;flex-direction:column;gap:7px;min-width:0}
+.reel-label{font-family:var(--font-mono);font-size:7.5px;letter-spacing:.2em;color:var(--ink-4);
+  text-transform:uppercase;text-align:center}
+.reel-win{position:relative;height:var(--win);overflow:hidden;border-radius:13px;
+  background:rgba(4,4,5,.55);border:1px solid rgba(255,255,255,.1);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.reel-win::before,.reel-win::after{content:"";position:absolute;left:0;right:0;height:32%;
+  z-index:3;pointer-events:none}
+.reel-win::before{top:0;background:linear-gradient(180deg,rgba(4,4,5,.92),rgba(4,4,5,0))}
+.reel-win::after{bottom:0;background:linear-gradient(0deg,rgba(4,4,5,.92),rgba(4,4,5,0))}
+.reel-hl{position:absolute;left:6px;right:6px;top:50%;height:var(--item);transform:translateY(-50%);
+  border-radius:9px;border:1px solid rgba(0,200,200,.3);background:rgba(0,200,200,.05);z-index:4;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 18px rgba(0,200,200,.1)}
+.reel-strip{position:absolute;left:0;right:0;top:calc(50% - var(--item)/2);z-index:1;
+  will-change:transform}
+/* ЯЧЕЙКА ЛЕНТЫ. Здесь была ловушка: два правила с одинаковым весом
+   спорили за display, и побеждало то, где нет вертикального
+   центрирования, — слово прижималось к верху ячейки и выглядело как
+   «барабан встал мимо», хотя лента стояла ровно. Теперь одно правило:
+   ячейка центрирует содержимое, а перенос на две строки живёт на
+   внутреннем span — они друг другу не мешают. */
+.reel-strip i{display:flex;align-items:center;justify-content:center;
+  height:var(--item);padding:0 9px;overflow:hidden;
+  font-size:11.5px;line-height:1.22;text-align:center;color:var(--ink-4);
+  opacity:.45;font-style:normal;text-wrap:balance;hyphens:auto;
+  transition:opacity .34s var(--ease-out),color .34s var(--ease-out),
+    text-shadow .34s var(--ease-out)}
+.reel-strip i > span{display:-webkit-box;-webkit-box-orient:vertical;
+  -webkit-line-clamp:2;overflow:hidden}
+.reel-strip i.long{font-size:10px;line-height:1.18}
+.reel-strip i.xlong{font-size:9px;line-height:1.16}
+.reel-strip i.hit{color:var(--ink);opacity:1;text-shadow:0 0 14px rgba(0,200,200,.35)}
+.reel-out{margin-top:12px;padding:12px 14px;border-radius:14px;text-align:center;
+  background:rgba(0,200,200,.05);border:1px solid rgba(0,200,200,.22);
+  opacity:0;transform:translateY(10px) scale(.985);
+  transition:opacity .52s var(--ease-out),transform .52s var(--ease-out)}
+.reel-out.on{opacity:1;transform:translateY(0) scale(1)}
+.reel-out .rn{display:block;font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--ink)}
+.reel-out .rd{display:block;font-size:12px;line-height:1.6;color:var(--ink-4);margin-top:4px}
+.reel-out .rk{display:block;font-family:var(--font-mono);font-size:8.5px;letter-spacing:.16em;
+  color:var(--cyan-hi);text-transform:uppercase;margin-bottom:6px}
+/* Замеры посадки: включаются ?debug=1 — показывают расхождение центра
+   выпавшей ячейки и центра окна в пикселях. Нужны, чтобы ловить промах
+   цифрами, а не на глаз. */
+.reel-dbg{display:none;font-family:var(--font-mono);font-size:7.5px;line-height:1.5;letter-spacing:.04em;
+  color:var(--red-label);text-align:center;margin-top:4px}
+body.dbg .reel-dbg{display:block}
+body.dbg .reel-hl{border-color:rgba(240,82,82,.7)}
+
+/* СЦЕНА ОКНА. Форма и барабан лежат ДРУГ НА ДРУГЕ внутри сцены
+   фиксированной высоты: при переключении окно не меняет размер и ничего
+   не подпрыгивает. Высота сцены = высота самой высокой панели, меряется
+   один раз при открытии. Тот же приём, что у вкладок эталона (.g-stage). */
+.win-stage{position:relative;overflow:hidden;
+  transition:height .52s var(--ease-out)}
+.win-pane{transition:opacity var(--t-swap) var(--ease-out),
+  transform var(--t-swap) var(--ease-out),filter var(--t-swap) var(--ease-out)}
+.win-pane.abs{position:absolute;left:0;right:0;top:0}
+.win-pane.out{opacity:0;transform:translateY(-10px);filter:blur(6px);pointer-events:none}
+.win-pane.enter{opacity:0;transform:translateY(12px);filter:blur(6px)}
+.win-pane.hide{display:none}
+
+/* ── ПОЯСНЕНИЯ ─────────────────────────────────────────────────── */
+.legend{margin-top:56px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.legend .tile{padding:16px 18px}
+.legend h4{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.16em;color:var(--warm-hi);
+  text-transform:uppercase;margin-bottom:9px}
+.legend p{font-size:12.5px;line-height:1.7;color:var(--ink-4)}
+.legend b{color:var(--ink-2);font-weight:600}
+.q{margin-top:34px;padding:18px 20px;border-radius:18px;
+  background:rgba(0,200,200,.045);border:1px solid rgba(0,200,200,.22)}
+.q h4{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.16em;color:var(--cyan-hi);
+  text-transform:uppercase;margin-bottom:10px}
+.q ol{margin:0;padding-left:18px;font-size:13px;line-height:1.8;color:var(--ink-3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="page-kicker">Приёмка · механики окон</div>
+    <h1>Как окна открываются</h1>
+    <p class="page-lead">Нажмите любую кнопку — окно откроется <b>сразу в обоих устройствах</b>, чтобы разницу было видно одним движением.<br><br>
+    <b>Мобила</b> — механика сайта не тронута: лист выезжает снизу вверх, сверху ручка, закрывается вниз. Аварийные окна выезжают так же.<br>
+    <b>Десктоп</b> — окно не ползёт снизу через весь экран, а проявляется по центру на месте: масштаб 0.96 → 1 плюс проявление. Корзина уходит в боковой лист справа, аварийное окно садится у верхней кромки, не перекрывая работу. Клик мимо окна закрывает его, как и крестик с ESC.<br><br>
+    Оформление заказа принято в варианте <b>«шаги»</b>; «один лист» оставлен ниже только для сравнения.</p>
+  </header>
+
+  <div class="deck">
+    <div class="deck-row">
+      <span class="deck-lbl">Открыть</span>
+      <button class="pick" data-open="card">Карточка реликвии</button>
+      <button class="pick" data-open="cart">Корзина</button>
+      <button class="pick" data-open="orderA">Заказ · шаги ✓</button>
+      <button class="pick alt" data-open="orderB">Заказ · лист (для сравнения)</button>
+      <button class="pick" data-open="echo">Эхо</button>
+      <button class="pick" data-open="legal">Документы</button>
+      <button class="pick" data-open="ok">Статус</button>
+      <button class="pick danger" data-open="alert">Аварийное</button>
+      <button class="pick" data-close>Закрыть · ESC</button>
+    </div>
+  </div>
+
+  <div class="rig" id="rig">
+
+    <!-- ══════════ МОБИЛА ══════════ -->
+    <div class="dev">
+      <div class="dev-cap"><b>Мобила</b><span>375 · лист снизу вверх · механика сайта</span></div>
+      <div class="screen screen--mobile" id="mob">
+        <div class="fake">
+          <div class="fake-bar"><span class="fake-logo">ECHOWORLD</span><span class="fake-nav"><span>☰</span></span></div>
+          <div class="fake-h">Каждая <em>реликвия</em> — часть вселенной</div>
+          <p class="fake-p">Каталог физических реликвий из MARKETSPACE. Каждая существует в единственном экземпляре.</p>
+          <div class="fake-grid"><div class="fake-card"></div><div class="fake-card"></div><div class="fake-card"></div><div class="fake-card"></div></div>
+        </div>
+        <div class="scrim" data-close></div>
+        <!-- окна вставляются скриптом -->
+      </div>
+    </div>
+
+    <!-- ══════════ ДЕСКТОП ══════════ -->
+    <div class="dev">
+      <div class="dev-cap"><b>Десктоп</b><span>880 · окно по центру · корзина сбоку</span></div>
+      <div class="screen screen--desktop" id="desk">
+        <div class="fake">
+          <div class="fake-bar"><span class="fake-logo">ECHOWORLD</span>
+            <span class="fake-nav"><span>КАТАЛОГ</span><span>ЭХО</span><span>СИСТЕМА</span><span>МИРЫ</span><span>FAQ</span><span>КОРЗИНА 2</span></span></div>
+          <div class="fake-h">Каждая <em>реликвия</em> — часть вселенной</div>
+          <p class="fake-p">Каталог физических реликвий из MARKETSPACE, параллельного мира, рождённого из человеческих желаний.</p>
+          <div class="fake-grid"><div class="fake-card"></div><div class="fake-card"></div><div class="fake-card"></div></div>
+        </div>
+        <div class="scrim" data-close></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ЛЕГЕНДА ── -->
+  <div class="legend">
+    <div class="tile">
+      <h4>Что осталось как было</h4>
+      <p>Выезд снизу вверх на мобиле, ручка листа, закрытие свайпом вниз, затемнение и размытие страницы под окном. Аварийные и статусные окна на телефоне выезжают тем же движением — это уже найденное решение, его переписывать не нужно.</p>
+    </div>
+    <div class="tile">
+      <h4>Что меняется на десктопе</h4>
+      <p>Окно перестаёт ползти снизу через весь экран. Оно <b>проявляется там, где и должно быть</b> — по центру, с лёгким приближением. Корзина уходит в <b>боковой лист справа</b>: она рядом с кнопкой корзины в шапке. Аварийное окно садится у верхней кромки и не закрывает содержимое.</p>
+    </div>
+    <div class="tile">
+      <h4>Почему так</h4>
+      <p>На телефоне палец приходит снизу — лист встречает его на полпути. На мыши точка внимания в центре экрана, и путь окна снизу вверх читается как лишняя дорога. Материал, канты, кнопки и поля при этом одни и те же — меняется только траектория появления.</p>
+    </div>
+    <div class="tile">
+      <h4>Что под капотом</h4>
+      <p>Анимируются только <b>transform и opacity</b> — по правилу проекта, выстраданному на саге с миганием мембраны на iOS. Ни один слой со стеклом не фейдится и не меняет фильтр. Размытие страницы под окном сделано фильтром на содержимом, а не на самом окне.</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <h4>Решения приняты</h4>
+    <ol>
+      <li><b>Корзина на десктопе</b> — боковой лист справа.</li>
+      <li><b>Аварийное окно</b> — у верхней кромки, не перекрывает работу.</li>
+      <li><b>Оформление заказа</b> — вариант «шаги». Вариант «один лист» оставлен в макете
+          только для сравнения и в работу не пойдёт.</li>
+      <li><b>Закрытие по клику мимо окна</b> — включено везде, вместе с крестиком и ESC.</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ═══ СОДЕРЖИМОЕ ОКОН · один шаблон на оба устройства ═══ -->
+<template id="tpl-card">
+  <div class="sheet" data-win="card"><div class="glass">
+    <div class="grab"><i></i></div>
+    <div class="m-head"><span class="chip"><span class="dot c"></span>Реликвия · Marketspace</span><button class="x" data-close>✕</button></div>
+    <div class="m-body">
+      <div class="p-img"><span>ФОТО РЕЛИКВИИ</span><span class="p-tag">ART. 01-0001</span><span class="p-pw">S</span></div>
+      <h3 class="m-title">Редкая лягушка</h3>
+      <p class="m-sub">Дело было не в красоте — лицо его не умело ничего скрывать, и каждый читал в нём своё. Знали его все, а близко он не подпустил никого.</p>
+      <div class="acc">
+        <details open><summary>Происхождение</summary><p>Конденсат городских желаний, поток 01-2026. Виш прожил в MARKETSPACE полный цикл и прошёл Переход по собственному следу.</p></details>
+        <details><summary>Что внутри</summary><p>4 слота Эхо · 4 видео-фрагмента из жизни Виша, доступные в личном кабинете после открытия.</p></details>
+        <details><summary>Единственный экземпляр</summary><p>Реликвия существует в одном экземпляре и не тиражируется. После заказа артикул закрывается навсегда.</p></details>
+      </div>
+      <div class="row" style="margin-top:12px"><span class="k">Мощь</span><span class="v c">Сингулярность · S</span></div>
+      <div class="row"><span class="k">Статус</span><span class="v">Доступна</span></div>
+      <div class="row"><span class="k">Цена</span><span class="v w">99 999 ₽</span></div>
+      <div class="btn-row"><button class="btn btn-quiet" style="flex:0 0 auto">В корзину</button><button class="btn btn-primary">Забрать реликвию</button></div>
+    </div>
+    <div class="m-foot"><span>Перед оплатой ничего не списывается</span><span>Apertura · 01-2026</span></div>
+  </div></div>
+</template>
+
+<template id="tpl-cart">
+  <div class="sheet side" data-win="cart"><div class="glass">
+    <div class="grab"><i></i></div>
+    <div class="m-head"><span class="chip"><span class="dot w"></span>Корзина · 2 позиции</span><button class="x" data-close>✕</button></div>
+    <div class="m-body">
+      <div class="cart-item"><div class="cart-img">ФОТО</div><div style="min-width:0"><div class="cart-name">Редкая лягушка</div><div class="cart-art">ART. 01-0001 · S</div></div><div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span class="cart-price">99 999 ₽</span><button class="cart-del">✕</button></div></div>
+      <div class="cart-item"><div class="cart-img">ФОТО</div><div style="min-width:0"><div class="cart-name">Тёмный оракул</div><div class="cart-art">ART. 01-0006 · C</div></div><div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span class="cart-price">24 900 ₽</span><button class="cart-del">✕</button></div></div>
+      <div class="total"><span class="k">Итого</span><span class="v">124 899 ₽</span></div>
+      <div class="note-line">Доставка Почтой России · бесплатно</div>
+      <div class="btn-row"><button class="btn btn-primary">Оформить заказ</button></div>
+    </div>
+    <div class="m-foot"><span>Позиции держатся 30 минут</span><span>Память Apertura</span></div>
+  </div></div>
+</template>
+
+<template id="tpl-orderA">
+  <div class="sheet" data-win="orderA"><div class="glass">
+    <div class="grab"><i></i></div>
+    <div class="m-head"><span class="chip"><span class="dot w"></span>Оформление · шаг 1 из 3</span><button class="x" data-close>✕</button></div>
+    <div class="steps">
+      <div class="step on"><span class="step-num">1</span><span class="step-t">Сигнатура</span></div><span class="step-line"></span>
+      <div class="step"><span class="step-num">2</span><span class="step-t">Контакт</span></div><span class="step-line"></span>
+      <div class="step"><span class="step-num">3</span><span class="step-t">Подтверждение</span></div>
+    </div>
+    <div class="m-body">
+      <div class="win-pane" data-pane="form">
+      <h3 class="m-title" style="margin-top:6px">Каким родится Виш?</h3>
+      <p class="m-sub">От выбранного потока зависит, каким Виш придёт в Поля Конденсации.</p>
+      <div class="opts two" style="margin-top:14px">
+        <label class="opt on"><span class="opt-mark">М</span><span><span class="opt-t">Мужской поток</span><span class="opt-s">Сигнатура · M</span></span></label>
+        <label class="opt"><span class="opt-mark">Ж</span><span><span class="opt-t">Женский поток</span><span class="opt-s">Сигнатура · F</span></span></label>
+      </div>
+      <details class="hint"><summary>Что это значит</summary><p>Это не шаблон и не модель — это живое существо, чьи черты определит ваш Конденсат, направленный в один из двух потоков.</p></details>
+      <div class="btn-row"><button class="btn btn-quiet" style="flex:0 0 auto" data-close>Назад</button><button class="btn btn-primary" data-drum="attrs">Зафиксировать заказ</button></div>
+      </div>
+
+      <!-- ПАНЕЛЬ АТРИБУТОВ · выпадает после нажатия «Зафиксировать заказ» -->
+      <div class="win-pane hide" data-pane="drum">
+        <div class="reel-stage">
+          <div class="reel-head">
+            <span class="rc">// Конденсат кристаллизуется. Атрибуты формируются.</span>
+            <span class="rm">Система определяет параметры вашего Виша…</span>
+          </div>
+          <div class="reel-cols three">
+            <div class="reel-col"><span class="reel-label">Одежда</span>
+              <div class="reel-win"><span class="reel-hl"></span><div class="reel-strip"></div></div><span class="reel-dbg"></span></div>
+            <div class="reel-col"><span class="reel-label">Волосы</span>
+              <div class="reel-win"><span class="reel-hl"></span><div class="reel-strip"></div></div><span class="reel-dbg"></span></div>
+            <div class="reel-col"><span class="reel-label">Аксессуар</span>
+              <div class="reel-win"><span class="reel-hl"></span><div class="reel-strip"></div></div><span class="reel-dbg"></span></div>
+          </div>
+          <div class="reel-out">
+            <span class="rk">Виш определён</span>
+            <span class="rn"></span>
+            <span class="rd">Эти черты закрепятся за Вишем в Полях Конденсации и попадут в видео-фрагменты.</span>
+          </div>
+          <div class="btn-row"><button class="btn btn-primary" data-close>К оплате</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="m-foot"><span>Редкая лягушка · 99 999 ₽</span><span>Шаг 1 из 3</span></div>
+  </div></div>
+</template>
+
+<template id="tpl-orderB">
+  <div class="sheet wide" data-win="orderB"><div class="glass">
+    <div class="grab"><i></i></div>
+    <div class="m-head"><span class="chip"><span class="dot w"></span>Оформление заказа</span><span class="m-aux">Редкая лягушка · S</span><button class="x" data-close>✕</button></div>
+    <div class="m-body">
+      <div class="win-pane" data-pane="form">
+      <div class="tile" style="padding:13px 14px;margin-bottom:9px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px"><span class="step-num">1</span><span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--ink-2);text-transform:uppercase">Сигнатура · поток Виша</span></div>
+        <div class="opts two">
+          <label class="opt on"><span class="opt-mark">М</span><span><span class="opt-t">Мужской</span><span class="opt-s">Сигнатура · M</span></span></label>
+          <label class="opt"><span class="opt-mark">Ж</span><span><span class="opt-t">Женский</span><span class="opt-s">Сигнатура · F</span></span></label>
+        </div>
+      </div>
+      <div class="tile" style="padding:13px 14px;margin-bottom:9px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px"><span class="step-num">2</span><span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--ink-2);text-transform:uppercase">Контакт</span></div>
+        <div class="pair">
+          <div class="field"><label>Имя<span class="req">*</span></label><input class="well" placeholder="Как к вам обращаться?"></div>
+          <div class="field"><label>Телефон<span class="req">*</span></label><input class="well" placeholder="Номер для связи"></div>
+        </div>
+        <div class="field" style="margin-bottom:0"><label>Email<span class="req">*</span></label><input class="well" placeholder="Куда прислать подтверждение"></div>
+      </div>
+      <div class="tile" style="padding:13px 14px;margin-bottom:9px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px"><span class="step-num">3</span><span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--ink-2);text-transform:uppercase">Доставка</span></div>
+        <label class="opt on" style="margin-bottom:9px"><span class="opt-mark">₽</span><span><span class="opt-t">Почта России</span><span class="opt-s">5–14 дней · бесплатно</span></span></label>
+        <div class="field" style="margin-bottom:0"><label>Адрес<span class="req">*</span></label><input class="well" placeholder="Куда направить реликвию?"></div>
+      </div>
+      <div class="tile" style="padding:13px 14px;margin-bottom:9px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px"><span class="step-num">4</span><span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--ink-2);text-transform:uppercase">Эхо · 4 слота</span><span style="margin-left:auto;font-family:var(--font-mono);font-size:8px;letter-spacing:.12em;color:var(--ink-4)">НЕОБЯЗАТЕЛЬНО</span></div>
+        <div class="slot filled"><span class="slot-n">1</span><span class="slot-txt">Я был здесь и это правда</span><span class="slot-act">Изменить</span></div>
+        <div class="slot filled"><span class="slot-n">2</span><span class="slot-txt">Голос · 2.4 сек</span><span class="slot-act">Изменить</span></div>
+        <div class="slot"><span class="slot-n">3</span><span class="slot-txt">Пусто</span><span class="slot-act">Добавить</span></div>
+        <div class="slot" style="margin-bottom:0"><span class="slot-n">4</span><span class="slot-txt">Пусто</span><span class="slot-act">Добавить</span></div>
+      </div>
+      <div class="total"><span class="k">К оплате</span><span class="v">99 999 ₽</span></div>
+      <label class="consent"><span class="consent-box"></span><span>Подтверждаю согласие на обработку <a href="#">персональных данных</a> и принимаю условия <a href="#">оферты</a>.</span></label>
+      <div class="btn-row"><button class="btn btn-primary" data-drum="attrs">Зафиксировать заказ</button></div>
+      </div>
+
+      <!-- ПАНЕЛЬ АТРИБУТОВ · выпадает после нажатия «Зафиксировать заказ» -->
+      <div class="win-pane hide" data-pane="drum">
+        <div class="reel-stage">
+          <div class="reel-head">
+            <span class="rc">// Конденсат кристаллизуется. Атрибуты формируются.</span>
+            <span class="rm">Система определяет параметры вашего Виша…</span>
+          </div>
+          <div class="reel-cols three">
+            <div class="reel-col"><span class="reel-label">Одежда</span>
+              <div class="reel-win"><span class="reel-hl"></span><div class="reel-strip"></div></div><span class="reel-dbg"></span></div>
+            <div class="reel-col"><span class="reel-label">Волосы</span>
+              <div class="reel-win"><span class="reel-hl"></span><div class="reel-strip"></div></div><span class="reel-dbg"></span></div>
+            <div class="reel-col"><span class="reel-label">Аксессуар</span>
+              <div class="reel-win"><span class="reel-hl"></span><div class="reel-strip"></div></div><span class="reel-dbg"></span></div>
+          </div>
+          <div class="reel-out">
+            <span class="rk">Виш определён</span>
+            <span class="rn"></span>
+            <span class="rd">Эти черты закрепятся за Вишем в Полях Конденсации и попадут в видео-фрагменты.</span>
+          </div>
+          <div class="btn-row"><button class="btn btn-primary" data-close>К оплате</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="m-foot"><span>Оплата через ЮKassa · карта не хранится</span><span>Чек НПД придёт на контакт</span></div>
+  </div></div>
+</template>
+
+<template id="tpl-echo">
+  <div class="sheet" data-win="echo"><div class="glass">
+    <div class="grab"><i></i></div>
+    <div class="m-head"><span class="chip"><span class="dot c"></span>Эхо · передача</span><button class="x" data-close>✕</button></div>
+    <div class="m-body">
+      <div class="win-pane" data-pane="form">
+      <div class="row"><span class="k">Формат</span><span class="v">Текст · 7 слов</span></div>
+      <div class="row"><span class="k">Сигнал</span><span class="v">«Я был здесь и это правда»</span></div>
+      <div class="row"><span class="k">К оплате</span><span class="v w">599 ₽</span></div>
+      <!-- Аура в форме НЕ показывается: её присваивает Apertura в момент
+           передачи, и до нажатия кнопки её попросту не существует.
+           Пустая плашка-заглушка только сбивала с толку. -->
+      <div class="note-line" style="margin:12px 0 2px">Ауру присвоит Apertura в момент передачи</div>
+      <div class="pair">
+        <div class="field"><label>Имя<span class="req">*</span></label><input class="well" placeholder="Как к вам обращаться?"></div>
+        <div class="field"><label>Email<span class="req">*</span></label><input class="well" placeholder="Куда прислать код"></div>
+      </div>
+      <label class="consent"><span class="consent-box"></span><span>Подтверждаю согласие на обработку <a href="#">персональных данных</a> и раздел 6 <a href="#">оферты</a> об условиях Эхо.</span></label>
+      <div class="btn-row"><button class="btn btn-primary" data-drum="aura">Передать Эхо · 599 ₽</button></div>
+      </div>
+
+      <!-- БАРАБАН АУРЫ · тот же вертикальный, что у атрибутов -->
+      <div class="win-pane hide" data-pane="drum">
+        <div class="reel-stage">
+          <div class="reel-head">
+            <span class="rc">// Сигнал принят. Apertura подбирает резонанс.</span>
+            <span class="rm">Аура определяется системой…</span>
+          </div>
+          <div class="reel-cols one">
+            <div class="reel-col"><span class="reel-label">Звуковая окраска</span>
+              <div class="reel-win"><span class="reel-hl"></span><div class="reel-strip"></div></div><span class="reel-dbg"></span></div>
+          </div>
+          <div class="reel-out">
+            <span class="rk">Аура присвоена</span>
+            <span class="rn"></span>
+            <span class="rd"></span>
+          </div>
+          <div class="btn-row"><button class="btn btn-primary" data-close>К оплате · 599 ₽</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="m-foot"><span>Хранится в памяти Apertura</span><span>Аура присвоена</span></div>
+  </div></div>
+</template>
+
+<template id="tpl-legal">
+  <div class="sheet" data-win="legal"><div class="glass">
+    <div class="grab"><i></i></div>
+    <div class="m-head"><span class="chip"><span class="dot"></span>Документ · оферта</span><button class="x" data-close>✕</button></div>
+    <div class="m-body">
+      <h3 class="m-title" style="margin-top:2px">Публичная оферта</h3>
+      <div class="legal-scroll">
+        <div class="legal-h">1 · Общие положения</div>
+        <p>Настоящий документ является публичной офертой самозанятого исполнителя и определяет условия приобретения физических реликвий и микро-услуги «Эхо».</p>
+        <div class="legal-h">2 · Предмет</div>
+        <p>Исполнитель передаёт заказчику реликвию в единственном экземпляре, а также, при выборе соответствующей опции, размещает сообщение заказчика в видео-фрагменте.</p>
+        <div class="legal-h">3 · Цена и оплата</div>
+        <p>Оплата производится через ЮKassa. Исполнитель не получает и не хранит данные банковской карты. Чек НПД направляется на указанный контакт.</p>
+        <div class="legal-h">6 · Условия микро-услуги «Эхо»</div>
+        <p>Сообщение до семи слов или до трёх секунд голоса включается в один из будущих видео-фрагментов. Срок публикации не гарантируется календарной датой.</p>
+      </div>
+      <div class="btn-row"><button class="btn btn-quiet" data-close>Закрыть</button></div>
+    </div>
+  </div></div>
+</template>
+
+<template id="tpl-ok">
+  <div class="sheet alert" data-win="ok"><div class="glass">
+    <div class="grab"><i></i></div>
+    <div class="m-body" style="text-align:center;padding:22px 22px 18px">
+      <div class="status-ico">✓</div>
+      <h3 class="m-title" style="margin-top:0">Эхо зафиксировано</h3>
+      <p class="m-sub" style="max-width:32ch;margin:0 auto">Аура: Шёпот. Подтверждение придёт в канал связи.</p>
+      <div class="btn-row" style="justify-content:center"><button class="btn btn-quiet" style="flex:0 0 auto" data-close>Понятно</button></div>
+    </div>
+  </div></div>
+</template>
+
+<template id="tpl-alert">
+  <div class="sheet alert" data-win="alert"><div class="glass">
+    <div class="grab"><i></i></div>
+    <div class="m-body" style="text-align:center;padding:22px 22px 18px">
+      <div class="status-ico warn">!</div>
+      <h3 class="m-title" style="margin-top:0">Микрофон недоступен</h3>
+      <p class="m-sub" style="max-width:32ch;margin:0 auto">Разрешите доступ в настройках браузера или отправьте Эхо текстом.</p>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn btn-quiet" style="flex:0 0 auto" data-close>Текстом</button>
+        <button class="btn btn-primary" style="flex:0 0 auto" data-close>Повторить</button>
+      </div>
+    </div>
+  </div></div>
+</template>
+
+<script>
+/* Один шаблон на оба устройства: разницу задаёт только CSS экрана.
+   Так видно, что меняется траектория появления, а не само окно. */
+const SCREENS = ['mob','desk'];
+const KEYS = ['card','cart','orderA','orderB','echo','legal','ok','alert'];
+
+SCREENS.forEach(id => {
+  const scr = document.getElementById(id);
+  KEYS.forEach(k => {
+    const node = document.getElementById('tpl-' + k).content.cloneNode(true);
+    scr.appendChild(node);
+  });
+});
+
+/* Форму и барабан оборачиваем в сцену: дальше они лягут друг на друга,
+   и окно перестанет менять размер при переключении. */
+document.querySelectorAll('.sheet').forEach(sh => {
+  const form = sh.querySelector('[data-pane="form"]');
+  const drum = sh.querySelector('[data-pane="drum"]');
+  if (!form || !drum) return;
+  const stage = document.createElement('div');
+  stage.className = 'win-stage';
+  form.parentNode.insertBefore(stage, form);
+  stage.appendChild(form);
+  stage.appendChild(drum);
+});
+
+/* Сцена держит РОВНО ту высоту, какая нужна текущей панели, и меняет её
+   плавно. Форма заказа высокая, барабан низкий — если оставить высоту
+   формы, барабан крутится где-то вверху и половину его не видно. Поэтому
+   при переключении окно мягко сжимается до барабана, а при возврате —
+   так же мягко разворачивается обратно. Панели абсолютны, так что во
+   время перехода ничего не скачет. */
+function measurePane(pane){
+  const wasHidden = pane.classList.contains('hide');
+  if (wasHidden){ pane.classList.remove('hide'); pane.style.visibility = 'hidden'; }
+  const h = pane.offsetHeight;
+  if (wasHidden){ pane.style.visibility = ''; pane.classList.add('hide'); }
+  return h;
+}
+function prepStage(sheet){
+  const stage = sheet.querySelector('.win-stage');
+  if (!stage) return null;
+  const form = stage.querySelector('[data-pane="form"]');
+  const drum = stage.querySelector('[data-pane="drum"]');
+  if (!form || !drum) return stage;
+  if (!stage._ready){
+    form.classList.add('abs');
+    drum.classList.add('abs');
+    stage._ready = true;
+  }
+  stage.style.height = measurePane(form) + 'px';
+  return stage;
+}
+
+function closeAll(){
+  /* Возврат к форме: барабан можно проиграть заново */
+  document.querySelectorAll('.sheet').forEach(sh => {
+    const f = sh.querySelector('[data-pane="form"]'), d = sh.querySelector('[data-pane="drum"]');
+    if (f && d){
+      f.classList.remove('hide','out','enter');
+      d.classList.add('hide'); d.classList.remove('enter');
+      d._busy = false;
+      /* высоту сцены вернёт prepStage при следующем открытии */
+    }
+    const o = sh.querySelector('.reel-out'); if (o) o.classList.remove('on');
+    const fa = sh.querySelector('.foot-aura'); if (fa) fa.textContent = 'Аура · после передачи';
+  });
+  document.querySelectorAll('.sheet.on').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('busy'));
+  document.querySelectorAll('.pick.on').forEach(b => b.classList.remove('on'));
+}
+function open(key){
+  closeAll();
+  document.querySelectorAll('.sheet[data-win="' + key + '"]').forEach(s => {
+    prepStage(s);
+    s.classList.add('on');
+  });
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('busy'));
+  const b = document.querySelector('.pick[data-open="' + key + '"]');
+  if (b) b.classList.add('on');
+}
+
+/* ═══ БАРАБАНЫ ═══════════════════════════════════════════════════════
+   Одна механика на два случая: атрибуты Виша (три ленты) и Аура Эхо
+   (одна лента). Лента едет сверху вниз и садится на выпавший вариант —
+   как в боевом барабане атрибутов. Двигается только transform.
+   Важно по смыслу: до нажатия кнопки НИЧЕГО не выбрано — ни атрибуты,
+   ни Аура. Их присваивает система в момент отправки.               */
+const POOLS = {
+  attrs: [
+    {label:'Одежда', items:['Чёрный жакет','Рубашка с закатанными рукавами','Синий тренч','Серый свитер','Кожаная куртка','Рубашка с пуговицами до верха','Клетчатый пиджак','Оверсайз худи','Жилет поверх рубашки','Военная куртка','Вязаный жилет','Полупальто с воротником']},
+    {label:'Волосы', items:['Короткие тёмные','Пепельная стрижка','Отросшее каре','Собранный пучок','Волнистые до плеч','Выбритые виски','Седая прядь у виска','Русые вьющиеся','Чёрные прямые','Медный оттенок','Хвост на затылке','Кудри чуть ниже плеч']},
+    {label:'Аксессуар', items:['Тонкие очки','Кожаный ремешок','Серебряное кольцо','Наушники на шее','Часы на потёртом браслете','Шарф в клетку','Цепочка с подвеской','Значок на лацкане','Кулон из мутного стекла','Перчатки без пальцев','Заколка-невидимка','Браслет из нити']}
+  ],
+  aura: [
+    {label:'Звуковая окраска', items:[
+      ['Гул','низкая, объёмная, как из колодца'],
+      ['Шёпот','на пороге слышимости, сквозь стену'],
+      ['Звон','высокая, дрожащая, как стекло на грани'],
+      ['Хлад','холодная, отстранённая, без эмоции'],
+      ['Срыв','голос, прервавшийся на полуслове'],
+      ['Двойник','повторённая через долю секунды, эхо самой себя'],
+      ['Помеха','потрескивающая, как с виниловой пластинки'],
+      ['Завеса','приглушённая, как через ткань'],
+      ['Изнанка','звучит наоборот, но воспринимается естественно'],
+      ['Струна','натянутая, на грани разрыва']
+    ]}
+  ]
+};
+const LOOPS = 6;                       // сколько раз лента прокрутит пул
+
+function spinOne(win, pool, onDone, delay){
+  const strip = win.querySelector('.reel-strip');
+  const names = pool.map(x => Array.isArray(x) ? x[0] : x);
+  /* Длинные названия («Рубашка с закатанными рукавами») переносим на две
+     строки и ужимаем кегль по длине — вместо обрезки многоточием. */
+  const makeCell = n => {
+    const cls = n.length > 22 ? ' class="xlong"' : (n.length > 14 ? ' class="long"' : '');
+    return '<i' + cls + '><span>' + n + '</span></i>';
+  };
+  let html = '';
+  for (let l = 0; l < LOOPS; l++) names.forEach(n => html += makeCell(n));
+  strip.innerHTML = html;
+  const pick = Math.floor(Math.random() * names.length);
+  const target = (LOOPS - 2) * names.length + pick;
+  const cells = strip.querySelectorAll('i');
+  const cell = cells[target];
+  if (!cell) return;
+
+  /* ТОЧКА ОСТАНОВКИ СЧИТАЕТСЯ ПО РЕАЛЬНОЙ ГЕОМЕТРИИ, а не по --item:
+     берём фактический центр ячейки и центр окна и совмещаем их. Так
+     посадка не зависит ни от паддингов, ни от числа строк в подписи,
+     ни от округлений. Значение округляем до целого пикселя — иначе
+     субпиксельный остаток и читается как «встал мимо». */
+  const winC     = win.clientHeight / 2;              // центр окна
+  const stripTop = strip.offsetTop;                   // лента стоит со сдвигом
+  const cellC    = cell.offsetTop + cell.offsetHeight / 2;  // центр ячейки в ленте
+  /* Ячейка окажется по центру окна, когда её координата В ОКНЕ
+     (stripTop + cellC) минус сдвиг ленты сравняется с центром окна. */
+  const stop  = Math.round(stripTop + cellC - winC);
+  const over  = Math.round(cell.offsetHeight * 0.32);   // проскок как у автомата
+
+  strip.style.transition = 'none';
+  strip.style.transform = 'translateY(10px)';
+  void strip.offsetHeight;
+
+  requestAnimationFrame(() => {
+    /* Фаза 1 — разгон и проскок чуть дальше нужной позиции. */
+    strip.style.transition = 'transform 2.5s cubic-bezier(.17,.85,.3,1) ' + delay + 'ms';
+    strip.style.transform = 'translateY(' + (-(stop + over)) + 'px)';
+  });
+
+  setTimeout(() => {
+    /* Фаза 2 — доводка назад на детент: короткое мягкое возвращение. */
+    strip.style.transition = 'transform .46s cubic-bezier(.22,1,.28,1)';
+    strip.style.transform = 'translateY(' + (-stop) + 'px)';
+    setTimeout(() => {
+      /* Фаза 3 — жёсткая фиксация без перехода: гарантия, что лента
+         стоит ровно на позиции, а не в долях пикселя от неё. */
+      strip.style.transition = 'none';
+      strip.style.transform = 'translateY(' + (-stop) + 'px)';
+      cells.forEach(c => c.classList.remove('hit'));
+      cell.classList.add('hit');
+      /* Контрольный замер ПО ФАКТУ: сравниваем реальные экранные центры
+         ячейки и окна. Если расхождение не ноль — посадка врёт. */
+      const wr = win.getBoundingClientRect(), cr = cell.getBoundingClientRect();
+      const hl = win.querySelector('.reel-hl');
+      const hr = hl ? hl.getBoundingClientRect() : null;
+      const winC2  = wr.top + wr.height / 2;
+      const cellC2 = cr.top + cr.height / 2;
+      const diff = Math.round((cellC2 - winC2) * 10) / 10;
+      if (Math.abs(diff) > 0.6){        // самодоводка на случай дробных высот
+        strip.style.transform = 'translateY(' + (-(stop + diff)) + 'px)';
+      }
+      /* Полный разбор: окно / ячейка / подсветка. Если Δяч=0, а Δподс≠0 —
+         съехала рамка, а не лента. Высоты тоже печатаем: расхождение
+         высоты ячейки и подсветки читается как «сидит не по центру». */
+      const dbg = win.parentNode.querySelector('.reel-dbg');
+      if (dbg){
+        const dHl = hr ? Math.round(((hr.top + hr.height/2) - winC2) * 10) / 10 : '—';
+        dbg.innerHTML = 'Δяч ' + diff + ' · Δподс ' + dHl +
+          '<br>выс ' + Math.round(cr.height) + '/' + (hr ? Math.round(hr.height) : '—') +
+          ' · окно ' + Math.round(wr.height);
+      }
+      if (onDone) onDone(pool[pick]);
+    }, 460);
+  }, 2500 + delay);
+}
+
+function runDrum(sheet, kind){
+  const form = sheet.querySelector('[data-pane="form"]');
+  const drum = sheet.querySelector('[data-pane="drum"]');
+  const out  = sheet.querySelector('.reel-out');
+  if (!form || !drum || drum._busy) return;
+  drum._busy = true;
+  out.classList.remove('on');
+
+  const stage = prepStage(sheet);
+  const hDrum = measurePane(drum);
+  /* 1. форма уходит вверх с расфокусом */
+  form.classList.add('out');
+  /* 2. барабан поднимается снизу с нахлёстом, и ОДНОВРЕМЕННО сцена
+        сжимается до его высоты — движение одно, а не два подряд */
+  drum.classList.remove('hide');
+  drum.classList.add('enter');
+  void drum.offsetHeight;
+  requestAnimationFrame(() => {
+    drum.classList.remove('enter');
+    if (stage) stage.style.height = hDrum + 'px';
+  });
+  setTimeout(() => {
+    form.classList.add('hide');
+    /* 3. ленты стартуют, когда панель уже встала на место */
+    setTimeout(() => {
+      const wins = drum.querySelectorAll('.reel-win');
+      const picks = [];
+      POOLS[kind].forEach((col, i) => {
+        spinOne(wins[i], col.items, v => {
+          picks[i] = v;
+          if (picks.filter(Boolean).length === POOLS[kind].length){
+            finish(kind, out, picks);
+            drum._busy = false;
+          }
+        }, i * 420);
+      });
+    }, 180);
+  }, 300);
+}
+function finish(kind, out, picks){
+  const rn = out.querySelector('.rn'), rd = out.querySelector('.rd');
+  if (kind === 'aura'){
+    rn.textContent = picks[0][0];
+    rd.textContent = picks[0][1];
+  } else {
+    rn.textContent = picks.join(' · ');
+  }
+  out.classList.add('on');
+  /* Панель результата наполнилась текстом и стала выше, чем была в момент
+     замера, — если не пересчитать высоту сцены, кнопка снизу срежется
+     краем (та самая «оранжевая полоска»). Пересчитываем и доводим плавно. */
+  const drum = out.closest('[data-pane="drum"]');
+  const stage = out.closest('.win-stage');
+  if (drum && stage){
+    requestAnimationFrame(() => {
+      stage.style.height = drum.scrollHeight + 'px';
+    });
+  }
+}
+
+document.addEventListener('click', e => {
+  const drumBtn = e.target.closest('[data-drum]');
+  if (drumBtn){ runDrum(drumBtn.closest('.sheet'), drumBtn.dataset.drum); return; }
+  const openBtn = e.target.closest('[data-open]');
+  if (openBtn){ open(openBtn.dataset.open); return; }
+  if (e.target.closest('[data-close]')) closeAll();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
+
+/* Открыть окно сразу по ссылке: ?open=orderA — удобно для приёмки и
+   для того, чтобы прислать конкретное состояние. */
+(function(){
+  const p = new URLSearchParams(location.search);
+  if (p.get('debug')) document.body.classList.add('dbg');
+  const q = p.get('open');
+  if (q && KEYS.indexOf(q) >= 0){
+    open(q);
+    /* ?drum=1 — сразу запустить барабан, удобно для приёмки */
+    if (p.get('drum')){
+      const kind = (q === 'echo') ? 'aura' : 'attrs';
+      setTimeout(() => document.querySelectorAll('.sheet[data-win="' + q + '"]')
+        .forEach(sh => runDrum(sh, kind)), 420);
+    }
+  }
+})();
+</script>
+</body>
+</html>

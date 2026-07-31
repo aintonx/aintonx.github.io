@@ -3562,36 +3562,44 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
 /* Десктоп — карточка артефакта И форма заказа: мгновенное появление,
    полупрозрачный фон, без задержек и чёрных вспышек. Единый паттерн. */
 @media(min-width:961px){
+  /* Тайминги и кривая приняты по макету design/modals-glass.html:
+     вход 0.42s медленнее выхода 0.30s (окно приезжает вальяжно, уходит
+     собранно), кривая одна на весь сайт — var(--ease-lens). */
   .moverlay.open .modal,
   .chk-overlay.open .chk-modal {
-    animation: modalQuickIn .35s cubic-bezier(.22,0,.48,1);
+    animation: modalQuickIn .42s var(--ease-lens);
   }
   .moverlay.closing .modal,
   .chk-overlay.closing .chk-modal {
-    animation: modalQuickOut .26s cubic-bezier(.55,0,.78,1) forwards !important;
+    animation: modalQuickOut .30s var(--ease-lens) forwards !important;
   }
 }
 /* Единый паттерн открытия как у Реквизита/Оферты (legalIn):
    мягкий fade + slide-up + scale. Применяется ко всем модалкам:
    карточка артефакта, чекаут, форма Эхо. */
+/* Ход сокращён с 36px до 6px: на десктопе окно должно ПРОЯВЛЯТЬСЯ там,
+   где ему место, а не проезжать заметный путь снизу — длинный ход читался
+   как мобильная шторка на большом экране. */
 @keyframes modalQuickIn {
-  0%   { opacity: 0; transform: translateY(36px) scale(0.97); }
-  60%  { opacity: 1; }
+  0%   { opacity: 0; transform: translateY(6px) scale(0.965); }
+  55%  { opacity: 1; }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 @keyframes modalQuickOut {
   0%   { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(28px) scale(0.97); }
+  100% { opacity: 0; transform: translateY(6px) scale(0.965); }
 }
 /* Мобиль — bottom-sheet slide снизу (тот же паттерн что legalIn на мобиле) */
 @media(max-width:960px){
+  /* Мобильная механика согласована и не меняется: лист выезжает снизу.
+     Подтянуты только тайминги под общий язык — вход дольше выхода. */
   .moverlay.open .modal,
   .chk-overlay.open .chk-modal {
-    animation: modalMobIn .32s cubic-bezier(.22,0,.48,1);
+    animation: modalMobIn .34s var(--ease-lens);
   }
   .moverlay.closing .modal,
   .chk-overlay.closing .chk-modal {
-    animation: modalMobOut .26s cubic-bezier(.55,0,.78,1) forwards !important;
+    animation: modalMobOut .30s var(--ease-lens) forwards !important;
   }
 }
 /* При закрытии фон overlay гаснет в прозрачность, как у формы заказа:
@@ -28951,124 +28959,72 @@ function selectGender(el, g){
     const body = document.getElementById('chkBody');
     if(body) setTimeout(()=>section.scrollIntoView({behavior:'smooth',block:'nearest'}),120);
 
-    // Build each strip — fill with looped values to make it look like many items
+    /* ══ ЛЕНТЫ БАРАБАНА ══════════════════════════════════════════════
+       Было: короткая лента и «телепорт» в начало на середине разгона
+       (curPos снапался обратно), из-за чего движение рвалось и значения
+       прыгали. Стало: лента заведомо длинная, крутится ОДНИМ непрерывным
+       движением до нужной позиции — перескоков нет вовсе.
+       Точка остановки берётся из фактической геометрии ячейки, а не из
+       арифметики по константам, и в конце проверяется по факту. */
+    const DRUM_LOOPS = 6;
+
     ATTRS.forEach((attr, colIdx)=>{
       const strip = document.getElementById('drumStrip'+colIdx);
       if(!strip) return;
-      strip.innerHTML = '';
       const vals = valuesOf(attr);
-      // We need ~30 items to scroll through
-      const loopCount = 3;
-      const totalItems = [];
-      for(let r=0; r<loopCount; r++){
-        vals.forEach(v=>totalItems.push(v));
+      let html = '';
+      for(let l=0; l<DRUM_LOOPS; l++){
+        vals.forEach(v=>{
+          html += '<div class="attr-drum-item">' + v + '</div>';
+        });
       }
-      // T13: хвост карусели вокруг выпавшего значения — сосед сверху, само
-      // значение, два соседа снизу. При остановке видны соседи И сверху,
-      // И снизу (стандартная карусель), а не «самые нижние значения».
-      const fp = finalPicks[colIdx], n = vals.length;
-      totalItems.push(vals[(fp-1+n)%n]);
-      totalItems.push(vals[fp]);
-      totalItems.push(vals[(fp+1)%n]);
-      totalItems.push(vals[(fp+2)%n]);
-      totalItems.forEach((v,i)=>{
-        const div = document.createElement('div');
-        div.className = 'attr-drum-item';
-        div.textContent = v;
-        strip.appendChild(div);
-      });
+      strip.innerHTML = html;
     });
 
-    // Animate each drum with staggered stop times
-    const ITEM_H = 40;
-    const WIN_H  = 160; // обновлено: окно стало выше — видно соседей сверху/снизу
-    const CENTER_OFFSET = (WIN_H - ITEM_H) / 2; // 60px — центрирует selected item
-
     ATTRS.forEach((attr, colIdx)=>{
       const strip = document.getElementById('drumStrip'+colIdx);
-      if(!strip) return;
+      const win   = document.getElementById('drumWin'+colIdx);
+      if(!strip || !win) return;
 
-      const totalItems = strip.children.length;
-      // T13: выпавшее значение теперь не последнее — ниже него ещё 2 соседа
-      // (peek-снизу). Выбранный индекс = третий с конца.
-      const finalIdx  = totalItems - 3;
-      const finalStop = finalIdx * ITEM_H - CENTER_OFFSET;
+      const vals   = valuesOf(attr);
+      const items  = strip.children;
+      /* Цель во втором с конца цикле: и сверху, и снизу от неё остаются
+         соседи, поэтому по краям окна видно «продолжение» ленты. */
+      const target = (DRUM_LOOPS - 2) * vals.length + finalPicks[colIdx];
+      const cell   = items[target];
+      if(!cell) return;
 
-      // Start position: near top (a few items in)
-      const startPos  = 5 * ITEM_H;
-      strip.style.transform = `translateY(-${startPos}px)`;
+      const stop = Math.round(strip.offsetTop + cell.offsetTop
+                              + cell.offsetHeight / 2 - win.clientHeight / 2);
+      const over = Math.round(cell.offsetHeight * 0.32);   // проскок как у автомата
+      const delay = colIdx * 420;                          // колонки встают по очереди
+
       strip.style.transition = 'none';
+      strip.style.transform  = 'translateY(10px)';
+      void strip.offsetHeight;
 
-      // Speed phases: fast → slow → stop
-      // Stagger stop: col0 stops first after 1.4s, col1 after 2.0s, col2 after 2.7s
-      const stopDelay = 1200 + colIdx * 620;
-      const spinDuration = stopDelay;
+      requestAnimationFrame(()=>{
+        strip.style.transition = 'transform 2.5s cubic-bezier(.17,.85,.3,1) ' + delay + 'ms';
+        strip.style.transform  = 'translateY(-' + (stop + over) + 'px)';
+      });
 
-      // We'll use JS animation with easing
-      let startTime = null;
-      let stopped = false;
-
-      function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
-      function easeInOutQuart(t){ return t<.5 ? 8*t*t*t*t : 1-Math.pow(-2*t+2,4)/2; }
-
-      // Phase 1: fast spin up to spinDuration
-      // Phase 2: decelerate and land on finalStop
-      const SPIN_FAST = spinDuration;   // ms of fast spin
-      const DECEL_DUR = 800;            // ms of deceleration
-
-      // During fast phase: loop through values quickly
-      const FAST_SPEED = 28; // px per frame (at 60fps)
-      let curPos = startPos;
-      let phase = 'fast';
-      let decelStart = null;
-      let decelFrom  = 0;
-
-      function frame(ts){
-        if(!startTime) startTime = ts;
-        const elapsed = ts - startTime;
-
-        if(phase === 'fast'){
-          // Scroll down fast, loop around
-          curPos += FAST_SPEED;
-          const maxScroll = (totalItems - 1) * ITEM_H;
-          // Wrap around — but stop wrapping once we're near end
-          // Keep looping within first (totalItems-1) items range to avoid showing final early
-          const loopEnd = (totalItems - 2) * ITEM_H;
-          if(curPos > loopEnd - WIN_H) curPos = 5 * ITEM_H; // snap back to start
+      setTimeout(()=>{
+        /* доводка назад на детент */
+        strip.style.transition = 'transform .46s cubic-bezier(.22,1,.28,1)';
+        strip.style.transform  = 'translateY(-' + stop + 'px)';
+        setTimeout(()=>{
+          /* фиксация без перехода + сверка по факту */
           strip.style.transition = 'none';
-          strip.style.transform = `translateY(-${curPos}px)`;
-
-          if(elapsed >= SPIN_FAST){
-            phase = 'decel';
-            decelStart = ts;
-            decelFrom  = curPos;
+          strip.style.transform  = 'translateY(-' + stop + 'px)';
+          Array.from(items).forEach((el,i)=>el.classList.toggle('selected', i === target));
+          const wr = win.getBoundingClientRect(), cr = cell.getBoundingClientRect();
+          const diff = (cr.top + cr.height/2) - (wr.top + wr.height/2);
+          if(Math.abs(diff) > 0.6){
+            strip.style.transform = 'translateY(-' + (stop + diff) + 'px)';
           }
-          requestAnimationFrame(frame);
-
-        } else if(phase === 'decel'){
-          const t = Math.min((ts - decelStart) / DECEL_DUR, 1);
-          const ease = easeOutCubic(t);
-          curPos = decelFrom + (finalStop - decelFrom) * ease;
-          strip.style.transition = 'none';
-          strip.style.transform = `translateY(-${curPos}px)`;
-
-          // Highlight the landing item
-          if(t > 0.85){
-            Array.from(strip.children).forEach((el,i)=>{
-              el.classList.toggle('selected', i === finalIdx);
-            });
-          }
-
-          if(t < 1){
-            requestAnimationFrame(frame);
-          } else {
-            strip.style.transform = `translateY(-${finalStop}px)`;
-            // Signal column is done
-            colStopped(colIdx);
-          }
-        }
-      }
-      requestAnimationFrame(frame);
+          colStopped(colIdx);
+        }, 460);
+      }, 2500 + delay);
     });
 
     // Track how many columns have stopped
