@@ -16361,7 +16361,8 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   <symbol id="i-grid-3x3" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M3 15h18" /><path d="M9 3v18" /><path d="M15 3v18" /></symbol>
   <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 19v3" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><rect x="9" y="2" width="6" height="13" rx="3" /></symbol>
   <symbol id="i-mic-vocal" viewBox="0 0 24 24"><path d="m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12" /><path d="M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5" /><circle cx="16" cy="7" r="5" /></symbol>
-  <symbol id="i-re" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-re" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
 <symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="3" width="5" height="18" rx="1" /><rect x="5" y="3" width="5" height="18" rx="1" /></symbol>
   <symbol id="i-cpu" viewBox="0 0 24 24"><path d="M12 20v2" /><path d="M12 2v2" /><path d="M17 20v2" /><path d="M17 2v2" /><path d="M2 12h2" /><path d="M2 17h2" /><path d="M2 7h2" /><path d="M20 12h2" /><path d="M20 17h2" /><path d="M20 7h2" /><path d="M7 20v2" /><path d="M7 2v2" /><rect x="4" y="4" width="16" height="16" rx="2" /><rect x="8" y="8" width="8" height="8" rx="1" /></symbol>
@@ -17064,7 +17065,8 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
             <div class="rec-zone" id="echoVoiceBlock">
               <div class="mic-wrap">
                 <button type="button" class="mic-btn" id="echoVoiceBtn" onclick="toggleEchoRecord()" aria-label="Записать голос">
-                  <svg class="ew-mask-icon ew-icon--mic" aria-hidden="true"><use href="#i-mic"/></svg>
+                  <svg class="mic-ico mic-ico-rec" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mic"/></svg>
+                  <svg class="mic-ico mic-ico-stop" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-stop"/></svg>
                 </button>
                 <svg class="mic-ring" viewBox="0 0 66 66" aria-hidden="true"><circle id="echoMicRing" cx="33" cy="33" r="31"></circle></svg>
               </div>
@@ -17076,10 +17078,10 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
             </div>
             <div class="voice-ctl">
               <button type="button" class="vc-btn" id="echoPlayBtn" onclick="_echoTogglePlay()" disabled>
-                <svg class="ew-mask-icon ew-icon--play" aria-hidden="true"><use href="#i-play"/></svg><span id="echoPlayLabel">ПРОСЛУШАТЬ</span>
+                <svg class="vc-ico vc-ico-play" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg><svg class="vc-ico vc-ico-pause" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pause"/></svg><span id="echoPlayLabel">ПРОСЛУШАТЬ</span>
               </button>
               <button type="button" class="vc-btn" id="echoRetryBtn" onclick="resetEchoVoice()" disabled>
-                <svg class="ew-mask-icon ew-icon--re" aria-hidden="true"><use href="#i-re"/></svg>ЗАНОВО
+                <svg class="vc-ico vc-ico-re" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-re"/></svg>ЗАНОВО
               </button>
               <span class="note">ГОЛОС ПРОЗВУЧИТ УСТАМИ ВИША</span>
             </div>
@@ -17821,6 +17823,138 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   .catalog-main-section { box-shadow: inset 0 1px 0 rgba(255,255,255,0.07) !important; }
 }
 /* ══════════════════════════════════════════════════════════════════
+   ЛИНЗА · ОБЩИЙ СЛОЙ МАТЕРИАЛА (из design/site-v2.html)
+   Два материала на весь сайт, ровно как в эталоне:
+     ПАНЕЛЬ (.glass)  — жидкое стекло: полупрозрачная подложка +
+                        backdrop-filter, призматический кант, тень;
+     ПЛИТКА (.tile)   — полупрозрачная белая плёнка 3.5% + волосяная
+                        рамка + внутренний блик сверху, БЕЗ блюра
+                        (в эталоне плитки тоже без него — иначе на
+                        мобиле десяток стеклянных слоёв сажает кадр).
+   Политика стекла проекта соблюдена: фильтры статичны, анимации
+   внутри стекла — только transform.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── ПЛИТКА ─────────────────────────────────────────────────────── */
+.tech-card, .world-card, .clink, .faq-unlock, .faq-item,
+.arch-stat, .echocard, .donate-method-card,
+.aw-card, .collab-link {
+  background: rgba(255,255,255,0.035) !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  border-radius: 20px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  transition: background .3s var(--ease-out), border-color .3s var(--ease-out),
+              transform .3s var(--ease-out), box-shadow .3s var(--ease-out);
+}
+@media (hover:hover) and (pointer:fine) {
+  .tech-card:hover, .world-card:hover, .clink:hover,
+  .faq-unlock:hover, .arch-stat:hover, .echocard:hover,
+  .donate-method-card:hover, .aw-card:hover, .collab-link:hover {
+    background: rgba(255,255,255,0.055) !important;
+    border-color: rgba(255,255,255,0.16) !important;
+    transform: translateY(-3px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 18px 40px rgba(0,0,0,0.35) !important;
+  }
+}
+.clink:active, .faq-unlock:active, .world-card:active,
+.donate-method-card:active { transform: scale(0.985); }
+
+/* ── ПАНЕЛЬ ─────────────────────────────────────────────────────── */
+.cond-screen, .preorder-terminal, .arch-term, .cookie-banner,
+.attr-drum-section, .attr-result-panel {
+  position: relative;
+  background: var(--glass-bg) !important;
+  border: 0 !important;
+  border-radius: 24px !important;
+  -webkit-backdrop-filter: blur(26px) saturate(175%);
+  backdrop-filter: blur(26px) saturate(175%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.16),
+    inset 0 -24px 48px rgba(0,0,0,0.2),
+    0 30px 90px rgba(0,0,0,0.55) !important;
+  overflow: hidden;
+}
+/* Панели с живой анимацией внутри (печать терминала, развёртка антенны)
+   держим ПЛОТНЫМИ: не-transform движение под стеклом заставляет WebKit
+   пересобирать backdrop-снимок — та самая сага с морганием на iOS. */
+.architect-terminal, .donate-right {
+  position: relative;
+  background: var(--glass-hi) !important;
+  border: 0 !important;
+  border-radius: 24px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    inset 0 -24px 48px rgba(0,0,0,0.22),
+    0 30px 90px rgba(0,0,0,0.5) !important;
+  overflow: hidden;
+}
+/* Призматический кант — общий для всех панелей материала */
+.cond-screen::after, .preorder-terminal::after, .arch-term::after,
+.architect-terminal::after, .donate-right::after, .cookie-banner::after,
+.attr-drum-section::after, .attr-result-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  z-index: 6;
+  background: linear-gradient(135deg, rgba(255,255,255,0.32), rgba(120,220,255,0.1) 28%, rgba(255,255,255,0.02) 46%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.18));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ── КНОПКИ · ЯЗЫК ЭТАЛОНА ──────────────────────────────────────────
+   Основное действие — янтарная пилюля (.g-btn), второстепенное —
+   стеклянная пилюля (.g-btn.quiet). Одинаковые ховер и нажатие. */
+.cta-primary, .pbtn, .preorder-btn, #preorderBtn, .echo-submit,
+.donate-cta, .arch-cta, .chk-submit {
+  border-radius: 99px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase !important;
+  color: var(--warm-hi) !important;
+  background: rgba(209,160,74,0.09) !important;
+  border: 1px solid rgba(209,160,74,0.34) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 0 26px rgba(209,160,74,0.08) !important;
+  transition: box-shadow .3s var(--ease-out), background .3s, transform .15s !important;
+}
+@media (hover:hover) and (pointer:fine) {
+  .cta-primary:hover, .pbtn:hover, .preorder-btn:hover, #preorderBtn:hover,
+  .echo-submit:hover, .donate-cta:hover, .arch-cta:hover, .chk-submit:hover {
+    background: rgba(209,160,74,0.15) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 0 30px rgba(209,160,74,0.13), 0 0 30px rgba(209,160,74,0.2) !important;
+  }
+}
+.cta-secondary, .cta-echo, .hbtn, .ws, .wopt, .ftag,
+.donate-action, .echo-pane-cta, .pre-pane-cta, .arch-console-btn {
+  border-radius: 99px !important;
+  color: var(--ink-2) !important;
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
+  transition: background .3s var(--ease-out), color .2s, transform .15s !important;
+}
+@media (hover:hover) and (pointer:fine) {
+  .cta-secondary:hover, .cta-echo:hover, .hbtn:hover, .ws:hover, .wopt:hover,
+  .ftag:hover, .donate-action:hover, .echo-pane-cta:hover,
+  .pre-pane-cta:hover, .arch-console-btn:hover {
+    background: rgba(255,255,255,0.08) !important;
+    color: var(--ink) !important;
+  }
+}
+.cta-primary:active, .cta-secondary:active, .cta-echo:active, .pbtn:active,
+.preorder-btn:active, #preorderBtn:active, .echo-submit:active,
+.donate-cta:active, .arch-cta:active,
+.donate-action:active, .pre-pane-cta:active, .arch-console-btn:active {
+  transform: scale(0.985) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
    ЭХО · ПЕРЕДАТЧИК — CSS ПЕРЕНЕСЁН ИЗ design/site-v2.html ДОСЛОВНО
    Внутри панели живут только классы эталона, поэтому 371 легаси-правило
    .echo-* до этих узлов не достаёт и !important почти не нужен.
@@ -17881,7 +18015,9 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 .echo-right .g-tab.on { color: var(--ink); background: rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
 .echo-right .g-tab.on .p { color: var(--warm-hi); }
 
-.echo-right .g-stage { position: relative; height: var(--stage-h, 126px); }
+/* 126px из эталона не хватало на мета-строку под полем (обрезало 7px):
+   держим 134, JS дополнительно синхронизирует высоту по активному пейну. */
+.echo-right .g-stage { position: relative; height: var(--stage-h, 134px); }
 .echo-right .g-pane { position: absolute; inset: 0; transition: opacity 0.38s var(--ease-out), filter 0.38s var(--ease-out), transform 0.38s var(--ease-out); }
 .echo-right .g-pane.off { opacity: 0; filter: blur(7px); transform: translateY(7px); pointer-events: none; }
 
@@ -17899,14 +18035,29 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 .echo-right .rec-zone { display: flex; align-items: center; gap: 16px; height: 64px; }
 .echo-right .mic-wrap { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
 .echo-right .mic-btn { position: relative; overflow: hidden; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); transition: background 0.25s, border-color 0.25s, box-shadow 0.25s; cursor: pointer; padding: 0; }
-.echo-right .mic-btn .ew-mask-icon { width: 20px; height: 20px; color: var(--ink-2); transition: color 0.25s; }
+/* Иконки панели рисуем сами: глобальная масочная система бьёт по svg
+   !important-ом (display/width/fill/stroke) и ломает и переключение,
+   и заливку квадрата стопа. */
+.echo-right .mic-btn svg { width: 20px; height: 20px; fill: none; stroke: var(--ink-2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.25s; }
 @media (hover:hover) and (pointer:fine) { .echo-right .mic-btn:hover { background: rgba(255,255,255,0.09); } }
 .echo-right .mic-btn.recording { border-color: rgba(230,69,69,0.55); background: rgba(230,69,69,0.12); box-shadow: 0 0 22px rgba(230,69,69,0.3); }
-.echo-right .mic-btn.recording .ew-mask-icon { color: var(--red-hi); }
+.echo-right .mic-btn.recording svg { stroke: var(--red-hi); }
 .echo-right .mic-ring { position: absolute; inset: -3px; width: calc(100% + 6px); height: calc(100% + 6px); pointer-events: none; }
-.echo-right .mic-ring circle { fill: none; stroke: var(--red-hi); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 194; stroke-dashoffset: 194; filter: drop-shadow(0 0 5px rgba(230,69,69,0.7)); transform: rotate(-90deg); transform-origin: center; transition: stroke-dashoffset .1s linear; }
+/* Кольцо прогресса. В покое СКРЫТО целиком: при нулевом заполнении
+   круглый торец (stroke-linecap:round) всё равно рисует точку — из-за неё
+   на кнопке висела «красная родинка». Появляется только на запись и на
+   воспроизведение и оба раза проходит круг до конца. */
+.echo-right .mic-ring circle { fill: none; stroke: var(--red-hi); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 194; stroke-dashoffset: 194; filter: drop-shadow(0 0 5px rgba(230,69,69,0.7)); transform: rotate(-90deg); transform-origin: center; transition: stroke-dashoffset .1s linear, opacity .18s var(--ease-out); opacity: 0; }
+.echo-right .mic-ring.is-on circle { opacity: 1; }
+.echo-right .mic-ring.is-play circle { stroke: var(--cyan-hi); filter: drop-shadow(0 0 5px rgba(0,200,200,0.7)); }
+/* Иконки состояния: в покое микрофон, во время записи — стоп. */
+.echo-right .mic-btn .mic-ico { position: absolute; transition: opacity .18s var(--ease-out), transform .18s var(--ease-out); }
+.echo-right .mic-btn .mic-ico-stop { opacity: 0; transform: scale(.7); fill: var(--red-hi); stroke: none; }
+.echo-right .mic-btn.recording .mic-ico-stop { fill: var(--red-hi); stroke: none; }
+.echo-right .mic-btn.recording .mic-ico-rec { opacity: 0; transform: scale(.7); }
+.echo-right .mic-btn.recording .mic-ico-stop { opacity: 1; transform: none; }
 .echo-right .wave { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 3px; height: 56px; }
-.echo-right .wave i { flex: 1; min-width: 3px; height: 12%; border-radius: 3px; background: rgba(255,255,255,0.1); transition: height 0.12s var(--ease-out), background 0.2s; }
+.echo-right .wave i { flex: 1 1 0; min-width: 2px; height: 12%; border-radius: 3px; background: rgba(255,255,255,0.1); transition: height 0.12s var(--ease-out), background 0.2s; }
 .echo-right .wave i.on { background: var(--red-hi); box-shadow: 0 0 6px rgba(230,69,69,0.4); }
 .echo-right .wave.done i.on { background: rgba(240,240,248,0.4); box-shadow: none; }
 .echo-right .voice-side { flex-shrink: 0; text-align: right; width: 74px; }
@@ -17915,7 +18066,14 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 .echo-right .voice-ctl { display: flex; align-items: center; gap: 12px; margin-top: 10px; height: 26px; }
 .echo-right .vc-btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--ink-3); padding: 6px 10px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); transition: color 0.2s, background 0.2s, opacity 0.3s; cursor: pointer; }
 @media (hover:hover) and (pointer:fine) { .echo-right .vc-btn:hover { color: var(--ink); background: rgba(255,255,255,0.08); } }
-.echo-right .vc-btn .ew-mask-icon { width: 9px; height: 9px; color: currentColor; }
+.echo-right .vc-btn { flex: 0 0 auto; white-space: nowrap; }
+.echo-right .vc-btn svg { width: 10px; height: 10px; flex-shrink: 0; fill: currentColor; stroke: none; }
+.echo-right .vc-btn .vc-ico-re { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* Иконка кнопки прослушивания меняется вместе со смыслом действия. */
+.echo-right .vc-btn .vc-ico { display: none; }
+.echo-right .vc-btn .vc-ico-play { display: block; }
+.echo-right .vc-btn.playing .vc-ico-play { display: none; }
+.echo-right .vc-btn.playing .vc-ico-pause { display: block; }
 .echo-right .vc-btn[disabled] { opacity: 0.3; pointer-events: none; }
 .echo-right .voice-ctl .note { margin-left: auto; font-size: 8.5px; letter-spacing: 0.12em; color: var(--ink-4); font-family: var(--font-mono); }
 
@@ -17940,11 +18098,24 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
     display: flex !important;
     flex-direction: column;
   }
-  .echo-right .g-body { flex: 1 1 auto; }
-  .echo-right .g-foot { margin-top: auto; }
+  /* Пустоту под кнопкой (замер: 103px) забирает окно осциллографа —
+     панель остаётся той же высоты, но воздух уходит в дело. */
+  .echo-right .g-body { flex: 1 1 auto; display: flex; flex-direction: column; }
+  .echo-right .beam { flex: 1 1 auto; min-height: 40px; max-height: 190px; }
+  .echo-right .g-actions { margin-top: auto; }
+  .echo-right .g-foot { margin-top: 0; }
+  /* Подписи кнопок резались на 18–26px: убираем ужимание и уводим
+     пояснение под кнопки, чтобы текст был целым. */
+  .echo-right .voice-ctl { height: auto; flex-wrap: wrap; row-gap: 8px; }
+  .echo-right .voice-ctl .note { margin-left: 0; flex: 1 0 100%; order: 3; }
   .echo-left { padding-bottom: var(--sec-y) !important; }
   .echo-pane-cta { margin-top: auto !important; margin-bottom: 0 !important; }
 }
+
+/* Добор контраста для двух оставшихся мелких меток (8–8.5px давали
+   4.19:1 при норме 4.5): замок мира и ключи строк поддержки. */
+.aw-lock { color: var(--red-label) !important; }
+.donate-row-key { color: var(--ink-3) !important; }
 
 /* ЧИТАЕМОСТЬ МЕЛКИХ КРАСНЫХ ЛЕЙБЛОВ (2026-07-30). Метки 8–10px шли
    цветом --red2 и давали ≈4.0:1 при норме 4.5:1 — на ярком свету
@@ -30920,6 +31091,7 @@ function setEchoMode(mode){
     on.classList.remove('off');
     stage.style.minHeight = '';
     stage.style.height = on.scrollHeight + 'px';
+    requestAnimationFrame(()=>{ _echoWaveInit(); _echoSyncStage(); });
   }
   _updateEchoSubmitPrice();
 }
@@ -31199,9 +31371,10 @@ async function toggleEchoRecord(opts = {}){
     if(status){ status.textContent = 'ИДЁТ ЗАПИСЬ'; status.classList.add('active'); status.classList.remove('ready'); }
     if(section) section.classList.add('recording');
     _echoWaveStart(_echoMedia.stream);
+    _echoRingSet(0, 'rec');
     _echoMedia.timer = setInterval(()=>{
       const elapsed = (Date.now() - _echoMedia.startedAt)/1000;
-      _echoRingSet(elapsed / ECHO_VOICE_MAX_SEC);
+      _echoRingSet(elapsed / ECHO_VOICE_MAX_SEC, 'rec');
       const t = document.getElementById('echoVoiceTime');
       if(t) t.textContent = elapsed.toFixed(1);
       if(elapsed >= ECHO_VOICE_MAX_SEC){ _stopEchoRecording(false); }
@@ -31231,6 +31404,7 @@ function _stopEchoRecording(silent){
     }
   }
   _echoWaveStop(!silent);
+  _echoRingFinish();
   if(!silent) _echoVoiceCtl(true);
 }
 function resetEchoVoice(){
@@ -31255,7 +31429,7 @@ function resetEchoVoice(){
   if(status){ status.textContent = 'ДО 3 СЕК'; status.classList.remove('ready','active'); }
   const recBtn = document.getElementById('echoVoiceBtn');
   if(recBtn) recBtn.classList.remove('disabled');
-  _echoRingSet(0);
+  _echoRingSet(0, 'off');
   _echoWaveReset();
   _echoVoiceCtl(false);
   // T21: сброс своего плеера
@@ -31267,20 +31441,39 @@ function resetEchoVoice(){
   if(ptime) ptime.textContent = '0.0';
 }
 
-document.addEventListener('DOMContentLoaded', function(){ try{ _echoWaveInit(); _echoRingSet(0); }catch(e){} });
+document.addEventListener('DOMContentLoaded', function(){ try{ _echoWaveInit(); _echoRingSet(0, 'off'); _echoSyncStage(); }catch(e){} });
+window.addEventListener('resize', function(){ try{ _echoWaveInit(true); _echoSyncStage(); }catch(e){} });
 /* ─── ГОЛОСОВАЯ ЗОНА ЭТАЛОНА: кольцо прогресса, живая волна, кнопки ───
    Волна берёт РЕАЛЬНУЮ амплитуду с микрофона (AnalyserNode), а не рисует
    случайный шум: полоски показывают то, что действительно записывается.
    После остановки полоски замирают в достигнутых высотах (.done). */
-const ECHO_WAVE_BARS = 28;
 let _echoWaveCtx = null, _echoWaveRaf = 0, _echoWaveAnalyser = null;
-function _echoWaveInit(){
+/* Полосок столько, сколько влезает: на узком экране 28 штук по 3px с
+   зазорами распирали контейнер (замер: +31px). */
+function _echoWaveBars(){
   const wave = document.getElementById('echoWave');
-  if(!wave || wave.children.length) return wave;
+  const w = wave ? wave.clientWidth : 0;
+  if(w && w < 200) return 16;
+  if(w && w < 300) return 22;
+  return 28;
+}
+function _echoWaveInit(force){
+  const wave = document.getElementById('echoWave');
+  if(!wave) return null;
+  const want = _echoWaveBars();
+  if(!force && wave.children.length === want) return wave;
+  if(wave.children.length && !force && wave.children.length) { /* пересобираем ниже */ }
   let html = '';
-  for(let i=0;i<ECHO_WAVE_BARS;i++) html += '<i></i>';
+  for(let i=0;i<want;i++) html += '<i></i>';
   wave.innerHTML = html;
   return wave;
+}
+/* Высота сцены = высота активного пейна: иначе мета-строка подрезалась. */
+function _echoSyncStage(){
+  const stage = document.getElementById('echoTabStage');
+  if(!stage) return;
+  const on = stage.querySelector('.g-pane:not(.off)');
+  if(on) stage.style.height = on.scrollHeight + 'px';
 }
 function _echoWaveReset(){
   const wave = _echoWaveInit();
@@ -31302,7 +31495,7 @@ function _echoWaveStart(stream){
     srcNode.connect(_echoWaveAnalyser);
     const buf = new Uint8Array(_echoWaveAnalyser.frequencyBinCount);
     const bars = wave.children;
-    const step = Math.floor(buf.length / ECHO_WAVE_BARS) || 1;
+    const step = Math.floor(buf.length / bars.length) || 1;
     (function tick(){
       if(!_echoWaveAnalyser) return;
       _echoWaveAnalyser.getByteFrequencyData(buf);
@@ -31325,12 +31518,30 @@ function _echoWaveStop(keep){
   if(!wave) return;
   if(keep) wave.classList.add('done'); else _echoWaveReset();
 }
-function _echoRingSet(p){
+/* Кольцо ведёт ДВА процесса и оба доводит до полного круга:
+   'rec'  — заполняется за время записи (до 3 сек),
+   'play' — заполняется за время воспроизведения.
+   В покое скрыто целиком, иначе круглый торец рисует «родинку». */
+function _echoRingSet(p, mode){
+  const wrap = document.querySelector('.echo-right .mic-ring');
   const ring = document.getElementById('echoMicRing');
-  if(!ring) return;
+  if(!ring || !wrap) return;
   const total = 194;
   const clamped = Math.max(0, Math.min(1, p || 0));
   ring.style.strokeDashoffset = String(total - total * clamped);
+  if(mode === 'off'){
+    wrap.classList.remove('is-on','is-play');
+  }else if(mode){
+    wrap.classList.add('is-on');
+    wrap.classList.toggle('is-play', mode === 'play');
+  }
+}
+/* Довести круг до конца и убрать — общий финал записи и прослушивания. */
+function _echoRingFinish(){
+  const wrap = document.querySelector('.echo-right .mic-ring');
+  if(!wrap) return;
+  _echoRingSet(1);
+  setTimeout(() => { _echoRingSet(0, 'off'); }, 320);
 }
 function _echoVoiceCtl(enabled){
   ['echoPlayBtn','echoRetryBtn'].forEach(id => {
@@ -31366,9 +31577,21 @@ function _echoInitPlayer(){
   }
   audio.addEventListener('timeupdate', paint);
   audio.addEventListener('loadedmetadata', paint);
-  audio.addEventListener('play',  ()=>{ player.classList.add('playing'); const l=document.getElementById('echoPlayLabel'); if(l) l.textContent='ПАУЗА'; });
-  audio.addEventListener('pause', ()=>{ player.classList.remove('playing'); const l=document.getElementById('echoPlayLabel'); if(l) l.textContent='ПРОСЛУШАТЬ'; });
-  audio.addEventListener('ended', ()=>{ player.classList.remove('playing'); if(fill) fill.style.width='100%'; });
+  const btn = document.getElementById('echoPlayBtn');
+  const lbl = document.getElementById('echoPlayLabel');
+  function setPlayState(on){
+    if(btn) btn.classList.toggle('playing', on);
+    if(lbl) lbl.textContent = on ? 'ПАУЗА' : 'ПРОСЛУШАТЬ';
+    if(btn) btn.setAttribute('aria-label', on ? 'Пауза' : 'Прослушать запись');
+  }
+  audio.addEventListener('play',  ()=>{ player.classList.add('playing'); setPlayState(true); _echoRingSet(0, 'play'); });
+  audio.addEventListener('pause', ()=>{ player.classList.remove('playing'); setPlayState(false); if(!audio.ended) _echoRingSet(0, 'off'); });
+  audio.addEventListener('ended', ()=>{ player.classList.remove('playing'); setPlayState(false); _echoRingFinish(); if(fill) fill.style.width='100%'; });
+  /* Кольцо ведёт воспроизведение тем же кругом, что и запись. */
+  audio.addEventListener('timeupdate', ()=>{
+    const d = _echoPlayerDur();
+    if(d > 0 && !audio.paused) _echoRingSet((audio.currentTime||0)/d, 'play');
+  });
 }
 function _echoTogglePlay(){
   const audio = document.getElementById('echoVoiceAudio');
