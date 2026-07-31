@@ -17460,7 +17460,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   <div class="cart-head">
     <div class="cart-head-h">
       <div class="cart-eyebrow">// КОНДЕНСАТ · ОЧЕРЕДЬ</div>
-      <h3 class="cart-title">Корзина</h3>
+      <h3 class="cart-title">Корзина<span id="cartPanelCount"></span></h3>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
       <button class="panel-close cart-close" onclick="toggleCart()" title="Закрыть корзину">Закрыть</button>
@@ -17479,6 +17479,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <span class="cart-total-label">Итого</span>
       <span class="cart-total-price" id="cartTotal">0 ₽</span>
     </div>
+    <div class="cart-note-line">Доставка Почтой России · бесплатно</div>
     <button class="cart-checkout-btn" onclick="openCheckout()">Оформить заказ →</button>
   </div>
 </div>
@@ -22289,6 +22290,12 @@ function updateCartUI(){
   const count=cart.length;
   const cartCountEl = document.getElementById('cartCount');
   if(cartCountEl) cartCountEl.textContent=count;
+  /* Чип листа корзины показывает число позиций, как в макете. */
+  const cartPanelCountEl = document.getElementById('cartPanelCount');
+  if(cartPanelCountEl){
+    const word = count===1 ? 'позиция' : (count>=2 && count<=4 ? 'позиции' : 'позиций');
+    cartPanelCountEl.textContent = count ? ' · ' + count + ' ' + word : '';
+  }
   const body=document.getElementById('cartBody'),empty=document.getElementById('cartEmpty'),foot=document.getElementById('cartFoot');
   if(!body) return;
   const hadItems = !!body.querySelector('.cart-item');
@@ -22441,7 +22448,12 @@ function _chkEchoSyncSlotVisual(itemIdx, slotIdx){
   btn.classList.toggle('is-active', __chkEchoActive.itemIdx === itemIdx && __chkEchoActive.slotIdx === slotIdx);
   const cap = btn.querySelector('.chk-echo-slot-caption');
   if(cap){
-    cap.textContent = has ? 'Эхо' : 'пусто';
+    cap.textContent = has ? 'Изменить' : 'Добавить';
+  }
+  /* Строка показывает сам текст Эхо — после правки его надо обновить. */
+  const txt = btn.querySelector('.chk-echo-slot-text');
+  if(txt){
+    txt.textContent = has ? String(raw).trim() : 'Пусто';
   }
 }
 function _chkEchoCloseAllEditors(){
@@ -22487,17 +22499,17 @@ function renderCheckoutEchoControls(){
       const raw=echoes[slotIdx] || '';
       const has=!!raw.trim();
       const num=String(slotIdx+1).padStart(2,'0');
+      /* Строка вместо квадрата: номер · сам текст Эхо · действие справа.
+         Квадрат с плюсом не показывал, что записано, и на четыре слота
+         съедал полэкрана. Форма строки взята из варианта «лист». */
       html+=`<button type="button"
           class="chk-echo-slot${has?' has-content':''}"
           data-chk-echo-slot-btn="${itemIdx}_${slotIdx}"
           onclick="openCheckoutEchoSlot(${itemIdx},${slotIdx},this)"
           aria-label="Эхо ${num}">
-          <span class="chk-echo-slot-num">${num}</span>
-          <span class="chk-echo-slot-icon" aria-hidden="true">
-            <span class="chk-echo-slot-icon-plus"></span>
-            <span class="chk-echo-slot-icon-text"></span>
-          </span>
-          <span class="chk-echo-slot-caption">${has?'Эхо':'пусто'}</span>
+          <span class="chk-echo-slot-num">${slotIdx+1}</span>
+          <span class="chk-echo-slot-text">${has?_escapeHtmlAttr(raw.trim()):'Пусто'}</span>
+          <span class="chk-echo-slot-caption">${has?'Изменить':'Добавить'}</span>
         </button>`;
     }
     html+=`</div>
@@ -39146,5 +39158,435 @@ footer {
   };
 })();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ЯЗЫК ОКОН · перенос внутренностей модалок из design/modals-glass.html
+     ───────────────────────────────────────────────────────────────
+     Слой правит только внешний вид уже существующих узлов — разметку,
+     id и обработчики не трогает. Значения взяты один в один из макета:
+       плитка блока   .tile   → rgba(255,255,255,.035) + кромка .09, R16
+       поле           .well   → фон .045, кромка .1, R13, 13px, 11/14
+       подпись поля           → mono 8.5px / .14em / ink-4
+       опция          .opt    → R13, кромка .08, активная — циан
+       строка-слот    .slot   → R13, номер-кружок, действие справа
+       итог           .total  → линия сверху, сумма 20px тёплым
+     Нумерованные кружки в заголовках блоков из варианта «лист» НЕ
+     переносятся: в пошаговом режиме номер несёт рейка, два номера на
+     экране спорили бы между собой.
+     ═══════════════════════════════════════════════════════════════ -->
+<style id="ew-modal-language">
+/* ── ПЛИТКА БЛОКА ──────────────────────────────────────────────── */
+#chkBody .chk-section,
+#echoOrderBody .chk-section{
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  padding: 13px 14px;
+  margin-bottom: 9px;
+}
+/* Заголовок блока в макете — без красных «//» и без линейки под ним:
+   плитка сама отбивает блок, линейка внутри неё читалась как вторая
+   граница в 8px от первой. */
+#chkBody .chk-section-title,
+#echoOrderBody .chk-section-title{
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .14em;
+  color: var(--ink-2);
+  text-transform: uppercase;
+  margin-bottom: 11px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+#chkBody .chk-section-title::before,
+#echoOrderBody .chk-section-title::before{ display: none; }
+
+/* ── ПОЛЕ ──────────────────────────────────────────────────────── */
+#chkBody .chk-field,
+#echoOrderBody .chk-field{ margin-bottom: 11px; }
+#chkBody .chk-field label,
+#echoOrderBody .chk-field label{
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: .14em;
+  color: var(--ink-4);
+  margin-bottom: 6px;
+}
+#chkBody .req-star,
+#echoOrderBody .req-star{ color: var(--red-label); font-weight: 400; margin-left: 3px; }
+#chkBody .chk-field input,
+#chkBody .chk-field select,
+#chkBody .chk-field textarea,
+#echoOrderBody .chk-field input,
+#echoOrderBody .chk-field select,
+#echoOrderBody .chk-field textarea{
+  font-family: var(--font-body);
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 13px;
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+#chkBody .chk-field input::placeholder,
+#chkBody .chk-field textarea::placeholder,
+#echoOrderBody .chk-field input::placeholder,
+#echoOrderBody .chk-field textarea::placeholder{ color: var(--ink-3); opacity: .75; }
+#chkBody .chk-field input:focus,
+#chkBody .chk-field select:focus,
+#chkBody .chk-field textarea:focus,
+#echoOrderBody .chk-field input:focus,
+#echoOrderBody .chk-field select:focus,
+#echoOrderBody .chk-field textarea:focus{
+  border-color: rgba(0,200,200,.4);
+  background: rgba(255,255,255,.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 0 3px rgba(0,200,200,.08);
+}
+#chkBody .chk-row,
+#echoOrderBody .chk-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+@media (max-width: 640px){
+  #chkBody .chk-row,
+  #echoOrderBody .chk-row{ grid-template-columns: 1fr; }
+}
+
+/* ── ОПЦИЯ (поток Виша, доставка, раскрытие сигнала) ───────────── */
+#chkBody .chk-gender-opts{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 640px){ #chkBody .chk-gender-opts{ grid-template-columns: 1fr; } }
+#chkBody .chk-gender-opt,
+#chkBody .chk-del-opt,
+#echoOrderBody .echo-reveal-toggle{
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 13px;
+  border-radius: 13px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  transition: background .25s var(--ease-out), border-color .25s, box-shadow .25s;
+}
+/* У доставки заголовок и подпись лежат прямыми детьми, без обёртки —
+   поэтому в строке они встали бы рядом. Ставим их в колонку. */
+#chkBody .chk-delivery{ display: grid; gap: 8px; }
+#chkBody .chk-del-opt{ flex-direction: column; align-items: flex-start; gap: 0; }
+#chkBody .chk-gender-opt.active,
+#chkBody .chk-del-opt.active{
+  background: rgba(0,200,200,.06);
+  border-color: rgba(0,200,200,.32);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 22px rgba(0,200,200,.08);
+}
+#chkBody .chk-gender-opt-mark{
+  width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center; flex-shrink: 0;
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3);
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+}
+#chkBody .chk-gender-opt.active .chk-gender-opt-mark{
+  color: var(--cyan-hi); border-color: rgba(0,200,200,.4); background: rgba(0,200,200,.1);
+}
+#chkBody .chk-gender-opt-title,
+#chkBody .chk-del-opt-title{ font-family: var(--font-body); font-size: 12.5px; font-weight: 600; color: var(--ink); }
+#chkBody .chk-gender-opt-sub,
+#chkBody .chk-del-opt-sub{
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .12em;
+  color: var(--ink-4); text-transform: uppercase; margin-top: 3px;
+}
+/* Пояснение под заголовком блока — та же роль, что .m-sub в макете. */
+#chkBody .chk-gender-hint,
+#echoOrderBody .chk-gender-hint{
+  font-family: var(--font-body);
+  font-size: 12px; line-height: 1.65; color: var(--ink-4);
+  margin-bottom: 11px;
+}
+
+/* ── СЛОТЫ ЭХО · строки вместо квадратов ───────────────────────── */
+#chkBody .chk-echo-card{ background: transparent; border: 0; padding: 0; margin-bottom: 0; }
+#chkBody .chk-echo-head{ display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+#chkBody .chk-echo-title{
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .13em;
+  color: var(--ink-2); text-transform: uppercase;
+}
+#chkBody .chk-echo-title small{
+  display: block; margin-top: 5px;
+  font-family: var(--font-body); font-size: 11.5px; line-height: 1.6;
+  letter-spacing: 0; color: var(--ink-4); text-transform: none;
+}
+#chkBody .chk-echo-price{
+  margin-left: auto; flex-shrink: 0;
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .12em;
+  color: var(--ink-4); text-transform: uppercase;
+}
+#chkBody .chk-echo-slots{
+  display: flex; flex-direction: column; align-items: stretch; gap: 7px;
+  grid-template-columns: none; min-height: 0;
+}
+#chkBody .chk-echo-slot{
+  display: flex; align-items: center; gap: 11px;
+  flex: 0 0 auto; width: 100%; height: auto; min-height: 0;
+  padding: 10px 12px; border-radius: 13px;
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+  color: var(--ink-3); text-align: left; cursor: pointer; position: relative;
+  transition: background .25s var(--ease-out), border-color .25s, box-shadow .25s;
+}
+#chkBody .chk-echo-slot.has-content{
+  background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.08); box-shadow: none;
+}
+#chkBody .chk-echo-slot::before{ display: none; }   /* блик, тянувшийся по квадрату */
+#chkBody .chk-echo-slot-icon{ display: none; }      /* плюс/строки — язык квадрата */
+#chkBody .chk-echo-slot.is-active{
+  background: rgba(0,200,200,.06); border-color: rgba(0,200,200,.32);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 22px rgba(0,200,200,.08);
+}
+#chkBody .chk-echo-slot-num{
+  position: static; left: auto; top: auto;
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  display: grid; place-items: center; margin: 0;
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0; color: var(--ink-4);
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+}
+#chkBody .chk-echo-slot.has-content .chk-echo-slot-num{
+  color: var(--warm-hi); border-color: rgba(209,160,74,.4); background: rgba(209,160,74,.1);
+}
+#chkBody .chk-echo-slot-text{
+  min-width: 0; flex: 1 1 auto;
+  font-family: var(--font-body); font-size: 12px; color: var(--ink-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#chkBody .chk-echo-slot.has-content .chk-echo-slot-text{ color: var(--ink); }
+#chkBody .chk-echo-slot-caption{
+  position: static; left: auto; right: auto; bottom: auto;
+  margin: 0 0 0 auto; flex-shrink: 0; text-align: right;
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .12em;
+  color: var(--cyan-hi); text-transform: uppercase; white-space: nowrap;
+}
+#chkBody .chk-echo-slot.has-content .chk-echo-slot-caption{ color: var(--cyan-hi); }
+
+/* ── ЗАКАЗ ЭХО ─────────────────────────────────────────────────── */
+/* Внутри плитки своя коробка не нужна: два вложенных контейнера с
+   кромками читались как рамка в рамке. Сводка и блок раскрытия
+   становятся плоскими, кромку держит плитка. */
+#echoOrderBody .echo-order-summary,
+#echoOrderBody .echo-reveal-block{
+  background: transparent; border: 0; border-radius: 0; padding: 0;
+}
+/* Строка сводки — .row макета: пунктирную границу меняем на волосяную
+   с растворением по краям. */
+#echoOrderBody .echo-order-summary-row{
+  align-items: center; padding: 9px 2px; position: relative; border-bottom: 0;
+}
+#echoOrderBody .echo-order-summary-row + .echo-order-summary-row::before{
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hairline) 16%, var(--hairline) 84%, transparent);
+}
+#echoOrderBody .echo-order-summary-label{
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .13em; color: var(--ink-3);
+}
+#echoOrderBody .echo-order-summary-val{
+  font-family: var(--font-body); font-size: 12.5px; font-weight: 500; color: var(--ink);
+}
+#echoOrderBody .echo-reveal-title{
+  font-family: var(--font-body); font-size: 12.5px; font-weight: 600;
+  letter-spacing: 0; color: var(--ink); text-transform: none;
+}
+#echoOrderBody .echo-reveal-sub{
+  font-family: var(--font-body); font-size: 11.5px; line-height: 1.6;
+  letter-spacing: 0; color: var(--ink-4); text-transform: none; margin-top: 4px;
+}
+#echoOrderBody .echo-reveal-marker{ margin-top: 9px; margin-bottom: 0; }
+/* Главное действие — тёплая пилюля, как везде в макете. */
+#echoOrderBody .echo-order-submit{
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 600; letter-spacing: .18em;
+  text-transform: uppercase; padding: 14px 18px; border-radius: 99px;
+  color: var(--warm-hi); background: rgba(209,160,74,.09);
+  border: 1px solid rgba(209,160,74,.34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 26px rgba(209,160,74,.08);
+  transition: box-shadow .3s var(--ease-out), background .3s, transform .15s, color .2s, opacity .2s;
+}
+#echoOrderBody .echo-order-submit:disabled{ opacity: .45; cursor: not-allowed; }
+/* Активное состояние держало красный через !important — перебиваем на
+   тёплую пилюлю, пульсацию оставляем: она подсказывает, что форма готова. */
+#echoOrderBody .echo-order-submit:not(:disabled):not(.spinning){
+  background: rgba(209,160,74,.09) !important;
+  border-color: rgba(209,160,74,.34) !important;
+  color: var(--warm-hi) !important;
+}
+/* Кнопка — самостоятельное действие, плитка вокруг неё не нужна. */
+#echoOrderBody .echo-order-submit-wrap{
+  background: transparent; border: 0; box-shadow: none; padding: 0; margin-bottom: 0;
+}
+@media (hover:hover) and (pointer:fine){
+  #echoOrderBody .echo-order-submit:not(:disabled):hover{
+    background: rgba(209,160,74,.15); color: var(--warm-hi);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 30px rgba(209,160,74,.13), 0 0 30px rgba(209,160,74,.2);
+  }
+}
+
+/* ── ДОКУМЕНТЫ · оферта и политика ─────────────────────────────── */
+/* В макете заголовки разделов документа циановые, а тело набрано
+   наборным шрифтом 12/1.7: моноширинный на длинном юридическом тексте
+   читается втрое медленнее, а красный заголовок на сайте означает
+   тревогу — в документе он не к месту. */
+.legal-modal-body .offer-h2{
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .15em;
+  color: var(--cyan-hi); text-transform: uppercase;
+}
+.legal-modal-body .offer-section p,
+.legal-modal-body .offer-section li{
+  font-family: var(--font-body); font-size: 12px; line-height: 1.7;
+  letter-spacing: 0; color: var(--ink-3);
+}
+.legal-modal-body .offer-section p strong{
+  font-family: var(--font-body); color: var(--ink); font-weight: 600;
+}
+/* Текст уходит под кромки мягко, а не обрубается. */
+.legal-modal-body{
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 3%, #000 97%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 3%, #000 97%, transparent);
+}
+
+/* ── КАРТОЧКА РЕЛИКВИИ ─────────────────────────────────────────── */
+/* Действия карточки — пилюли языка макета. Сплошной красный
+   прямоугольник на «Купить сейчас» выбивался: красный на сайте занят
+   под тревогу и запрет, а покупка — тёплое действие. */
+.moverlay .mbtn{
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 600; letter-spacing: .18em;
+  text-transform: uppercase; padding: 14px 18px; border-radius: 99px;
+  color: var(--ink-2); background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
+  transition: box-shadow .3s var(--ease-out), background .3s, transform .15s, color .2s;
+}
+.moverlay .mbtn.primary{
+  color: var(--warm-hi); background: rgba(209,160,74,.09);
+  border-color: rgba(209,160,74,.34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 26px rgba(209,160,74,.08);
+}
+.moverlay .mbtn-share{ padding: 14px; border-radius: 50%; }
+@media (hover:hover) and (pointer:fine){
+  .moverlay .mbtn:hover{ background: rgba(255,255,255,.08); color: var(--ink); }
+  .moverlay .mbtn.primary:hover{
+    background: rgba(209,160,74,.15); color: var(--warm-hi);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 30px rgba(209,160,74,.13), 0 0 30px rgba(209,160,74,.2);
+  }
+}
+.moverlay .mbtn:active{ transform: scale(.985); }
+/* Аккордеон в макете — один блок с волосяными разделителями, а не
+   стопка отдельных карточек: шесть коробок подряд рвали столбец. */
+.moverlay .mclarity{
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 13px; overflow: hidden; display: block; gap: 0;
+}
+.moverlay .mclarity-item{
+  background: transparent; border: 0; border-radius: 0; margin: 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.moverlay .mclarity-item:last-child{ border-bottom: 0; }
+/* Цена в макете всегда тёплая — и в строке .row .v.w, и в итоге .total. */
+.moverlay .mpricebig{ color: var(--warm-hi); }
+
+/* ── КОРЗИНА · боковой лист ────────────────────────────────────── */
+/* Шапка листа в макете — компактный чип с точкой, а не крупный
+   заголовок: окно узкое, и 26px «Корзина» съедали верх листа. */
+#cartPanel .cart-head-h{
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 99px; padding: 6px 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
+}
+#cartPanel .cart-head-h::before{
+  content: ""; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+  background: var(--warm-hi); box-shadow: 0 0 9px rgba(209,160,74,.9);
+}
+#cartPanel .cart-eyebrow{ display: none; }
+#cartPanel .cart-title{
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .15em;
+  font-weight: 400; color: var(--ink-2); text-transform: uppercase;
+  margin: 0; white-space: nowrap;
+}
+#cartPanel .cart-item{
+  gap: 11px; padding: 11px; border-radius: 15px;
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+  grid-template-columns: 46px 1fr auto;
+}
+#cartPanel .cart-item-img{ width: 46px; height: 46px; border-radius: 11px; border-color: rgba(255,255,255,.08); }
+#cartPanel .cart-item-art{
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .14em; color: var(--ink-4);
+}
+#cartPanel .cart-item-name{ font-size: 13px; color: var(--ink); }
+#cartPanel .cart-item-echo{ font-family: var(--font-mono); font-size: 8px; letter-spacing: .12em; color: var(--ink-4); }
+#cartPanel .cart-item-price{ font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--ink); }
+#cartPanel .cart-item-remove{
+  width: 26px; height: 26px;
+  background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.1); color: var(--ink-4);
+}
+#cartPanel .cart-note-line{
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .12em;
+  color: var(--ink-4); text-transform: uppercase; margin-top: -4px;
+}
+#cartPanel .cart-total{ align-items: baseline; }
+#cartPanel .cart-total-label{
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .15em; color: var(--ink-4);
+}
+#cartPanel .cart-total-price{ font-size: 20px; color: var(--warm-hi); }
+/* Главное действие листа — тёплая пилюля языка макета, а не красный
+   прямоугольник: красный на сайте означает тревогу и запрет. */
+#cartPanel .cart-checkout-btn{
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 600; letter-spacing: .18em;
+  padding: 14px 18px; border-radius: 99px;
+  color: var(--warm-hi); background: rgba(209,160,74,.09);
+  border: 1px solid rgba(209,160,74,.34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 26px rgba(209,160,74,.08);
+  transition: box-shadow .3s var(--ease-out), background .3s, transform .15s, color .2s;
+}
+@media (hover:hover) and (pointer:fine){
+  #cartPanel .cart-checkout-btn:hover{
+    background: rgba(209,160,74,.15); color: var(--warm-hi);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 30px rgba(209,160,74,.13), 0 0 30px rgba(209,160,74,.2);
+  }
+}
+#cartPanel .cart-checkout-btn:active{ transform: scale(.985); }
+
+/* ── СОСТАВ ЗАКАЗА ─────────────────────────────────────────────── */
+/* Своя коробка у сводки больше не нужна — она лежит внутри плитки. */
+#chkBody .chk-summary,
+#echoOrderBody .chk-summary{
+  background: transparent; border: 0; padding: 0; margin-bottom: 0;
+}
+#chkBody .chk-sum-row,
+#echoOrderBody .chk-sum-row{
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 2px; margin-bottom: 0; position: relative;
+  font-family: var(--font-body); font-size: 12.5px; font-weight: 500;
+  letter-spacing: 0; color: var(--ink);
+}
+#chkBody .chk-sum-row + .chk-sum-row::before,
+#echoOrderBody .chk-sum-row + .chk-sum-row::before{
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hairline) 16%, var(--hairline) 84%, transparent);
+}
+#chkBody .chk-sum-row > span:first-child,
+#echoOrderBody .chk-sum-row > span:first-child{ color: var(--ink-2); }
+#chkBody .chk-sum-row > span:last-child,
+#echoOrderBody .chk-sum-row > span:last-child{ margin-left: auto; text-align: right; }
+/* Последняя строка — итог: сумма крупно и тёплым, как .total в макете. */
+#chkBody .chk-sum-row:last-child,
+#echoOrderBody .chk-sum-row:last-child{
+  align-items: baseline; border-top: 1px solid var(--hairline);
+  margin-top: 6px; padding: 13px 2px 2px; font-size: 12.5px;
+}
+#chkBody .chk-sum-row:last-child::before,
+#echoOrderBody .chk-sum-row:last-child::before{ display: none; }
+#chkBody .chk-sum-row:last-child > span:first-child,
+#echoOrderBody .chk-sum-row:last-child > span:first-child{
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .15em;
+  color: var(--ink-4); text-transform: uppercase;
+}
+#chkBody .chk-sum-row:last-child > span:last-child,
+#echoOrderBody .chk-sum-row:last-child > span:last-child{
+  font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--warm-hi);
+}
+</style>
 </body>
 </html>
