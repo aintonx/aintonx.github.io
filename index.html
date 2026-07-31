@@ -9883,6 +9883,17 @@ input, select, textarea {
   opacity: 0.4;
   transition: opacity .25s ease, color .25s ease;
 }
+/* Текст живёт в span: центрирование остаётся на flex-ячейке, а обрезка
+   лишних строк — на span. Класть -webkit-box на саму ячейку нельзя, он
+   отменяет вертикальное центрирование и прижимает слова к верху. */
+.attr-drum-item > span{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.attr-drum-item.long{ font-size: 8px; letter-spacing: .05em; line-height: 1.24; }
+.attr-drum-item.xlong{ font-size: 7px; letter-spacing: .02em; line-height: 1.2; }
 .attr-drum-item.selected{
   color: var(--white);
   opacity: 1;
@@ -11755,33 +11766,53 @@ input, select, textarea {
   color: var(--white-dim);
   text-transform: uppercase;
 }
+/* Секция свёрнута, пока Apertura не начала подбор: до нажатия кнопки Ауры
+   не существует, а пустая плашка читалась как «уже выбрано». */
+.echo-aura-section {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  transform: translateY(-6px);
+  transition: max-height .52s var(--ease-out), opacity .34s var(--ease-out),
+              transform .42s var(--ease-out), margin-top .42s var(--ease-out);
+  pointer-events: none;
+}
+.echo-aura-section.is-armed {
+  max-height: 420px;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
 .echo-aura-drum-stage {
   position: relative;
-  height: 48px;
   overflow: hidden;
   border: 1px solid var(--border2);
   border-radius: var(--radius);
   background: var(--void);
 }
-.echo-aura-drum-tape {
-  position: absolute;
-  top: 0; left: 0;
+/* Окно барабана: три строки по 44px, выпавшее значение — в центральной. */
+.echo-aura-drum-win {
+  position: relative;
+  height: 132px;
+  overflow: hidden;
+}
+.echo-aura-drum-strip {
   display: flex;
-  gap: 32px;
-  padding: 0;
-  height: 100%;
+  flex-direction: column;
+  will-change: transform;
+}
+.echo-aura-drum-strip span {
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
   align-items: center;
+  justify-content: center;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 19px;
-  color: var(--white-dim);
   letter-spacing: 0.04em;
-  white-space: nowrap;
-  transition: transform 2.4s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
-}
-.echo-aura-drum-tape span {
-  flex-shrink: 0;
+  text-align: center;
   padding: 0 12px;
   opacity: 0.32;
   /* Циановая окраска/свечение ленты убраны — нейтральные соседи,
@@ -11789,7 +11820,7 @@ input, select, textarea {
   color: var(--white-dim);
   transition: opacity .25s ease, color .25s ease;
 }
-.echo-aura-drum-tape span.center {
+.echo-aura-drum-strip span.center {
   opacity: 1;
   color: var(--white);
   /* text-shadow убран — создавал лишнее циановое свечение */
@@ -11799,12 +11830,12 @@ input, select, textarea {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg,
+    linear-gradient(180deg,
       var(--void) 0%,
-      rgba(5,5,6,0.85) 4%,
-      transparent 22%,
-      transparent 78%,
-      rgba(5,5,6,0.85) 96%,
+      rgba(5,5,6,0.82) 14%,
+      transparent 40%,
+      transparent 60%,
+      rgba(5,5,6,0.82) 86%,
       var(--void) 100%);
 }
 /* Центральная подсветка удалена: полоска создавала артефакт —
@@ -13214,9 +13245,9 @@ button, a, [role="button"], label,
    Барабан Ауры (АУРА · РЕЗОНАНС ЭХО): боковые маски хардкод-тёмные
    rgba(5,5,6,.85) → тёмные «обрывки» по краям ленты на белом. Светлим. */
 :root[data-theme="light"] .echo-aura-drum-mask {
-  background: linear-gradient(90deg,
-    var(--void) 0%, rgba(231,233,241,0.85) 4%, transparent 22%,
-    transparent 78%, rgba(231,233,241,0.85) 96%, var(--void) 100%);
+  background: linear-gradient(180deg,
+    var(--void) 0%, rgba(231,233,241,0.82) 14%, transparent 40%,
+    transparent 60%, rgba(231,233,241,0.82) 86%, var(--void) 100%);
 }
 /* Центральное значение ленты Ауры было var(--white) (в светлой = тёмный) —
    уже читается; cyan-неактивные значения тоже ок. Тень делаем под teal. */
@@ -17680,13 +17711,18 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         </div>
       </div>
 
-      <!-- Аура — рандомайзер с барабан-анимацией -->
-      <div class="chk-section">
+      <!-- Аура. До нажатия «Передать Эхо» её не существует: Apertura
+           присваивает резонанс в момент передачи, поэтому в форме секция
+           свёрнута. Барабан вертикальный — та же механика, что у атрибутов
+           Виша: одна лента, сверху вниз, посадка по центру окна. -->
+      <div class="chk-section echo-aura-section" id="echoAuraSection" aria-hidden="true">
         <div class="chk-section-title">Аура · резонанс Эхо</div>
         <div class="echo-aura-drum" id="echoAuraDrum">
-          <div class="echo-aura-drum-label">// Система Apertura подбирает звуковую окраску</div>
+          <div class="echo-aura-drum-label">// Сигнал принят. Apertura подбирает резонанс.</div>
           <div class="echo-aura-drum-stage">
-            <div class="echo-aura-drum-tape" id="echoAuraDrumTape"></div>
+            <div class="echo-aura-drum-win" id="echoAuraDrumWin">
+              <div class="echo-aura-drum-strip" id="echoAuraDrumTape"></div>
+            </div>
             <div class="echo-aura-drum-mask"></div>
           </div>
           <div class="echo-aura-drum-result">
@@ -28975,7 +29011,11 @@ function selectGender(el, g){
       let html = '';
       for(let l=0; l<DRUM_LOOPS; l++){
         vals.forEach(v=>{
-          html += '<div class="attr-drum-item">' + v + '</div>';
+          /* Значения разной длины: «Каре» и «Тонкий галстук на ослабленном
+             узле» в одной ленте. Длинным уменьшаем кегль, иначе четвёртая
+             строка вылезает за 40px ячейки и обрезается виньеткой. */
+          var fit = v.length > 26 ? ' xlong' : (v.length > 17 ? ' long' : '');
+          html += '<div class="attr-drum-item' + fit + '"><span>' + v + '</span></div>';
         });
       }
       strip.innerHTML = html;
@@ -31649,19 +31689,13 @@ function _resetEchoAuraDrum(){
   const tape = document.getElementById('echoAuraDrumTape');
   const nameEl = document.getElementById('echoAuraDrumName');
   const descEl = document.getElementById('echoAuraDrumDesc');
+  const section = document.getElementById('echoAuraSection');
+  /* Секция уезжает обратно в ноль: в форме Ауры быть не должно. */
+  if(section){ section.classList.remove('is-armed'); section.setAttribute('aria-hidden','true'); }
   if(tape){
-    tape.innerHTML = '<span class="center">— ОЖИДАНИЕ —</span>';
+    tape.innerHTML = '';
     tape.style.transition = 'none';
-    tape.style.transform = 'translateX(0)';
-    // Центрировать единственный item
-    requestAnimationFrame(() => {
-      const stage = tape.parentElement;
-      const span = tape.querySelector('span');
-      if(stage && span){
-        const offset = span.offsetLeft + span.offsetWidth/2 - stage.clientWidth/2;
-        tape.style.transform = `translateX(${-offset}px)`;
-      }
-    });
+    tape.style.transform = 'translateY(0)';
   }
   if(nameEl) nameEl.textContent = '—';
   if(descEl) descEl.textContent = 'канал не инициирован';
@@ -31794,60 +31828,95 @@ async function submitEchoOrder(){
 /* Барабан Ауры: длинная зацикленная лента, останавливается на target.
    После остановки центр = target, по бокам видны соседние варианты —
    создаёт ощущение «крутится по кругу», а не «уехало в конец». */
+/* ══ БАРАБАН АУРЫ ═══════════════════════════════════════════════════
+   Та же механика, что у барабана атрибутов Виша: заведомо длинная лента
+   и ОДНО непрерывное движение сверху вниз до цели — без перескоков.
+   Точка остановки берётся из фактической геометрии ячейки, в конце
+   сверяется по getBoundingClientRect и при нужде доводится. */
 function _spinEchoAuraDrum(onDone){
   const tape = document.getElementById('echoAuraDrumTape');
+  const win = document.getElementById('echoAuraDrumWin');
   const nameEl = document.getElementById('echoAuraDrumName');
   const descEl = document.getElementById('echoAuraDrumDesc');
-  if(!tape) return;
+  const section = document.getElementById('echoAuraSection');
+  if(!tape || !win) return;
+
   const targetIdx = Math.floor(Math.random()*ECHO_AURAS.length);
   _setEchoAura(targetIdx);
-  // 5 циклов до target + 1 цикл после, чтобы по бокам target были варианты
-  const cyclesBefore = 5;
-  const cyclesAfter = 1;
+
+  const LOOPS = 6;
   let html = '';
-  let targetN = -1;
-  let n = 0;
-  for(let c=0; c<cyclesBefore; c++){
-    for(let i=0; i<ECHO_AURAS.length; i++){
-      html += `<span>${ECHO_AURAS[i].name}</span>`;
-      if(c === cyclesBefore - 1 && i === targetIdx) targetN = n;
-      n++;
-    }
+  for(let c=0; c<LOOPS; c++){
+    for(let i=0; i<ECHO_AURAS.length; i++) html += '<span>' + ECHO_AURAS[i].name + '</span>';
   }
-  for(let c=0; c<cyclesAfter; c++){
-    for(let i=0; i<ECHO_AURAS.length; i++){
-      html += `<span>${ECHO_AURAS[i].name}</span>`;
-      n++;
-    }
-  }
-  // На случай если target в позиции ECHO_AURAS.length-1 — гарантируем что
-  // после него есть ещё хотя бы один item для соседа справа
   tape.innerHTML = html;
   tape.style.transition = 'none';
-  tape.style.transform = 'translateX(0)';
+  tape.style.transform = 'translateY(10px)';
   if(nameEl) nameEl.textContent = '—';
   if(descEl) descEl.textContent = 'подбор резонанса…';
 
+  /* Секция раскрывается до старта — иначе лента крутится в схлопнутом
+     контейнере и пользователь этого не видит. */
+  if(section){
+    section.classList.add('is-armed');
+    section.setAttribute('aria-hidden','false');
+    /* Пока секция раскрывается, цель уезжает вниз, поэтому окончательную
+       подводку делаем по факту конца перехода, а не по угаданному таймеру
+       (scrollIntoView тут не годится — он считает по ещё схлопнутой высоте).
+       Таймер оставлен страховкой на случай, если transitionend не придёт. */
+    const scroller = section.closest('.chk-modal');
+    let brought = false;
+    const bring = () => {
+      if(!scroller) return;
+      const sr = scroller.getBoundingClientRect(), wr = win.getBoundingClientRect();
+      const delta = (wr.top + wr.height / 2) - (sr.top + sr.height * 0.5);
+      if(Math.abs(delta) > 8) scroller.scrollTo({top: scroller.scrollTop + delta, behavior: 'smooth'});
+    };
+    const settle = (e) => {
+      if(e && e.target !== section) return;
+      if(e && e.propertyName !== 'max-height') return;
+      if(brought) return;
+      brought = true;
+      section.removeEventListener('transitionend', settle);
+      bring();
+    };
+    section.addEventListener('transitionend', settle);
+    setTimeout(settle, 700);
+  }
+
+  const items = tape.children;
+  /* Цель в предпоследнем цикле: сверху и снизу от неё остаются соседи. */
+  const target = (LOOPS - 2) * ECHO_AURAS.length + targetIdx;
+  const cell = items[target];
+  if(!cell){ if(typeof onDone === 'function') onDone(); return; }
+
   requestAnimationFrame(() => {
-    const stage = tape.parentElement;
-    const stageW = stage ? stage.clientWidth : 280;
-    const items = tape.querySelectorAll('span');
-    if(!items.length || targetN < 0) return;
-    const target = items[targetN];
-    if(!target) return;
-    const center = target.offsetLeft + target.offsetWidth/2;
-    const offset = center - stageW/2;
+    const stop = Math.round(tape.offsetTop + cell.offsetTop
+                            + cell.offsetHeight / 2 - win.clientHeight / 2);
+    const over = Math.round(cell.offsetHeight * 0.32);   // проскок как у автомата
+    void tape.offsetHeight;
+
     requestAnimationFrame(() => {
-      tape.style.transition = 'transform 2.4s cubic-bezier(0.16, 1, 0.3, 1)';
-      tape.style.transform = `translateX(${-offset}px)`;
+      tape.style.transition = 'transform 2.5s cubic-bezier(.17,.85,.3,1)';
+      tape.style.transform  = 'translateY(-' + (stop + over) + 'px)';
       setTimeout(() => {
-        items.forEach(s => s.classList.remove('center'));
-        target.classList.add('center');
-        const a = ECHO_AURAS[targetIdx];
-        if(nameEl) nameEl.textContent = a.name;
-        if(descEl) descEl.textContent = a.desc;
-        if(typeof onDone === 'function') onDone();
-      }, 2400);
+        /* доводка назад на детент */
+        tape.style.transition = 'transform .46s cubic-bezier(.22,1,.28,1)';
+        tape.style.transform  = 'translateY(-' + stop + 'px)';
+        setTimeout(() => {
+          /* фиксация без перехода + сверка по факту */
+          tape.style.transition = 'none';
+          tape.style.transform  = 'translateY(-' + stop + 'px)';
+          Array.from(items).forEach((el,i)=>el.classList.toggle('center', i === target));
+          const wr = win.getBoundingClientRect(), cr = cell.getBoundingClientRect();
+          const diff = (cr.top + cr.height/2) - (wr.top + wr.height/2);
+          if(Math.abs(diff) > 0.6) tape.style.transform = 'translateY(-' + (stop + diff) + 'px)';
+          const a = ECHO_AURAS[targetIdx];
+          if(nameEl) nameEl.textContent = a.name;
+          if(descEl) descEl.textContent = a.desc;
+          if(typeof onDone === 'function') onDone();
+        }, 460);
+      }, 2500);
     });
   });
 }
@@ -38831,5 +38900,251 @@ footer {
 })();
 </script>
 
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     ЧЕКАУТ · МОДЕЛЬ «ШАГИ» (принято юзером по макету design/modals-glass.html)
+     Надстройка, а не переделка: разметка платёжного потока, все id,
+     обработчики, валидация, свайп-подтверждение, dadata, ЮKassa и слоты
+     Эхо остаются как есть. Скрипт лишь РАСКЛАДЫВАЕТ существующие секции
+     по трём экранам и показывает их по одному, чтобы в окне не висело
+     шесть блоков подряд.
+       Шаг 1 — Сигнатура
+       Шаг 2 — Контакт и доставка
+       Шаг 3 — Эхо, состав заказа, согласие, свайп-подтверждение
+     Барабан атрибутов и панель результата в шаги НЕ входят: они живут
+     после подтверждения и заменяют собой всю форму.
+     ═══════════════════════════════════════════════════════════════ */ -->
+<style id="ew-checkout-steps-css">
+.chk-rail{display:flex;align-items:center;gap:8px;padding:2px 0 18px}
+.chk-rail-step{display:flex;align-items:center;gap:8px;min-width:0}
+.chk-rail-step .n{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:grid;
+  place-items:center;font-family:var(--font-mono);font-size:9px;color:var(--ink-4);
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+  transition:background .3s var(--ease-lens),color .3s,border-color .3s,box-shadow .3s}
+.chk-rail-step .t{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.13em;
+  color:var(--ink-4);text-transform:uppercase;white-space:nowrap;transition:color .3s}
+.chk-rail-step.on .n{color:var(--void);background:var(--warm-hi);border-color:var(--warm-hi);
+  box-shadow:0 0 16px rgba(232,195,122,.35)}
+.chk-rail-step.on .t{color:var(--ink-2)}
+.chk-rail-step.done .n{color:var(--cyan-hi);border-color:rgba(0,200,200,.4);background:rgba(0,200,200,.1)}
+.chk-rail-line{flex:1;height:1px;background:var(--hairline);min-width:10px}
+/* На узком экране три подписи разом не помещаются, а голые цифры не говорят,
+   где ты находишься. Оставляем подпись только у текущего шага — остальные
+   схлопываются в кружки. */
+@media(max-width:520px){
+  .chk-rail{gap:10px}
+  /* gap схлопывается вместе с подписью, иначе у неактивных кружков остаётся
+     8px пустоты и рейка «плывёт». */
+  .chk-rail-step{gap:0;transition:gap .34s var(--ease-lens)}
+  .chk-rail-step.on{gap:8px}
+  .chk-rail-step .t{max-width:0;opacity:0;overflow:hidden;
+    transition:max-width .34s var(--ease-lens),opacity .24s var(--ease-lens)}
+  .chk-rail-step.on .t{max-width:150px;opacity:1}
+}
+
+/* Экраны лежат в потоке и меняются перетеканием — та же кривая и те же
+   длительности, что у окон: уходящий уводится вверх с расфокусом. */
+.chk-step{transition:opacity .34s var(--ease-lens),transform .34s var(--ease-lens),
+  filter .34s var(--ease-lens)}
+.chk-step.is-hidden{display:none}
+.chk-step.is-out{opacity:0;transform:translateY(-10px);filter:blur(6px);pointer-events:none}
+.chk-step.is-enter{opacity:0;transform:translateY(12px);filter:blur(6px)}
+
+.chk-nav{display:flex;gap:10px;padding-top:4px}
+.chk-nav .chk-nav-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;
+  gap:9px;font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.2em;
+  text-transform:uppercase;padding:15px 20px;border-radius:99px;cursor:pointer;
+  transition:box-shadow .3s var(--ease-lens),background .3s,transform .15s,color .2s}
+.chk-nav .chk-nav-next{color:var(--warm-hi);background:rgba(209,160,74,.09);
+  border:1px solid rgba(209,160,74,.34);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 26px rgba(209,160,74,.08)}
+.chk-nav .chk-nav-back{flex:0 0 auto;color:var(--ink-2);background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+/* Возврат с последнего шага не спорит со свайпом-подтверждением: по центру,
+   тише и легче основного действия. */
+.chk-nav-last{justify-content:center;padding-top:var(--sp-4)}
+.chk-nav-last .chk-nav-back{background:transparent;border-color:rgba(255,255,255,.09);
+  color:var(--ink-3);padding:12px 26px}
+@media (hover:hover) and (pointer:fine){
+  .chk-nav .chk-nav-next:hover{background:rgba(209,160,74,.15);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 30px rgba(209,160,74,.13),0 0 30px rgba(209,160,74,.2)}
+  .chk-nav .chk-nav-back:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+}
+.chk-nav .chk-nav-btn:active{transform:scale(.985)}
+/* Поле, которое не заполнили перед переходом дальше */
+.chk-field input.chk-miss{border-color:rgba(240,82,82,.55) !important;
+  box-shadow:0 0 0 3px rgba(240,82,82,.09) !important}
+</style>
+<script id="ew-checkout-steps-js">
+(function(){
+  'use strict';
+  var STEPS = [
+    {t:'Сигнатура'},
+    {t:'Контакт'},
+    {t:'Подтверждение'}
+  ];
+  var REQUIRED_STEP2 = ['chkName','chkPhone','chkEmail','chkAddr'];
+  var built = false, cur = 0, rail = null, steps = [];
+
+  function build(){
+    if(built) return true;
+    var body = document.getElementById('chkBody');
+    if(!body) return false;
+    var form = body.querySelector('form');
+    if(!form) return false;
+
+    var kids = Array.prototype.slice.call(form.children);
+    var stopAt = form.querySelector('.attr-drum-section');
+    var upto = stopAt ? kids.indexOf(stopAt) : kids.length;
+    if(upto < 4) return false;                    // структура не та — не трогаем
+    var flow = kids.slice(0, upto);
+
+    /* Раскладка: [0] сигнатура · [1..2] контакт+доставка · [3..] остальное */
+    var groups = [ flow.slice(0,1), flow.slice(1,3), flow.slice(3) ];
+    if(!groups[0].length || !groups[1].length || !groups[2].length) return false;
+
+    rail = document.createElement('div');
+    rail.className = 'chk-rail';
+    STEPS.forEach(function(st, i){
+      var s = document.createElement('div');
+      s.className = 'chk-rail-step' + (i === 0 ? ' on' : '');
+      s.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="t">' + st.t + '</span>';
+      rail.appendChild(s);
+      if(i < STEPS.length - 1){
+        var l = document.createElement('span');
+        l.className = 'chk-rail-line';
+        rail.appendChild(l);
+      }
+    });
+    form.insertBefore(rail, flow[0]);
+
+    groups.forEach(function(g, i){
+      var box = document.createElement('div');
+      box.className = 'chk-step' + (i === 0 ? '' : ' is-hidden');
+      form.insertBefore(box, g[0]);
+      g.forEach(function(node){ box.appendChild(node); });
+      if(i < 2){
+        var nav = document.createElement('div');
+        nav.className = 'chk-nav';
+        nav.innerHTML =
+          (i > 0 ? '<button type="button" class="chk-nav-btn chk-nav-back">Назад</button>' : '') +
+          '<button type="button" class="chk-nav-btn chk-nav-next">' +
+          (i === 0 ? 'Далее · контакт' : 'Далее · подтверждение') + '</button>';
+        box.appendChild(nav);
+      } else {
+        /* Последний шаг заканчивается свайпом-подтверждением, поэтому «Назад»
+           живёт под ним отдельной тихой строкой: наверху он читался как
+           заголовок шага и отрывал рейку от содержимого. */
+        var back = document.createElement('div');
+        back.className = 'chk-nav chk-nav-last';
+        back.innerHTML = '<button type="button" class="chk-nav-btn chk-nav-back">Назад</button>';
+        box.appendChild(back);
+      }
+      steps.push(box);
+    });
+
+    form.addEventListener('click', function(e){
+      var n = e.target.closest('.chk-nav-next');
+      if(n){ e.preventDefault(); go(cur + 1); return; }
+      var b = e.target.closest('.chk-nav-back');
+      if(b){ e.preventDefault(); go(cur - 1); }
+    });
+
+    built = true;
+    return true;
+  }
+
+  /* Мягкая проверка перед переходом: пустые обязательные поля подсвечиваем
+     и уводим фокус в первое из них. Итоговая валидация перед оплатой
+     остаётся прежней — её мы не трогаем. */
+  function stepValid(i){
+    if(i !== 1) return true;
+    var bad = null;
+    REQUIRED_STEP2.forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      var empty = !String(el.value || '').trim();
+      el.classList.toggle('chk-miss', empty);
+      if(empty && !bad) bad = el;
+    });
+    if(bad){ try{ bad.focus({preventScroll:false}); }catch(e){ bad.focus(); } }
+    return !bad;
+  }
+
+  function go(next){
+    if(!built || next === cur || next < 0 || next >= steps.length) return;
+    if(next > cur && !stepValid(cur)) return;
+    var from = steps[cur], to = steps[next];
+    from.classList.add('is-out');
+    to.classList.remove('is-hidden');
+    to.classList.add('is-enter');
+    void to.offsetHeight;
+    requestAnimationFrame(function(){ to.classList.remove('is-enter'); });
+    /* Отложенное скрытие сверяется с актуальным шагом: иначе таймер от
+       предыдущего перехода мог погасить уже показанный экран и оставить
+       форму пустой (ловится при быстрых переходах туда-обратно). */
+    setTimeout(function(){
+      if(steps[cur] !== from) from.classList.add('is-hidden');
+      from.classList.remove('is-out');
+    }, 300);
+    cur = next;
+    Array.prototype.forEach.call(rail.querySelectorAll('.chk-rail-step'), function(s, i){
+      s.classList.toggle('on', i === cur);
+      s.classList.toggle('done', i < cur);
+      var n = s.querySelector('.n');
+      if(n) n.textContent = (i < cur) ? '✓' : String(i + 1);
+    });
+    var body = document.getElementById('chkBody');
+    if(body) body.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  /* Сброс на первый шаг при каждом открытии чекаута */
+  function reset(){
+    if(!build()) return;
+    cur = 0;                                   /* сначала актуальный шаг, потом классы */
+    steps.forEach(function(b, i){
+      b.classList.toggle('is-hidden', i !== 0);
+      b.classList.remove('is-out','is-enter');
+      b.style.display = '';
+    });
+    Array.prototype.forEach.call(rail.querySelectorAll('.chk-rail-step'), function(s, i){
+      s.classList.toggle('on', i === 0);
+      s.classList.remove('done');
+      var n = s.querySelector('.n');
+      if(n) n.textContent = String(i + 1);
+    });
+    if(rail) rail.style.display = '';
+    steps.forEach(function(b){ b.style.display = ''; });
+  }
+
+  var origOpen = window.openCheckout;
+  if(typeof origOpen === 'function'){
+    window.openCheckout = function(){
+      var r = origOpen.apply(this, arguments);
+      setTimeout(reset, 30);
+      return r;
+    };
+  }
+
+  /* Барабан запускается — форма больше не нужна: убираем шаги и рейку,
+     чтобы барабан остался один на экране, как в макете. */
+  var origDrum = window.launchAttrDrum;
+  if(typeof origDrum === 'function'){
+    window.launchAttrDrum = function(){
+      if(built){
+        if(rail) rail.style.display = 'none';
+        steps.forEach(function(b){ b.style.display = 'none'; });
+      }
+      return origDrum.apply(this, arguments);
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){ try{ build(); }catch(e){} });
+  window.inspectCheckoutSteps = function(){
+    return {ok: built, шагов: steps.length, текущий: cur,
+      рейка: !!rail, подпись: 'Чекаут · модель «шаги»'};
+  };
+})();
+</script>
 </body>
 </html>
