@@ -12808,35 +12808,50 @@ button, a, [role="button"], label,
   .modal, .chk-modal, .cart-panel { border-radius: var(--radius-lg); }
 }
 
-/* Кнопки и CTA */
+/* Кнопки и CTA — капсула языка «Линза».
+   Раньше здесь стояло var(--radius) (10px) с !important: одно это правило
+   держало на прямых углах два десятка органов управления по всему сайту и
+   перебивало любую точечную правку. Действия теперь капсулы, как в
+   design/modals-glass.html и design/site-v2.html. */
 .cta-primary, .cta-secondary, .cta-echo,
 .pbtn, .hbtn, .echo-submit, .echo-pane-cta, .pre-pane-cta, .echo-mode-pill,
-.cart-checkout-btn, .mob-nav-action-btn, .panel-close, .mhead-close,
+.cart-checkout-btn, .mob-nav-action-btn,
 .echo-voice-btn, .echo-voice-retry, .swipe-confirm,
-.faq-unlock-action, .donate-method, .donate-cta, .arch-cta,
+.donate-method, .donate-cta, .arch-cta,
 .preorder-btn, #preorderBtn,
-.ws, .wopt, .ftag, .clink, .donate-action {
-  border-radius: var(--radius) !important;
+.ws, .wopt, .ftag, .donate-action {
+  border-radius: 99px !important;
 }
+/* Строка контакта — плитка, а не действие: 62px высоты в капсуле
+   превратились бы в «таблетку» во весь блок. */
+.clink { border-radius: 16px !important; }
+/* Текстовая строка-раскрывашка формы не имеет своей коробки. */
+.faq-unlock-action { border-radius: 10px !important; }
 
-/* Чипы, бейджи, мелочи */
+/* Чипы и бейджи — тоже капсулы: в эталоне любая метка-подпись имеет
+   форму таблетки, прямые углы на 14–22px высоты читались как обрубки. */
 .cat-chip, .cat-chip-count, .cat-chip span,
 .arttag, .pbeacon, .aw-lock, .world-lock,
 .mob-nav-num, .echo-fact, .tag,
 .cart-btn, .cart-count, .mob-nav-cart-count,
+.echo-conf-aura-chip, .echo-fact-k,
+.sys-status, .faq-unlock-badge,
+.echo-channel-state, .donate-pulse {
+  border-radius: 99px;
+}
+/* Поля и строки-контейнеры — форма поля .well эталона. */
 .chk-gender-opt, .chk-del-opt,
 .echo-row, .echo-marker-input, .echo-text, .echo-marker,
-.term-row, .echo-conf-aura-chip, .echo-fact-k,
-.sys-status, .notif-icon, .faq-unlock-badge,
-.term-line, .echo-channel-state, .donate-pulse {
-  border-radius: var(--radius-sm);
+.term-row, .term-line {
+  border-radius: 13px;
 }
 
-/* M16: small full-border boxes that stayed square */
+/* Одиночные значки в круге — как .opt-mark и .g-help эталона */
 .clink-icon, .faq-unlock-icon, .donate-row-icon,
-.ibadge, .sold-ov-txt, .mob-nav-close {
-  border-radius: var(--radius-sm);
+.ibadge, .notif-icon, .mob-nav-close {
+  border-radius: 50%;
 }
+.sold-ov-txt { border-radius: 99px; }
 .minsta { border-radius: var(--radius); }
 /* A4: контейнер «Прозвучать в обоих мирах» был квадратным */
 .echo-reveal-block { border-radius: var(--radius); }
@@ -17334,14 +17349,21 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="drag-handle-bar"></div>
     </div>
     <div class="mhead">
-      <span class="mhead-art" id="martHead">// ART.</span>
+      <!-- Чип вместо красной строки артикула: артикул теперь стоит меткой
+           на самом изображении, как в эталоне, и не повторяется трижды. -->
+      <span class="mhead-chip"><span class="mhead-dot" aria-hidden="true"></span>Реликвия · MARKETSPACE</span>
+      <span class="mhead-art" id="martHead" hidden></span>
       <button class="panel-close mhead-close" onclick="closeModal()">Закрыть</button>
     </div>
     <!-- Кастомный side-индикатор положения скролла -->
     <div class="modal-scroll-pill" id="modalScrollPill" aria-hidden="true">
       <div class="modal-scroll-pill-thumb" id="modalScrollPillThumb"></div>
     </div>
-    <div class="mimgw"><img id="mimg" src="" alt="" loading="eager" decoding="async" fetchpriority="high"></div>
+    <div class="mimgw">
+      <img id="mimg" src="" alt="" loading="eager" decoding="async" fetchpriority="high">
+      <span class="mimg-tag" id="mimgTag"></span>
+      <span class="mimg-pw" id="mimgPw"></span>
+    </div>
     <div class="mbody">
       <div class="mart" id="mart"></div>
       <h2 class="mname" id="mname"></h2>
@@ -21544,6 +21566,13 @@ function openModal(i){
   document.getElementById('mimg').src=p.img;
   try{ if(typeof _ewWarmProductModalImage === 'function') _ewWarmProductModalImage(document.getElementById('mimg'), p.img); }catch(e){}
   document.getElementById('mart').textContent='// ART. '+p.id;
+  /* Метки на изображении: артикул слева, буква Мощи справа — как в
+     design/modals-glass.html (.p-tag и .p-pw). Строка .mart над названием
+     после этого лишняя и скрыта стилем. */
+  const imgTag=document.getElementById('mimgTag');
+  if(imgTag) imgTag.textContent='ART. '+p.id;
+  const imgPw=document.getElementById('mimgPw');
+  if(imgPw) imgPw.textContent=(p.power||'').toString().slice(0,1).toUpperCase();
   document.getElementById('mname').textContent=p.name;
   document.getElementById('mdesc').textContent=p.desc;
   document.getElementById('mfid').textContent=p.id;
@@ -22516,10 +22545,9 @@ function renderCheckoutEchoControls(){
         <div class="chk-echo-editor-space" data-chk-echo-editor-space>
           <div class="chk-echo-editor-clip">
             <div class="chk-echo-editor" data-chk-echo-editor>
-              <div class="chk-echo-editor-head">
-                <div class="chk-echo-editor-title" data-chk-echo-editor-title>Эхо 01</div>
-                <div class="chk-echo-editor-state">текстовый сигнал</div>
-              </div>
+              <!-- Шапка «ЭХО 01 · текстовый сигнал» убрана: номер и тип уже
+                   написаны в строке слота, под которой раскрывается редактор.
+                   Оставлены только поле, счётчик и два действия. -->
               <textarea data-chk-echo-editor-text
                 placeholder="Напишите Эхо для Виша..."
                 maxlength="200"
@@ -22563,6 +22591,10 @@ function openCheckoutEchoSlot(itemIdx, slotIdx, btn){
   _chkEchoSetOrigin(card, slotBtn);
 
   const space = card.querySelector('[data-chk-echo-editor-space]');
+  /* Редактор переезжает под ту строку, которую правят. Раньше он всегда
+     висел под всем списком — и при правке первого слота открывался через
+     три чужих строки, отрываясь от того, что редактируешь. */
+  if(space && slotBtn && slotBtn.parentNode) slotBtn.parentNode.insertBefore(space, slotBtn.nextSibling);
   const title = card.querySelector('[data-chk-echo-editor-title]');
   const ta = card.querySelector('[data-chk-echo-editor-text]');
   const num = String(slotIdx + 1).padStart(2,'0');
@@ -39547,6 +39579,228 @@ footer {
   }
 }
 #cartPanel .cart-checkout-btn:active{ transform: scale(.985); }
+
+/* ── КРЕСТИК ЗАКРЫТИЯ ──────────────────────────────────────────── */
+/* Во всех окнах закрытие было крупным красным глифом 30px. В эталоне это
+   тихая круглая кнопка 29px с ✕ 12px: красный на сайте означает тревогу,
+   а закрытие окна — нейтральное действие. */
+.mhead-close,
+.chk-close,
+.cart-close,
+.mob-nav-close,
+.legal-modal-close,
+.panel-close.mhead-close,
+.panel-close.chk-close,
+.panel-close.cart-close{
+  width: 29px !important;
+  height: 29px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: rgba(255,255,255,.05) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  color: var(--ink-3) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1) !important;
+  transition: background .2s, color .2s, transform .15s !important;
+}
+.mhead-close::before,
+.chk-close::before,
+.cart-close::before,
+.mob-nav-close::before,
+.legal-modal-close::before,
+.panel-close.mhead-close::before,
+.panel-close.chk-close::before,
+.panel-close.cart-close::before{
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  color: inherit !important;
+  text-shadow: none !important;
+}
+@media (hover:hover) and (pointer:fine){
+  .mhead-close:hover,
+  .chk-close:hover,
+  .cart-close:hover,
+  .mob-nav-close:hover,
+  .legal-modal-close:hover,
+  .panel-close.mhead-close:hover,
+  .panel-close.chk-close:hover,
+  .panel-close.cart-close:hover{
+    background: rgba(255,255,255,.09) !important;
+    color: var(--ink) !important;
+  }
+}
+
+/* ── ШАПКА И ИЗОБРАЖЕНИЕ КАРТОЧКИ ──────────────────────────────── */
+/* Артикул стоял трижды: в шапке, над названием и в аккордеоне. Оставляем
+   один — меткой на изображении, как в эталоне. */
+.moverlay .mhead-art,
+.moverlay .mart{ display: none; }
+.moverlay .mhead-chip{
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .15em;
+  color: var(--ink-2); text-transform: uppercase; white-space: nowrap;
+  background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 99px; padding: 6px 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
+}
+.moverlay .mhead-dot{
+  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+  background: var(--cyan); box-shadow: 0 0 9px rgba(0,200,200,.9);
+  animation: breathe 3.2s ease-in-out infinite;
+}
+.moverlay .mimgw{ position: relative; }
+.moverlay .mimg-tag,
+.moverlay .mimg-pw{
+  position: absolute; top: 11px; z-index: 2;
+  font-family: var(--font-mono); letter-spacing: .13em;
+  background: rgba(8,8,10,.6); border: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.moverlay .mimg-tag{
+  left: 11px; font-size: 8px; color: var(--ink-2);
+  border-radius: 99px; padding: 5px 9px;
+}
+.moverlay .mimg-pw{
+  right: 11px; width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 10px; color: var(--red-hi);
+  background: rgba(192,40,40,.14); border-color: rgba(230,56,56,.45);
+}
+.moverlay .mimg-pw:empty{ display: none; }
+
+/* ── ОСТАТКИ СТАРОГО НАБОРА ПО СТРАНИЦЕ ────────────────────────
+   Ревизия нашла узлы, до которых прошлые проходы не дотянулись: они
+   остались на прямых углах 6–10px, тогда как язык знает три формы —
+   капсула 99px для действий и чипов, круг для одиночных значков,
+   13–16px для плиток и полей. Правим только форму и кромку, поведение
+   и разметку не трогаем. */
+
+/* Действия и чипы → капсула */
+.cat-chip,
+.faq-mini-cta,
+.cookie-banner-ok,
+.cart-empty-btn,
+.donate-row,
+.aw-lock,
+.panel-close{
+  border-radius: 99px;
+}
+/* Одиночные значки → круг (как .opt-mark и .g-help эталона) */
+.pcard-power,
+.clink-icon,
+.faq-unlock-icon,
+.donate-help-btn{
+  border-radius: 50%;
+}
+/* Поля ввода → та же форма, что у .well в окнах */
+.cat-search,
+.cat-search input,
+.cat-search-input,
+#preorderItem,
+#preorderContact{
+  border-radius: 14px;
+}
+/* Вложенные строки-окна → 10px, как .tapline эталона */
+.term-line{ border-radius: 10px; }
+
+/* ── СВАЙП-ПОДТВЕРЖДЕНИЕ ───────────────────────────────────────── */
+/* Финальное действие заказа держалось на старом наборе: прямые углы 10px,
+   сплошной красный в готовом состоянии, красный ползунок. Переводим в
+   капсулу тёплого языка; цвет «готово» остаётся циановым — им на сайте
+   помечено подтверждённое. */
+#chkBody .swipe-confirm{
+  border-radius: 99px;
+  background: rgba(255,255,255,.03);
+  border-color: rgba(255,255,255,.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+#chkBody .swipe-confirm .swipe-fill{
+  background: linear-gradient(90deg, rgba(209,160,74,.22), rgba(209,160,74,.42));
+}
+#chkBody .swipe-confirm .swipe-thumb{
+  border-radius: 99px;
+  background: rgba(209,160,74,.14);
+  border-color: rgba(209,160,74,.42);
+  color: var(--warm-hi);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
+}
+#chkBody .swipe-confirm .swipe-clabel{
+  font-size: 9.5px; letter-spacing: .18em; color: var(--ink-3);
+}
+#chkBody .swipe-confirm:not(.locked):not(.done):not(.consent-blocked){
+  background: rgba(209,160,74,.09);
+  border-color: rgba(209,160,74,.34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 26px rgba(209,160,74,.08);
+}
+#chkBody .swipe-confirm:not(.locked):not(.done):not(.consent-blocked) .swipe-clabel{
+  color: var(--warm-hi);
+}
+#chkBody .swipe-confirm.done{
+  background: rgba(0,200,200,.07);
+  border-color: rgba(0,200,200,.34);
+}
+#chkBody .swipe-confirm.done .swipe-thumb{
+  background: rgba(0,200,200,.14); border-color: rgba(0,200,200,.42); color: var(--cyan-hi);
+}
+
+/* ── РЕДАКТОР СЛОТА ЭХО ────────────────────────────────────────── */
+/* Раскрывается под своей строкой такой же плиткой, что и всё вокруг.
+   Циановая коробка с рамкой выбивалась из ряда: циан в языке означает
+   «выбрано», а не «здесь пишут». */
+#chkBody .chk-echo-editor{
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 13px;
+  box-shadow: none;
+  padding: 12px;
+}
+#chkBody .chk-echo-editor::before,
+#chkBody .chk-echo-editor::after{ display: none; }
+#chkBody .chk-echo-editor textarea{
+  width: 100%; height: 74px; resize: none;   /* уголок-грабер убран */
+  font-family: var(--font-body); font-size: 13px; line-height: 1.55;
+  letter-spacing: 0; color: var(--ink);
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 11px; padding: 10px 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+#chkBody .chk-echo-editor textarea::placeholder{ color: var(--ink-3); opacity: .75; }
+#chkBody .chk-echo-editor textarea:focus{
+  outline: none; border-color: rgba(0,200,200,.4); background: rgba(255,255,255,.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 0 3px rgba(0,200,200,.08);
+}
+#chkBody .chk-echo-editor-foot{
+  display: flex; align-items: center; gap: 9px; margin-top: 10px;
+}
+#chkBody .chk-echo-editor-counter{
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .12em;
+  color: var(--ink-4); text-transform: uppercase;
+}
+#chkBody .chk-echo-editor-actions{ margin-left: auto; display: flex; gap: 8px; }
+#chkBody .chk-echo-editor-btn{
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 8.5px; font-weight: 600; letter-spacing: .14em;
+  text-transform: uppercase; padding: 10px 16px; border-radius: 99px;
+  color: var(--ink-2); background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
+  transition: box-shadow .3s var(--ease-out), background .3s, transform .15s, color .2s;
+}
+#chkBody .chk-echo-editor-btn.primary{
+  color: var(--warm-hi); background: rgba(209,160,74,.09);
+  border-color: rgba(209,160,74,.34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 26px rgba(209,160,74,.08);
+}
+@media (hover:hover) and (pointer:fine){
+  #chkBody .chk-echo-editor-btn:hover{ background: rgba(255,255,255,.08); color: var(--ink); }
+  #chkBody .chk-echo-editor-btn.primary:hover{
+    background: rgba(209,160,74,.15); color: var(--warm-hi);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 30px rgba(209,160,74,.13), 0 0 30px rgba(209,160,74,.2);
+  }
+}
+#chkBody .chk-echo-editor-btn:active{ transform: scale(.985); }
+/* Открытая строка помечена циановой кромкой — она и есть «выбрано». */
+#chkBody .chk-echo-editor-space.is-open{ margin-top: 0; }
 
 /* ── СОСТАВ ЗАКАЗА ─────────────────────────────────────────────── */
 /* Своя коробка у сводки больше не нужна — она лежит внутри плитки. */
