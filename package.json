@@ -1,0 +1,21 @@
+{
+  "name": "echoworld-site-tools",
+  "private": true,
+  "type": "module",
+  "description": "Инструменты качества для одностраничного сайта EchoWorld. В деплой не попадают: pages.yml копирует в _site только белый список файлов.",
+  "scripts": {
+    "check": "node tools/validate.mjs index.html && stylelint index.html",
+    "validate": "node tools/validate.mjs index.html",
+    "lint": "stylelint index.html",
+    "shots": "node tools/shots.mjs",
+    "shots:baseline": "node tools/shots.mjs --baseline",
+    "shots:diff": "node tools/shots.mjs --diff"
+  },
+  "devDependencies": {
+    "stylelint": "^16.10.0",
+    "postcss-html": "^1.7.0",
+    "playwright": "^1.48.0",
+    "pixelmatch": "^6.0.0",
+    "pngjs": "^7.0.0"
+  }
+}

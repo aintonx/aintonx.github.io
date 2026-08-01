@@ -1,0 +1,29 @@
+{
+  "customSyntax": "postcss-html",
+  "rules": {
+    "no-invalid-position-at-import-rule": true,
+    "no-duplicate-at-import-rules": true,
+    "block-no-empty": true,
+    "color-no-invalid-hex": true,
+    "function-calc-no-unspaced-operator": true,
+    "string-no-newline": true,
+    "unit-no-unknown": true,
+    "property-no-unknown": [true, { "checkPrefixed": false }],
+    "declaration-block-no-shorthand-property-overrides": true,
+    "declaration-block-no-duplicate-properties": [
+      true,
+      {
+        "ignore": ["consecutive-duplicates-with-different-values"],
+        "ignoreProperties": ["height", "max-height", "width", "max-width"]
+      }
+    ],
+    "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["deep"] }],
+    "selector-pseudo-element-no-unknown": true,
+    "selector-type-no-unknown": [true, { "ignoreTypes": ["/^ew-/"] }],
+    "media-feature-name-no-unknown": true,
+    "at-rule-no-unknown": true,
+    "comment-no-empty": true,
+    "no-descending-specificity": null,
+    "no-duplicate-selectors": null
+  }
+}

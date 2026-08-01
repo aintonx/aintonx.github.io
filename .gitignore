@@ -9,3 +9,7 @@ BACKUP/
 BACKUP 2/
 work/
 outputs/
+
+# инструменты качества (в деплой не идут, pages.yml — белый список)
+node_modules/
+tools/shots/

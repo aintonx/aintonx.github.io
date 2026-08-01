@@ -2775,7 +2775,6 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   font-variant-numeric: tabular-nums;
   color: var(--ink);
   margin-bottom: 10px;
-  font-variant-numeric: tabular-nums;
   transition: color var(--t-med) var(--ease-out), text-shadow var(--t-med) var(--ease-out);
 }
 @media (hover:hover) and (pointer:fine) {
@@ -12087,8 +12086,6 @@ input, select, textarea {
   z-index: 2;
   padding: var(--sec-y) 0 var(--sec-y-join);
   scroll-margin-top: 80px;
-}
-@media(max-width:720px){
 }
 .relic-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; position: relative; }
 
@@ -39207,6 +39204,10 @@ footer {
      экране спорили бы между собой.
      ═══════════════════════════════════════════════════════════════ -->
 <style id="ew-modal-language">
+/* Целостность этого файла проверяет tools/validate.mjs — он висит хуком на
+   каждой правке (.claude/settings.json). Проверяет: незакрытые комментарии
+   и проглоченные ими правила, баланс скобок в 44 блоках стилей, синтаксис
+   47 инлайновых скриптов, повторяющиеся id, парность тегов. */
 /* ── ПЛИТКА БЛОКА ──────────────────────────────────────────────── */
 #chkBody .chk-section,
 #echoOrderBody .chk-section{
