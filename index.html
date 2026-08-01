@@ -19308,6 +19308,12 @@ function _blurActiveField(){
    схлопываются токеном в один живой цикл. */
 let _pinSettleToken = 0;
 function _pinAfterFocusChange(){
+  /* При открытом окне заказа страница под ним всё равно не прокручивается
+     (замерено: window.scrollY не меняется, iOS панорамирует вьюпорт), а лист
+     держит слой ew-sheet-keyboard. Опрос высоты каждые 90мс и финальный
+     scrollTo тут ничего не восстанавливают, зато попадают в анимацию
+     клавиатуры. */
+  if(typeof window.__ewKbdOwned === 'function' && window.__ewKbdOwned()) return;
   const token = ++_pinSettleToken;
   let tries = 0;
   let h = _vvKbd ? _vvKbd.height : window.innerHeight;
@@ -22446,6 +22452,10 @@ function _setupModalUnstickAfterBlur(panel, inputsOrSelector, openBodyClass){
   panel.dataset.unstickAfterBlurInit = '1';
   function unstick(){
     if(!panel.isConnected) return;
+    /* Пока геометрией при клавиатуре управляет слой ew-sheet-keyboard,
+       «пинок» overflow только мешает: он замораживал прокрутку и сбрасывал
+       scrollTop прямо в момент анимации клавиатуры (замер tools/thrash.mjs). */
+    if(typeof window.__ewKbdOwned === 'function' && window.__ewKbdOwned()) return;
     if(panel.closest && panel.closest('.closing')) return;
     /* Класс «модалка открыта» может жить и на body (chk-open, modal-open),
        и на html (legal-modal-open у Реквизитов/Сектора Тишины) — проверяем оба.
@@ -22526,6 +22536,7 @@ function _setupNameAutofillScrollGuard(nameInput, panel){
     until = performance.now() + 700;
   });
   panel.addEventListener('scroll', function(){
+    if(typeof window.__ewKbdOwned === 'function' && window.__ewKbdOwned()) return;
     if(performance.now() > until) return;
     if(Math.abs(panel.scrollTop - anchor) > 48){
       panel.scrollTop = anchor;
@@ -22558,6 +22569,9 @@ function _setupAutofillFreeze(panel, ids){
   const biTimes = [];
   let lastFocusOutT = -1e9;
   function freeze(ms){
+    /* См. unstick: при активном ew-sheet-keyboard заморозка прокрутки —
+       главный источник рывка при автоподстановке, а не защита от него. */
+    if(typeof window.__ewKbdOwned === 'function' && window.__ewKbdOwned()) return;
     const until = performance.now() + ms;
     if(frozenUntil){ frozenUntil = Math.max(frozenUntil, until); return; }
     frozenUntil = until;
@@ -39308,6 +39322,27 @@ footer {
   function поднята(){
     return vv.offsetTop > 1 || (window.innerHeight - vv.height) > 100;
   }
+
+  /* ── ЕДИНЫЙ ВЛАДЕЛЕЦ ПОВЕДЕНИЯ ПРИ КЛАВИАТУРЕ ─────────────────────
+     Пока это окно открыто на телефоне, геометрию при клавиатуре держит
+     ТОЛЬКО этот слой. Остальные компенсаторы (unstick, заморозка
+     автоподстановки, якорь прокрутки) на это время выключаются — см.
+     ссылки на __ewKbdOwned по файлу.
+
+     Зачем: замер tools/thrash.mjs показал, что за один цикл «тап в поле →
+     автоподстановка → уход фокуса» они втроём держат прокрутку панели
+     заблокированной 707мс и делают три принудительных сброса scrollTop
+     (на 623, 988 и 1067мс). На iPhone это ровно тот интервал, когда
+     система анимирует клавиатуру, — отсюда и рывки, и «залипание» тапов
+     по крестику, про которое написано в комментарии самого unstick.
+
+     Все три компенсатора чинили ОДНУ причину: коробка листа менялась под
+     содержимым непредсказуемо. Теперь ею управляет этот слой, поэтому
+     компенсировать нечего. */
+  window.__ewKbdOwned = function(){
+    return !!document.querySelector('.chk-overlay.open')
+        && window.matchMedia('(max-width: 960px)').matches;
+  };
 
   var кадр = 0;
   function свести(){

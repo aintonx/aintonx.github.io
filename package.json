@@ -9,7 +9,8 @@
     "lint": "stylelint index.html",
     "shots": "node tools/shots.mjs",
     "shots:baseline": "node tools/shots.mjs --baseline",
-    "shots:diff": "node tools/shots.mjs --diff"
+    "shots:diff": "node tools/shots.mjs --diff",
+    "thrash": "node tools/thrash.mjs"
   },
   "devDependencies": {
     "stylelint": "^16.10.0",
