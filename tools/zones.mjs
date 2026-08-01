@@ -120,6 +120,14 @@ export const ZONES = [
         }
       });
       await шагДалее(page, 1, 2);
+      /* Слоты Эхо рисуются отдельным проходом уже после показа шага. Без
+         ожидания кадр иногда снимался до них, и высота окна прыгала на 84px
+         от прогона к прогону — регрессия принимала это за правку. */
+      await page.waitForFunction(
+        () => document.querySelectorAll('.chk-echo-slot').length > 0,
+        null, { timeout: 8000 },
+      ).catch(() => {});
+      await page.waitForTimeout(350);
     },
   },
   {
@@ -143,11 +151,17 @@ export const ZONES = [
     async open(page) {
       await ZONES.find((z) => z.id === 'checkout-3').open(page);
       await page.evaluate(() => window.launchAttrDrum());
-      /* Ждём именно появления панели, а не «примерно пять секунд»: на узком
-         экране барабан отрабатывает с другим таймингом, и фиксированная
-         пауза ловила кадр то до, то после — регрессия ругалась на это. */
-      await page.waitForSelector('#attrResultPanel.show', { timeout: 15000 }).catch(() => {});
-      await page.waitForTimeout(900);
+      /* Ждём фактическую готовность, а не «примерно столько-то секунд».
+         Колонки садятся по очереди и с разной длительностью, поэтому
+         фиксированная пауза ловила кадр то до, то после — регрессия
+         принимала это за правку. Условие: все три колонки выбрали значение
+         и панель результата показана. */
+      await page.waitForFunction(
+        () => document.querySelectorAll('.attr-drum-item.selected').length >= 3 &&
+              document.querySelector('#attrResultPanel.show'),
+        null, { timeout: 20000 },
+      ).catch(() => {});
+      await page.waitForTimeout(1200);
     },
   },
   {
