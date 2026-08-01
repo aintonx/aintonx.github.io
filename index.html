@@ -10508,7 +10508,10 @@ input, select, textarea {
   .cat-chip.chip-activating { animation: none !important; }
   .cat-chip.cat-chip-autopick { animation: none !important; }
   .cat-chip.active {
-    border-color: var(--red2) !important;
+    /* Кромка была var(--red2): красный в языке означает тревогу и запрет,
+       а выбранная категория — обычное состояние. Тёплый — цвет выбора и
+       главного действия, он же стоит на фоне этого чипа. */
+    border-color: rgba(209,160,74,0.55) !important;
     -webkit-text-stroke: 0.45px currentColor;
     text-shadow: 0 0 0.4px currentColor;
   }
@@ -17359,7 +17362,17 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
     <div class="mimgw">
       <img id="mimg" src="" alt="" loading="eager" decoding="async" fetchpriority="high">
       <span class="mimg-tag" id="mimgTag"></span>
-      <span class="mimg-pw" id="mimgPw"></span>
+      <!-- Мощь реликвии на изображении: буква, название и шкала в одной
+           плашке. Раньше здесь был кружок в правом верхнем углу — он вставал
+           вплотную к кнопке закрытия и на телефоне читался как свалка из двух
+           круглых элементов. -->
+      <span class="mimg-power" id="mimgPower">
+        <span class="mimg-power-letter" id="mimgPowerLetter"></span>
+        <span class="mimg-power-name" id="mimgPowerName"></span>
+        <span class="mimg-power-bar" id="mimgPowerBar" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </span>
+      </span>
     </div>
     <div class="mbody">
       <div class="mart" id="mart"></div>
@@ -17586,7 +17599,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <!-- ── СОГЛАСИЕ НА ОБРАБОТКУ ПД (152-ФЗ) ── -->
       <label class="chk-consent" for="chkConsent">
         <input type="checkbox" id="chkConsent" class="chk-consent-input">
-        <span class="chk-consent-box" aria-hidden="true"></span>
+        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
         <span class="chk-consent-text">
           Подтверждаю согласие на обработку<span class="req-star">*</span>
           <button type="button" class="chk-consent-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>
@@ -17718,7 +17731,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="echo-reveal-block">
           <label class="echo-reveal-toggle" for="echoOrderReveal">
             <input type="checkbox" id="echoOrderReveal" onchange="toggleEchoOrderReveal()">
-            <span class="echo-reveal-check"></span>
+            <span class="echo-reveal-check" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
             <span class="echo-reveal-text">
               <span class="echo-reveal-title">Прозвучать в обоих мирах</span>
               <span class="echo-reveal-sub">По умолчанию Эхо анонимно — голос ниоткуда. Отметив, вы попросите MARKETSPACE и наш мир знать, чей это сигнал. Ваш Маркер появится в потоке данных рядом с Эхо, которое прозвучало.</span>
@@ -17755,7 +17768,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <!-- Согласие на ПД (та же структура что в основном чекауте) -->
       <label class="chk-consent" for="echoOrderConsent">
         <input type="checkbox" id="echoOrderConsent" class="chk-consent-input" onchange="_updateEchoOrderSubmit()">
-        <span class="chk-consent-box" aria-hidden="true"></span>
+        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
         <span class="chk-consent-text">
           Подтверждаю согласие на обработку<span class="req-star">*</span>
           <button type="button" class="chk-consent-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>
@@ -18547,7 +18560,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         </div>
         <label class="preorder-privacy" id="preorderConsentWrap" for="preorderConsent">
           <input type="checkbox" id="preorderConsent" class="preorder-privacy-input" onchange="validatePreorderField('consent')">
-          <span class="preorder-privacy-box" aria-hidden="true"></span>
+          <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
           <span class="preorder-privacy-text">
             Подтверждаю согласие на обработку
             <button type="button" class="preorder-privacy-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>.
@@ -21568,8 +21581,6 @@ function openModal(i){
      после этого лишняя и скрыта стилем. */
   const imgTag=document.getElementById('mimgTag');
   if(imgTag) imgTag.textContent='ART. '+p.id;
-  const imgPw=document.getElementById('mimgPw');
-  if(imgPw) imgPw.textContent=(p.power||'').toString().slice(0,1).toUpperCase();
   document.getElementById('mname').textContent=p.name;
   document.getElementById('mdesc').textContent=p.desc;
   document.getElementById('mfid').textContent=p.id;
@@ -21593,6 +21604,18 @@ function openModal(i){
     if(pwrLetter) pwrLetter.textContent = p.power || 'K';
     pwrVal.setAttribute('aria-label', 'RELIC.POWER: ' + pwrLabel);
     pwrVal.setAttribute('title', pwrLabel);
+  }
+  /* Та же мощь — плашкой на изображении: буква, название и шкала. */
+  const imgPower=document.getElementById('mimgPower');
+  if(imgPower){
+    const бук=document.getElementById('mimgPowerLetter');
+    const имя=document.getElementById('mimgPowerName');
+    const шкала=document.getElementById('mimgPowerBar');
+    if(бук) бук.textContent=p.power || 'K';
+    if(имя) имя.textContent=pwrName;
+    if(шкала) шкала.querySelectorAll('i').forEach((s, idx)=>s.classList.toggle('on', idx < pwrLvl));
+    imgPower.dataset.power=p.power || 'K';
+    imgPower.title='Мощь Реликвии · ' + (p.power || 'K') + ' · ' + pwrName;
   }
   const slotCount=getEchoSlotCount(p);
   const echoSlotsVal=document.getElementById('mEchoSlotsValue');
@@ -32434,7 +32457,7 @@ function _spinEchoAuraDrum(onDone){
 
         <label class="chk-consent return-chk-consent" for="returnConsent">
           <input type="checkbox" id="returnConsent" class="chk-consent-input" required>
-          <span class="chk-consent-box" aria-hidden="true"></span>
+          <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
           <span class="chk-consent-text return-consent-text">
             <span class="return-consent-title">Подтверждаю отправку заявки<span class="req-star">*</span></span>
             <span class="return-consent-sub">Я понимаю, что заявка будет рассмотрена по условиям публичной оферты и законодательства РФ. Также подтверждаю согласие на обработку персональных данных в рамках обработки заявки.</span>
@@ -32796,13 +32819,21 @@ function acceptCookies(){
       if(!cls) return;
       /* data-power нужен для фильтра K/C/R/S в setCatalogCategory */
       if(!card.dataset.power) card.dataset.power = cls;
-      if(!card.querySelector('.pcard-power')){
+      /* Значок мощи. В разметке у всех карточек уже есть свой — .p-pw, — и
+         этот код дорисовывал поверх него второй: они вставали со сдвигом в
+         2px и читались как задвоение ранга. Рисуем только если своего нет;
+         существующему проставляем подсказку. */
+      const names = {K:'Излом', C:'Скопление', R:'Резонанс', S:'Сингулярность'};
+      const подпись = cls + ' · ' + names[cls] + ' · Мощь Реликвии';
+      const свой = card.querySelector('.p-pw');
+      if(свой){
+        if(!свой.title) свой.title = подпись;
+      } else if(!card.querySelector('.pcard-power')){
         const badge = document.createElement('span');
         badge.className = 'pcard-power';
         badge.dataset.class = cls;
         badge.textContent = cls;
-        const names = {K:'Излом', C:'Скопление', R:'Резонанс', S:'Сингулярность'};
-        badge.title = cls + ' · ' + names[cls] + ' · Мощь Реликвии';
+        badge.title = подпись;
         pimg.appendChild(badge);
       }
     });
@@ -38985,11 +39016,15 @@ footer {
 
 /* Экраны лежат в потоке и меняются перетеканием — та же кривая и те же
    длительности, что у окон: уходящий уводится вверх с расфокусом. */
-.chk-step{transition:opacity .34s var(--ease-lens),transform .34s var(--ease-lens),
-  filter .34s var(--ease-lens)}
+/* Сцена держит габарит на время смены экранов — см. go() в скрипте шагов.
+   Без неё контейнер прыгал: оба экрана стояли в потоке разом. */
+.chk-steps-stage{position:relative}
+.chk-step{transition:opacity .26s var(--ease-lens),transform .3s var(--ease-lens),
+  filter .26s var(--ease-lens)}
 .chk-step.is-hidden{display:none}
-.chk-step.is-out{opacity:0;transform:translateY(-10px);filter:blur(6px);pointer-events:none}
-.chk-step.is-enter{opacity:0;transform:translateY(12px);filter:blur(6px)}
+.chk-step.is-out{opacity:0;transform:translateY(-8px) scale(.995);filter:blur(5px);pointer-events:none;
+  position:absolute;inset:0 0 auto 0}
+.chk-step.is-enter{opacity:0;transform:translateY(10px) scale(.995);filter:blur(5px)}
 
 .chk-nav{display:flex;gap:10px;padding-top:4px}
 .chk-nav .chk-nav-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;
@@ -39025,7 +39060,7 @@ footer {
     {t:'Подтверждение'}
   ];
   var REQUIRED_STEP2 = ['chkName','chkPhone','chkEmail','chkAddr'];
-  var built = false, cur = 0, rail = null, steps = [];
+  var built = false, cur = 0, rail = null, steps = [], сцена = null;
 
   function build(){
     if(built) return true;
@@ -39059,10 +39094,18 @@ footer {
     });
     form.insertBefore(rail, flow[0]);
 
+    /* Сцена шагов. Нужна отдельным узлом, потому что сама форма объявлена
+       display:contents — у неё нет коробки, и анимировать её высоту нельзя.
+       Барабан атрибутов в сцену не входит: он живёт после подтверждения и
+       заменяет собой всю форму. */
+    сцена = document.createElement('div');
+    сцена.className = 'chk-steps-stage';
+    form.insertBefore(сцена, groups[0][0]);
+
     groups.forEach(function(g, i){
       var box = document.createElement('div');
       box.className = 'chk-step' + (i === 0 ? '' : ' is-hidden');
-      form.insertBefore(box, g[0]);
+      сцена.appendChild(box);
       g.forEach(function(node){ box.appendChild(node); });
       if(i < 2){
         var nav = document.createElement('div');
@@ -39116,18 +39159,52 @@ footer {
     if(!built || next === cur || next < 0 || next >= steps.length) return;
     if(next > cur && !stepValid(cur)) return;
     var from = steps[cur], to = steps[next];
+
+    /* ── ПЕРЕХОД ПО ВЫСОТЕ ────────────────────────────────────────────
+       Раньше уходящий и приходящий экраны 300мс стояли в потоке разом:
+       контейнер раздувался на сумму двух, а потом резко схлопывался. Это
+       и читалось как «резко и нетехнологично».
+       Теперь сцена держит высоту: замеряем «было», мгновенно меняем
+       содержимое, замеряем «стало» и ведём высоту между ними. Уходящий
+       гаснет, приходящий проявляется — контейнер при этом едет плавно. */
+    var было = сцена ? сцена.getBoundingClientRect().height : 0;
+
     from.classList.add('is-out');
     to.classList.remove('is-hidden');
     to.classList.add('is-enter');
     void to.offsetHeight;
+
+    if(сцена){
+      /* Уходящий экран в состоянии is-out позиционируется абсолютно, то есть
+         уже вне потока — значит сцена сейчас ровно по высоте приходящего. */
+      var стало = сцена.getBoundingClientRect().height;
+
+      сцена.style.overflow = 'hidden';
+      сцена.style.height = было + 'px';
+      void сцена.offsetHeight;
+      сцена.style.transition = 'height .42s var(--ease-lens)';
+      сцена.style.height = стало + 'px';
+    }
+
     requestAnimationFrame(function(){ to.classList.remove('is-enter'); });
-    /* Отложенное скрытие сверяется с актуальным шагом: иначе таймер от
-       предыдущего перехода мог погасить уже показанный экран и оставить
-       форму пустой (ловится при быстрых переходах туда-обратно). */
+
+    /* Уходящий убираем раньше, чем закончится ход высоты: к этому моменту
+       он уже прозрачен, а сцена сама держит габарит. Сверка с актуальным
+       шагом — защита от гонки при быстрых переходах туда-обратно. */
     setTimeout(function(){
       if(steps[cur] !== from) from.classList.add('is-hidden');
       from.classList.remove('is-out');
-    }, 300);
+    }, 200);
+
+    if(сцена){
+      clearTimeout(сцена._ewОтпустить);
+      сцена._ewОтпустить = setTimeout(function(){
+        сцена.style.transition = '';
+        сцена.style.height = '';
+        сцена.style.overflow = '';
+      }, 460);
+    }
+
     cur = next;
     Array.prototype.forEach.call(rail.querySelectorAll('.chk-rail-step'), function(s, i){
       s.classList.toggle('on', i === cur);
@@ -39504,17 +39581,61 @@ footer {
   }
 }
 .moverlay .mbtn:active{ transform: scale(.985); }
-/* Аккордеон в макете — один блок с волосяными разделителями, а не
-   стопка отдельных карточек: шесть коробок подряд рвали столбец. */
+/* ── АККОРДЕОН КАРТОЧКИ ────────────────────────────────────────────
+   Один блок с волосяными разделителями вместо стопки отдельных коробок:
+   шесть карточек подряд рвали столбец. Механика раскрытия не тронута —
+   только материал, типографика и знак. */
 .moverlay .mclarity{
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 13px; overflow: hidden; display: block; gap: 0;
+  border-radius: 16px; overflow: hidden; display: block; gap: 0;
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.09);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
 }
 .moverlay .mclarity-item{
   background: transparent; border: 0; border-radius: 0; margin: 0;
   border-bottom: 1px solid rgba(255,255,255,.06);
+  transition: background .25s var(--ease-out);
 }
 .moverlay .mclarity-item:last-child{ border-bottom: 0; }
+.moverlay .mclarity-item.is-open{ background: rgba(255,255,255,.03); }
+@media (hover:hover) and (pointer:fine){
+  .moverlay .mclarity-item:hover{ background: rgba(255,255,255,.045); }
+}
+/* Заголовок строки: наборный шрифт для названия, mono для значения —
+   как в строках .row эталона. */
+.moverlay .mclarity-head{
+  min-height: 52px; padding: 14px 16px; gap: 12px;
+}
+.moverlay .mclarity-kicker{
+  font-family: var(--font-body); font-size: 12.5px; font-weight: 600;
+  letter-spacing: 0; color: var(--ink);
+}
+.moverlay .mclarity-value{
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .13em;
+  color: var(--ink-4); text-transform: uppercase;
+}
+/* Знак раскрытия: тихий круг с плюсом вместо красного глифа. Красный в
+   языке означает тревогу, а это обычное «развернуть». */
+.moverlay .mclarity-plus{
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 400;
+  color: var(--ink-3);
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.12);
+  transition: transform .3s var(--ease-out), background .25s, color .25s;
+}
+.moverlay .mclarity-item.is-open .mclarity-plus{
+  transform: rotate(45deg);
+  color: var(--cyan-hi); border-color: rgba(0,200,200,.34);
+  background: rgba(0,200,200,.08);
+}
+.moverlay .mclarity-text{
+  padding: 0 16px 16px;
+  font-family: var(--font-body); font-size: 12.5px; line-height: 1.7;
+  color: var(--ink-3);
+}
+.moverlay .mclarity-text p + p{ margin-top: 9px; }
 /* Цена в макете всегда тёплая — и в строке .row .v.w, и в итоге .total. */
 .moverlay .mpricebig{ color: var(--warm-hi); }
 
@@ -39581,10 +39702,156 @@ footer {
 }
 #cartPanel .cart-checkout-btn:active{ transform: scale(.985); }
 
+/* ── БАРАБАН АТРИБУТОВ И ПАНЕЛЬ РЕЗУЛЬТАТА ─────────────────────────
+   Оба узла оставались на прежнем наборе: чёрные коробки с жёсткими
+   кромками и красными подписями. Приводим к языку — плитка, тихие метки
+   моно, значения наборным, действие тёплой пилюлей. Механика не тронута. */
+#chkBody .attr-drum-section{
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  padding: 14px;
+}
+#chkBody .attr-drum-header{
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .13em;
+  color: var(--ink-3); line-height: 1.7;
+}
+#chkBody .attr-drum-window{
+  border-radius: 13px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+}
+#chkBody .attr-drum-col-label{
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .14em;
+  color: var(--ink-4); text-transform: uppercase;
+}
+
+#chkBody .attr-result-panel{
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+#chkBody .attr-result-head{
+  background: transparent;
+  border-bottom: 1px solid var(--hairline);
+  border-radius: 0;
+}
+#chkBody .attr-result-comment{
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .13em; color: var(--cyan-hi);
+}
+#chkBody .attr-result-title{
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .13em; color: var(--ink-2);
+}
+/* Строка результата — та же строка .row языка: тихая метка слева,
+   значение справа наборным шрифтом, разделитель волосяной. */
+#chkBody .attr-result-row{
+  background: transparent; border: 0; border-radius: 0;
+  padding: 11px 2px; position: relative;
+}
+#chkBody .attr-result-row + .attr-result-row::before{
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hairline) 16%, var(--hairline) 84%, transparent);
+}
+#chkBody .attr-result-row-label{
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .13em;
+  color: var(--ink-4); text-transform: uppercase;
+}
+#chkBody .attr-result-row-val{
+  font-family: var(--font-body); font-size: 12.5px; font-weight: 500;
+  letter-spacing: 0; color: var(--ink);
+}
+/* Оплата — главное действие, значит тёплая пилюля. Циановый контур означает
+   «подтверждено», а не «нажми меня». */
+#chkBody .attr-pay-btn{
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%;
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 600; letter-spacing: .18em;
+  text-transform: uppercase; padding: 15px 20px; border-radius: 99px;
+  color: var(--warm-hi);
+  background: rgba(209,160,74,.09);
+  border: 1px solid rgba(209,160,74,.34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 26px rgba(209,160,74,.08);
+  transition: box-shadow .3s var(--ease-out), background .3s, transform .15s, color .2s;
+}
+@media (hover:hover) and (pointer:fine){
+  #chkBody .attr-pay-btn:hover{
+    background: rgba(209,160,74,.15);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 30px rgba(209,160,74,.13), 0 0 30px rgba(209,160,74,.2);
+  }
+}
+#chkBody .attr-pay-btn:active{ transform: scale(.985); }
+
+/* ── ЧЕК-БОКСЫ ─────────────────────────────────────────────────────
+   Были кружки 16px с точкой внутри — язык прошлого сайта. Стали плитки
+   языка «Линза» со знаком наведения.
+   Знак — i-locate-fixed из набора Lucide, он уже лежит в спрайте проекта:
+   перекрестие с точкой в центре. Читается как «наведено и зафиксировано»,
+   а не как канцелярская галочка. Свой глиф рисовать нельзя — он выпадет из
+   набора по толщине штриха и сетке. */
+.chk-consent-box,
+.echo-reveal-check,
+.preorder-privacy-box{
+  position: relative;
+  flex-shrink: 0;
+  width: 22px !important;
+  height: 22px !important;
+  margin-top: 0 !important;
+  display: grid;
+  place-items: center;
+  border-radius: 7px !important;
+  background: rgba(255,255,255,.05) !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  transition: background .25s var(--ease-out), border-color .25s var(--ease-out),
+              box-shadow .3s var(--ease-out);
+}
+/* Точка прежнего оформления больше не нужна — её место занял знак. */
+.chk-consent-box::after,
+.echo-reveal-check::after,
+.preorder-privacy-box::after{ display: none !important; }
+
+.cb-mark{
+  width: 14px; height: 14px;
+  color: var(--cyan-hi);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  opacity: 0;
+  /* «Наведение»: знак приходит с доворотом и садится на место */
+  transform: scale(.4) rotate(-45deg);
+  transition: opacity .18s var(--ease-out),
+              transform .42s cubic-bezier(.22,1,.28,1);
+  pointer-events: none;
+}
+
+.chk-consent-input:checked + .chk-consent-box,
+.preorder-privacy-input:checked + .preorder-privacy-box,
+.echo-reveal-toggle input:checked + .echo-reveal-check{
+  background: rgba(0,200,200,.10) !important;
+  border-color: rgba(0,200,200,.45) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 14px rgba(0,200,200,.22) !important;
+}
+.chk-consent-input:checked + .chk-consent-box .cb-mark,
+.preorder-privacy-input:checked + .preorder-privacy-box .cb-mark,
+.echo-reveal-toggle input:checked + .echo-reveal-check .cb-mark{
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+@media (hover:hover) and (pointer:fine){
+  .chk-consent:hover .chk-consent-box,
+  .echo-reveal-toggle:hover .echo-reveal-check{
+    border-color: rgba(255,255,255,.28) !important;
+  }
+}
+
 /* ── КРЕСТИК ЗАКРЫТИЯ ──────────────────────────────────────────── */
-/* Во всех окнах закрытие было крупным красным глифом 30px. В эталоне это
-   тихая круглая кнопка 29px с ✕ 12px: красный на сайте означает тревогу,
-   а закрытие окна — нейтральное действие. */
+/* Во всех окнах закрытие было крупным красным глифом 30px: красный на сайте
+   означает тревогу, а закрытие — нейтральное действие. Форма — тихий круг.
+   Размер взят у крестика бар-меню (бургер в раскрытом состоянии): 44×44,
+   круг, штрихи ~11px. Эталонные 29px оказались мелковаты — и на глаз, и как
+   зона нажатия на телефоне. */
 .mhead-close,
 .chk-close,
 .cart-close,
@@ -39593,9 +39860,10 @@ footer {
 .panel-close.mhead-close,
 .panel-close.chk-close,
 .panel-close.cart-close{
-  width: 29px !important;
-  height: 29px !important;
+  width: 44px !important;
+  height: 44px !important;
   padding: 0 !important;
+  flex-shrink: 0 !important;
   border-radius: 50% !important;
   background: rgba(255,255,255,.05) !important;
   border: 1px solid rgba(255,255,255,.12) !important;
@@ -39611,8 +39879,9 @@ footer {
 .panel-close.mhead-close::before,
 .panel-close.chk-close::before,
 .panel-close.cart-close::before{
-  font-size: 12px !important;
-  font-weight: 400 !important;
+  font-size: 17px !important;
+  font-weight: 300 !important;
+  line-height: 1 !important;
   color: inherit !important;
   text-shadow: none !important;
 }
@@ -39649,23 +39918,56 @@ footer {
   animation: breathe 3.2s ease-in-out infinite;
 }
 .moverlay .mimgw{ position: relative; }
-.moverlay .mimg-tag,
-.moverlay .mimg-pw{
-  position: absolute; top: 11px; z-index: 2;
-  font-family: var(--font-mono); letter-spacing: .13em;
+.moverlay .mimg-tag{
+  position: absolute; top: 11px; left: 11px; z-index: 2;
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .13em;
+  color: var(--ink-2); border-radius: 99px; padding: 5px 9px;
   background: rgba(8,8,10,.6); border: 1px solid rgba(255,255,255,.12);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
-.moverlay .mimg-tag{
-  left: 11px; font-size: 8px; color: var(--ink-2);
-  border-radius: 99px; padding: 5px 9px;
+/* Мощь — плашка у нижней кромки изображения, растянутая до ширины
+   содержимого. Тот же материал, что у метки артикула, только шире: круглый
+   значок в правом верхнем углу вставал вплотную к кнопке закрытия. */
+.moverlay .mimg-power{
+  position: absolute; left: 11px; right: 11px; bottom: 11px; z-index: 2;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 14px;
+  background: rgba(8,8,10,.6); border: 1px solid rgba(255,255,255,.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%);
+  --_pw: var(--ink-2);
 }
-.moverlay .mimg-pw{
-  right: 11px; width: 24px; height: 24px; border-radius: 50%;
-  display: grid; place-items: center; font-size: 10px; color: var(--red-hi);
-  background: rgba(192,40,40,.14); border-color: rgba(230,56,56,.45);
+.moverlay .mimg-power[data-power="K"]{ --_pw: #8e8eb0; }
+.moverlay .mimg-power[data-power="C"]{ --_pw: var(--cyan-hi); }
+.moverlay .mimg-power[data-power="R"]{ --_pw: var(--warm-hi); }
+.moverlay .mimg-power[data-power="S"]{ --_pw: var(--red-hi); }
+.moverlay .mimg-power-letter{
+  width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-size: 9px; color: var(--_pw);
+  background: rgba(255,255,255,.05); border: 1px solid currentColor;
 }
-.moverlay .mimg-pw:empty{ display: none; }
+.moverlay .mimg-power-name{
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-2); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.moverlay .mimg-power-bar{
+  margin-left: auto; display: flex; gap: 4px; flex-shrink: 0;
+}
+.moverlay .mimg-power-bar i{
+  width: 16px; height: 3px; border-radius: 2px;
+  background: rgba(255,255,255,.12);
+  transition: background .3s var(--ease-out), box-shadow .3s var(--ease-out);
+}
+.moverlay .mimg-power-bar i.on{
+  background: var(--_pw);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--_pw) 55%, transparent);
+}
+@media (max-width: 520px){
+  .moverlay .mimg-power-bar i{ width: 12px; }
+  .moverlay .mimg-power-name{ font-size: 8px; letter-spacing: .1em; }
+}
 
 /* ── ОСТАТКИ СТАРОГО НАБОРА ПО СТРАНИЦЕ ────────────────────────
    Ревизия нашла узлы, до которых прошлые проходы не дотянулись: они

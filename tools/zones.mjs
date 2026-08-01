@@ -9,6 +9,46 @@
  * (открыть модалку, пройти шаги). Возвращает селектор снимаемого узла либо
  * null, если зона в этом размере не показывается.
  */
+/* ── Общие шаги, где важно дождаться состояния, а не отсчитать паузу ────── */
+
+/** Открыть чекаут и дождаться, что окно действительно раскрылось. */
+async function открытьЧекаут(page) {
+  /* Цепочка строго по состояниям. Раньше всё шло одним вызовом, и на узком
+     экране addToCart успевал сработать до того, как карточка подставит
+     товар: корзина оставалась пустой, openCheckout молча выходил, а зона
+     считалась непроверенной. */
+  await page.evaluate(() => window.openModal(1));
+  await page.waitForSelector('.moverlay.open', { timeout: 10000 });
+  await page.waitForTimeout(400);
+
+  /* Клик по кнопке карточки, а ожидание — по счётчику в шапке: переменная
+     корзины живёт внутри скрипта страницы, window.cart всегда ноль. */
+  await page.locator('.moverlay .mbtn').filter({ hasText: 'корзину' }).first().click();
+  await page.waitForFunction(
+    () => Number(document.getElementById('cartCount')?.textContent || 0) > 0,
+    null, { timeout: 10000 },
+  );
+  await page.waitForTimeout(600);
+
+  await page.evaluate(() => window.openCheckout());
+  await page.waitForFunction(
+    () => document.querySelector('.chk-overlay.open') &&
+          window.inspectCheckoutSteps && window.inspectCheckoutSteps().ok,
+    null, { timeout: 12000 },
+  );
+  await page.waitForTimeout(500);
+}
+
+/** Нажать «Далее» и дождаться, что рейка переключилась на нужный шаг. */
+async function шагДалее(page, откуда, куда) {
+  await page.evaluate((i) => document.querySelectorAll('.chk-nav-next')[i].click(), откуда);
+  await page.waitForFunction(
+    (n) => window.inspectCheckoutSteps().текущий === n,
+    куда, { timeout: 10000 },
+  );
+  await page.waitForTimeout(450);
+}
+
 export const ZONES = [
   { id: 'header',        имя: 'Шапка',                   sel: 'header, .hdr' },
   { id: 'hero',          имя: 'Герой и терминал',        sel: '.hero' },
@@ -30,46 +70,56 @@ export const ZONES = [
   },
   {
     id: 'cart', имя: 'Корзина', sel: '#cartPanel',
+    /* У toggleCart замок на 420 мс и классы cart-opening/cart-closing: вызов
+       не вовремя молча ничего не делает, и кадр ловил закрытую панель — это
+       и давало ложное расхождение в 7%. Поэтому ждём именно состояние. */
     async open(page) {
-      await page.evaluate(() => { window.openModal(1); window.addToCart(); });
-      await page.waitForTimeout(600);
+      await page.evaluate(() => window.openModal(1));
+      await page.waitForSelector('.moverlay.open', { timeout: 10000 });
+      await page.waitForTimeout(400);
+      /* Кладём в корзину настоящим кликом по кнопке карточки.
+         Ждём по РАЗМЕТКЕ, а не по window.cart: переменная корзины живёт в
+         области видимости скрипта и наружу не выставлена — window.cart
+         остаётся нулём даже когда товар уже добавлен. На этом я потерял
+         полтора часа: ждал условия, которое не могло стать истинным. */
+      await page.locator('.moverlay .mbtn').filter({ hasText: 'корзину' }).first().click();
+      await page.waitForFunction(
+        () => Number(document.getElementById('cartCount')?.textContent || 0) > 0,
+        null, { timeout: 10000 },
+      );
+      await page.waitForTimeout(900);          // переживаем замок toggleCart
       await page.evaluate(() => window.toggleCart());
-      await page.waitForTimeout(600);
+      await page.waitForFunction(() => {
+        const p = document.getElementById('cartPanel');
+        return p && p.classList.contains('open') && !p.classList.contains('cart-opening');
+      }, null, { timeout: 10000 });
+      await page.waitForTimeout(400);
     },
-    async close(page) { await page.evaluate(() => window.toggleCart()); await page.waitForTimeout(500); },
   },
   {
     id: 'checkout-1', имя: 'Чекаут · шаг 1 Сигнатура', sel: '.chk-modal',
-    async open(page) {
-      await page.evaluate(() => { window.openModal(1); window.addToCart(); window.openCheckout(); });
-      await page.waitForTimeout(800);
-    },
+    async open(page) { await открытьЧекаут(page); },
   },
   {
     id: 'checkout-2', имя: 'Чекаут · шаг 2 Контакт', sel: '.chk-modal',
     async open(page) {
-      await page.evaluate(() => { window.openModal(1); window.addToCart(); window.openCheckout(); });
-      await page.waitForTimeout(700);
-      await page.evaluate(() => document.querySelectorAll('.chk-nav-next')[0].click());
-      await page.waitForTimeout(700);
+      await открытьЧекаут(page);
+      await шагДалее(page, 0, 1);
     },
   },
   {
     id: 'checkout-3', имя: 'Чекаут · шаг 3 Подтверждение', sel: '.chk-modal',
     async open(page) {
-      await page.evaluate(() => { window.openModal(1); window.addToCart(); window.openCheckout(); });
-      await page.waitForTimeout(700);
-      await page.evaluate(() => document.querySelectorAll('.chk-nav-next')[0].click());
-      await page.waitForTimeout(600);
+      await открытьЧекаут(page);
+      await шагДалее(page, 0, 1);
       await page.evaluate(() => {
         const v = { chkName: 'Иван', chkPhone: '+7 999 123-45-67', chkEmail: 'i@e.com', chkAddr: 'Москва, 1' };
         for (const [id, val] of Object.entries(v)) {
           const el = document.getElementById(id);
           if (el) { el.value = val; el.dispatchEvent(new Event('input', { bubbles: true })); }
         }
-        document.querySelectorAll('.chk-nav-next')[1].click();
       });
-      await page.waitForTimeout(700);
+      await шагДалее(page, 1, 2);
     },
   },
   {

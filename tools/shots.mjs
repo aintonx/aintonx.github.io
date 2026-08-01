@@ -26,6 +26,7 @@ import path from 'node:path';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import { ZONES, РАЗМЕРЫ } from './zones.mjs';
+import { изолировать, ШУМ , подготовить } from './stub.mjs';
 
 const КОРЕНЬ = process.cwd();
 const args = process.argv.slice(2);
@@ -57,24 +58,34 @@ const MIME = {
 };
 
 function поднятьСервер() {
+  const сбои = [];
   return new Promise((resolve) => {
     const server = createServer(async (req, res) => {
       const url = decodeURIComponent(req.url.split('?')[0]);
       const rel = url === '/' ? '/index.html' : url;
       const file = path.join(КОРЕНЬ, rel);
-      if (!file.startsWith(КОРЕНЬ)) { res.writeHead(403).end(); return; }
       try {
+        if (!file.startsWith(КОРЕНЬ)) { res.writeHead(403).end(); return; }
         const body = await readFile(file);
+        if (res.destroyed || res.headersSent) return;   // страницу уже закрыли
         res.writeHead(200, {
           'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream',
           'Cache-Control': 'no-store',
         });
         res.end(body);
-      } catch {
-        res.writeHead(404).end('нет файла');
+      } catch (e) {
+        /* Раньше здесь молча уходил 500, страница рендерилась без картинок и
+           шрифтов — и регрессия ругалась на «изменения», которых не было.
+           Теперь ошибка видна поимённо. */
+        if (e.code !== 'ENOENT') сбои.push(`${rel}: ${e.code || e.message}`);
+        if (!res.destroyed && !res.headersSent) res.writeHead(404).end('нет файла');
       }
     });
-    server.listen(0, '127.0.0.1', () => resolve({ server, порт: server.address().port }));
+    // Обрыв соединения при закрытии страницы — не повод падать
+    server.on('clientError', (e, socket) => { if (!socket.destroyed) socket.destroy(); });
+    server.keepAliveTimeout = 30000;
+    server.headersTimeout = 35000;
+    server.listen(0, '127.0.0.1', () => resolve({ server, порт: server.address().port, сбои }));
   });
 }
 
@@ -130,7 +141,7 @@ async function маски(page) {
 
 /* ── Съёмка ──────────────────────────────────────────────────────────────── */
 async function снять() {
-  const { server, порт } = await поднятьСервер();
+  const { server, порт, сбои } = await поднятьСервер();
   const базовый = `http://127.0.0.1:${порт}/`;
   const куда = ПАПКА[режим === 'baseline' ? 'baseline' : 'current'];
   await mkdir(куда, { recursive: true });
@@ -152,54 +163,15 @@ async function снять() {
       if (однаЗона && зона.id !== однаЗона) continue;
       if (зона.только && зона.только !== размер.id) continue;
 
-      const page = await ctx.newPage();
-      const ошибки = [];
-      /* SmartCaptcha ругается, что 127.0.0.1 не в списке разрешённых хостов —
-         это ожидаемо для локального стенда и к качеству вёрстки отношения не
-         имеет. Глушим только её, всё остальное должно быть видно. */
-      const шум = /SmartCaptcha.*allowed hosts/i;
-      page.on('pageerror', (e) => { if (!шум.test(e.message)) ошибки.push(e.message); });
-      page.on('console', (m) => { if (m.type() === 'error' && !шум.test(m.text())) ошибки.push(m.text()); });
-
-      /* Барабаны атрибутов и Ауры тянут значения из Math.random — без
-         фиксации каждый прогон выдаёт другие слова, и регрессия ругается на
-         содержимое вместо вёрстки. Подменяем до загрузки страницы. */
-      await page.addInitScript(() => {
-        let s = 42;
-        Math.random = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
-      });
-
-      try {
-        // ?v= — против любого кеширования на стороне страницы
-        await page.goto(`${базовый}?v=${Date.now()}`, { waitUntil: 'load', timeout: 30000 });
-        await page.evaluate(() => {
-          // Загрузочная шторка мешает съёмке — снимаем её сразу
-          document.documentElement.classList.remove('ew-first-boot-pending');
-          document.getElementById('ewFirstBoot')?.remove();
-        });
-        await page.waitForTimeout(600);
-
-        if (зона.open) await зона.open(page);
-
-        await заморозить(page);
-
-        const узел = page.locator(зона.sel).first();
-        if (!(await узел.count())) { пропущено.push(`${зона.id}/${размер.id}: нет узла ${зона.sel}`); await page.close(); continue; }
-        await узел.scrollIntoViewIfNeeded({ timeout: 5000 }).catch(() => {});
-        await page.waitForTimeout(400);
-
-        const имя = `${зона.id}--${размер.id}.png`;
-        await узел.screenshot({
-          path: path.join(куда, имя),
-          timeout: 15000,
-          mask: await маски(page),
-          maskColor: '#ff00ff',
-        });
-        снято.push({ имя, зона: зона.имя, ошибки });
-      } catch (e) {
-        пропущено.push(`${зона.id}/${размер.id}: ${e.message.split('\n')[0]}`);
+      /* Сорвавшийся кадр переснимаем на свежей странице. Открытие модалок
+         зависит от таймингов сайта (замки от двойного клика, анимации), и
+         единичный срыв — не повод считать зону непроверенной. */
+      let результат = null;
+      for (let попытка = 1; попытка <= 2 && !результат; попытка++) {
+        результат = await снятьЗону(ctx, зона, размер, базовый, куда, попытка);
       }
-      await page.close();
+      if (результат?.ok) снято.push(результат);
+      else пропущено.push(`${зона.id}/${размер.id}: ${результат?.причина || 'не удалось'}`);
     }
     await ctx.close();
   }
@@ -217,7 +189,71 @@ async function снять() {
     console.log(`\nпропущено (${пропущено.length}):`);
     for (const p of пропущено) console.log('  ' + p);
   }
+  if (сбои.length) {
+    console.log(`\nсбои отдачи файлов (${сбои.length}) — кадры могли снять без ресурсов:`);
+    for (const s of [...new Set(сбои)].slice(0, 10)) console.log('  ' + s);
+  }
   return снято.length;
+}
+
+/** Одна попытка снять одну зону. Возвращает null, если стоит повторить. */
+async function снятьЗону(ctx, зона, размер, базовый, куда, попытка) {
+      const page = await ctx.newPage();
+      const ошибки = [];
+      /* SmartCaptcha ругается, что 127.0.0.1 не в списке разрешённых хостов —
+         это ожидаемо для локального стенда и к качеству вёрстки отношения не
+         имеет. Глушим только её, всё остальное должно быть видно. */
+      const шум = ШУМ;
+      page.on('pageerror', (e) => { if (!шум.test(e.message)) ошибки.push(e.message); });
+      page.on('console', (m) => { if (m.type() === 'error' && !шум.test(m.text())) ошибки.push(m.text()); });
+
+      /* Отрезаем внешнюю сеть. Сайт при загрузке синхронизирует каталог с
+         бэкендом и подтягивает капчу; когда внешний ответ приходит с ошибкой
+         или задержкой, каталог рисуется иначе — и регрессия ругается на
+         чужую недоступность вместо нашей вёрстки. Стенд должен быть
+         автономным и повторяемым. */
+      await изолировать(page, базовый);
+
+      /* Барабаны атрибутов и Ауры тянут значения из Math.random — без
+         фиксации каждый прогон выдаёт другие слова, и регрессия ругается на
+         содержимое вместо вёрстки. Подменяем до загрузки страницы. */
+      await page.addInitScript(() => {
+        let s = 42;
+        Math.random = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+      });
+
+      try {
+        // ?v= — против любого кеширования на стороне страницы
+        await page.goto(`${базовый}?v=${Date.now()}`, { waitUntil: 'load', timeout: 30000 });
+        await подготовить(page);
+
+        if (зона.open) await зона.open(page);
+
+        await заморозить(page);
+
+        const узел = page.locator(зона.sel).first();
+        if (!(await узел.count())) {
+          await page.close();
+          return { ok: false, причина: `нет узла ${зона.sel}` };   // повторять бессмысленно
+        }
+        await узел.scrollIntoViewIfNeeded({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+
+        const имя = `${зона.id}--${размер.id}.png`;
+        await узел.screenshot({
+          path: path.join(куда, имя),
+          timeout: 30000,
+          mask: await маски(page),
+          maskColor: '#ff00ff',
+        });
+        await page.close();
+        return { ok: true, имя, зона: зона.имя, ошибки };
+      } catch (e) {
+        await page.close();
+        const причина = e.message.split('\n')[0];
+        // первая попытка — молча пробуем ещё раз на свежей странице
+        return попытка === 1 ? null : { ok: false, причина };
+      }
 }
 
 /* ── Сравнение с эталоном ────────────────────────────────────────────────── */
