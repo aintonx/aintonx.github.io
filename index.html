@@ -38420,23 +38420,6 @@ footer {
   margin-bottom: 11px;
 }
 
-/* ── ЛИСТ ПОД КЛАВИАТУРОЙ ──────────────────────────────────────────
-   Оверлей окна теперь размерен по видимой части экрана (см. скрипт
-   ew-sheet-viewport), поэтому лист меряется от неё, а не от 88% полной
-   высоты страницы: под открытой клавиатурой прежняя мера давала лист
-   выше видимой области, и шапка с крестиком оказывалась за экраном. */
-@media (max-width: 960px){
-  .chk-overlay.open,
-  #echoOrderOverlay.open{
-    /* сам оверлей позиционирует скрипт: top и height приходят инлайном */
-    align-items: flex-end;
-  }
-  .chk-overlay.open .chk-modal,
-  #echoOrderOverlay.open .chk-modal{
-    max-height: 100% !important;
-  }
-}
-
 /* ── ПОЛЯ ФОРМЫ: мягкая посадка при фокусе ─────────────────────────
    scroll-padding на самом скроллере вместо scroll-margin на каждом поле:
    браузер сам оставляет воздух сверху и снизу, когда доводит поле в вид, и
@@ -39259,104 +39242,104 @@ footer {
 }
 </style>
 <!-- ═══════════════════════════════════════════════════════════════
-     ЛИСТ И КЛАВИАТУРА · привязка окна к видимой части экрана
+     ПАНЕЛЬ ДИАГНОСТИКИ ЛИСТА И КЛАВИАТУРЫ
      ───────────────────────────────────────────────────────────────
-     Что было видно на записи экрана: при фокусе в поле iOS прокручивает
-     СТРАНИЦУ, чтобы показать поле. Оверлей с position:fixed привязан к
-     разметочному вьюпорту, который от клавиатуры не меняется, — поэтому
-     лист уезжал вверх вместе со страницей: пропадала шапка окна с
-     крестиком и рейка шагов, закрыть окно становилось нечем. А после
-     автозаполнения клавиатура закрывалась, страница возвращалась не туда,
-     и сверху оставалась щель с содержимым сайта.
-
-     Лечится привязкой к visualViewport — это и есть видимая часть экрана,
-     она сжимается вместе с клавиатурой. Окно всегда ровно по ней:
-     шапка на месте, поле само доезжает внутренней прокруткой, ничего не
-     прыгает.
-
-     Слой намеренно отдельный и полностью обратимый: старую машинерию
-     блокировки прокрутки не трогает, на десктопе не работает вовсе, а без
-     visualViewport (старые браузеры) просто ничего не делает. -->
-<script id="ew-sheet-viewport">
+     Включается ТОЛЬКО по адресу с ?debug=1 — иначе скрипт выходит на
+     первой строке и не делает ничего.
+     Зачем: поведение iOS-клавиатуры нельзя увидеть ни в предпросмотре, ни
+     в headless-браузере. Дважды подряд правка «на глазок» дала новый
+     дефект вместо старого. Панель показывает настоящие числа прямо в
+     кадре записи экрана — по ним видно, что именно делает система: на
+     сколько сжимается видимая область, куда уезжает страница, где в этот
+     момент оказываются оверлей, лист и его шапка.
+     Панель ничего не меняет: только читает и рисует себя. Клики сквозь
+     неё проходят (pointer-events:none), поэтому пользоваться формой она
+     не мешает. -->
+<script id="ew-kbd-debug">
 (function(){
   'use strict';
-  var vv = window.visualViewport;
-  if(!vv) return;                       // старый браузер — оставляем как было
+  try{
+    if(!/[?&]debug=1\b/.test(location.search)) return;
+  }catch(e){ return; }
 
-  var ОКНА = '.chk-overlay.open, #echoOrderOverlay.open';
-  var МОБИЛА = '(max-width: 960px)';
+  var vv = window.visualViewport || null;
+  var СОБЫТИЙ = 5;                 // сколько последних событий держим в логе
+  var лог = [];
+  var t0 = performance.now();
 
-  function мобила(){ return window.matchMedia(МОБИЛА).matches; }
+  var панель = document.createElement('div');
+  панель.id = 'ewKbdDebug';
+  панель.setAttribute('aria-hidden', 'true');
+  панель.style.cssText = [
+    'position:fixed', 'left:6px', 'top:56px', 'z-index:2147483647',
+    'width:56vw', 'max-width:250px', 'padding:5px 7px',
+    'background:rgba(0,0,0,.82)', 'border:1px solid rgba(0,255,190,.5)',
+    'border-radius:8px', 'color:#7dffd4',
+    'font:600 9px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace',
+    'letter-spacing:.02em', 'white-space:pre', 'pointer-events:none',
+    'text-shadow:0 0 4px rgba(0,0,0,.9)'
+  ].join(';');
+  (document.body || document.documentElement).appendChild(панель);
 
-  function подогнать(){
-    var окна = document.querySelectorAll(ОКНА);
-    if(!окна.length) return;
-    var мобильно = мобила();
-    for(var i = 0; i < окна.length; i++){
-      var ov = окна[i];
-      if(!мобильно){ сбросить(ov); continue; }
-      /* offsetTop — насколько видимая область смещена вниз относительно
-         страницы: именно на столько iOS «увёл» лист. Возвращаем его назад. */
-      ov.style.top = Math.round(vv.offsetTop) + 'px';
-      ov.style.height = Math.round(vv.height) + 'px';
-      ov.style.bottom = 'auto';
-    }
+  function пр(x){ return x === null || x === undefined ? '—' : Math.round(x); }
+
+  function габарит(sel){
+    var el = document.querySelector(sel);
+    if(!el) return null;
+    var r = el.getBoundingClientRect();
+    return {t: r.top, b: r.bottom, h: r.height};
   }
 
-  function сбросить(ov){
-    ov.style.top = '';
-    ov.style.height = '';
-    ov.style.bottom = '';
+  function отметить(имя){
+    лог.unshift(имя + ' +' + Math.round(performance.now() - t0) + 'мс');
+    if(лог.length > СОБЫТИЙ) лог.length = СОБЫТИЙ;
+    рисовать();
   }
 
-  function сброситьВсе(){
-    var все = document.querySelectorAll('.chk-overlay, #echoOrderOverlay');
-    for(var i = 0; i < все.length; i++) сбросить(все[i]);
+  function рисовать(){
+    var ов = габарит('.chk-overlay.open') || габарит('#echoOrderOverlay.open');
+    var лист = габарит('.chk-overlay.open .chk-modal') || габарит('#echoOrderOverlay.open .chk-modal');
+    var шапка = габарит('.chk-overlay.open .chk-head') || габарит('#echoOrderOverlay.open .chk-head');
+    var ск = document.getElementById('chkBody') || document.getElementById('echoOrderBody');
+    var ф = document.activeElement;
+    var имяФокуса = ф && ф.id ? '#' + ф.id : (ф ? ф.tagName.toLowerCase() : '—');
+
+    var строки = [
+      'vv  h/top/pg  ' + (vv ? пр(vv.height) + '/' + пр(vv.offsetTop) + '/' + пр(vv.pageTop) : 'нет'),
+      'win iH/scrY   ' + пр(window.innerHeight) + '/' + пр(window.scrollY),
+      'овер t/h      ' + (ов ? пр(ов.t) + '/' + пр(ов.h) : '—'),
+      'лист t/b/h    ' + (лист ? пр(лист.t) + '/' + пр(лист.b) + '/' + пр(лист.h) : '—'),
+      'шапка top     ' + (шапка ? пр(шапка.t) : '—'),
+      'скролл окна   ' + (ск ? пр(ск.scrollTop) + '/' + пр(ск.scrollHeight - ск.clientHeight) : '—'),
+      'фокус         ' + имяФокуса,
+      '─────────────',
+    ].concat(лог);
+    панель.textContent = строки.join('\n');
   }
 
-  /* Пока клавиатура едет, resize приходит десятками кадров — считаем один
-     раз за кадр, иначе получаем ту же дёрганость, только своими руками. */
+  /* Считаем один раз за кадр: события при движении клавиатуры сыплются
+     десятками, и построчная перерисовка сама стала бы тормозом. */
   var ждём = false;
-  function запросить(){
+  function запросить(имя){
+    if(имя) отметить(имя);
     if(ждём) return;
     ждём = true;
-    requestAnimationFrame(function(){ ждём = false; подогнать(); });
+    requestAnimationFrame(function(){ ждём = false; рисовать(); });
   }
 
-  vv.addEventListener('resize', запросить);
-  vv.addEventListener('scroll', запросить);
-  window.addEventListener('orientationchange', function(){ setTimeout(подогнать, 240); });
+  if(vv){
+    vv.addEventListener('resize', function(){ запросить('vv resize ' + пр(vv.height)); });
+    vv.addEventListener('scroll', function(){ запросить('vv scroll ' + пр(vv.offsetTop)); });
+  }
+  window.addEventListener('scroll', function(){ запросить(); }, {passive:true});
+  document.addEventListener('focusin', function(e){
+    запросить('focus ' + (e.target && e.target.id ? e.target.id : e.target.tagName));
+  }, true);
+  document.addEventListener('focusout', function(){ запросить('blur'); }, true);
+  setInterval(рисовать, 200);      // страховка: числа обновляются и без событий
+  рисовать();
 
-  /* Открытие и закрытие окон ловим по смене класса .open — так слой не
-     зависит от того, какая именно функция открыла окно. */
-  var набл = new MutationObserver(function(записи){
-    var надо = false;
-    for(var i = 0; i < записи.length; i++){
-      var el = записи[i].target;
-      if(el.classList && (el.classList.contains('chk-overlay') || el.id === 'echoOrderOverlay')) надо = true;
-    }
-    if(!надо) return;
-    if(document.querySelector(ОКНА)) запросить();
-    else сброситьВсе();
-  });
-  document.addEventListener('DOMContentLoaded', function(){
-    var цели = document.querySelectorAll('.chk-overlay, #echoOrderOverlay');
-    for(var i = 0; i < цели.length; i++){
-      набл.observe(цели[i], {attributes:true, attributeFilter:['class']});
-    }
-  });
-
-  window.inspectSheetViewport = function(){
-    var ov = document.querySelector(ОКНА);
-    return {
-      естьVisualViewport: true,
-      мобильныйРежим: мобила(),
-      окноОткрыто: !!ov,
-      видимаяВысота: Math.round(vv.height),
-      смещение: Math.round(vv.offsetTop),
-      применено: ov ? {top: ov.style.top, height: ov.style.height} : null
-    };
-  };
+  window.inspectKbdDebug = function(){ return панель.textContent; };
 })();
 </script>
 </body>
