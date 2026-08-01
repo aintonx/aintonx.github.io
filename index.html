@@ -4880,10 +4880,12 @@ body.scroll-restoring .cart-overlay.cart-closing { animation-play-state: running
 .cart-panel.to-checkout-out {
   animation: cartToCheckout .28s cubic-bezier(.55,0,.78,1) forwards;
 }
+/* Передача корзина → чекаут. Было осветление и сдвиг оттенка до +70° —
+   к нынешнему языку это отношения не имеет и читалось как сбой цвета.
+   Осталось само движение: лист уходит вправо и гаснет. */
 @keyframes cartToCheckout {
-  0%   { transform: translateX(0); filter: none; opacity: 1; }
-  60%  { transform: translateX(20%); filter: brightness(1.3) hue-rotate(35deg); opacity: .8; }
-  100% { transform: translateX(100%); filter: brightness(1.5) hue-rotate(70deg); opacity: 0; }}
+  0%   { transform: translateX(0);    opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }}
 /* T9: КОРЗИНА — визуал из index-визуал (шапка eyebrow+крупный заголовок,
    богатый empty-state, карточки-товары), адаптировано под обе темы. */
 .cart-head {
@@ -15463,7 +15465,8 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   <symbol id="i-grid-3x3" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M3 15h18" /><path d="M9 3v18" /><path d="M15 3v18" /></symbol>
   <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 19v3" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><rect x="9" y="2" width="6" height="13" rx="3" /></symbol>
   <symbol id="i-mic-vocal" viewBox="0 0 24 24"><path d="m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12" /><path d="M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5" /><circle cx="16" cy="7" r="5" /></symbol>
-  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor" stroke="none"/></symbol>
 <symbol id="i-re" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
 <symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="3" width="5" height="18" rx="1" /><rect x="5" y="3" width="5" height="18" rx="1" /></symbol>
@@ -16409,12 +16412,12 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
     </div>
     <div class="mimgw">
       <img id="mimg" src="" alt="" loading="eager" decoding="async" fetchpriority="high">
-      <span class="mimg-tag" id="mimgTag"></span>
-      <!-- Мощь реликвии на изображении: буква, название и шкала в одной
-           плашке. Раньше здесь был кружок в правом верхнем углу — он вставал
-           вплотную к кнопке закрытия и на телефоне читался как свалка из двух
-           круглых элементов. -->
+      <!-- Одна строка у верхней кромки изображения: артикул, затем мощь —
+           буква, название и шкала. Прежде мощь была кружком в правом верхнем
+           углу и вставала вплотную к кнопке закрытия. -->
       <span class="mimg-power" id="mimgPower">
+        <span class="mimg-tag" id="mimgTag"></span>
+        <span class="mimg-power-sep" aria-hidden="true"></span>
         <span class="mimg-power-letter" id="mimgPowerLetter"></span>
         <span class="mimg-power-name" id="mimgPowerName"></span>
         <span class="mimg-power-bar" id="mimgPowerBar" aria-hidden="true">
@@ -16647,7 +16650,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <!-- ── СОГЛАСИЕ НА ОБРАБОТКУ ПД (152-ФЗ) ── -->
       <label class="chk-consent" for="chkConsent">
         <input type="checkbox" id="chkConsent" class="chk-consent-input">
-        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
+        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-x"/></svg></span>
         <span class="chk-consent-text">
           Подтверждаю согласие на обработку<span class="req-star">*</span>
           <button type="button" class="chk-consent-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>
@@ -16690,31 +16693,22 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ATTR RESULT — появляется после остановки барабанов -->
-      <div class="attr-result-panel" id="attrResultPanel">
-        <div class="attr-result-head">
-          <span class="attr-result-comment">// Конденсат кристаллизуется. Атрибуты формируются.</span>
-          <span class="attr-result-title">Ваш Виш будет обладать следующими параметрами:</span>
-        </div>
-        <div class="attr-result-body">
-          <div class="attr-result-row">
-            <span class="attr-result-row-label">Сигнатура</span>
-            <span class="attr-result-row-val" id="resGender">—</span>
-          </div>
-          <div class="attr-result-row">
-            <span class="attr-result-row-label">Одежда</span>
-            <span class="attr-result-row-val" id="resObolochka">—</span>
-          </div>
-          <div class="attr-result-row">
-            <span class="attr-result-row-label">Волосы</span>
-            <span class="attr-result-row-val" id="resNit">—</span>
-          </div>
-          <div class="attr-result-row">
-            <span class="attr-result-row-label">Аксессуар</span>
-            <span class="attr-result-row-val" id="resSled">—</span>
-          </div>
+        <!-- РЕЗУЛЬТАТ · исполнение из design/modals-glass.html (.reel-out).
+             Отдельного окна больше нет: барабан остаётся на месте, а под ним
+             проявляется итог — «Виш определён», значения через точку и
+             пояснение. Прежде барабан прятался и открывалась вторая панель,
+             что читалось как лишний экран.
+             Сигнатура здесь не показывается: поток Виша пользователь выбрал
+             сам на первом шаге, сюрпризом он не является. Узел оставлен
+             скрытым — на него смотрит остальной код. -->
+        <div class="attr-result-panel" id="attrResultPanel">
+          <span class="ar-kicker">Виш определён</span>
+          <span class="ar-values">
+            <span id="resObolochka">—</span><i>·</i><span id="resNit">—</span><i>·</i><span id="resSled">—</span>
+          </span>
+          <span class="ar-note">Эти черты закрепятся за Вишем в Полях Конденсации и попадут в видео-фрагменты.</span>
+          <span id="resGender" hidden>—</span>
         </div>
         <div class="attr-result-footer">
           <button class="attr-pay-btn" onclick="handlePaymentStub(this)">
@@ -16779,7 +16773,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="echo-reveal-block">
           <label class="echo-reveal-toggle" for="echoOrderReveal">
             <input type="checkbox" id="echoOrderReveal" onchange="toggleEchoOrderReveal()">
-            <span class="echo-reveal-check" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
+            <span class="echo-reveal-check" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-x"/></svg></span>
             <span class="echo-reveal-text">
               <span class="echo-reveal-title">Прозвучать в обоих мирах</span>
               <span class="echo-reveal-sub">По умолчанию Эхо анонимно — голос ниоткуда. Отметив, вы попросите MARKETSPACE и наш мир знать, чей это сигнал. Ваш Маркер появится в потоке данных рядом с Эхо, которое прозвучало.</span>
@@ -16816,7 +16810,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <!-- Согласие на ПД (та же структура что в основном чекауте) -->
       <label class="chk-consent" for="echoOrderConsent">
         <input type="checkbox" id="echoOrderConsent" class="chk-consent-input" onchange="_updateEchoOrderSubmit()">
-        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
+        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-x"/></svg></span>
         <span class="chk-consent-text">
           Подтверждаю согласие на обработку<span class="req-star">*</span>
           <button type="button" class="chk-consent-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>
@@ -17579,7 +17573,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="cond-screen-head">
           <div class="cond-screen-dot"></div>
           <span>APERTURA · CONDENSATE FORMING</span>
-          <span class="cond-screen-ico"><svg class="ico ew-mask-icon ew-icon--locate-fixed" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
+          <span class="cond-screen-ico"><svg class="ico ew-mask-icon ew-icon--locate-fixed" aria-hidden="true"><use href="#i-x"/></svg></span>
         </div>
         <div class="cond-screen-body">
           <div class="cond-console" id="condConsole">
@@ -17608,7 +17602,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         </div>
         <label class="preorder-privacy" id="preorderConsentWrap" for="preorderConsent">
           <input type="checkbox" id="preorderConsent" class="preorder-privacy-input" onchange="validatePreorderField('consent')">
-          <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
+          <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-x"/></svg></span>
           <span class="preorder-privacy-text">
             Подтверждаю согласие на обработку
             <button type="button" class="preorder-privacy-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>.
@@ -21149,12 +21143,22 @@ function _quickHideCart(){
      «призрачный» тап не должен открыть корзину обратно */
   if(typeof toggleCart==='function') toggleCart._lastClose = Date.now();
   if(panel){
-    panel.classList.remove('open');
-    panel.classList.remove('to-checkout-out');
-    // Сброс остаточных inline-стилей от свайп-обработчика корзины —
-    // иначе панель «уезжает» с задержкой и на iOS перекрывает чекаут.
+    /* Сброс остаточных inline-стилей от свайп-обработчика корзины: без него
+       панель уезжала с задержкой и на iOS перекрывала чекаут — из-за этого
+       плавный уход когда-то и выключили. */
     panel.style.transition = '';
     panel.style.transform = '';
+    /* Теперь уход можно вернуть: чекаут лежит слоем 700, корзина — 401,
+       поэтому даже во время ухода она ничего не перекрывает. Раньше .open
+       снимался мгновенно и лист исчезал рывком. */
+    panel.classList.remove('to-checkout-out');
+    void panel.offsetWidth;
+    panel.classList.add('to-checkout-out');
+    clearTimeout(panel._ewУход);
+    panel._ewУход = setTimeout(function(){
+      panel.classList.remove('open');
+      panel.classList.remove('to-checkout-out');
+    }, 300);
   }
   if(ov){
     if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
@@ -28245,15 +28249,30 @@ function selectGender(el, g){
         : 'Мужской поток · сигнатура M';
     }
 
-    // Fade out drum, show result
-    section.style.transition = 'opacity .35s';
-    section.style.opacity = '0';
-    setTimeout(()=>{
-      section.style.display = 'none';
-      result.classList.add('show');
-      const body = document.getElementById('chkBody');
-      if(body) setTimeout(()=>result.scrollIntoView({behavior:'smooth',block:'nearest'}),80);
-    },360);
+    /* Барабан НЕ прячем: итог проявляется прямо под ним, как в эталоне.
+       Прежде секция гасла и открывалась вторая панель — лишний экран.
+       Секция при этом подрастает, поэтому ведём её высоту, а не даём
+       содержимому скакнуть. */
+    const футер = document.querySelector('#chkBody .attr-result-footer');
+    const было = section.getBoundingClientRect().height;
+    result.classList.add('show');
+    if(футер) футер.classList.add('show');
+    const стало = section.scrollHeight;
+    section.style.overflow = 'hidden';
+    section.style.height = было + 'px';
+    void section.offsetHeight;
+    requestAnimationFrame(()=>{
+      section.style.transition = 'height .5s cubic-bezier(.16,1,.3,1)';
+      section.style.height = стало + 'px';
+    });
+    clearTimeout(section._ewИтог);
+    section._ewИтог = setTimeout(()=>{
+      section.style.transition = '';
+      section.style.height = '';
+      section.style.overflow = '';
+    }, 560);
+    const body = document.getElementById('chkBody');
+    if(body) setTimeout(()=>result.scrollIntoView({behavior:'smooth',block:'nearest'}), 320);
   }
 
   window.handlePaymentStub = async function(btn){
@@ -31540,7 +31559,7 @@ function _spinEchoAuraDrum(onDone){
 
         <label class="chk-consent return-chk-consent" for="returnConsent">
           <input type="checkbox" id="returnConsent" class="chk-consent-input" required>
-          <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-locate-fixed"/></svg></span>
+          <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-x"/></svg></span>
           <span class="chk-consent-text return-consent-text">
             <span class="return-consent-title">Подтверждаю отправку заявки<span class="req-star">*</span></span>
             <span class="return-consent-sub">Я понимаю, что заявка будет рассмотрена по условиям публичной оферты и законодательства РФ. Также подтверждаю согласие на обработку персональных данных в рамках обработки заявки.</span>
@@ -38401,6 +38420,28 @@ footer {
   margin-bottom: 11px;
 }
 
+/* ── ПОЛЯ ФОРМЫ: мягкая посадка при фокусе ─────────────────────────
+   scroll-padding на самом скроллере вместо scroll-margin на каждом поле:
+   браузер сам оставляет воздух сверху и снизу, когда доводит поле в вид, и
+   поле не оказывается прижатым к кромке под клавиатурой. Плюс поведение
+   прокрутки задаём здесь, а не в JS — так доводка не спорит с собственной
+   прокруткой браузера при автозаполнении. */
+#chkBody,
+#echoOrderBody,
+.chk-modal{
+  scroll-padding-top: 96px;
+  scroll-padding-bottom: 132px;
+}
+/* Заливка автозаполнения меняется плавно: при подстановке сразу нескольких
+   полей одновременная смена фона и кромки читалась как мигание. */
+#chkBody .chk-field input,
+#chkBody .chk-field textarea,
+#echoOrderBody .chk-field input,
+#echoOrderBody .chk-field textarea{
+  transition: border-color .22s var(--ease-out), box-shadow .22s var(--ease-out),
+              background-color .28s var(--ease-out), color .22s var(--ease-out);
+}
+
 /* ── СЛОТЫ ЭХО · строки вместо квадратов ───────────────────────── */
 #chkBody .chk-echo-card{ background: transparent; border: 0; padding: 0; margin-bottom: 0; }
 #chkBody .chk-echo-head{ display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
@@ -38715,7 +38756,9 @@ footer {
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.08);
 }
-#chkBody .attr-drum-col-label{
+/* Подписи колонок были красными — красный в языке означает тревогу, а это
+   обычные заголовки. Класс в разметке .attr-drum-label, не -col-. */
+#chkBody .attr-drum-label{
   font-family: var(--font-mono); font-size: 8px; letter-spacing: .14em;
   color: var(--ink-4); text-transform: uppercase;
 }
@@ -38725,14 +38768,61 @@ footer {
   transition: opacity .3s var(--ease-out), color .3s var(--ease-out),
               transform .34s cubic-bezier(.34,1.2,.64,1);
 }
-#chkBody .attr-drum-item.selected{ transform: scale(1.04); }
-
-#chkBody .attr-result-panel{
-  background: rgba(255,255,255,.035);
-  border: 1px solid rgba(255,255,255,.09);
-  border-radius: 16px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+/* Выпавшее значение обведено, как в эталоне: видно, что барабан сел
+   именно на него, а не просто подсветил текст. */
+#chkBody .attr-drum-item.selected{
+  transform: scale(1.02);
+  border-radius: 10px;
+  background: rgba(255,255,255,.05);
+  box-shadow: inset 0 0 0 1px rgba(0,200,200,.28);
 }
+
+/* Блок итога — .reel-out эталона: компактная циановая плашка под барабаном.
+   Значения одной строкой через точку, сверху метка, снизу пояснение. */
+#chkBody .attr-result-panel{
+  display: none;
+  margin-top: 12px;
+  padding: 13px 15px;
+  border-radius: 14px;
+  text-align: center;
+  background: rgba(0,200,200,.05);
+  border: 1px solid rgba(0,200,200,.22);
+  box-shadow: none;
+  opacity: 0;
+  transform: translateY(10px) scale(.985);
+  transition: opacity .52s var(--ease-out), transform .52s var(--ease-out);
+}
+#chkBody .attr-result-panel.show{
+  display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+#chkBody .ar-kicker{
+  display: block; margin-bottom: 7px;
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .16em;
+  color: var(--cyan-hi); text-transform: uppercase;
+}
+#chkBody .ar-values{
+  display: block;
+  font-family: var(--font-display); font-weight: 700; font-size: 16px; line-height: 1.35;
+  color: var(--ink);
+}
+#chkBody .ar-values i{
+  font-style: normal; color: var(--ink-4); margin: 0 7px;
+}
+#chkBody .ar-note{
+  display: block; margin-top: 6px;
+  font-family: var(--font-body); font-size: 12px; line-height: 1.6; color: var(--ink-4);
+}
+/* Кнопка оплаты приходит следом за итогом, а не вместе с ним. */
+#chkBody .attr-result-footer{
+  margin-top: 12px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .4s var(--ease-out) .12s, transform .4s var(--ease-out) .12s;
+  pointer-events: none;
+}
+#chkBody .attr-result-footer.show{ opacity: 1; transform: none; pointer-events: auto; }
 #chkBody .attr-result-head{
   background: transparent;
   border-bottom: 1px solid var(--hairline);
@@ -38813,31 +38903,34 @@ footer {
 .preorder-privacy-box::after{ display: none !important; }
 
 .cb-mark{
-  width: 14px; height: 14px;
-  color: var(--cyan-hi);
+  width: 13px; height: 13px;
+  color: var(--ink);
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 2.4;
+  stroke-linecap: round;
   opacity: 0;
-  /* «Наведение»: знак приходит с доворотом и садится на место */
-  transform: scale(.4) rotate(-45deg);
-  transition: opacity .18s var(--ease-out),
-              transform .42s cubic-bezier(.22,1,.28,1);
+  transform: scale(.7);
+  transition: opacity .16s var(--ease-out), transform .2s var(--ease-out);
   pointer-events: none;
 }
 
+/* Отметка простая и понятная: крестик появляется, коробка чуть светлеет.
+   Циановое свечение и пульс-кольцо убраны — они остались от прежнего
+   варианта и перетягивали внимание на служебную галочку. */
 .chk-consent-input:checked + .chk-consent-box,
 .preorder-privacy-input:checked + .preorder-privacy-box,
 .echo-reveal-toggle input:checked + .echo-reveal-check{
-  background: rgba(0,200,200,.10) !important;
-  border-color: rgba(0,200,200,.45) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 14px rgba(0,200,200,.22) !important;
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.34) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12) !important;
+  animation: none !important;
 }
 .chk-consent-input:checked + .chk-consent-box .cb-mark,
 .preorder-privacy-input:checked + .preorder-privacy-box .cb-mark,
 .echo-reveal-toggle input:checked + .echo-reveal-check .cb-mark{
   opacity: 1;
-  transform: scale(1) rotate(0deg);
+  transform: scale(1);
 }
 @media (hover:hover) and (pointer:fine){
   .chk-consent:hover .chk-consent-box,
@@ -38918,18 +39011,21 @@ footer {
   animation: breathe 3.2s ease-in-out infinite;
 }
 .moverlay .mimgw{ position: relative; }
+/* Артикул живёт внутри плашки мощи — отдельной коробки ему больше не
+   нужно, иначе получалась таблетка внутри таблетки. */
 .moverlay .mimg-tag{
-  position: absolute; top: 11px; left: 11px; z-index: 2;
   font-family: var(--font-mono); font-size: 8px; letter-spacing: .13em;
-  color: var(--ink-2); border-radius: 99px; padding: 5px 9px;
-  background: rgba(8,8,10,.6); border: 1px solid rgba(255,255,255,.12);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  color: var(--ink-3); white-space: nowrap; flex-shrink: 0;
 }
-/* Мощь — плашка у нижней кромки изображения, растянутая до ширины
-   содержимого. Тот же материал, что у метки артикула, только шире: круглый
-   значок в правом верхнем углу вставал вплотную к кнопке закрытия. */
+.moverlay .mimg-power-sep{
+  width: 1px; height: 14px; flex-shrink: 0;
+  background: rgba(255,255,255,.14);
+}
+/* Мощь — плашка в одной строке с артикулом, у верхней кромки изображения.
+   Круглый значок в правом верхнем углу стоял вплотную к кнопке закрытия,
+   поэтому мощь переехала сюда: метка артикула слева, мощь сразу за ней. */
 .moverlay .mimg-power{
-  position: absolute; left: 11px; right: 11px; bottom: 11px; z-index: 2;
+  position: absolute; left: 11px; right: 11px; top: 11px; z-index: 2;
   display: flex; align-items: center; gap: 10px;
   padding: 8px 12px; border-radius: 14px;
   background: rgba(8,8,10,.6); border: 1px solid rgba(255,255,255,.12);
