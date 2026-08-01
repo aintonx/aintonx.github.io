@@ -39296,11 +39296,63 @@ footer {
     рисовать();
   }
 
+  /* ── ПРОБНАЯ КОМПЕНСАЦИЯ ПАНОРАМЫ ────────────────────────────────
+     Что показала запись: при открытии клавиатуры Safari не прокручивает
+     страницу (window.scrollY не меняется), а ПАНОРАМИРУЕТ видимую область:
+     vv.offsetTop уезжает на 323px, vv.height падает с 735 до 371. Всё
+     position:fixed остаётся в координатах разметки и визуально уходит вверх
+     — вместе с шапкой окна и крестиком.
+     Цель: оверлей должен занять ровно видимую область, то есть
+     [vv.offsetTop, vv.offsetTop + vv.height]. Оверлей прозрачный и только
+     позиционирует лист (align-items:flex-end), поэтому правим его, а листу
+     снимаем потолок высоты.
+     Правка живёт ЗДЕСЬ, под ?debug=1, и рядом печатаются числа «цель против
+     факта»: пока Δ не станет нулём на настоящем телефоне, в боевой код это
+     не поедет. Дважды выкатывать непроверенное под iOS я уже пробовал. */
+  var компенсировать = /[?&]fix=1\b/.test(location.search);
+
+  function цельИФакт(){
+    if(!vv) return null;
+    var ov = document.querySelector('.chk-overlay.open, #echoOrderOverlay.open');
+    if(!ov) return null;
+    var цВерх = vv.offsetTop, цНиз = vv.offsetTop + vv.height;
+    var клавиатура = vv.offsetTop > 1 || (window.innerHeight - vv.height) > 60;
+    if(компенсировать && window.matchMedia('(max-width: 960px)').matches){
+      if(!клавиатура){
+        /* Клавиатура убрана — снимаем всё, что навязали, и отдаём вид
+           обратно таблице стилей. Иначе max-height:100% остался бы навсегда
+           и тихо менял высоту листа в покое. */
+        ov.style.top = ''; ov.style.bottom = ''; ov.style.height = '';
+        var л0 = ov.querySelector('.chk-modal');
+        if(л0) л0.style.removeProperty('max-height');
+        цНиз = цВерх + vv.height;
+      } else {
+      ov.style.top = Math.round(цВерх) + 'px';
+      ov.style.bottom = 'auto';
+      ov.style.height = Math.round(vv.height) + 'px';
+      /* Именно setProperty с приоритетом: в CSS стоит
+         max-height:88dvh !important, и обычный инлайновый стиль ему
+         проигрывает — лист оставался высотой 647 при видимой области 371 и
+         вылезал вверх на 276px. Это и сломало прошлую попытку. */
+      var л = ov.querySelector('.chk-modal');
+      if(л) л.style.setProperty('max-height', '100%', 'important');
+      }
+    }
+    var лист = ov.querySelector('.chk-modal');
+    if(!лист) return null;
+    var r = лист.getBoundingClientRect();
+    return {цВерх: цВерх, цНиз: цНиз, фВерх: r.top, фНиз: r.bottom,
+            dВерх: r.top - цВерх, dНиз: r.bottom - цНиз};
+  }
+
   function рисовать(){
+    var цф = цельИФакт();
     var ов = габарит('.chk-overlay.open') || габарит('#echoOrderOverlay.open');
     var лист = габарит('.chk-overlay.open .chk-modal') || габарит('#echoOrderOverlay.open .chk-modal');
     var шапка = габарит('.chk-overlay.open .chk-head') || габарит('#echoOrderOverlay.open .chk-head');
-    var ск = document.getElementById('chkBody') || document.getElementById('echoOrderBody');
+    /* Прокручивается сам .chk-modal, а не #chkBody: у второго предел всегда 0,
+       и строка показывала «0/0» независимо от того, куда уехал контент. */
+    var ск = document.querySelector('.chk-overlay.open .chk-modal, #echoOrderOverlay.open .chk-modal');
     var ф = document.activeElement;
     var имяФокуса = ф && ф.id ? '#' + ф.id : (ф ? ф.tagName.toLowerCase() : '—');
 
@@ -39312,6 +39364,9 @@ footer {
       'шапка top     ' + (шапка ? пр(шапка.t) : '—'),
       'скролл окна   ' + (ск ? пр(ск.scrollTop) + '/' + пр(ск.scrollHeight - ск.clientHeight) : '—'),
       'фокус         ' + имяФокуса,
+      'цель  в/н     ' + (цф ? пр(цф.цВерх) + '/' + пр(цф.цНиз) : '—'),
+      'факт  в/н     ' + (цф ? пр(цф.фВерх) + '/' + пр(цф.фНиз) : '—'),
+      'Δ     в/н     ' + (цф ? пр(цф.dВерх) + '/' + пр(цф.dНиз) + (компенсировать ? ' [fix]' : '') : '—'),
       '─────────────',
     ].concat(лог);
     панель.textContent = строки.join('\n');
