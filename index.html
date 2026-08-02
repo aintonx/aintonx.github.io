@@ -38494,10 +38494,27 @@ footer {
     steps.forEach(function(b){ b.style.display = ''; });
   }
 
-  var origOpen = window.openCheckout;
-  if(typeof origOpen === 'function'){
-    window.openCheckout = function(){
-      var r = origOpen.apply(this, arguments);
+  /* ── СБРОС ПРИ КАЖДОМ ОТКРЫТИИ ───────────────────────────────────────
+     Вешаемся на _openCheckoutOverlay, а НЕ на openCheckout.
+
+     Почему это важно. В форму ведут два пути, и через openCheckout идёт
+     только один — из корзины. Кнопка «Купить сейчас» на карточке товара
+     зовёт _openCheckoutOverlay напрямую, минуя openCheckout (подтверждено
+     трассой с боевого сайта: в ней openCheckout не встречается ни разу).
+
+     Что из-за этого ломалось. При запуске барабана мы прячем рейку и все
+     коробки шагов инлайновым display:none — форма уступает место барабану.
+     Вернуть их обязан reset. Пока он висел на openCheckout, открытие из
+     карточки его не вызывало: рейка и шаги оставались скрытыми, и окно
+     открывалось ПУСТЫМ — на экране одна шапка с крестиком. Чинилось только
+     заходом через корзину или перезагрузкой.
+
+     _openCheckoutOverlay — общая воронка обоих путей, поэтому сброс здесь
+     срабатывает всегда. */
+  var origOverlay = window._openCheckoutOverlay;
+  if(typeof origOverlay === 'function'){
+    window._openCheckoutOverlay = function(){
+      var r = origOverlay.apply(this, arguments);
       setTimeout(reset, 30);
       return r;
     };
