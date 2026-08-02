@@ -37999,14 +37999,20 @@ footer {
      после подтверждения и заменяют собой всю форму.
      ═══════════════════════════════════════════════════════════════ */ -->
 <style id="ew-checkout-steps-css">
+/* Единственная длительность хода по шагам. Меняется здесь — меняется везде:
+   экраны, высота сцены, рейка, прокрутка. Держать их разными нельзя, иначе
+   переход снова распадётся на несколько независимых движений. */
+.chk-overlay{--chk-ход:.44s}
 .chk-rail{display:flex;align-items:center;gap:8px;padding:2px 0 18px}
 .chk-rail-step{display:flex;align-items:center;gap:8px;min-width:0}
 .chk-rail-step .n{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:grid;
   place-items:center;font-family:var(--font-mono);font-size:9px;color:var(--ink-4);
   background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
-  transition:background .3s var(--ease-lens),color .3s,border-color .3s,box-shadow .3s}
+  transition:background var(--chk-ход) var(--ease-lens),color var(--chk-ход) var(--ease-lens),
+    border-color var(--chk-ход) var(--ease-lens),box-shadow var(--chk-ход) var(--ease-lens)}
 .chk-rail-step .t{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.13em;
-  color:var(--ink-4);text-transform:uppercase;white-space:nowrap;transition:color .3s}
+  color:var(--ink-4);text-transform:uppercase;white-space:nowrap;
+  transition:color var(--chk-ход) var(--ease-lens)}
 .chk-rail-step.on .n{color:var(--void);background:var(--warm-hi);border-color:var(--warm-hi);
   box-shadow:0 0 16px rgba(232,195,122,.35)}
 .chk-rail-step.on .t{color:var(--ink-2)}
@@ -38026,17 +38032,29 @@ footer {
   .chk-rail-step.on .t{max-width:150px;opacity:1}
 }
 
-/* Экраны лежат в потоке и меняются перетеканием — та же кривая и те же
-   длительности, что у окон: уходящий уводится вверх с расфокусом. */
-/* Сцена держит габарит на время смены экранов — см. go() в скрипте шагов.
-   Без неё контейнер прыгал: оба экрана стояли в потоке разом. */
+/* ── ПЕРЕХОД МЕЖДУ ШАГАМИ ────────────────────────────────────────────
+   ОДИН ход, одна кривая, одна длительность — на всё: экраны, высота сцены,
+   рейка, прокрутка. Раньше их было четыре (opacity .26 / transform .3 /
+   filter .26 / height .42) плюс нативный smooth-скролл со своей кривой:
+   глаз читал не одно движение, а пять — отсюда «рвано».
+
+   Расфокус (filter:blur) убран намеренно. Он анимировался на панели,
+   которая сама стоит на стекле с backdrop-filter: это самый дорогой для
+   iOS случай, каждый кадр пересчитывался весь слой. Правило проекта —
+   внутри стекла двигать только transform.
+
+   Направление: вперёд экраны едут справа налево, назад — наоборот.
+   Уходящий смещается втрое меньше приходящего (параллакс), как в
+   нативной навигации iOS: так виден ход ПО шагам, а не случайная смена. */
 .chk-steps-stage{position:relative}
-.chk-step{transition:opacity .26s var(--ease-lens),transform .3s var(--ease-lens),
-  filter .26s var(--ease-lens)}
+.chk-step{transition:opacity var(--chk-ход) var(--ease-lens),
+  transform var(--chk-ход) var(--ease-lens)}
 .chk-step.is-hidden{display:none}
-.chk-step.is-out{opacity:0;transform:translateY(-8px) scale(.995);filter:blur(5px);pointer-events:none;
-  position:absolute;inset:0 0 auto 0}
-.chk-step.is-enter{opacity:0;transform:translateY(10px) scale(.995);filter:blur(5px)}
+.chk-step.is-out{opacity:0;pointer-events:none;position:absolute;inset:0 0 auto 0;
+  transform:translate3d(-14px,0,0)}
+.chk-step.is-enter{opacity:0;transform:translate3d(34px,0,0)}
+.chk-steps-stage.назад .chk-step.is-out{transform:translate3d(14px,0,0)}
+.chk-steps-stage.назад .chk-step.is-enter{transform:translate3d(-34px,0,0)}
 
 .chk-nav{display:flex;gap:10px;padding-top:4px}
 .chk-nav .chk-nav-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;
@@ -38180,6 +38198,11 @@ footer {
        содержимое, замеряем «стало» и ведём высоту между ними. Уходящий
        гаснет, приходящий проявляется — контейнер при этом едет плавно. */
     var было = сцена ? сцена.getBoundingClientRect().height : 0;
+    var назад = next < cur;
+
+    /* Направление задаём ДО перерисовки, иначе первый кадр уедет не в ту
+       сторону и переход дёрнется на старте. */
+    if(сцена) сцена.classList.toggle('назад', назад);
 
     from.classList.add('is-out');
     to.classList.remove('is-hidden');
@@ -38194,19 +38217,26 @@ footer {
       сцена.style.overflow = 'hidden';
       сцена.style.height = было + 'px';
       void сцена.offsetHeight;
-      сцена.style.transition = 'height .42s var(--ease-lens)';
+      /* Коробке — своя кривая, и это не отступление от «одного хода».
+         Длительность и направление те же, отличается только пик скорости.
+         На --ease-lens высота проходила 192px из 228 за первые 110мс: глаз
+         видел щелчок коробки, а следом медленно доезжающее содержимое.
+         --ease-out-quart той же природы (движение начинается сразу, вместе с
+         содержимым), но пик ниже на треть — 33px за кадр вместо 50. */
+      сцена.style.transition = 'height var(--chk-ход) var(--ease-out-quart)';
       сцена.style.height = стало + 'px';
     }
 
     requestAnimationFrame(function(){ to.classList.remove('is-enter'); });
 
-    /* Уходящий убираем раньше, чем закончится ход высоты: к этому моменту
-       он уже прозрачен, а сцена сама держит габарит. Сверка с актуальным
-       шагом — защита от гонки при быстрых переходах туда-обратно. */
+    /* Уходящий держим до КОНЦА хода. Раньше его снимали на 200мс, посреди
+       420-миллисекундной анимации высоты: содержимое исчезало, а коробка
+       продолжала ехать пустой — это был отдельный видимый разрыв.
+       Сверка с актуальным шагом — защита от гонки при быстрых переходах. */
     setTimeout(function(){
       if(steps[cur] !== from) from.classList.add('is-hidden');
       from.classList.remove('is-out');
-    }, 200);
+    }, ХОД);
 
     if(сцена){
       clearTimeout(сцена._ewОтпустить);
@@ -38214,7 +38244,7 @@ footer {
         сцена.style.transition = '';
         сцена.style.height = '';
         сцена.style.overflow = '';
-      }, 460);
+      }, ХОД + 40);
     }
 
     cur = next;
@@ -38224,14 +38254,72 @@ footer {
       var n = s.querySelector('.n');
       if(n) n.textContent = (i < cur) ? '✓' : String(i + 1);
     });
-    var body = document.getElementById('chkBody');
-    if(body) body.scrollTo({top: 0, behavior: 'smooth'});
+    кВерху();
+  }
+
+  /* Длительность хода держим в одном месте и здесь, и в CSS (--chk-ход).
+     Расходятся — переход снова распадается на несколько движений. */
+  var ХОД = 440;
+
+  /* Кривая --ease-out-quart = cubic-bezier(.25,1,.5,1) — та же, что у высоты
+     сцены. Прокрутка и коробка это одно движение «едет сам лист», поэтому
+     они обязаны идти вместе; содержимое живёт на более резкой --ease-lens. */
+  function лёгкость(x){
+    var x1 = .25, y1 = 1, x2 = .5, y2 = 1;
+    function A(a,b){ return 1 - 3*b + 3*a; }
+    function B(a,b){ return 3*b - 6*a; }
+    function C(a){ return 3*a; }
+    function зн(t,a,b){ return ((A(a,b)*t + B(a,b))*t + C(a))*t; }
+    function накл(t,a,b){ return 3*A(a,b)*t*t + 2*B(a,b)*t + C(a); }
+    var t = x;
+    for(var i = 0; i < 6; i++){
+      var s = накл(t, x1, x2);
+      if(!s) break;
+      t -= (зн(t, x1, x2) - x) / s;
+    }
+    return зн(t, y1, y2);
+  }
+
+  /* ── ВОЗВРАТ К НАЧАЛУ ШАГА ────────────────────────────────────────────
+     Раньше здесь стояло chkBody.scrollTo(...). У #chkBody overflow:visible и
+     scrollHeight равен clientHeight — прокручивать в нём нечего, вызов был
+     пустым, и после «Далее» пользователь оставался на прежней высоте посреди
+     новой формы. Настоящий скроллер — #chkModalPanel.
+     Ведём его сами, той же кривой и той же длительностью: нативный smooth
+     идёт своей кривой и своим временем, то есть добавлял бы к переходу
+     шестое независимое движение. */
+  function кВерху(){
+    var п = document.getElementById('chkModalPanel');
+    if(!п) return;
+    var от = п.scrollTop;
+    if(от <= 0) return;
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      п.scrollTop = 0;
+      return;
+    }
+    var старт = 0;
+    cancelAnimationFrame(п._ewКадр);
+    (function шаг(время){
+      if(!старт) старт = время;
+      var доля = Math.min(1, (время - старт) / ХОД);
+      п.scrollTop = от * (1 - лёгкость(доля));
+      if(доля < 1) п._ewКадр = requestAnimationFrame(шаг);
+    })(performance.now());
   }
 
   /* Сброс на первый шаг при каждом открытии чекаута */
   function reset(){
     if(!build()) return;
     cur = 0;                                   /* сначала актуальный шаг, потом классы */
+    /* Направление и удержание габарита — тоже состояние перехода: без сброса
+       следующее открытие начиналось бы с чужой стороны и с чужой высотой. */
+    if(сцена){
+      сцена.classList.remove('назад');
+      clearTimeout(сцена._ewОтпустить);
+      сцена.style.transition = '';
+      сцена.style.height = '';
+      сцена.style.overflow = '';
+    }
     steps.forEach(function(b, i){
       b.classList.toggle('is-hidden', i !== 0);
       b.classList.remove('is-out','is-enter');
