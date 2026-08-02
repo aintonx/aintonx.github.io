@@ -1401,6 +1401,24 @@ button,
   background: transparent !important;
   color: inherit !important;
 }
+/* ── ПЕРЕТЕКАНИЕ ПОДПИСИ НА КНОПКЕ ───────────────────────────────────
+   Подпись меняется по ходу действия («Проверка…» → «Фиксация резерва…» →
+   «Фиксация заказа…»). Раньше она подменялась мгновенно: смысл смены —
+   показать, что процесс идёт, — терялся, читалось как подёргивание.
+   Уходящая уводится вверх, приходящая приходит снизу, обе на одной кривой.
+   Класс живёт только на время смены, поэтому обычная кнопка не меняется. */
+.ew-btn-swap { position: relative; }
+.ew-btn-swap > .ew-captcha-button-text {
+  transition: opacity .28s var(--ease-out-quart), transform .28s var(--ease-out-quart);
+}
+.ew-btn-swap > .ew-btn-out {
+  position: absolute; left: 0; right: 0; top: 50%;
+  opacity: 0; transform: translateY(-50%) translateY(-7px);
+}
+.ew-btn-swap > .ew-btn-in { opacity: 0; transform: translateY(7px); }
+@media (prefers-reduced-motion: reduce) {
+  .ew-btn-swap > .ew-captcha-button-text { transition: none; }
+}
 .ew-captcha-button-text {
   display: inline-block;
   pointer-events: none;
@@ -9327,41 +9345,46 @@ input, select, textarea {
 }
 .swipe-confirm.active .swipe-clabel { color: rgba(255,255,255,0.7); }
 .swipe-confirm.done .swipe-clabel { color: var(--cyan); letter-spacing: 0.14em; }
-/* T15: ГОТОВАЯ к действию «Инициировать конденсацию» — продающий красный CTA
-   с мягким «дыханием»-свечением (в одном языке с кнопкой Эхо), а не
-   нейтральный cyan. Видно, что её можно и хочется нажать. */
+/* ГОТОВАЯ к действию «Инициировать конденсацию».
+   Было: сплошная заливка var(--red) плюс красное «дыхание» и красная вспышка
+   при активации. По паспорту «Линзы» красный означает ТОЛЬКО тревогу и
+   запрет; главное действие — тёплое, подтверждённое — циановое. Кнопка при
+   этом уже была тёплой по фону (слой языка окон), но анимация свечения
+   перебивала его красным: в CSS анимация сильнее обычного объявления, и
+   тёплая тень просто не доживала до экрана. Отсюда и «старое поведение
+   в цветах» при живой кнопке. */
 .swipe-confirm:not(.locked):not(.done):not(.consent-blocked) {
-  background: var(--red);
-  border-color: var(--red2);
-  animation: swipeReadyPulse 2.2s ease-in-out .3s infinite;
+  background: rgba(209,160,74,.10);
+  border-color: rgba(209,160,74,.38);
+  animation: swipeReadyPulse 2.6s ease-in-out .3s infinite;
 }
-/* T15b: момент активации — по кнопке слева направо проходит световой
-   «скан» Apertura. Плавное технологичное включение вместо резкой смены. */
+/* Момент активации — световой «скан» слева направо: тёплый на входе,
+   циановый на выходе, то есть «действие переходит в подтверждённое». */
 .swipe-confirm.arming::after {
   content: '';
   position: absolute;
   top: 0; bottom: 0;
   width: 46%;
   left: -50%;
-  background: linear-gradient(90deg, transparent, rgba(230,56,56,0.30), rgba(0,200,200,0.16), transparent);
+  background: linear-gradient(90deg, transparent, rgba(232,195,122,0.30), rgba(0,200,200,0.16), transparent);
   animation: swipeArmSweep .64s cubic-bezier(.3,0,.2,1) both;
   pointer-events: none;
   z-index: 2;
 }
 @keyframes swipeArmSweep { to { left: 105%; }}
 .swipe-confirm:not(.locked):not(.done):not(.consent-blocked) .swipe-clabel {
-  color: rgba(255,255,255,0.94);
+  color: var(--warm-hi);
 }
 @keyframes swipeReadyPulse {
-  0%,100% { box-shadow: 0 0 14px rgba(192,40,40,0.20); }
-  50%     { box-shadow: 0 0 30px rgba(192,40,40,0.42); }}
+  0%,100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 0 14px rgba(209,160,74,0.16); }
+  50%     { box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 0 28px rgba(209,160,74,0.34); }}
 @media(max-width:960px){
-  /* На мобиле свайп — это кнопка: заливаем красным, как кнопку Эхо. */
+  /* На мобиле свайп — это кнопка, но цвет-роль та же: тёплая, не красная. */
   .swipe-confirm:not(.locked):not(.done):not(.consent-blocked) {
-    background: var(--red);
-    border-color: var(--red2);
+    background: rgba(209,160,74,.12);
+    border-color: rgba(209,160,74,.42);
   }
-  .swipe-confirm:not(.locked):not(.done):not(.consent-blocked) .swipe-clabel { color: #fff; }}
+  .swipe-confirm:not(.locked):not(.done):not(.consent-blocked) .swipe-clabel { color: var(--warm-hi); }}
 
 /* ── MOBILE SWIPE-CONFIRM → BUTTON ── */
 @media(max-width:960px){
@@ -16717,7 +16740,11 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         </div>
       </div>
 
-      <div class="chk-note" id="chkNote">* Мы свяжемся с вами для подтверждения. Данные фиксируются в системе.</div>
+      <!-- Подпись «Мы свяжемся с вами для подтверждения» убрана: она обещала
+           ручную обработку заказа, тогда как поток ведёт в платёжный канал.
+           Сам узел #chkNote тоже снят — все обращения к нему в скриптах
+           (сброс чекаута и скрытие перед барабаном) идут через проверку на
+           существование, поэтому молча становятся холостыми. -->
       </form><!-- end of autocomplete-off wrapper -->
     </div>
   </div>
@@ -18040,7 +18067,43 @@ function _ewCaptchaEscapeHtml(value){
 function _ewCaptchaSetButtonText(btn, text){
   if(!btn) return;
   const safe = _ewCaptchaEscapeHtml(text || '');
-  btn.innerHTML = '<span class="ew-captcha-button-text">' + safe + '</span>';
+  /* Берём ПОСЛЕДНЮЮ подпись, а не первую: если смена пришла посреди
+     предыдущего хода, первой в разметке лежит уже уходящая — приняв её за
+     текущую, мы увели бы не тот узел и оставили на кнопке две надписи. */
+  const все = btn.querySelectorAll('.ew-captcha-button-text');
+  const старый = все.length ? все[все.length - 1] : null;
+  /* Хвосты прошлого хода убираем сразу — иначе на кнопке копятся слои. */
+  Array.prototype.forEach.call(btn.querySelectorAll('.ew-btn-out'), function(e){ e.remove(); });
+
+  /* Мгновенно — когда переливать нечего или незачем: первая установка,
+     тот же самый текст, либо у человека выключены анимации. */
+  const мгновенно = !старый
+    || (старый.textContent || '') === (text || '')
+    || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if(мгновенно){
+    btn.innerHTML = '<span class="ew-captcha-button-text">' + safe + '</span>';
+    return;
+  }
+
+  const новый = document.createElement('span');
+  новый.className = 'ew-captcha-button-text ew-btn-in';
+  новый.innerHTML = safe;
+
+  btn.classList.add('ew-btn-swap');
+  старый.classList.add('ew-btn-out');      /* уходит вверх, освобождая поток */
+  btn.appendChild(новый);
+  void новый.offsetWidth;                  /* иначе начальное состояние не отрисуется */
+  новый.classList.remove('ew-btn-in');
+
+  /* Убираем следы после хода. Если за это время подпись сменится ещё раз,
+     таймер перезаводится — иначе поздний сброс стёр бы уже новый текст. */
+  clearTimeout(btn._ewСменаПодписи);
+  btn._ewСменаПодписи = setTimeout(function(){
+    новый.className = 'ew-captcha-button-text';
+    btn.innerHTML = '';
+    btn.appendChild(новый);
+    btn.classList.remove('ew-btn-swap');
+  }, 300);
 }
 
 function _ewSmartCaptchaSetBusy(opts, busy){
