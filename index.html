@@ -19308,12 +19308,6 @@ function _blurActiveField(){
    схлопываются токеном в один живой цикл. */
 let _pinSettleToken = 0;
 function _pinAfterFocusChange(){
-  /* При открытом окне заказа страница под ним всё равно не прокручивается
-     (замерено: window.scrollY не меняется, iOS панорамирует вьюпорт), а лист
-     держит слой ew-sheet-keyboard. Опрос высоты каждые 90мс и финальный
-     scrollTo тут ничего не восстанавливают, зато попадают в анимацию
-     клавиатуры. */
-  if(typeof window.__ewKbdOwned === 'function' && window.__ewKbdOwned()) return;
   const token = ++_pinSettleToken;
   let tries = 0;
   let h = _vvKbd ? _vvKbd.height : window.innerHeight;
@@ -22452,10 +22446,6 @@ function _setupModalUnstickAfterBlur(panel, inputsOrSelector, openBodyClass){
   panel.dataset.unstickAfterBlurInit = '1';
   function unstick(){
     if(!panel.isConnected) return;
-    /* Пока геометрией при клавиатуре управляет слой ew-sheet-keyboard,
-       «пинок» overflow только мешает: он замораживал прокрутку и сбрасывал
-       scrollTop прямо в момент анимации клавиатуры (замер tools/thrash.mjs). */
-    if(typeof window.__ewKbdOwned === 'function' && window.__ewKbdOwned()) return;
     if(panel.closest && panel.closest('.closing')) return;
     /* Класс «модалка открыта» может жить и на body (chk-open, modal-open),
        и на html (legal-modal-open у Реквизитов/Сектора Тишины) — проверяем оба.
@@ -22536,7 +22526,6 @@ function _setupNameAutofillScrollGuard(nameInput, panel){
     until = performance.now() + 700;
   });
   panel.addEventListener('scroll', function(){
-    if(typeof window.__ewKbdOwned === 'function' && window.__ewKbdOwned()) return;
     if(performance.now() > until) return;
     if(Math.abs(panel.scrollTop - anchor) > 48){
       panel.scrollTop = anchor;
@@ -22569,9 +22558,6 @@ function _setupAutofillFreeze(panel, ids){
   const biTimes = [];
   let lastFocusOutT = -1e9;
   function freeze(ms){
-    /* См. unstick: при активном ew-sheet-keyboard заморозка прокрутки —
-       главный источник рывка при автоподстановке, а не защита от него. */
-    if(typeof window.__ewKbdOwned === 'function' && window.__ewKbdOwned()) return;
     const until = performance.now() + ms;
     if(frozenUntil){ frozenUntil = Math.max(frozenUntil, until); return; }
     frozenUntil = until;
@@ -39256,116 +39242,6 @@ footer {
 }
 </style>
 <!-- ═══════════════════════════════════════════════════════════════
-     ЛИСТ ЗАКАЗА ПРИ ПОДНЯТОЙ КЛАВИАТУРЕ
-     ───────────────────────────────────────────────────────────────
-     ЧТО ПРОИСХОДИТ. Safari на iPhone при открытии клавиатуры НЕ прокручивает
-     страницу — window.scrollY не меняется. Он ПАНОРАМИРУЕТ видимую область:
-     visualViewport.offsetTop уезжает вниз (замерено 116 и 323), а height
-     падает (735 → 371 → 344). Всё, что стоит position:fixed, остаётся в
-     координатах разметки и потому визуально уходит ВВЕРХ за край экрана —
-     вместе с шапкой окна и крестиком закрытия. Отсюда и «дёргается», и
-     «резко закрывается»: возврат системой мгновенный, за 1 мс.
-
-     ЧТО ДЕЛАЕМ. Пока клавиатура поднята, оверлей занимает ровно видимую
-     область: [vv.offsetTop, vv.offsetTop + vv.height]. Оверлей только
-     позиционирует лист (align-items:flex-end), поэтому листу на это время
-     снимаем потолок высоты — иначе он останется прежним и вылезет вверх.
-
-     ПОЧЕМУ ТАК, А НЕ ИНАЧЕ:
-     • Переменные --ew-vvtop/--ew-vvh уже живут на сайте и уже обновляются
-       на каждый кадр движения вьюпорта — к ним привязана аварийная панель
-       Apertura. Заводить второй такой же механизм незачем.
-     • Правка через CSS, а не инлайновыми стилями: у листа стоит
-       max-height:88dvh !important, и обычный инлайновый стиль ему
-       ПРОИГРЫВАЕТ. На этом сорвалась прошлая попытка — лист оставался
-       высотой 647 при видимой области 371 и вылезал на 276px вверх.
-     • Только под классом ew-kbd-open. Без клавиатуры лист намеренно ниже
-       экрана, и привязка «на всегда» растянула бы его во весь экран —
-       это была бы уже другая вёрстка, а не починка.
-     • Без transition: система возвращает вьюпорт мгновенно, и любая
-       анимация здесь означала бы отставание листа от экрана.
-     • Закрывающееся окно (.closing) НЕ исключено намеренно. closeCheckout
-       сначала снимает фокус и лишь потом вешает .closing, а клавиатура
-       уезжает ещё ~300мс. Исключи мы .closing — лист прыгнул бы к полной
-       высоте в первом же кадре ухода, то есть на самом видном месте.
-       Пока он уезжает, --ew-vvh растёт вместе с убирающейся клавиатурой,
-       и лист возвращает себе высоту плавно, а не рывком.
-
-     ПРОВЕРЕНО на записи экрана с настоящего iPhone: при поднятой
-     клавиатуре (offsetTop 116, height 344) шапка окна и крестик остаются
-     полностью в кадре, лист заканчивается ровно у панели клавиатуры. -->
-<style id="ew-sheet-keyboard-css">
-@media (max-width: 960px) {
-  html.ew-kbd-open .chk-overlay.open {
-    top: var(--ew-vvtop, 0px) !important;
-    bottom: auto !important;
-    height: var(--ew-vvh, 100dvh) !important;
-  }
-  /* Перебиваем и 88dvh, и 97dvh: оба объявлены с !important, поэтому нужен
-     и !important, и селектор весом выше — отсюда html.… в начале. */
-  html.ew-kbd-open .chk-overlay.open .chk-modal {
-    max-height: 100% !important;
-  }
-}
-</style>
-<script id="ew-sheet-keyboard-js">
-(function(){
-  'use strict';
-  var root = document.documentElement;
-  var vv = window.visualViewport;
-  if(!vv) return;                 // без visualViewport компенсировать нечем
-
-  /* Клавиатура поднята, если видимая область заметно ниже разметочной либо
-     сдвинута вниз. Порог 100px, а не 10: сворачивание адресной строки
-     Safari меняет высоту примерно на 50px, и меньший порог принимал бы
-     обычную прокрутку страницы за клавиатуру. */
-  function поднята(){
-    return vv.offsetTop > 1 || (window.innerHeight - vv.height) > 100;
-  }
-
-  /* ── ЕДИНЫЙ ВЛАДЕЛЕЦ ПОВЕДЕНИЯ ПРИ КЛАВИАТУРЕ ─────────────────────
-     Пока это окно открыто на телефоне, геометрию при клавиатуре держит
-     ТОЛЬКО этот слой. Остальные компенсаторы (unstick, заморозка
-     автоподстановки, якорь прокрутки) на это время выключаются — см.
-     ссылки на __ewKbdOwned по файлу.
-
-     Зачем: замер tools/thrash.mjs показал, что за один цикл «тап в поле →
-     автоподстановка → уход фокуса» они втроём держат прокрутку панели
-     заблокированной 707мс и делают три принудительных сброса scrollTop
-     (на 623, 988 и 1067мс). На iPhone это ровно тот интервал, когда
-     система анимирует клавиатуру, — отсюда и рывки, и «залипание» тапов
-     по крестику, про которое написано в комментарии самого unstick.
-
-     Все три компенсатора чинили ОДНУ причину: коробка листа менялась под
-     содержимым непредсказуемо. Теперь ею управляет этот слой, поэтому
-     компенсировать нечего. */
-  window.__ewKbdOwned = function(){
-    return !!document.querySelector('.chk-overlay.open')
-        && window.matchMedia('(max-width: 960px)').matches;
-  };
-
-  var кадр = 0;
-  function свести(){
-    кадр = 0;
-    root.classList.toggle('ew-kbd-open', поднята());
-  }
-  function запросить(){
-    if(кадр) return;
-    кадр = requestAnimationFrame(свести);
-  }
-
-  vv.addEventListener('resize', запросить, { passive: true });
-  vv.addEventListener('scroll', запросить, { passive: true });
-  window.addEventListener('orientationchange', запросить, { passive: true });
-  /* focusout приходит раньше, чем система начнёт убирать клавиатуру:
-     перепроверяем ещё и после её анимации, иначе класс снимался бы с
-     задержкой и лист на эти кадры оставался бы прижатым. */
-  document.addEventListener('focusout', function(){ setTimeout(запросить, 350); }, true);
-  свести();
-})();
-</script>
-
-<!-- ═══════════════════════════════════════════════════════════════
      ПАНЕЛЬ ДИАГНОСТИКИ ЛИСТА И КЛАВИАТУРЫ
      ───────────────────────────────────────────────────────────────
      Включается ТОЛЬКО по адресу с ?debug=1 — иначе скрипт выходит на
@@ -39420,32 +39296,53 @@ footer {
     рисовать();
   }
 
-  /* ── ЦЕЛЬ ПРОТИВ ФАКТА ────────────────────────────────────────────
-     Панель только измеряет. Сама компенсация — в боевом слое
-     ew-sheet-keyboard выше, отдельным флагом её включать больше не нужно.
+  /* ── ПРОБНАЯ КОМПЕНСАЦИЯ ПАНОРАМЫ ────────────────────────────────
+     Что показала запись: при открытии клавиатуры Safari не прокручивает
+     страницу (window.scrollY не меняется), а ПАНОРАМИРУЕТ видимую область:
+     vv.offsetTop уезжает на 323px, vv.height падает с 735 до 371. Всё
+     position:fixed остаётся в координатах разметки и визуально уходит вверх
+     — вместе с шапкой окна и крестиком.
+     Цель: оверлей должен занять ровно видимую область, то есть
+     [vv.offsetTop, vv.offsetTop + vv.height]. Оверлей прозрачный и только
+     позиционирует лист (align-items:flex-end), поэтому правим его, а листу
+     снимаем потолок высоты.
+     Правка живёт ЗДЕСЬ, под ?debug=1, и рядом печатаются числа «цель против
+     факта»: пока Δ не станет нулём на настоящем телефоне, в боевой код это
+     не поедет. Дважды выкатывать непроверенное под iOS я уже пробовал. */
+  var компенсировать = /[?&]fix=1\b/.test(location.search);
 
-     ВАЖНО ПРО СИСТЕМУ КООРДИНАТ, на этом я сам себя запутал. На iOS
-     getBoundingClientRect() у position:fixed отсчитывается от ВИДИМОЙ
-     области, которая уже сдвинута панорамой, а vv.offsetTop — от
-     РАЗМЕТОЧНОЙ. Вычитать одно из другого нельзя: при полностью верной
-     посадке листа получалось «Δ −115», и я почти отменил рабочую правку.
-     Поэтому цель здесь выражена в координатах видимой области: верх 0,
-     низ vv.height. Совпало — значит лист занимает ровно экран. */
   function цельИФакт(){
     if(!vv) return null;
-    var ov = document.querySelector('.chk-overlay.open');
+    var ov = document.querySelector('.chk-overlay.open, #echoOrderOverlay.open');
     if(!ov) return null;
+    var цВерх = vv.offsetTop, цНиз = vv.offsetTop + vv.height;
+    var клавиатура = vv.offsetTop > 1 || (window.innerHeight - vv.height) > 60;
+    if(компенсировать && window.matchMedia('(max-width: 960px)').matches){
+      if(!клавиатура){
+        /* Клавиатура убрана — снимаем всё, что навязали, и отдаём вид
+           обратно таблице стилей. Иначе max-height:100% остался бы навсегда
+           и тихо менял высоту листа в покое. */
+        ov.style.top = ''; ov.style.bottom = ''; ov.style.height = '';
+        var л0 = ov.querySelector('.chk-modal');
+        if(л0) л0.style.removeProperty('max-height');
+        цНиз = цВерх + vv.height;
+      } else {
+      ov.style.top = Math.round(цВерх) + 'px';
+      ov.style.bottom = 'auto';
+      ov.style.height = Math.round(vv.height) + 'px';
+      /* Именно setProperty с приоритетом: в CSS стоит
+         max-height:88dvh !important, и обычный инлайновый стиль ему
+         проигрывает — лист оставался высотой 647 при видимой области 371 и
+         вылезал вверх на 276px. Это и сломало прошлую попытку. */
+      var л = ov.querySelector('.chk-modal');
+      if(л) л.style.setProperty('max-height', '100%', 'important');
+      }
+    }
     var лист = ov.querySelector('.chk-modal');
     if(!лист) return null;
     var r = лист.getBoundingClientRect();
-    var цВерх = 0, цНиз = vv.height;
     return {цВерх: цВерх, цНиз: цНиз, фВерх: r.top, фНиз: r.bottom,
-            dВерх: r.top - цВерх, dНиз: r.bottom - цНиз,
-            клава: root_поднята()};
-  }
-
-  function root_поднята(){
-    return document.documentElement.classList.contains('ew-kbd-open');
+            dВерх: r.top - цВерх, dНиз: r.bottom - цНиз};
   }
 
   function рисовать(){
@@ -39469,7 +39366,7 @@ footer {
       'фокус         ' + имяФокуса,
       'цель  в/н     ' + (цф ? пр(цф.цВерх) + '/' + пр(цф.цНиз) : '—'),
       'факт  в/н     ' + (цф ? пр(цф.фВерх) + '/' + пр(цф.фНиз) : '—'),
-      'Δ     в/н     ' + (цф ? пр(цф.dВерх) + '/' + пр(цф.dНиз) + (цф.клава ? ' [клава]' : '') : '—'),
+      'Δ     в/н     ' + (цф ? пр(цф.dВерх) + '/' + пр(цф.dНиз) + (компенсировать ? ' [fix]' : '') : '—'),
       '─────────────',
     ].concat(лог);
     панель.textContent = строки.join('\n');

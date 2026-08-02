@@ -93,11 +93,63 @@ await page.evaluate(() => {
 await page.waitForTimeout(250);
 const послеАвтозаполнения = await page.evaluate(() => window.__записи.length);
 
+/* Прокрутка формы во время набора НЕ должна закрывать клавиатуру.
+   Раньше свайп больше 22px принудительно снимал фокус: пользователь мотал
+   форму к следующему полю, а клавиатура захлопывалась и лист менял высоту. */
+const панель = page.locator('#chkModalPanel');
+const короб = await панель.boundingBox();
+await page.touchscreen.tap(короб.x + короб.width / 2, короб.y + короб.height / 2).catch(() => {});
+await page.locator('#chkPhone').tap();
+await page.waitForTimeout(150);
+await панель.hover({ position: { x: короб.width / 2, y: короб.height / 2 } }).catch(() => {});
+await page.evaluate(() => {
+  const p = document.getElementById('chkModalPanel');
+  const точка = (y) => ({ clientX: 100, clientY: y, identifier: 1, target: p });
+  const событие = (тип, y) => new TouchEvent(тип, {
+    bubbles: true, cancelable: true,
+    touches: тип === 'touchend' ? [] : [new Touch(точка(y))],
+    changedTouches: [new Touch(точка(y))],
+  });
+  p.dispatchEvent(событие('touchstart', 400));
+  p.dispatchEvent(событие('touchmove', 320));   // свайп 80px — заметно больше порога 22
+  p.dispatchEvent(событие('touchend', 320));
+});
+await page.waitForTimeout(120);
+const фокусПослеСвайпа = await page.evaluate(() => document.activeElement && document.activeElement.id);
+
+/* КОНТРОЛЬ: тот же свайп с отключённым владельцем. Нужен, чтобы отличить
+   «правка сработала» от «свайп и так ничего не делал». */
+await page.locator('#chkPhone').tap();
+await page.waitForTimeout(150);
+const фокусПослеСвайпаБезВладельца = await page.evaluate(() => {
+  const был = window.__ewKbdOwned;
+  window.__ewKbdOwned = () => false;
+  const p = document.getElementById('chkModalPanel');
+  const точка = (y) => ({ clientX: 100, clientY: y, identifier: 1, target: p });
+  const событие = (тип, y) => new TouchEvent(тип, {
+    bubbles: true, cancelable: true,
+    touches: тип === 'touchend' ? [] : [new Touch(точка(y))],
+    changedTouches: [new Touch(точка(y))],
+  });
+  p.dispatchEvent(событие('touchstart', 400));
+  p.dispatchEvent(событие('touchmove', 320));
+  p.dispatchEvent(событие('touchend', 320));
+  window.__ewKbdOwned = был;
+  return document.activeElement && document.activeElement.id;
+});
+
 await page.evaluate(() => document.getElementById('chkPhone').blur());
 await page.waitForTimeout(1500);
 
 const итог = await page.evaluate(() => ({ всего: window.__записи.length, записи: window.__записи }));
-console.log(JSON.stringify({ фокусНа, послеАвтозаполнения, ...итог }, null, 2));
+console.log(JSON.stringify({
+  фокусНа, послеАвтозаполнения,
+  фокусПослеСвайпа,
+  фокусПослеСвайпаБезВладельца,
+  свайпНеЗакрылКлавиатуру: фокусПослеСвайпа === "chkPhone",
+  контрольСвайпЗакрывал: фокусПослеСвайпаБезВладельца !== "chkPhone",
+  ...итог,
+}, null, 2));
 
 await br.close();
 srv.close();
