@@ -20451,10 +20451,52 @@ function _ewApplyReservationTextToModal(p){
   }
   return true;
 }
+/* Идёт ли прямо сейчас хоть один живой обратный отсчёт резерва —
+   свой (активный заказ) или чужой (реликвия занята кем-то). */
+function _ewЕстьЖивойРезерв(){
+  try{
+    const rec = (typeof _ewActiveOrderRead === 'function') ? _ewActiveOrderRead() : null;
+    if(rec && _ewCountdownParts(rec.expires_at || rec.reserved_until || '')) return true;
+    if(!Array.isArray(products)) return false;
+    return products.some(function(p){
+      const s = String(p && (p.reservation_status || p.reservationStatus) || '').toLowerCase();
+      if(s !== 'active' && s !== 'reserved') return false;
+      return !!_ewCountdownParts(p.reserved_until || p.reservedUntil || p.reservation_expires_at || '');
+    });
+  }catch(_){ return false; }
+}
+
+/* ── ПЕРЕСИНК ПОСЛЕ ИСТЕЧЕНИЯ РЕЗЕРВА ────────────────────────────────
+   ЧТО ЛОМАЛОСЬ. Тикер раз в секунду перерисовывал каталог и карточку, но
+   брал данные ТОЛЬКО из локальной копии products. Когда таймер добегал до
+   нуля, _ewCountdownParts начинал возвращать null, а поле
+   reservation_status в локальных данных оставалось 'active' — и реликвия
+   висела «в резерве» до перезагрузки страницы, хотя на сервере уже
+   освободилась. Обновить статус локально было нечем: он приходит из БД.
+
+   ЧТО ДЕЛАЕМ. Ловим МОМЕНТ перехода «отсчёт шёл → отсчёта нет» и один раз
+   идём за свежим каталогом. refreshEchoWorldCatalog сам перерисовывает
+   карточку, каталог и корзину, так что доводить руками ничего не нужно.
+   Запрос ограничен по частоте: истечь могут несколько резервов подряд, а
+   бэкенд дёргать очередью незачем. */
+let _ewПоследнийПересинкРезерва = 0;
+function _ewПересинкПоИстеченииРезерва(причина){
+  const сейчас = Date.now();
+  if(сейчас - _ewПоследнийПересинкРезерва < 15000) return;
+  _ewПоследнийПересинкРезерва = сейчас;
+  if(typeof refreshEchoWorldCatalog !== 'function') return;
+  Promise.resolve(refreshEchoWorldCatalog({reason: причина}))
+    .catch(function(e){ console.warn('пересинк после истечения резерва:', e); });
+}
+
 function _ewStartActiveOrderReservationTicker(){
   if(window.__EW_ACTIVE_ORDER_RESERVATION_TICKER__) return;
+  let былЖивойРезерв = _ewЕстьЖивойРезерв();
   window.__EW_ACTIVE_ORDER_RESERVATION_TICKER__ = setInterval(function(){
     try{
+      const естьСейчас = _ewЕстьЖивойРезерв();
+      if(былЖивойРезерв && !естьСейчас) _ewПересинкПоИстеченииРезерва('reservation-expired');
+      былЖивойРезерв = естьСейчас;
       if(typeof syncCatalogLockStates === 'function') syncCatalogLockStates();
       if(typeof refreshCurrentModalFromProduct === 'function') refreshCurrentModalFromProduct();
     }catch(e){ console.warn('activeOrderReservationTicker:', e); }
@@ -20967,6 +21009,7 @@ function _ewAfterModalExit(root, panel, done, opts){
     if(finished || root._ewCloseToken !== token) return;
     if(closingClass && !root.classList.contains(closingClass)) return;
     finished = true;
+    root._ewFinishExitNow = null;      /* ход отыгран — повторно не звать */
     if(root._ewVisualExitTimer){
       clearTimeout(root._ewVisualExitTimer);
       root._ewVisualExitTimer = 0;
@@ -21031,7 +21074,34 @@ function _ewAfterModalExit(root, panel, done, opts){
     if(closingClass && !root.classList.contains(closingClass)) return;
     finish('css-motion-fallback');
   }, waitMs);
+  /* Даём наружу возможность ДОИГРАТЬ закрытие немедленно — см.
+     _ewFinishPendingExit. Без этого прерванное закрытие оставляло окно
+     навсегда в классе open. */
+  root._ewFinishExitNow = finish;
   return root._ewVisualExitTimer;
+}
+
+/* ── ЗАВЕРШИТЬ ПРЕРВАННОЕ ЗАКРЫТИЕ ───────────────────────────────────
+   ЧТО ЛОМАЛОСЬ. Закрытие окна доигрывает 280–500мс, и только в конце
+   снимаются класс open, класс chk-open с body и блокировка прокрутки. Если
+   за это время окно открыть снова, функция открытия снимала класс closing и
+   упиралась в «уже открыто — выходим». А отложенное завершение закрытия
+   проверяет ровно этот класс closing и, не найдя его, тоже выходило.
+   Итог: open оставался навсегда. Фон затемнён, прокрутка заблокирована,
+   панель стоит там, где её бросила прерванная анимация, — видна одна шапка,
+   и КАЖДОЕ следующее нажатие снова упирается в тот же ранний выход. До
+   перезагрузки страницы окно больше не открывалось.
+
+   ЧТО ДЕЛАЕМ. Перед тем как снять closing, доигрываем закрытие вручную:
+   обработчик завершения отрабатывает синхронно, состояние становится
+   чистым, и открытие идёт обычным путём.
+   Вызывать СТРОГО до снятия closing — сам обработчик проверяет этот класс. */
+function _ewFinishPendingExit(root){
+  if(!root || typeof root._ewFinishExitNow !== 'function') return false;
+  var завершить = root._ewFinishExitNow;
+  root._ewFinishExitNow = null;
+  try{ завершить('прервано-открытием'); }catch(_){ return false; }
+  return true;
 }
 
 function _cleanupModal(){
@@ -21244,8 +21314,9 @@ function _quickHideCart(){
    hidePrev — тихий cleanup предыдущего слоя (карточка/корзина) БЕЗ
    unlockScroll, чтобы body не разлочивался между слоями. */
 function _openCheckoutOverlay(hidePrev){
-  // Запоминаем — был ли body уже залочен (предыдущий слой держит lock)
-  const bodyAlreadyLocked = _scrollLockCount > 0;
+  /* Счётчик замков прокрутки НЕ снимаем здесь: до решения о блокировке его
+     успевают изменить и hidePrev, и доигрывание прерванного закрытия.
+     Проверяем непосредственно перед lockScroll — см. ниже. */
   // Тихо убираем предыдущий слой (карточку или корзину) БЕЗ unlockScroll
   if(typeof hidePrev === 'function') hidePrev();
   // Reset state чекаута
@@ -21262,9 +21333,22 @@ function _openCheckoutOverlay(hidePrev){
   const ov = document.getElementById('chkOverlay');
   if(!ov) return;
   // Force-reset dirty state (если предыдущее закрытие оставило closing)
+  /* ПОРЯДОК ВАЖЕН: сначала доигрываем прерванное закрытие, и только потом
+     снимаем closing. Обработчик завершения проверяет именно этот класс —
+     сними его раньше, и закрытие не доиграет никогда, а окно останется в
+     классе open навсегда (см. _ewFinishPendingExit). */
+  if(typeof _ewFinishPendingExit === 'function') _ewFinishPendingExit(ov);
   if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
   ov.classList.remove('closing');
-  if(ov.classList.contains('open')) return;
+  if(ov.classList.contains('open')){
+    /* Сюда попадаем, когда окно и правда уже открыто. Раньше стоял просто
+       return — и если состояние всё же оказалось испорченным, окно было
+       мёртвым до перезагрузки. Теперь приводим его в рабочий вид. */
+    var _панель = document.getElementById('chkModalPanel');
+    if(_панель){ _панель.style.animation=''; _панель.style.opacity=''; _панель.style.transform=''; }
+    if(!document.body.classList.contains('chk-open')) document.body.classList.add('chk-open');
+    return;
+  }
   // Снимаем возможный «застрявший» флаг scroll-restoring: открытие модалки —
   // это НЕ восстановление скролла, а он ставит ВСЕ анимации на паузу
   // (animation-play-state:paused !important) и заморозил бы входную анимацию
@@ -21280,7 +21364,13 @@ function _openCheckoutOverlay(hidePrev){
   ov.classList.add('open');
   // lockScroll только если ещё НЕ залочено (overflow) — иначе двойной lock,
   // и при closeCheckout overflow-lock останется висеть.
-  if(!bodyAlreadyLocked){
+  /* Считаем счётчик ЗДЕСЬ, а не в начале функции. Значение, снятое на входе,
+     успевает устареть: доигрывание прерванного закрытия снимает замок уже
+     после него. На устаревшем значении окно открывалось с РАЗБЛОКИРОВАННОЙ
+     прокруткой — фон ездил под открытой формой. Поймано контрольным
+     замером: после трёх циклов «закрыл-открыл» замков было 0 при открытом
+     окне при открытой форме. */
+  if(_scrollLockCount === 0){
     lockScroll();
   }
   document.body.classList.add('chk-open');
@@ -28927,21 +29017,12 @@ async function submitPreorder(){
     }
   }
 
-  function showOrderConfirmed(){
-    const body=document.getElementById('chkBody');
-    if(!body) return;
-    body.innerHTML=`
-      <div class="order-confirmed show">
-        <div class="order-confirmed-icon"><svg class="ico ew-mask-icon ew-icon--check-circle" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
-        <div class="order-confirmed-title">// Инициирован протокол рождения Виша</div>
-        <div class="order-confirmed-sub">
-          Запрос принят системой Apertura.<br>
-          Конденсация инициирована.<br><br>
-          // Переадресация на протокол обработки...<br>
-          // Ожидайте контакта от системы.
-        </div>
-      </div>`;
-  }
+  /* showOrderConfirmed удалена. Она была мёртвой — ни одного вызова по всему
+     файлу, — и при этом обещала «Ожидайте контакта от системы», то есть ручную
+     обработку вместо платежа. Опасна была и технически: делала
+     chkBody.innerHTML = ..., то есть стирала форму вместе с рейкой и коробками
+     шагов, которые строит ew-checkout-steps-js. Флаг built при этом остался бы
+     поднятым, и следующее открытие показало бы пустое окно. */
 
   function setup(){
     const el=document.getElementById('swipeConfirm');
@@ -31818,16 +31899,20 @@ function _setupReturnForm(){
 function openReturnModal(){
   const ov = document.getElementById('returnModal');
   if(!ov) return;
-  const bodyAlreadyLocked = _scrollLockCount > 0;
   _setupReturnForm();
   _resetReturnFormState(true);
+  /* Та же ловушка, что и в чекауте: доигрываем прерванное закрытие ДО
+     снятия closing, иначе окно навсегда остаётся в классе open. */
+  if(typeof _ewFinishPendingExit === 'function') _ewFinishPendingExit(ov);
   if(typeof _ewCancelModalExit === 'function') _ewCancelModalExit(ov);
   ov.classList.remove('closing');
   if(ov.classList.contains('open')) return;
   document.body.classList.remove('scroll-restoring');
   document.body.classList.remove('_blur-fading');
   ov.classList.add('open');
-  if(!bodyAlreadyLocked) lockScroll();
+  /* Счётчик читаем в момент решения: доигранное закрытие могло снять замок
+     уже после входа в функцию — см. тот же разбор в _openCheckoutOverlay. */
+  if(_scrollLockCount === 0) lockScroll();
   document.body.classList.add('chk-open');
   const panel = document.getElementById('returnModalPanel');
   if(panel){
