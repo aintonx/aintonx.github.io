@@ -1401,22 +1401,30 @@ button,
   background: transparent !important;
   color: inherit !important;
 }
-/* ── ПЕРЕТЕКАНИЕ ПОДПИСИ НА КНОПКЕ ───────────────────────────────────
+/* ── ПОДПИСЬ НА КНОПКЕ ПРОКРУЧИВАЕТСЯ, КАК В БАРАБАНЕ ─────────────────
    Подпись меняется по ходу действия («Проверка…» → «Фиксация резерва…» →
-   «Фиксация заказа…»). Раньше она подменялась мгновенно: смысл смены —
-   показать, что процесс идёт, — терялся, читалось как подёргивание.
-   Уходящая уводится вверх, приходящая приходит снизу, обе на одной кривой.
-   Класс живёт только на время смены, поэтому обычная кнопка не меняется. */
-.ew-btn-swap { position: relative; }
+   «Фиксация заказа…»). Мгновенная подмена теряла смысл смены и читалась
+   как подёргивание.
+
+   Теперь это тот же механизм, что у барабана атрибутов: прежнее значение
+   уходит ВВЕРХ за край, новое приходит СНИЗУ. Кнопка при этом неподвижна —
+   «крутится» только текст. overflow:hidden держит его внутри, чтобы буквы
+   не выехали за скруглённую кромку на входе и выходе.
+   Кривая взята от детента барабана — с лёгким доводящим перелётом, чтобы
+   смена читалась как продолжение того же механизма, а не отдельный приём.
+   Класс живёт только на время хода, обычная кнопка не меняется. */
+.ew-btn-swap { position: relative; overflow: hidden; }
 .ew-btn-swap > .ew-captcha-button-text {
-  transition: opacity .28s var(--ease-out-quart), transform .28s var(--ease-out-quart);
+  transition: transform .34s cubic-bezier(.34,1.2,.64,1),
+              opacity .24s var(--ease-out-quart);
 }
 .ew-btn-swap > .ew-btn-out {
   position: absolute; left: 0; right: 0; top: 50%;
-  opacity: 0; transform: translateY(-50%) translateY(-7px);
+  opacity: 0; transform: translateY(-50%) translateY(-190%);
 }
-.ew-btn-swap > .ew-btn-in { opacity: 0; transform: translateY(7px); }
+.ew-btn-swap > .ew-btn-in { opacity: 0; transform: translateY(190%); }
 @media (prefers-reduced-motion: reduce) {
+  .ew-btn-swap { overflow: visible; }
   .ew-btn-swap > .ew-captcha-button-text { transition: none; }
 }
 .ew-captcha-button-text {
@@ -7170,29 +7178,36 @@ html.legal-modal-open .cookie-banner.show {
   color: var(--white-mid);
   letter-spacing: 0.005em;
 }
-/* Ссылка на Политику — тот же цвет что и текст, без подчёркивания */
+/* Ссылка на Политику — штриховое подчёркивание.
+   Было точечное и почти прозрачное (.18): на тёмном фоне не читалось как
+   нажимаемое, и никто не понимал, что оттуда открываются документы.
+   Штрих заметнее точек, но остаётся служебным — это не кнопка. */
 .cookie-banner-link {
   background: none;
   border: none;
   padding: 0;
   font: inherit;
-  color: inherit;
+  color: var(--ink);
   text-decoration: none;
   cursor: pointer;
-  border-bottom: 1px dotted rgba(255,255,255,0.18);
+  border-bottom: 1px dashed rgba(255,255,255,0.42);
   transition: color .2s, border-color .2s;
 }
 @media (hover:hover) and (pointer:fine) {
 
 .cookie-banner-link:hover {
   color: var(--white);
-  border-bottom-color: rgba(255,255,255,0.4);
+  border-bottom-color: rgba(255,255,255,0.75);
 }}
+/* Заливка сплошным красным, текст белый. Было полупрозрачное красное пятно
+   с красными же буквами — на тёмном фоне это читалось вяло и не выглядело
+   основным действием баннера. Геометрия и кегль не меняются: капсулу и
+   размеры задаёт общий слой языка. */
 .cookie-banner-ok {
   flex-shrink: 0;
-  background: rgba(192,40,40,0.1);
-  border: 1px solid rgba(192,40,40,0.45);
-  color: var(--red2);
+  background: var(--red);
+  border: 1px solid var(--red2);
+  color: #fff;
   font-family: var(--font-code);
   font-size: 8px;
   letter-spacing: .2em;
@@ -7200,15 +7215,16 @@ html.legal-modal-open .cookie-banner.show {
   padding: 11px 16px;
   cursor: pointer;
   border-radius: var(--radius-sm);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16);
   transition: background .18s, border-color .18s, box-shadow .18s;
   white-space: nowrap;
 }
 @media (hover:hover) and (pointer:fine) {
 
 .cookie-banner-ok:hover {
-  background: rgba(192,40,40,0.22);
+  background: var(--red2);
   border-color: var(--red2);
-  box-shadow: 0 0 12px rgba(192,40,40,0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 0 16px rgba(192,40,40,0.38);
   color: #fff;
 }}
 @media(max-width:600px) {
@@ -9123,10 +9139,17 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
     will-change: transform, filter;
   }
   /* Счётчик-одометр: каждая цифра — вертикальная лента 0–9, катится плавно. */
+  /* Окно и ячейка чуть выше кегля — 1.3em вместо 1em.
+     При 1em глиф занимал ячейку впритык, и на экране с тройной плотностью
+     дробное округление показывало снизу полоску СОСЕДНЕЙ цифры: в окне
+     висело лишнее число, которое сейчас не участвует. Зазор сверху и снизу
+     даёт запас: в щель попадает пустое поле, а не чужой глиф.
+     Ячейка и окно обязаны совпадать — по высоте ячейки считается сдвиг
+     ленты, разойдутся и цифра встанет не по центру. */
   .catalog-mobile-count .odo { display: inline-flex; }
-  .catalog-mobile-count .odo-d { display: inline-block; height: 1em; line-height: 1em; overflow: hidden; vertical-align: bottom; }
+  .catalog-mobile-count .odo-d { display: inline-block; height: 1.3em; line-height: 1.3em; overflow: hidden; vertical-align: bottom; }
   .catalog-mobile-count .odo-strip { display: flex; flex-direction: column; transition: transform .5s cubic-bezier(.22,1,.36,1); }
-  .catalog-mobile-count .odo-c { height: 1em; line-height: 1em; text-align: center; }
+  .catalog-mobile-count .odo-c { height: 1.3em; line-height: 1.3em; text-align: center; }
   .catalog-mobile-dots {
     display: flex;
     align-items: center;
@@ -9557,12 +9580,13 @@ input, select, textarea {
   align-items: center;
   justify-content: center;
   font-family: var(--font-code);
-  font-size: 9px;
-  letter-spacing: .08em;
+  /* Единый кегль ленты — 8px (эталон: «Перчатка на одной руке»). */
+  font-size: 8px;
+  letter-spacing: .05em;
   color: var(--white-dim);
   text-align: center;
   padding: 0 6px;
-  line-height: 1.3;
+  line-height: 1.24;
   flex-shrink: 0;
   opacity: 0.4;
   transition: opacity .25s ease, color .25s ease;
@@ -9576,8 +9600,16 @@ input, select, textarea {
   -webkit-line-clamp: 3;
   overflow: hidden;
 }
-.attr-drum-item.long{ font-size: 8px; letter-spacing: .05em; line-height: 1.24; }
-.attr-drum-item.xlong{ font-size: 7px; letter-spacing: .02em; line-height: 1.2; }
+/* ЕДИНЫЙ кегль для всех значений — 8px, как у «Перчатка на одной руке».
+   Раньше длина значения меняла размер шрифта: 9px / 8px / 7px. Логика была
+   верная (всё должно влезать), но в ленте это выглядело как разнобой —
+   соседние строки набраны разным кеглем.
+   Классы .long/.xlong оставлены: их проставляет разметчик ленты, и по ним
+   удобно опознать длинные значения. Размер они больше не меняют — только
+   межбуквенное расстояние, и то в пределах различимого. */
+.attr-drum-item.long,
+.attr-drum-item.xlong{ font-size: 8px; letter-spacing: .05em; line-height: 1.24; }
+.attr-drum-item.xlong{ letter-spacing: .02em; }
 .attr-drum-item.selected{
   color: var(--white);
   opacity: 1;
@@ -11723,7 +11755,17 @@ input, select, textarea {
   padding: var(--sec-y) 0 var(--sec-y-join);
   scroll-margin-top: 80px;
 }
-.relic-in { width: min(1160px, calc(100% - 48px)); margin: 0 auto; position: relative; }
+/* Ширина по общей сетке страницы. Раньше здесь стояло 1160px, тогда как
+   соседние разделы (.faq-in, .aw-in, .collab-in, каталог) живут на 1360px:
+   на десктопе блок Мощи вставал на [140, 1300] против [40, 1400] у всех
+   прочих и читался как выпавший из ряда. */
+/* Меняется ТОЛЬКО верхний предел: было 1160px, стало 1360px — по общей
+   сетке страницы (.faq-in, .aw-in, каталог). На десктопе блок Мощи вставал
+   на [140, 1300] против [40, 1400] у соседей и читался как выпавший из ряда.
+   Формулу с calc трогать нельзя: на неё завязан боковой отступ 24px на
+   телефоне. Первая попытка заменить всё на max-width этот отступ снесла —
+   карточки Мощи упёрлись в края экрана. */
+.relic-in { width: min(1360px, calc(100% - 48px)); margin: 0 auto; position: relative; }
 
 /* ── Шапка секции — v2 .sec-head: марка с янтарным штрихом, заголовок, лид ── */
 .relic-head { max-width: 76ch; margin-bottom: var(--head-gap); }
@@ -16720,7 +16762,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <!-- ── СОГЛАСИЕ НА ОБРАБОТКУ ПД (152-ФЗ) ── -->
       <label class="chk-consent" for="chkConsent">
         <input type="checkbox" id="chkConsent" class="chk-consent-input">
-        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-x"/></svg></span>
+        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
         <span class="chk-consent-text">
           Подтверждаю согласие на обработку<span class="req-star">*</span>
           <button type="button" class="chk-consent-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>
@@ -16847,7 +16889,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="echo-reveal-block">
           <label class="echo-reveal-toggle" for="echoOrderReveal">
             <input type="checkbox" id="echoOrderReveal" onchange="toggleEchoOrderReveal()">
-            <span class="echo-reveal-check" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-x"/></svg></span>
+            <span class="echo-reveal-check" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
             <span class="echo-reveal-text">
               <span class="echo-reveal-title">Прозвучать в обоих мирах</span>
               <span class="echo-reveal-sub">По умолчанию Эхо анонимно — голос ниоткуда. Отметив, вы попросите MARKETSPACE и наш мир знать, чей это сигнал. Ваш Маркер появится в потоке данных рядом с Эхо, которое прозвучало.</span>
@@ -16884,7 +16926,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <!-- Согласие на ПД (та же структура что в основном чекауте) -->
       <label class="chk-consent" for="echoOrderConsent">
         <input type="checkbox" id="echoOrderConsent" class="chk-consent-input" onchange="_updateEchoOrderSubmit()">
-        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-x"/></svg></span>
+        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
         <span class="chk-consent-text">
           Подтверждаю согласие на обработку<span class="req-star">*</span>
           <button type="button" class="chk-consent-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>
@@ -17313,8 +17355,12 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 /* ЧИТАЕМОСТЬ МЕЛКИХ КРАСНЫХ ЛЕЙБЛОВ (2026-07-30). Метки 8–10px шли
    цветом --red2 и давали ≈4.0:1 при норме 4.5:1 — на ярком свету
    пропадали первыми. Тон сохранён, светлее на две ступени. */
+/* .cookie-banner-ok из этого списка убрана: правило поднимало контраст
+   красных букв на ТЁМНОМ фоне, а кнопка теперь сама залита красным и текст
+   на ней белый. Оставь её здесь — и буквы снова стали бы красными по
+   красному, то есть нечитаемыми. */
 .aw-kicker, .clabel, .architect-label, .cookie-banner-label,
-.cookie-banner-ok, .donate-channel-freq, .tech-card-kicker {
+.donate-channel-freq, .tech-card-kicker {
   color: var(--red-label);
 }
 /* ── Полоски УБРАНЫ из модальных окон ── */
@@ -17676,7 +17722,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         </div>
         <label class="preorder-privacy" id="preorderConsentWrap" for="preorderConsent">
           <input type="checkbox" id="preorderConsent" class="preorder-privacy-input" onchange="validatePreorderField('consent')">
-          <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-x"/></svg></span>
+          <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
           <span class="preorder-privacy-text">
             Подтверждаю согласие на обработку
             <button type="button" class="preorder-privacy-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>.
@@ -18150,7 +18196,9 @@ function _ewCaptchaSetButtonText(btn, text){
     btn.innerHTML = '';
     btn.appendChild(новый);
     btn.classList.remove('ew-btn-swap');
-  }, 300);
+    /* 360мс = длительность прокрутки (.34s) плюс кадр. Снимешь класс раньше —
+       overflow:hidden исчезнет посреди хода, и текст выедет за кромку. */
+  }, 360);
 }
 
 function _ewSmartCaptchaSetBusy(opts, busy){
@@ -31788,7 +31836,7 @@ function _spinEchoAuraDrum(onDone){
 
         <label class="chk-consent return-chk-consent" for="returnConsent">
           <input type="checkbox" id="returnConsent" class="chk-consent-input" required>
-          <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" aria-hidden="true"><use href="#i-x"/></svg></span>
+          <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
           <span class="chk-consent-text return-consent-text">
             <span class="return-consent-title">Подтверждаю отправку заявки<span class="req-star">*</span></span>
             <span class="return-consent-sub">Я понимаю, что заявка будет рассмотрена по условиям публичной оферты и законодательства РФ. Также подтверждаю согласие на обработку персональных данных в рамках обработки заявки.</span>
