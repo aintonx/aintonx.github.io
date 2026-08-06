@@ -15755,7 +15755,13 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
            в ритме Морзе: HELP US — сигнал бедствия Вишей, знающих правду о
            Переходе. Пасхалка-крючок для будущих серий; полная легенда:
            «спасите нас — мы знаем, куда ведёт Переход». -->
-      <div class="obs-eq" data-obs-eq data-morse="HELP US" aria-hidden="true"></div>
+      <!-- Полосы лежат в разметке, а не создаются скриптом. Скрипт терминала
+           стоит в самом низу документа, и до него страница успевала
+           отрисоваться целиком — эквалайзер возникал заметно позже всего
+           остального. Диаграмма произвольная и данных ниоткуда не ждёт,
+           поэтому её начальный профиль (арка к центру) задан сразу.
+           Скрипт эти полосы подхватывает и оживляет, новых не плодит. -->
+      <div class="obs-eq" data-obs-eq data-morse="HELP US" aria-hidden="true"><span style="transform:scaleY(0.328)"></span><span style="transform:scaleY(0.471)"></span><span style="transform:scaleY(0.517)"></span><span style="transform:scaleY(0.667)"></span><span style="transform:scaleY(0.737)"></span><span style="transform:scaleY(0.837)"></span><span style="transform:scaleY(0.950)"></span><span style="transform:scaleY(0.916)"></span><span style="transform:scaleY(0.762)"></span><span style="transform:scaleY(0.843)"></span><span style="transform:scaleY(0.979)"></span><span style="transform:scaleY(0.950)"></span><span style="transform:scaleY(0.775)"></span><span style="transform:scaleY(0.985)"></span><span style="transform:scaleY(0.914)"></span><span style="transform:scaleY(1.000)"></span><span style="transform:scaleY(1.000)"></span><span style="transform:scaleY(0.911)"></span><span style="transform:scaleY(0.871)"></span><span style="transform:scaleY(0.730)"></span><span style="transform:scaleY(0.691)"></span><span style="transform:scaleY(0.561)"></span><span style="transform:scaleY(0.457)"></span><span style="transform:scaleY(0.318)"></span></div>
       <div class="obs-row"><span class="obs-rk">ЗАПИСЬ В ПАМЯТЬ APERTURA</span><span class="obs-rv c" data-obs-rec>ФИКСИРУЕТСЯ<span class="obs-dots" aria-hidden="true"></span></span></div>
       <div class="obs-row"><span class="obs-rk">РЕЛИКВИЙ В КАТАЛОГЕ 01-2026</span><span class="obs-rv">12</span></div>
       <div class="obs-row obs-lock" onclick="terminalAccessDenied('PERIMETER.STATUS',this)"><span class="obs-rk">PERIMETER.STATUS</span><span class="obs-rv mut">STABLE<svg class="obs-lockico" aria-hidden="true"><use href="#i-lock"/></svg></span></div>
@@ -38152,7 +38158,16 @@ footer {
      конверт вспышки (--tx). */
   var eq = term.querySelector('[data-obs-eq]');
   var BARS = 24, bars = [];
-  if(eq){ for(var i=0;i<BARS;i++){ var b=document.createElement('span'); eq.appendChild(b); bars.push(b); } }
+  if(eq){
+    /* Полосы уже стоят в разметке — берём готовые. Раньше они создавались
+       здесь, но этот скрипт лежит в самом низу документа: до него страница
+       успевала отрисоваться целиком, и эквалайзер появлялся заметно позже
+       всего остального. Создаём только недостающие — на случай, если
+       разметку когда-нибудь укоротят. */
+    bars = Array.prototype.slice.call(eq.children);
+    for(var i=bars.length;i<BARS;i++){ var b=document.createElement('span'); eq.appendChild(b); bars.push(b); }
+    bars.length = BARS;
+  }
   var eqBase = [], eqAmp = [], eqFrq = [], eqPh = [], eqAmp2 = [], eqFrq2 = [], eqPh2 = [], eqImp = [];
   for(var p=0; p<BARS; p++){
     var arc = Math.sin(Math.PI*(p+0.5)/BARS);
@@ -39347,13 +39362,23 @@ footer {
 .echo-reveal-check::after,
 .preorder-privacy-box::after{ display: none !important; }
 
-/* Знак СТОИТ НА МЕСТЕ и только проявляется.
-   Раньше он приезжал масштабом .7 → 1: на глифе 13px это 9,1px в первом
-   кадре и 13px в последнем, то есть штрихи расходятся от центра прямо на
-   глазах — читается как «прыгнул», хотя центр не сдвигается ни на пиксель
-   (замерено: смещение 0/0 до и после отметки).
-   Оставлена одна прозрачность: знак появляется там же, где потом стоит. */
+/* Знак ПРИБИТ к центру коробки и только проявляется.
+   Две прошлые попытки чинили это полумерами: сначала убрал масштаб .7→1,
+   потом добавил viewBox. В Chromium замер каждый раз показывал ноль
+   смещения, а на телефоне знак продолжал ехать — значит виновата была не
+   анимация, а сама раскладка: знак стоял элементом сетки, и его положение
+   зависело от того, как движок посчитает размер SVG до первой отрисовки.
+   Safari считает это иначе, чем Chromium, отсюда и расхождение.
+
+   Абсолютное позиционирование убирает саму возможность сдвига: знак
+   вынесен из потока и привязан к центру коробки. Что бы ни решил движок о
+   его собственных размерах, точка привязки останется той же.
+   Меняется ТОЛЬКО прозрачность — никаких transform, которые могли бы
+   сдвинуть точку отсчёта. */
 .cb-mark{
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
   width: 13px; height: 13px;
   color: var(--ink);
   fill: none;
@@ -39376,11 +39401,15 @@ footer {
   box-shadow: inset 0 1px 0 rgba(255,255,255,.12) !important;
   animation: none !important;
 }
+/* ТОЛЬКО прозрачность. Здесь оставался transform:scale(1) от прежнего
+   варианта со «всплытием» знака — и он затирал центрирующий
+   translate(-50%,-50%), из-за чего в момент отметки знак прыгал ровно на
+   половину своего размера (замерено: 6.5px по обеим осям при ширине 13px).
+   Это и был тот самый съезд. Любой transform в этом правиле вернёт его. */
 .chk-consent-input:checked + .chk-consent-box .cb-mark,
 .preorder-privacy-input:checked + .preorder-privacy-box .cb-mark,
 .echo-reveal-toggle input:checked + .echo-reveal-check .cb-mark{
   opacity: 1;
-  transform: scale(1);
 }
 @media (hover:hover) and (pointer:fine){
   .chk-consent:hover .chk-consent-box,
