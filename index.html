@@ -3807,8 +3807,20 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   text-transform: uppercase;
   white-space: nowrap;
 }
+/* ── ЦВЕТ МОЩИ — ПО КЛАССУ РЕЛИКВИИ ──────────────────────────────────
+   Буква и шкала были жёстко красными у всех четырёх классов. Красный в
+   языке «Линза» означает тревогу и запрет, а тут это характеристика
+   товара — и вдобавок все реликвии выглядели одинаково.
+   Цвета взяты те же, что уже носят значок мощи на карточке каталога
+   (.p-pw) и плашка на изображении, чтобы один класс всюду читался одним
+   цветом. Переменная объявляется на носителе data-power и наследуется
+   внутрь — буква, разделитель и сегменты подхватывают её сами. */
+.mclarity-power[data-power="K"]{ --мощь: #8e8eb0;        --мощь-свет: rgba(142,142,176,.55); }
+.mclarity-power[data-power="C"]{ --мощь: var(--cyan);    --мощь-свет: rgba(0,200,200,.55); }
+.mclarity-power[data-power="R"]{ --мощь: var(--warm-hi); --мощь-свет: rgba(232,195,122,.55); }
+.mclarity-power[data-power="S"]{ --мощь: var(--red-hi);  --мощь-свет: rgba(230,69,69,.55); }
 .mclarity-power {
-  color: var(--red2);
+  color: var(--мощь, var(--red2));
   gap: 7px;
 }
 .rpow-letter,
@@ -3816,7 +3828,7 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--red2);
+  color: var(--мощь, var(--red2));
   font-family: var(--font-code);
   font-size: 10px;
   line-height: 1;
@@ -4005,13 +4017,13 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   transition: background .25s, box-shadow .25s;
 }
 .rpow-seg.on {
-  background: var(--red2);
-  box-shadow: 0 0 6px rgba(192,40,40,0.55);
+  background: var(--мощь, var(--red2));
+  box-shadow: 0 0 6px var(--мощь-свет, rgba(192,40,40,0.55));
 }
 .rpow-val {
   font-family: var(--font-code);
   font-size: 9px;
-  color: var(--red2);
+  color: var(--мощь, var(--red2));
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -8737,29 +8749,57 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   border-radius: 99px;
   padding: 5px 10px;
 }
-/* Кружок Мощи — v2 .p-pw */
+/* ── МОЩЬ НА ПРЕВЬЮ — ОТДЕЛЬНАЯ КАПСУЛА, КАК АРТИКУЛ ──────────────────
+   Был кружок 26px с одной буквой: на фотографии он читался плохо — буква
+   мелкая, фона под ней почти нет, а форма спорила с капсулой артикула
+   напротив. Теперь это такая же капсула (радиус 99px, тот же фон, кромка,
+   кегль и трекинг, что у .arttag), но СВОЙ контейнер — артикул и мощь не
+   объединяются, они просто говорят на одном языке.
+   К букве добавлена шкала уровня: класс виден не только буквой, но и
+   количеством делений, как в описании внутри карточки. */
 .p-pw {
   position: absolute;
   top: 12px; right: 12px;
   z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  width: 26px; height: 26px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(5,5,6,0.6);
+  letter-spacing: 0.16em;
+  padding: 5px 9px;
+  border-radius: 99px;
+  background: rgba(5,5,6,0.55);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.16);
-  color: var(--ink);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--ink-2);
+  /* Межстрочный интервал НЕ фиксируем: у артикула он обычный, и стоило
+     поставить line-height:1, как капсула стала на 2px ниже соседней. */
 }
-.p-pw.S { color: var(--red-hi); border-color: rgba(230,69,69,0.5); }
-.p-pw.R { color: var(--warm-hi); border-color: rgba(232,195,122,0.45); }
-.p-pw.C { color: var(--cyan); border-color: rgba(0,200,200,0.35); }
-.p-pw.K { color: #8e8eb0; border-color: rgba(142,142,176,0.45); }
+/* Цвет — тот же источник, что у мощи в описании карточки: один класс
+   всюду одного цвета. Дублируем по классу и по data-power, чтобы значок
+   был окрашен ещё до того, как отработает разметчик шкалы. */
+.p-pw.K, .p-pw[data-power="K"]{ --мощь: #8e8eb0;        --мощь-свет: rgba(142,142,176,.55); border-color: rgba(142,142,176,0.32); }
+.p-pw.C, .p-pw[data-power="C"]{ --мощь: var(--cyan);    --мощь-свет: rgba(0,200,200,.55);   border-color: rgba(0,200,200,0.30); }
+.p-pw.R, .p-pw[data-power="R"]{ --мощь: var(--warm-hi); --мощь-свет: rgba(232,195,122,.55); border-color: rgba(232,195,122,0.32); }
+.p-pw.S, .p-pw[data-power="S"]{ --мощь: var(--red-hi);  --мощь-свет: rgba(230,69,69,.55);   border-color: rgba(230,69,69,0.34); }
+.p-pw-letter{
+  color: var(--мощь, var(--ink));
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+.p-pw-bar{ display: inline-flex; gap: 2px; }
+.p-pw-bar i{
+  width: 5px; height: 3px;
+  border-radius: 1px;
+  background: rgba(255,255,255,.20);
+}
+.p-pw-bar i.on{
+  background: var(--мощь, var(--ink));
+  box-shadow: 0 0 5px var(--мощь-свет, transparent);
+}
 /* Статус — видимая пилюля v2 .p-status (низ-лево) */
 .pbeacon {
   display: inline-flex !important;
@@ -16435,16 +16475,23 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
     </div>
     <div class="mimgw">
       <img id="mimg" src="" alt="" loading="eager" decoding="async" fetchpriority="high">
-      <!-- Одна строка у верхней кромки изображения: артикул, затем мощь —
-           буква, название и шкала. Прежде мощь была кружком в правом верхнем
-           углу и вставала вплотную к кнопке закрытия. -->
-      <span class="mimg-power" id="mimgPower">
-        <span class="mimg-tag" id="mimgTag"></span>
-        <span class="mimg-power-sep" aria-hidden="true"></span>
-        <span class="mimg-power-letter" id="mimgPowerLetter"></span>
-        <span class="mimg-power-name" id="mimgPowerName"></span>
-        <span class="mimg-power-bar" id="mimgPowerBar" aria-hidden="true">
-          <i></i><i></i><i></i><i></i>
+      <!-- Две ОТДЕЛЬНЫЕ метки у верхней кромки изображения: слева артикул,
+           справа мощь (буква, название, шкала). Раньше они лежали в одной
+           коробке через разделитель и читались как одно свойство, хотя это
+           разные вещи: номер экземпляра и класс реликвии.
+           Обёртка нужна, чтобы метки не наезжали друг на друга: она тянется
+           по ширине изображения, разводит их по краям, а длинное название
+           мощи ужимается многоточием вместо выталкивания артикула. -->
+      <span class="mimg-badges">
+        <span class="mimg-tagbox">
+          <span class="mimg-tag" id="mimgTag"></span>
+        </span>
+        <span class="mimg-power" id="mimgPower">
+          <span class="mimg-power-letter" id="mimgPowerLetter"></span>
+          <span class="mimg-power-name" id="mimgPowerName"></span>
+          <span class="mimg-power-bar" id="mimgPowerBar" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+          </span>
         </span>
       </span>
     </div>
@@ -20748,6 +20795,9 @@ function openModal(i){
     pwrBar.classList.toggle('sold', status==='transition_complete');
     pwrVal.classList.toggle('sold', status==='transition_complete');
     const pwrLabel=(p.power || 'K') + ' · ' + pwrName;
+    /* Класс мощи — в разметку: от него CSS берёт цвет буквы и шкалы.
+       Без этого весь список всегда красный, каким бы ни был класс. */
+    pwrVal.dataset.power = p.power || 'K';
     if(pwrLetter) pwrLetter.textContent = p.power || 'K';
     pwrVal.setAttribute('aria-label', 'RELIC.POWER: ' + pwrLabel);
     pwrVal.setAttribute('title', pwrLabel);
@@ -28253,11 +28303,63 @@ function selectGender(el, g){
     });
   }
 
+  /* ══ ЛЕНТЫ БАРАБАНА ══════════════════════════════════════════════════
+     Лента заведомо длиннее пути, чтобы барабан крутился ОДНИМ непрерывным
+     движением до нужной позиции, без перескоков.
+
+     Витков четыре, а не шесть. Шесть давали 672 узла на три колонки, и
+     вставка такого объёма вместе с последующим пересчётом раскладки стоила
+     заметных пропусков кадров. Путь при этом не пострадал: цель по-прежнему
+     во втором с конца витке, то есть выше и ниже неё остаются целые витки —
+     по краям окна видно продолжение ленты. */
+  const DRUM_LOOPS = 4;
+
+  function построитьЛенты(){
+    ATTRS.forEach((attr, colIdx)=>{
+      const strip = document.getElementById('drumStrip'+colIdx);
+      if(!strip) return;
+      const vals = valuesOf(attr);
+      /* Второй и последующие запуски: набор значений тот же, значит и лента
+         та же — пересобирать сотни узлов незачем. Достаточно снять отметку
+         и вернуть ленту в исходное положение. Это заметно на сценарии
+         «закрыл форму на барабане и открыл снова»: раньше каждый заход
+         платил полной пересборкой разметки. */
+      const отпечаток = vals.length + ':' + vals.join('|').length;
+      if(strip.dataset.лента === отпечаток && strip.children.length){
+        const было = strip.querySelector('.attr-drum-item.selected');
+        if(было) было.classList.remove('selected');
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateY(0)';
+        return;
+      }
+      strip.dataset.лента = отпечаток;
+      let html = '';
+      for(let l=0; l<DRUM_LOOPS; l++){
+        vals.forEach(v=>{
+          /* Значения разной длины: «Каре» и «Тонкий галстук на ослабленном
+             узле» в одной ленте. Длинным уменьшаем кегль, иначе четвёртая
+             строка вылезает за 40px ячейки и обрезается виньеткой. */
+          var fit = v.length > 26 ? ' xlong' : (v.length > 17 ? ' long' : '');
+          html += '<div class="attr-drum-item' + fit + '"><span>' + v + '</span></div>';
+        });
+      }
+      strip.innerHTML = html;
+    });
+  }
+
   window.launchAttrDrum = function(){
     pickFinals();
 
     const section = document.getElementById('attrDrumSection');
     if(!section) return;
+
+    /* ══ ЛЕНТЫ СТРОЯТСЯ ПЕРВЫМИ ══════════════════════════════════════
+       Порядок важен для плавности. Раньше сначала запускалась анимация
+       раскрытия секции, и только потом в ленты вставлялись сотни узлов —
+       тяжёлая работа приходилась ровно на первые кадры движения, и оно
+       начиналось рывком (замер: 12 пропущенных кадров на появлении).
+       Теперь разметка готова ДО того, как что-то поедет. */
+    построитьЛенты();
 
     /* ── ПОЯВЛЕНИЕ ────────────────────────────────────────────────────
        Раньше секция просто получала display:block и возникала целиком за
@@ -28282,35 +28384,11 @@ function selectGender(el, g){
       section.style.opacity = '';
     }, 620);
 
-    // Scroll to drum section inside chkBody
-    const body = document.getElementById('chkBody');
-    if(body) setTimeout(()=>section.scrollIntoView({behavior:'smooth',block:'nearest'}),120);
-
-    /* ══ ЛЕНТЫ БАРАБАНА ══════════════════════════════════════════════
-       Было: короткая лента и «телепорт» в начало на середине разгона
-       (curPos снапался обратно), из-за чего движение рвалось и значения
-       прыгали. Стало: лента заведомо длинная, крутится ОДНИМ непрерывным
-       движением до нужной позиции — перескоков нет вовсе.
-       Точка остановки берётся из фактической геометрии ячейки, а не из
-       арифметики по константам, и в конце проверяется по факту. */
-    const DRUM_LOOPS = 6;
-
-    ATTRS.forEach((attr, colIdx)=>{
-      const strip = document.getElementById('drumStrip'+colIdx);
-      if(!strip) return;
-      const vals = valuesOf(attr);
-      let html = '';
-      for(let l=0; l<DRUM_LOOPS; l++){
-        vals.forEach(v=>{
-          /* Значения разной длины: «Каре» и «Тонкий галстук на ослабленном
-             узле» в одной ленте. Длинным уменьшаем кегль, иначе четвёртая
-             строка вылезает за 40px ячейки и обрезается виньеткой. */
-          var fit = v.length > 26 ? ' xlong' : (v.length > 17 ? ' long' : '');
-          html += '<div class="attr-drum-item' + fit + '"><span>' + v + '</span></div>';
-        });
-      }
-      strip.innerHTML = html;
-    });
+    /* Подкрутка к барабану — ПОСЛЕ раскрытия, а не через 120мс.
+       Плавная прокрутка идёт своей кривой и своим временем: запущенная
+       посреди 520-миллисекундной анимации высоты, она тянула контейнер
+       навстречу растущей секции, и оба движения читались как дрожь. */
+    setTimeout(()=>section.scrollIntoView({behavior:'smooth', block:'nearest'}), 640);
 
     ATTRS.forEach((attr, colIdx)=>{
       const strip = document.getElementById('drumStrip'+colIdx);
@@ -28359,7 +28437,14 @@ function selectGender(el, g){
              позиции применялась мгновенно — на глаз это был рывок уже
              остановившегося барабана. Теперь доводка едет коротким
              переходом: её не видно, но и скачка нет. */
-          Array.from(items).forEach((el,i)=>el.classList.toggle('selected', i === target));
+          /* Отмечаем ТОЛЬКО нужную ячейку. Раньше здесь шёл перебор всей
+             ленты с classList.toggle на каждом узле — 224 записи на колонку,
+             672 на три, и всё это в один кадр ровно в момент остановки.
+             Это и был худший кадр замера (150мс). Снять класс с прежней
+             ячейки и поставить на новую — две записи вместо сотен. */
+          const прежняя = strip.querySelector('.attr-drum-item.selected');
+          if(прежняя && прежняя !== cell) прежняя.classList.remove('selected');
+          cell.classList.add('selected');
           const wr = win.getBoundingClientRect(), cr = cell.getBoundingClientRect();
           const diff = (cr.top + cr.height/2) - (wr.top + wr.height/2);
           if(Math.abs(diff) > 0.6){
@@ -32078,6 +32163,30 @@ function acceptCookies(){
       const свой = card.querySelector('.p-pw');
       if(свой){
         if(!свой.title) свой.title = подпись;
+        /* Класс — в data-атрибут: от него CSS берёт цвет буквы и делений.
+           Раньше цвет держался только на классе из разметки, а его там нет
+           у карточек, которые приходят из каталога API. */
+        свой.dataset.power = cls;
+        /* Шкала уровня рядом с буквой. Строим один раз: повторный проход
+           разметчика (он вызывается и после обновления каталога) не должен
+           плодить вторую шкалу. */
+        if(!свой.querySelector('.p-pw-bar')){
+          const уровни = {K:1, C:2, R:3, S:4};
+          const буква = document.createElement('span');
+          буква.className = 'p-pw-letter';
+          буква.textContent = (свой.textContent || '').trim() || cls;
+          const шкала = document.createElement('span');
+          шкала.className = 'p-pw-bar';
+          шкала.setAttribute('aria-hidden', 'true');
+          for(let i = 0; i < 4; i++){
+            const с = document.createElement('i');
+            if(i < (уровни[cls] || 1)) с.className = 'on';
+            шкала.appendChild(с);
+          }
+          свой.textContent = '';
+          свой.appendChild(буква);
+          свой.appendChild(шкала);
+        }
       } else if(!card.querySelector('.pcard-power')){
         const badge = document.createElement('span');
         badge.className = 'pcard-power';
@@ -39033,16 +39142,40 @@ footer {
               transform .34s cubic-bezier(.34,1.2,.64,1);
 }
 /* Выпавшее значение обведено, как в эталоне: видно, что барабан сел
-   именно на него, а не просто подсветил текст. */
+   именно на него, а не просто подсветил текст.
+
+   Обводка живёт на ВЛОЖЕННОМ слое с отступом от краёв, а не на самой
+   ячейке. Причина: ячейка занимает всю ширину окна, окно скруглено и
+   обрезает содержимое (overflow:hidden), плюс на ячейке стоял
+   scale(1.02) — она становилась ШИРЕ окна. В итоге боковые стороны рамки
+   срезало, и она читалась как две скобки вместо рамки.
+   Отступ 6px по бокам гарантирует, что рамка целиком внутри при любом
+   масштабе; текст лежит выше слоя, поэтому подложка его не перекрывает. */
+#chkBody .attr-drum-item{ position: relative; }
+#chkBody .attr-drum-item > span{ position: relative; z-index: 1; }
 #chkBody .attr-drum-item.selected{
   transform: scale(1.02);
+}
+#chkBody .attr-drum-item.selected::before{
+  content: '';
+  position: absolute;
+  inset: 3px 6px;
+  z-index: 0;
   border-radius: 10px;
   background: rgba(255,255,255,.05);
   box-shadow: inset 0 0 0 1px rgba(0,200,200,.28);
+  pointer-events: none;
 }
 
 /* Блок итога — .reel-out эталона: компактная циановая плашка под барабаном.
    Значения одной строкой через точку, сверху метка, снизу пояснение. */
+/* Бегущая градиентная полоска сверху — из прошлого оформления панели.
+   Она объявлена с animation:infinite и перекрашивает градиент КАЖДЫЙ кадр
+   бесконечно, уже после того, как барабан остановился: замер показал 22
+   пропущенных кадра в полном покое, а на телефоне это ещё и постоянный
+   расход батареи. В нынешнем виде панель — спокойная циановая плашка, и
+   полоска в неё не входит. */
+#chkBody .attr-result-panel::before{ content: none; display: none; animation: none; }
 #chkBody .attr-result-panel{
   display: none;
   margin-top: 12px;
@@ -39166,6 +39299,12 @@ footer {
 .echo-reveal-check::after,
 .preorder-privacy-box::after{ display: none !important; }
 
+/* Знак СТОИТ НА МЕСТЕ и только проявляется.
+   Раньше он приезжал масштабом .7 → 1: на глифе 13px это 9,1px в первом
+   кадре и 13px в последнем, то есть штрихи расходятся от центра прямо на
+   глазах — читается как «прыгнул», хотя центр не сдвигается ни на пиксель
+   (замерено: смещение 0/0 до и после отметки).
+   Оставлена одна прозрачность: знак появляется там же, где потом стоит. */
 .cb-mark{
   width: 13px; height: 13px;
   color: var(--ink);
@@ -39174,8 +39313,7 @@ footer {
   stroke-width: 2.4;
   stroke-linecap: round;
   opacity: 0;
-  transform: scale(.7);
-  transition: opacity .16s var(--ease-out), transform .2s var(--ease-out);
+  transition: opacity .18s var(--ease-out);
   pointer-events: none;
 }
 
@@ -39275,37 +39413,43 @@ footer {
   animation: breathe 3.2s ease-in-out infinite;
 }
 .moverlay .mimgw{ position: relative; }
-/* Артикул живёт внутри плашки мощи — отдельной коробки ему больше не
-   нужно, иначе получалась таблетка внутри таблетки. */
-.moverlay .mimg-tag{
-  font-family: var(--font-mono); font-size: 8px; letter-spacing: .13em;
-  color: var(--ink-3); white-space: nowrap; flex-shrink: 0;
-}
-.moverlay .mimg-power-sep{
-  width: 1px; height: 14px; flex-shrink: 0;
-  background: rgba(255,255,255,.14);
-}
-/* Мощь — плашка в одной строке с артикулом, у верхней кромки изображения.
-   Круглый значок в правом верхнем углу стоял вплотную к кнопке закрытия,
-   поэтому мощь переехала сюда: метка артикула слева, мощь сразу за ней. */
-.moverlay .mimg-power{
+/* Ряд меток по верхней кромке изображения: артикул слева, мощь справа.
+   Обёртка разводит их по краям и не даёт наехать друг на друга. */
+.moverlay .mimg-badges{
   position: absolute; left: 11px; right: 11px; top: 11px; z-index: 2;
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 12px; border-radius: 14px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 8px; pointer-events: none;
+}
+/* Обе метки — капсулы одного вида, но РАЗНЫЕ коробки: номер экземпляра и
+   класс реликвии не должны читаться как одно свойство. */
+.moverlay .mimg-tagbox,
+.moverlay .mimg-power{
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 7px 11px; border-radius: 99px;
   background: rgba(8,8,10,.6); border: 1px solid rgba(255,255,255,.12);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
   backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+.moverlay .mimg-tagbox{ flex-shrink: 0; }
+.moverlay .mimg-tag{
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .13em;
+  color: var(--ink-3); white-space: nowrap;
+}
+.moverlay .mimg-power{
+  min-width: 0;            /* иначе длинное название распирает капсулу */
   --_pw: var(--ink-2);
 }
 .moverlay .mimg-power[data-power="K"]{ --_pw: #8e8eb0; }
 .moverlay .mimg-power[data-power="C"]{ --_pw: var(--cyan-hi); }
 .moverlay .mimg-power[data-power="R"]{ --_pw: var(--warm-hi); }
 .moverlay .mimg-power[data-power="S"]{ --_pw: var(--red-hi); }
+/* Буква — просто цветом, без кружка. Кружок делал капсулу мощи на 12px
+   выше соседней капсулы артикула, и ряд читался кривым. Заодно это тот же
+   приём, что на превью каталога: класс всюду показан одинаково. */
 .moverlay .mimg-power-letter{
-  width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%;
-  display: grid; place-items: center;
-  font-family: var(--font-mono); font-size: 9px; color: var(--_pw);
-  background: rgba(255,255,255,.05); border: 1px solid currentColor;
+  flex-shrink: 0;
+  font-family: var(--font-mono); font-size: 8px; font-weight: 700;
+  letter-spacing: .1em; color: var(--_pw);
 }
 .moverlay .mimg-power-name{
   font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .14em;

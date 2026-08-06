@@ -39,6 +39,23 @@ async function открытьЧекаут(page) {
   await page.waitForTimeout(500);
 }
 
+/**
+ * Пересеять генератор случайных чисел ПЕРЕД запуском барабана.
+ *
+ * Стенд уже подменяет Math.random на входе в страницу, но этого мало:
+ * барабан берёт значения из той же последовательности, а сколько чисел
+ * израсходуют другие скрипты до него — от прогона к прогону разное. Выпадали
+ * то короткие значения, то длинные, строка итога переносилась по-разному, и
+ * высота панели гуляла на 22px — регрессия считала это правкой.
+ * Пересев прямо перед запуском делает выбор барабана воспроизводимым.
+ */
+async function пересеять(page) {
+  await page.evaluate(() => {
+    let s = 7;
+    Math.random = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+  });
+}
+
 /** Нажать «Далее» и дождаться, что рейка переключилась на нужный шаг. */
 async function шагДалее(page, откуда, куда) {
   await page.evaluate((i) => document.querySelectorAll('.chk-nav-next')[i].click(), откуда);
@@ -142,6 +159,7 @@ export const ZONES = [
     id: 'checkout-drum', имя: 'Чекаут · барабан атрибутов', sel: '.chk-modal',
     async open(page) {
       await ZONES.find((z) => z.id === 'checkout-3').open(page);
+      await пересеять(page);
       await page.evaluate(() => window.launchAttrDrum());
       await page.waitForTimeout(1400);   // ловим ленту в движении
     },
@@ -150,6 +168,7 @@ export const ZONES = [
     id: 'checkout-result', имя: 'Чекаут · панель результата', sel: '.chk-modal',
     async open(page) {
       await ZONES.find((z) => z.id === 'checkout-3').open(page);
+      await пересеять(page);
       await page.evaluate(() => window.launchAttrDrum());
       /* Ждём фактическую готовность, а не «примерно столько-то секунд».
          Колонки садятся по очереди и с разной длительностью, поэтому
