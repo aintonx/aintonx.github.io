@@ -39939,5 +39939,721 @@ h1, h2, h3,
   letter-spacing: normal;
 }
 </style>
+<!-- ═══════════════════════════════════════════════════════════════
+     ЭХО · ПОШАГОВОЕ ОФОРМЛЕНИЕ
+     ───────────────────────────────────────────────────────────────
+     Та же механика, что у заказа реликвии: рейка шагов, сцена с
+     перетеканием по высоте, направление хода, сброс при открытии.
+     Отдельным слоем, а НЕ правкой общего движка: тот жёстко завязан на
+     #chkBody, и обобщать его сейчас значило бы трогать работающую форму
+     заказа. Классы переиспользуются те же (.chk-rail, .chk-steps-stage,
+     .chk-step, .chk-nav) — оформление и длительность хода приезжают
+     из общего слоя сами, ничего дублировать не нужно.
+
+     Разбивка: [Содержимое Эхо] · [Канал связи] · [Раскрытие + согласие +
+     кнопка]. Барабан ауры в шаги не входит — он живёт после отправки и
+     заменяет собой форму, ровно как барабан атрибутов у реликвии. -->
+<script id="ew-echo-steps-js">
+(function(){
+  'use strict';
+  var ШАГИ = [{t:'Содержимое'}, {t:'Канал'}, {t:'Подтверждение'}];
+  var построено = false, тек = 0, рейка = null, шаги = [], сцена = null;
+
+  function ходМс(){
+    var ov = document.getElementById('echoOrderOverlay');
+    var v = ov ? getComputedStyle(ov).getPropertyValue('--chk-ход').trim() : '';
+    var n = parseFloat(v);
+    if(!n) return 620;
+    return /ms$/.test(v) ? n : n * 1000;
+  }
+
+  function собрать(){
+    if(построено) return true;
+    var тело = document.getElementById('echoOrderBody');
+    if(!тело) return false;
+    var форма = тело.querySelector('form');
+    if(!форма) return false;
+
+    var дети = Array.prototype.slice.call(форма.children);
+    var аура = форма.querySelector('.echo-aura-section');
+    var согласие = форма.querySelector('.chk-consent');
+    var кнопка = форма.querySelector('.echo-order-submit-wrap');
+    /* Разделы до ауры — это смысловые блоки формы. Согласие и кнопка в
+       разметке стоят ПОСЛЕ ауры, но принадлежат последнему шагу: их
+       переносим в его коробку, и аура остаётся за сценой. */
+    var доАуры = дети.filter(function(n){
+      return n !== аура && n !== согласие && n !== кнопка &&
+             дети.indexOf(n) < (аура ? дети.indexOf(аура) : дети.length);
+    });
+    if(доАуры.length < 3) return false;
+
+    var группы = [ [доАуры[0]], [доАуры[1]], доАуры.slice(2) ];
+    if(согласие) группы[2].push(согласие);
+    if(кнопка) группы[2].push(кнопка);
+
+    рейка = document.createElement('div');
+    рейка.className = 'chk-rail';
+    ШАГИ.forEach(function(с, i){
+      var э = document.createElement('div');
+      э.className = 'chk-rail-step' + (i === 0 ? ' on' : '');
+      э.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="t">' + с.t + '</span>';
+      рейка.appendChild(э);
+      if(i < ШАГИ.length - 1){
+        var л = document.createElement('span');
+        л.className = 'chk-rail-line';
+        рейка.appendChild(л);
+      }
+    });
+    форма.insertBefore(рейка, группы[0][0]);
+
+    сцена = document.createElement('div');
+    сцена.className = 'chk-steps-stage';
+    форма.insertBefore(сцена, группы[0][0]);
+
+    группы.forEach(function(г, i){
+      var короб = document.createElement('div');
+      короб.className = 'chk-step' + (i === 0 ? '' : ' is-hidden');
+      сцена.appendChild(короб);
+      г.forEach(function(у){ короб.appendChild(у); });
+      if(i < 2){
+        var нав = document.createElement('div');
+        нав.className = 'chk-nav';
+        нав.innerHTML =
+          (i > 0 ? '<button type="button" class="chk-nav-btn chk-nav-back">Назад</button>' : '') +
+          '<button type="button" class="chk-nav-btn chk-nav-next">' +
+          (i === 0 ? 'Далее · канал связи' : 'Далее · подтверждение') + '</button>';
+        короб.appendChild(нав);
+      } else {
+        var назад = document.createElement('div');
+        назад.className = 'chk-nav chk-nav-last';
+        назад.innerHTML = '<button type="button" class="chk-nav-btn chk-nav-back">Назад</button>';
+        короб.appendChild(назад);
+      }
+      шаги.push(короб);
+    });
+
+    форма.addEventListener('click', function(e){
+      var д = e.target.closest('.chk-nav-next');
+      if(д){ e.preventDefault(); идти(тек + 1); return; }
+      var н = e.target.closest('.chk-nav-back');
+      if(н){ e.preventDefault(); идти(тек - 1); }
+    });
+
+    построено = true;
+    return true;
+  }
+
+  /* Мягкая проверка перед переходом со второго шага: имя обязательно —
+     на нём стоит звёздочка в разметке. Остальные каналы связи
+     необязательные, их достаточность проверяет _updateEchoOrderSubmit
+     перед самой отправкой, и дублировать эту логику здесь нельзя:
+     ужесточив её, мы заблокировали бы людей на середине формы. */
+  function шагГоден(i){
+    if(i !== 1) return true;
+    var имя = document.getElementById('echoOrderName');
+    if(!имя) return true;
+    var пусто = !String(имя.value || '').trim();
+    имя.classList.toggle('chk-miss', пусто);
+    if(пусто){ try{ имя.focus({preventScroll:false}); }catch(e){ имя.focus(); } }
+    return !пусто;
+  }
+
+  function идти(next){
+    if(!построено || next === тек || next < 0 || next >= шаги.length) return;
+    if(next > тек && !шагГоден(тек)) return;
+    var из = шаги[тек], в = шаги[next];
+    var было = сцена ? сцена.getBoundingClientRect().height : 0;
+    var назад = next < тек;
+    if(сцена) сцена.classList.toggle('назад', назад);
+
+    из.classList.add('is-out');
+    в.classList.remove('is-hidden');
+    в.classList.add('is-enter');
+    void в.offsetHeight;
+
+    if(сцена){
+      var стало = сцена.getBoundingClientRect().height;
+      сцена.style.overflow = 'hidden';
+      сцена.style.height = было + 'px';
+      void сцена.offsetHeight;
+      сцена.style.transition = 'height var(--chk-ход) var(--ease-out-quart)';
+      сцена.style.height = стало + 'px';
+    }
+
+    requestAnimationFrame(function(){ в.classList.remove('is-enter'); });
+
+    var ход = ходМс();
+    setTimeout(function(){
+      if(шаги[тек] !== из) из.classList.add('is-hidden');
+      из.classList.remove('is-out');
+    }, ход);
+
+    if(сцена){
+      clearTimeout(сцена._ewОтпустить);
+      сцена._ewОтпустить = setTimeout(function(){
+        сцена.style.transition = '';
+        сцена.style.height = '';
+        сцена.style.overflow = '';
+      }, ход + 40);
+    }
+
+    тек = next;
+    Array.prototype.forEach.call(рейка.querySelectorAll('.chk-rail-step'), function(с, i){
+      с.classList.toggle('on', i === тек);
+      с.classList.toggle('done', i < тек);
+      var n = с.querySelector('.n');
+      if(n) n.textContent = (i < тек) ? '✓' : String(i + 1);
+    });
+    кВерху();
+  }
+
+  /* Кривая --ease-out-quart = cubic-bezier(.25,1,.5,1) — та же, что у
+     высоты сцены: прокрутка и коробка это одно движение. */
+  function лёгкость(x){
+    var x1 = .25, y1 = 1, x2 = .5, y2 = 1;
+    function A(a,b){ return 1 - 3*b + 3*a; }
+    function B(a,b){ return 3*b - 6*a; }
+    function C(a){ return 3*a; }
+    function зн(t,a,b){ return ((A(a,b)*t + B(a,b))*t + C(a))*t; }
+    function накл(t,a,b){ return 3*A(a,b)*t*t + 2*B(a,b)*t + C(a); }
+    var t = x;
+    for(var i = 0; i < 6; i++){
+      var s = накл(t, x1, x2);
+      if(!s) break;
+      t -= (зн(t, x1, x2) - x) / s;
+    }
+    return зн(t, y1, y2);
+  }
+
+  /* Прокручивает НАСТОЯЩИЙ скроллер окна. У .chk-body предел прокрутки
+     нулевой — вызов на нём был бы холостым, как это было у реликвии. */
+  function кВерху(){
+    var п = document.getElementById('echoOrderModal');
+    if(!п) return;
+    var от = п.scrollTop;
+    if(от <= 0) return;
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      п.scrollTop = 0;
+      return;
+    }
+    var старт = 0, ход = ходМс();
+    cancelAnimationFrame(п._ewКадр);
+    (function шаг(время){
+      if(!старт) старт = время;
+      var доля = Math.min(1, (время - старт) / ход);
+      п.scrollTop = от * (1 - лёгкость(доля));
+      if(доля < 1) п._ewКадр = requestAnimationFrame(шаг);
+    })(performance.now());
+  }
+
+  function сброс(){
+    if(!собрать()) return;
+    тек = 0;
+    if(сцена){
+      сцена.classList.remove('назад');
+      clearTimeout(сцена._ewОтпустить);
+      сцена.style.transition = '';
+      сцена.style.height = '';
+      сцена.style.overflow = '';
+      сцена.style.display = '';
+    }
+    шаги.forEach(function(к, i){
+      к.classList.toggle('is-hidden', i !== 0);
+      к.classList.remove('is-out','is-enter');
+      к.style.display = '';
+    });
+    Array.prototype.forEach.call(рейка.querySelectorAll('.chk-rail-step'), function(с, i){
+      с.classList.toggle('on', i === 0);
+      с.classList.remove('done');
+      var n = с.querySelector('.n');
+      if(n) n.textContent = String(i + 1);
+    });
+    if(рейка) рейка.style.display = '';
+  }
+
+  /* Барабан ауры запускается — форма уступает ему место, как у реликвии. */
+  var исхБарабан = window.startEchoAuraDrum || window._echoStartAuraDrum;
+  ['startEchoAuraDrum','_echoStartAuraDrum','runEchoAuraDrum'].forEach(function(имя){
+    var исх = window[имя];
+    if(typeof исх !== 'function') return;
+    window[имя] = function(){
+      if(построено){
+        if(рейка) рейка.style.display = 'none';
+        шаги.forEach(function(к){ к.style.display = 'none'; });
+        if(сцена) сцена.style.display = 'none';
+      }
+      return исх.apply(this, arguments);
+    };
+  });
+
+  /* Сброс вешаем на открытие окна Эхо — единственную точку входа. */
+  var исхОткрыть = window.openEchoOrder;
+  if(typeof исхОткрыть === 'function'){
+    window.openEchoOrder = function(){
+      var r = исхОткрыть.apply(this, arguments);
+      setTimeout(сброс, 30);
+      return r;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){ try{ собрать(); }catch(e){} });
+  window.inspectEchoSteps = function(){
+    return {ok: построено, шагов: шаги.length, текущий: тек, рейка: !!рейка,
+      подпись: 'Эхо · модель «шаги»'};
+  };
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════════
+     ЗАКАЗ КОНДЕНСАЦИИ · ДИАЛОГ
+     ───────────────────────────────────────────────────────────────
+     Эталон: design/lens-terminals.html, секция #cond — «Апертура
+     спрашивает сама». Форма превращается в переписку: лог реплик, одно
+     поле ответа, в конце согласие и отправка.
+
+     НАДСТРОЙКА, а не замена. Настоящие поля (#preorderItem,
+     #preorderContact, #preorderConsent) остаются в разметке и просто
+     скрываются: диалог пишет ответы в них. Поэтому submitPreorder,
+     validatePreorderField и вся проверка на сервере продолжают работать
+     с теми же id — путь отправки не тронут.
+
+     Тексты вопросов взяты ДОСЛОВНО из подсказок существующих полей,
+     чтобы не менять смысл заказа. -->
+<style id="ew-cond-dialog-css">
+#condDialog{ display:none; }
+#preorderSection.cond-dialog-on #condDialog{ display:block; }
+#preorderSection.cond-dialog-on .cond-hidden{ display:none !important; }
+.cond-dlg-log{
+  display:flex; flex-direction:column; gap:8px;
+  max-height:210px; overflow-y:auto; padding:2px 0 10px;
+  -webkit-overflow-scrolling:touch;
+}
+.cond-dlg-line{
+  max-width:86%; padding:9px 12px; border-radius:13px;
+  font-size:12.5px; line-height:1.5;
+  opacity:0; transform:translateY(6px);
+  transition:opacity .3s var(--ease-out-quart), transform .3s var(--ease-out-quart);
+}
+.cond-dlg-line.show{ opacity:1; transform:none; }
+.cond-dlg-line.ap{
+  align-self:flex-start; color:var(--ink-2);
+  background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09);
+}
+.cond-dlg-line.me{
+  align-self:flex-end; color:var(--ink);
+  background:rgba(0,200,200,.07); border:1px solid rgba(0,200,200,.26);
+}
+.cond-dlg-in{ display:flex; gap:8px; align-items:center; }
+.cond-dlg-in input{
+  flex:1; min-width:0;
+  background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.12);
+  border-radius:13px; color:var(--ink); font-family:var(--font-input);
+  font-size:13px; padding:11px 14px; outline:none;
+  transition:border-color .2s, box-shadow .2s;
+}
+.cond-dlg-in input:focus{
+  border-color:rgba(0,200,200,.5);
+  box-shadow:0 0 0 3px rgba(0,200,200,.10);
+}
+.cond-dlg-send{
+  flex:0 0 auto; width:42px; height:42px; border-radius:50%;
+  display:grid; place-items:center; cursor:pointer;
+  background:rgba(209,160,74,.10); border:1px solid rgba(209,160,74,.36);
+  color:var(--warm-hi); font-size:15px; line-height:1;
+  transition:background .2s, border-color .2s;
+}
+.cond-dlg-send:disabled{ opacity:.4; cursor:default; }
+.cond-dlg-consent{ display:none; padding-top:4px; }
+.cond-dlg-consent.show{ display:block; }
+</style>
+<script id="ew-cond-dialog-js">
+(function(){
+  'use strict';
+  function старт(){
+    var секция = document.getElementById('preorderSection');
+    var поле1 = document.getElementById('preorderItem');
+    var поле2 = document.getElementById('preorderContact');
+    var согласие = document.getElementById('preorderConsentWrap');
+    var кнопка = document.getElementById('preorderBtn');
+    if(!секция || !поле1 || !поле2 || !кнопка) return;
+    if(секция.dataset.condDialog === '1') return;
+    секция.dataset.condDialog = '1';
+
+    /* Вопросы — дословно подсказки существующих полей, без звёздочек. */
+    var ЦЕПЬ = [
+      { поле: поле1, вопрос: 'Какую реликвию желаете?' },
+      { поле: поле2, вопрос: 'Email для связи' }
+    ];
+
+    var диалог = document.createElement('div');
+    диалог.id = 'condDialog';
+    диалог.innerHTML =
+      '<div class="cond-dlg-log" id="condDlgLog" aria-live="polite"></div>' +
+      '<div class="cond-dlg-in" id="condDlgIn">' +
+        '<input type="text" id="condDlgField" autocomplete="off" autocorrect="off" spellcheck="false">' +
+        '<button type="button" class="cond-dlg-send" id="condDlgSend" aria-label="Ответить">→</button>' +
+      '</div>' +
+      '<div class="cond-dlg-consent" id="condDlgConsent"></div>';
+    поле1.parentNode.insertBefore(диалог, поле1);
+
+    /* Прячем исходные поля, но оставляем в разметке: значения пишем в них,
+       и submitPreorder читает их как раньше. */
+    [поле1, поле2].forEach(function(э){
+      var обёртка = э.closest('.preorder-field') || э.parentElement;
+      (обёртка || э).classList.add('cond-hidden');
+    });
+    if(согласие) согласие.classList.add('cond-hidden');
+    кнопка.classList.add('cond-hidden');
+    секция.classList.add('cond-dialog-on');
+
+    var лог = document.getElementById('condDlgLog');
+    var ввод = document.getElementById('condDlgField');
+    var шли = document.getElementById('condDlgSend');
+    var местоСогласия = document.getElementById('condDlgConsent');
+    var строка = document.getElementById('condDlgIn');
+    var i = 0;
+
+    function реплика(текст, кто){
+      var э = document.createElement('div');
+      э.className = 'cond-dlg-line ' + кто;
+      э.textContent = текст;
+      лог.appendChild(э);
+      лог.scrollTop = лог.scrollHeight;
+      requestAnimationFrame(function(){ э.classList.add('show'); });
+    }
+
+    function спросить(){
+      if(i >= ЦЕПЬ.length){ кСогласию(); return; }
+      реплика(ЦЕПЬ[i].вопрос, 'ap');
+      ввод.value = '';
+      ввод.placeholder = ЦЕПЬ[i].вопрос;
+      ввод.type = (ЦЕПЬ[i].поле.type === 'email') ? 'email' : 'text';
+      ввод.focus({preventScroll:true});
+    }
+
+    function ответить(){
+      var v = String(ввод.value || '').trim();
+      if(!v) return;
+      реплика(v, 'me');
+      /* Пишем в НАСТОЯЩЕЕ поле и поднимаем input — на него завязаны
+         существующие проверки формы. */
+      ЦЕПЬ[i].поле.value = v;
+      ЦЕПЬ[i].поле.dispatchEvent(new Event('input', {bubbles:true}));
+      ЦЕПЬ[i].поле.dispatchEvent(new Event('change', {bubbles:true}));
+      i++;
+      setTimeout(спросить, 420);
+    }
+
+    function кСогласию(){
+      строка.style.display = 'none';
+      реплика('Осталось подтвердить согласие — и я начну конденсацию.', 'ap');
+      if(согласие){
+        согласие.classList.remove('cond-hidden');
+        местоСогласия.appendChild(согласие);
+      }
+      кнопка.classList.remove('cond-hidden');
+      местоСогласия.appendChild(кнопка);
+      местоСогласия.classList.add('show');
+    }
+
+    шли.addEventListener('click', ответить);
+    ввод.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); ответить(); }
+    });
+
+    спросить();
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', старт);
+  else старт();
+  window.inspectCondDialog = function(){
+    var с = document.getElementById('preorderSection');
+    return { включён: !!(с && с.classList.contains('cond-dialog-on')),
+      реплик: document.querySelectorAll('.cond-dlg-line').length,
+      подпись: 'Конденсация · модель «диалог»' };
+  };
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════════
+     АРХИТЕКТОР · ПЕЧАТЬ (сверка частоты)
+     ───────────────────────────────────────────────────────────────
+     Эталон: design/lens-terminals.html, секция #arch — «Печать ·
+     Архитектор: сверка частоты». Вместо сухого реестра из запертых
+     строк — печать, которую НАЖИМАЮТ: сигил с ореолом, имя, звание, и
+     волна подписи, вычисленная из имени.
+
+     Волна детерминированная: гармоники берутся из кодов букв «aintonx»,
+     поэтому у одного имени всегда одна и та же подпись — как и обещает
+     подпись под ней. Случайности здесь быть не должно.
+
+     Надстройка. Строки DESIGNATION / IDENTIFIER / ACCESS.LEVEL прячем:
+     их содержимое теперь несёт сама печать. Остальные строки и их
+     обработчики (archAccessDenied) не трогаем. -->
+<style id="ew-arch-seal-css">
+.arch-seal{ display:flex; flex-direction:column; align-items:center; gap:9px; padding:6px 0 14px; }
+.arch-seal-x{
+  position:relative; width:74px; height:74px; border-radius:50%;
+  display:grid; place-items:center; cursor:pointer;
+  background:rgba(192,40,40,.09); border:1px solid rgba(230,69,69,.42);
+  color:var(--red-hi); font-family:var(--font-display); font-weight:800; font-size:30px;
+  transition:background .25s var(--ease-out), border-color .25s var(--ease-out), transform .15s;
+}
+.arch-seal-x:active{ transform:scale(.97); }
+.arch-seal-x .halo{
+  position:absolute; inset:-6px; border-radius:50%; pointer-events:none;
+  border:1px solid rgba(230,69,69,.28); opacity:0; transform:scale(.9);
+}
+.arch-seal.verifying .arch-seal-x .halo{ animation:archHalo 1.15s var(--ease-out) 2; }
+@keyframes archHalo{
+  0%{ opacity:.85; transform:scale(.9); }
+  100%{ opacity:0; transform:scale(1.5); }
+}
+.arch-seal.verified .arch-seal-x{
+  background:rgba(0,200,200,.09); border-color:rgba(0,200,200,.42); color:var(--cyan-hi);
+}
+.arch-seal-name{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.2em;
+  color:var(--ink); text-transform:uppercase;
+}
+.arch-seal-des{
+  font-family:var(--font-mono); font-size:8px; letter-spacing:.16em;
+  color:var(--ink-4); text-transform:uppercase; text-align:center;
+}
+.arch-seal-des b{ color:var(--ink-2); font-weight:600; }
+.arch-seal-status{
+  font-family:var(--font-mono); font-size:8px; letter-spacing:.16em;
+  color:var(--ink-3); text-transform:uppercase; text-align:center;
+  transition:color .3s var(--ease-out);
+}
+.arch-seal.verified .arch-seal-status{ color:var(--cyan); }
+.arch-seal-wave{
+  width:100%; margin-top:4px;
+  border:1px solid rgba(255,255,255,.08); border-radius:12px;
+  background:rgba(255,255,255,.025); padding:8px 10px 6px;
+}
+.arch-seal-wave svg{ display:block; width:100%; height:44px; }
+.arch-seal-wave path{
+  fill:none; stroke:rgba(230,69,69,.55); stroke-width:1.4;
+  transition:stroke .35s var(--ease-out);
+}
+.arch-seal.verified .arch-seal-wave path{ stroke:var(--cyan); }
+.arch-seal-cap{
+  display:block; margin-top:5px;
+  font-family:var(--font-mono); font-size:7px; letter-spacing:.18em;
+  color:var(--ink-4); text-transform:uppercase; text-align:center;
+}
+</style>
+<script id="ew-arch-seal-js">
+(function(){
+  'use strict';
+  var ИМЯ = 'aintonx';
+
+  /* Подпись вычисляется из имени: коды букв задают амплитуды, частоты и
+     фазы гармоник. Одно имя — одна волна, всегда одинаковая. */
+  function гармоники(имя){
+    var г = [];
+    for(var i = 0; i < имя.length; i++){
+      var к = имя.charCodeAt(i);
+      г.push({
+        амп: 4 + (к % 11),
+        част: 0.012 + ((к % 7) + 1) * 0.006,
+        фаза: (к % 13) / 13 * Math.PI * 2
+      });
+    }
+    return г;
+  }
+
+  function путь(г, сдвиг){
+    var W = 400, MID = 27, ШАГ = 4;
+    var d = 'M0,' + MID;
+    for(var x = ШАГ; x <= W; x += ШАГ){
+      var y = MID;
+      for(var i = 0; i < г.length; i++){
+        y += г[i].амп * Math.sin(x * г[i].част + г[i].фаза + сдвиг);
+      }
+      /* Держим кривую внутри окна: подпись не должна вылезать за рамку. */
+      y = Math.max(4, Math.min(50, y));
+      d += ' L' + x + ',' + y.toFixed(2);
+    }
+    return d;
+  }
+
+  function старт(){
+    var тело = document.getElementById('archTerminalBody');
+    if(!тело || тело.dataset.archSeal === '1') return;
+    тело.dataset.archSeal = '1';
+
+    var печать = document.createElement('div');
+    печать.className = 'arch-seal';
+    печать.innerHTML =
+      '<button type="button" class="arch-seal-x" id="archSealBtn" ' +
+        'aria-label="Сверить частоту с печатью Архитектора">' +
+        '<span class="halo" aria-hidden="true"></span><b>X</b>' +
+      '</button>' +
+      '<div class="arch-seal-name">@' + ИМЯ + '</div>' +
+      '<div class="arch-seal-des">DESIGNATION · <b>ARCHITECT</b> · УРОВЕНЬ X</div>' +
+      '<div class="arch-seal-status" id="archSealStatus">Нажмите печать · сверка частоты</div>' +
+      '<div class="arch-seal-wave">' +
+        '<svg viewBox="0 0 400 54" preserveAspectRatio="none" aria-hidden="true">' +
+          '<path id="archSealPath"></path></svg>' +
+        '<span class="arch-seal-cap">Частота Архитектора · вычислена из имени</span>' +
+      '</div>';
+    тело.insertBefore(печать, тело.firstChild);
+
+    /* Эти три строки теперь дублируют печать — прячем, обработчики целы. */
+    Array.prototype.forEach.call(тело.querySelectorAll('.term-line'), function(с){
+      var к = с.querySelector('.term-key');
+      if(!к) return;
+      var т = (к.textContent || '').trim().toUpperCase();
+      if(т === 'DESIGNATION' || т === 'IDENTIFIER' || т === 'ACCESS.LEVEL'){
+        с.style.display = 'none';
+      }
+    });
+
+    var г = гармоники(ИМЯ);
+    var линия = document.getElementById('archSealPath');
+    var кнопка = document.getElementById('archSealBtn');
+    var статус = document.getElementById('archSealStatus');
+    if(линия) линия.setAttribute('d', путь(г, 0));
+
+    var идёт = false;
+    кнопка.addEventListener('click', function(){
+      if(идёт) return;
+      идёт = true;
+      печать.classList.remove('verified');
+      печать.classList.add('verifying');
+      статус.textContent = 'Сверка частоты…';
+
+      /* Волна «проигрывается»: фаза едет два цикла ореола, затем
+         останавливается на исходной — подпись возвращается к своей. */
+      var t0 = performance.now(), ДЛИТ = 2300;
+      (function кадр(t){
+        var доля = Math.min(1, (t - t0) / ДЛИТ);
+        if(линия) линия.setAttribute('d', путь(г, доля * Math.PI * 4));
+        if(доля < 1){ requestAnimationFrame(кадр); return; }
+        if(линия) линия.setAttribute('d', путь(г, 0));
+        печать.classList.remove('verifying');
+        печать.classList.add('verified');
+        статус.textContent = 'Частота совпала · протокол семи';
+        идёт = false;
+      })(t0);
+    });
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', старт);
+  else старт();
+  window.inspectArchSeal = function(){
+    var п = document.querySelector('.arch-seal');
+    return { есть: !!п,
+      состояние: п ? (п.className.replace('arch-seal','').trim() || 'покой') : '—',
+      длинаПодписи: (document.getElementById('archSealPath') || {}).getAttribute
+        ? (document.getElementById('archSealPath').getAttribute('d') || '').length : 0,
+      подпись: 'Архитектор · модель «печать»' };
+  };
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════════
+     ПОДДЕРЖКА · МОЩНОСТЬ АНТЕННЫ
+     ───────────────────────────────────────────────────────────────
+     Эталон: design/lens-terminals.html, секция #sup. Антенна и радар на
+     сайте уже были, а двух вещей из эталона не хватало: сегментной шкалы
+     мощности передатчика и трёх строк состояния канала.
+
+     Тексты и значения взяты из эталона дословно (34%, УЗКАЯ, ВЫСОКИЙ,
+     III · IV) — это утверждённый макет, а не данные с сервера. Появится
+     живой источник — менять нужно будет только цифру в ДОЛЯ. -->
+<style id="ew-donate-power-css">
+.donate-power{ display:flex; align-items:center; gap:12px; padding:14px 0 4px; }
+.donate-seg{ display:flex; gap:3px; flex:1; min-width:0; }
+.donate-seg span{
+  flex:1; height:14px; border-radius:2px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.05);
+}
+.donate-seg span.lit{
+  background:linear-gradient(180deg, var(--red-hi), rgba(192,40,40,.55));
+  border-color:rgba(230,69,69,.4);
+  box-shadow:0 0 7px rgba(230,69,69,.35);
+}
+.donate-pow{ flex:0 0 auto; text-align:right; line-height:1.15; }
+.donate-pow b{
+  display:block; font-family:var(--font-display); font-weight:700;
+  font-size:17px; color:var(--ink);
+}
+.donate-pow i{
+  display:block; font-style:normal; font-family:var(--font-mono);
+  font-size:7px; letter-spacing:.18em; color:var(--ink-4); text-transform:uppercase;
+}
+.donate-state{ display:flex; flex-direction:column; gap:1px; padding:10px 0 2px; }
+.donate-state-row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:9px 0; border-top:1px solid rgba(255,255,255,.06);
+}
+.donate-state-row .k{
+  font-family:var(--font-mono); font-size:8px; letter-spacing:.16em;
+  color:var(--ink-4); text-transform:uppercase;
+}
+.donate-state-row .v{
+  font-family:var(--font-mono); font-size:8.5px; letter-spacing:.14em;
+  color:var(--ink-2); text-transform:uppercase; white-space:nowrap;
+}
+.donate-state-row .v.r{ color:var(--red-label); }
+</style>
+<script id="ew-donate-power-js">
+(function(){
+  'use strict';
+  var ДОЛЯ = 34;                 /* из эталона; сегментов всего 10 */
+  var СТРОКИ = [
+    ['Апертура приёма', 'Узкая', ''],
+    ['Шумовой порог',   'Высокий', 'r'],
+    ['Миры в очереди',  'III · IV', '']
+  ];
+
+  function старт(){
+    var правая = document.getElementById('donateRight');
+    if(!правая || правая.dataset.donatePower === '1') return;
+    var антенна = правая.querySelector('.donate-ant');
+    var действия = правая.querySelector('.donate-actions');
+    if(!антенна) return;
+    правая.dataset.donatePower = '1';
+
+    var горит = Math.round(ДОЛЯ / 10);
+    var сег = '';
+    for(var i = 0; i < 10; i++) сег += '<span' + (i < горит ? ' class="lit"' : '') + '></span>';
+
+    var шкала = document.createElement('div');
+    шкала.className = 'donate-power';
+    шкала.innerHTML =
+      '<div class="donate-seg" role="img" aria-label="Мощность передатчика ' + ДОЛЯ + '%">' + сег + '</div>' +
+      '<div class="donate-pow"><b>' + ДОЛЯ + '%</b><i>Мощность</i></div>';
+
+    var состояние = document.createElement('div');
+    состояние.className = 'donate-state';
+    состояние.innerHTML = СТРОКИ.map(function(с){
+      return '<div class="donate-state-row"><span class="k">' + с[0] + '</span>' +
+             '<span class="v' + (с[2] ? ' ' + с[2] : '') + '">' + с[1] + '</span></div>';
+    }).join('');
+
+    /* Ставим между антенной и кнопками — порядок эталона. */
+    var якорь = действия || антенна.nextSibling;
+    if(якорь && якорь.parentNode === антенна.parentNode){
+      антенна.parentNode.insertBefore(шкала, якорь);
+      антенна.parentNode.insertBefore(состояние, якорь);
+    } else {
+      антенна.parentNode.appendChild(шкала);
+      антенна.parentNode.appendChild(состояние);
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', старт);
+  else старт();
+  window.inspectDonatePower = function(){
+    return { шкалаЕсть: !!document.querySelector('.donate-power'),
+      горитСегментов: document.querySelectorAll('.donate-seg span.lit').length,
+      всегоСегментов: document.querySelectorAll('.donate-seg span').length,
+      строкСостояния: document.querySelectorAll('.donate-state-row').length,
+      подпись: 'Поддержка · мощность антенны' };
+  };
+})();
+</script>
 </body>
 </html>
