@@ -40082,7 +40082,13 @@ input:checked + .preorder-privacy-box .cb-mark{ opacity: 1; }
      трогаются: там разрядка положительная и работает как задумано. -->
 <style id="ew-heading-tracking">
 h1, h2, h3,
-.hero h1, .mname, .pname, .aw-name, .faq-q {
+.hero h1, .mname, .pname, .aw-name, .faq-q,
+/* Добрано позже: эти три класса не ходят через h1—h3 и остались с
+   минусовым трекингом — ревизор их и показал. .about-title среди прочего
+   держит заголовок «Заказать конденсацию», то есть ту самую секцию.
+   .architect-name сюда НЕ входит: там «@aintonx», чистая латиница, и
+   сжатие на ней работает как задумано. */
+.aw-title, .about-title {
   letter-spacing: normal;
 }
 </style>
