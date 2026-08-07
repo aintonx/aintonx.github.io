@@ -16250,10 +16250,17 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       </div>
       <div class="g-body">
         <div class="beam" id="echoBeam" aria-hidden="true">
+          <!-- Окно 400 единиц, лента внутри 800: она уезжает влево ровно на
+               400 и встаёт в исходное положение — стык невидим, потому что
+               путь построен из гармоник с целым числом периодов на 400.
+               Два вложенных узла: внешний держит амплитуду (запись громче),
+               внутренний — ход. На одном узле два разных transform спорили бы. -->
           <svg viewBox="0 0 400 200" preserveAspectRatio="none">
-            <path class="osc-ghost osc-ghost-c" id="echoOscGhostC" d="M0,100 L400,100"></path>
-            <path class="osc-ghost osc-ghost-r" id="echoOscGhostR" d="M0,100 L400,100"></path>
-            <path class="osc-live" id="echoOscPath" d="M0,100 L400,100"></path>
+            <g class="osc-amp"><g class="osc-run">
+              <path class="osc-ghost osc-ghost-c" id="echoOscGhostC" d="M0,100 L800,100"></path>
+              <path class="osc-ghost osc-ghost-r" id="echoOscGhostR" d="M0,100 L800,100"></path>
+              <path class="osc-live" id="echoOscPath" d="M0,100 L800,100"></path>
+            </g></g>
           </svg>
           <span class="fr" id="echoFreqDisplay">12.847 GHZ</span>
         </div>
@@ -16767,7 +16774,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <!-- ── СОГЛАСИЕ НА ОБРАБОТКУ ПД (152-ФЗ) ── -->
       <label class="chk-consent" for="chkConsent">
         <input type="checkbox" id="chkConsent" class="chk-consent-input">
-        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
+        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
         <span class="chk-consent-text">
           Подтверждаю согласие на обработку<span class="req-star">*</span>
           <button type="button" class="chk-consent-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>
@@ -16894,7 +16901,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="echo-reveal-block">
           <label class="echo-reveal-toggle" for="echoOrderReveal">
             <input type="checkbox" id="echoOrderReveal" onchange="toggleEchoOrderReveal()">
-            <span class="echo-reveal-check" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
+            <span class="echo-reveal-check" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
             <span class="echo-reveal-text">
               <span class="echo-reveal-title">Прозвучать в обоих мирах</span>
               <span class="echo-reveal-sub">По умолчанию Эхо анонимно — голос ниоткуда. Отметив, вы попросите MARKETSPACE и наш мир знать, чей это сигнал. Ваш Маркер появится в потоке данных рядом с Эхо, которое прозвучало.</span>
@@ -16931,7 +16938,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <!-- Согласие на ПД (та же структура что в основном чекауте) -->
       <label class="chk-consent" for="echoOrderConsent">
         <input type="checkbox" id="echoOrderConsent" class="chk-consent-input" onchange="_updateEchoOrderSubmit()">
-        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
+        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
         <span class="chk-consent-text">
           Подтверждаю согласие на обработку<span class="req-star">*</span>
           <button type="button" class="chk-consent-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>
@@ -17245,6 +17252,32 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 .echo-right .beam svg { display: block; width: 100%; height: 100%; }
 .echo-right .beam path { fill: none; stroke: var(--cyan-hi); stroke-width: 1.4; filter: drop-shadow(0 0 6px rgba(0,200,200,0.55)); transition: stroke 0.3s; }
 .echo-right .beam .osc-ghost { opacity: 0; }
+/* ── ХОД ЛУЧА ──────────────────────────────────────────────────────
+   Единственное, что движется, — transform на группе. Тень пути
+   растеризуется один раз, дальше слой только сдвигается: главный поток
+   не участвует, и ход не зависит ни от прокрутки, ни от чего-либо ещё.
+   Скорость: 400 единиц за 6с — тот же темп, что был у покадрового цикла. */
+@keyframes ewOscRun { from { transform: translateX(0); } to { transform: translateX(-400px); } }
+.echo-right .beam .osc-run {
+  animation: ewOscRun 6s linear infinite;
+  will-change: transform;   /* свой слой — тень не переснимается каждый кадр */
+}
+/* Вне экрана ход стоит. Класс ставит наблюдатель; если тот не сработает,
+   класса просто нет и луч продолжает идти — безопасный отказ. */
+.echo-right .beam.osc-asleep .osc-run { animation-play-state: paused; }
+/* Амплитуда — отдельный узел: два transform на одном узле спорят.
+   transform-box задан явно, иначе точка отсчёта у групп разъезжается
+   между движками. */
+.echo-right .beam .osc-amp {
+  transform-box: view-box;
+  transform-origin: 200px 100px;
+  transition: transform .35s var(--ease-out);
+}
+.echo-section.recording .echo-right .beam .osc-amp { transform: scaleY(1.55); }
+.echo-section.recording .echo-right .beam .osc-run { animation-duration: 2.6s; }
+@media (prefers-reduced-motion: reduce) {
+  .echo-right .beam .osc-run { animation: none; }
+}
 .echo-section.recording .echo-right .beam path,
 .echo-section.echo-typing .echo-right .beam path { stroke: var(--red-hi); filter: drop-shadow(0 0 6px rgba(230,69,69,0.55)); }
 .echo-right .beam .fr { position: absolute; top: 5px; right: 9px; font-size: 8.5px; letter-spacing: 0.13em; color: var(--ink-4); }
@@ -17724,7 +17757,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
               <div class="cond-dlg-consent" id="condDlgConsent">
                 <label class="preorder-privacy" id="preorderConsentWrap" for="preorderConsent">
                   <input type="checkbox" id="preorderConsent" class="preorder-privacy-input" onchange="validatePreorderField('consent')">
-                  <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
+                  <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
                   <span class="preorder-privacy-text">Согласен на обработку
                     <button type="button" class="preorder-privacy-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>.
                   </span>
@@ -30622,84 +30655,72 @@ function _echoSetTyping(on){
 }
 
 /* ─── ВОЛНА ОСЦИЛЛОГРАФА ─── */
+/* ══ ОСЦИЛЛОГРАФ: ПУТЬ СТРОИТСЯ ОДИН РАЗ, ДВИЖЕНИЕ ОТДАНО КОМПОЗИТОРУ ══
+   Прежняя версия каждый кадр пересобирала строку из 100 точек и писала её
+   в атрибут d. На это наложились два обстоятельства:
+
+   1) На .beam path висит filter: drop-shadow(...). WebKit кэширует
+      результат фильтра и на смену атрибута d слой к перерисовке НЕ
+      помечает: геометрия менялась, а картинка обновлялась только когда
+      что-то другое пачкало слой — например прокрутка. Ровно то, что было
+      видно: «луч рвано дёргается только при скролле». В Chromium
+      инвалидация отрабатывает, поэтому замер попиксельно там показывал
+      честное движение, и дефект не воспроизводился.
+   2) Пересборка пути с фильтром — это перерисовка тени 60 раз в секунду,
+      то есть постоянная работа на главном потоке.
+
+   Здесь оба пункта снимаются разом. Путь строится ОДИН раз на ширину
+   вдвое больше окна и уезжает влево на период CSS-анимацией transform.
+   Дальше главный поток не участвует вовсе: тень растеризуется однажды,
+   слой только сдвигается. Ход идёт всегда и не зависит ни от прокрутки,
+   ни от действий человека.
+
+   Бесшовность держится на арифметике: каждая гармоника укладывает ЦЕЛОЕ
+   число периодов в 400 единиц, поэтому значение на x=400 равно значению
+   на x=0, и момент возврата ленты не виден. */
+function _ewОсцПуть(гармоники){
+  /* Шаг 2 единицы — 401 точка на ленту. Путь строится ОДИН раз, поэтому
+     плотность ничего не стоит, а на шаге 4 при трёхкратной плотности
+     пикселей была видна огранка. */
+  const W = 400, MID = 100, ШАГ = 2;
+  let d = '';
+  for(let x = 0; x <= W * 2; x += ШАГ){
+    let y = MID;
+    for(let k = 0; k < гармоники.length; k++){
+      const [n, a] = гармоники[k];
+      y += a * Math.sin(2 * Math.PI * n * x / W);
+    }
+    d += (x ? ' L' : 'M') + x + ',' + y.toFixed(2);
+  }
+  return d;
+}
 function _echoStartOsc(){
   const path = document.getElementById('echoOscPath');
   const ghostC = document.getElementById('echoOscGhostC');
   const ghostR = document.getElementById('echoOscGhostR');
   if(!path || path._echoOscBound) return;
   path._echoOscBound = true;
-  /* PERF: волна считается только когда секция Эхо видна во
-     вьюпорте и вкладка активна. Раньше вечный rAF пересобирал
-     100-точечный SVG-путь 60 раз в секунду на ЛЮБОМ экране сайта —
-     постоянная фоновая нагрузка на CPU (вклад во фризы). Вне экрана
-     цикл дремлет лёгким таймером и мгновенно просыпается при появлении. */
-  let oscVisible = true;
-  const echoSec = document.getElementById('echo');
-  if(echoSec && 'IntersectionObserver' in window){
-    oscVisible = false;
-    new IntersectionObserver(function(entries){
-      entries.forEach(function(en){ oscVisible = en.isIntersecting; });
-    }, { rootMargin: '160px' }).observe(echoSec);
+
+  /* Три несоизмеримые на глаз гармоники (3, 8 и 19 периодов на окно) —
+     рисунок в окне нигде не повторяется, но лента замкнута. */
+  const d = _ewОсцПуть([[3, 26], [8, 10], [19, 5]]);
+  path.setAttribute('d', d);
+  if(ghostC) ghostC.setAttribute('d', d);
+  if(ghostR) ghostR.setAttribute('d', d);
+
+  /* Экономия вне экрана сохраняется, но с обратным поведением при сбое:
+     по умолчанию ход ИДЁТ, наблюдатель только ставит на паузу, когда
+     секция заведомо ушла. Прежний флаг работал наоборот — стартовал с
+     «не видно» и, не дождавшись первого срабатывания, оставлял луч
+     стоять навсегда. Теперь худший исход — лишняя composited-анимация,
+     а не замерший осциллограф. */
+  const секция = document.getElementById('echo');
+  const луч = document.getElementById('echoBeam');
+  if(секция && луч && 'IntersectionObserver' in window){
+    new IntersectionObserver(function(записи){
+      записи.forEach(function(з){ луч.classList.toggle('osc-asleep', !з.isIntersecting); });
+    }, { rootMargin: '160px' }).observe(секция);
   }
-  let t = 0;
-  const W = 400, MID = 100, STEPS = 100;
-  /* Пока секция не появилась во вьюпорте, цикл спит и НИЧЕГО не рисует —
-     в разметке путь задан прямой линией M0,100 L400,100, и осциллограф
-     встречал пользователя ровной чертой. Считаем один кадр сразу, чтобы
-     волна уже стояла на месте к моменту, когда секция доедет до экрана. */
-  let первыйКадр = true;
-  /* Живая проверка вместо доверия одному флагу.
-     Флаг oscVisible стартует как false и меняется ТОЛЬКО обработчиком
-     наблюдателя. Если тот не сработал — секция была скрыта в момент
-     подписки, вкладка была фоновой, наблюдатель не отдал первый callback —
-     флаг оставался false навсегда, цикл спал, и луч стоял неподвижно.
-     Именно так осциллограф и «переставал двигаться».
-     Геометрия читается напрямую и залипнуть не может; экономия CPU
-     сохраняется — вне экрана цикл по-прежнему дремлет. */
-  function виднаСекция(){
-    if(!echoSec) return true;
-    const r = echoSec.getBoundingClientRect();
-    const h = window.innerHeight || document.documentElement.clientHeight || 0;
-    return r.bottom > -160 && r.top < h + 160;
-  }
-  function tick(){
-    if(!первыйКадр && (document.hidden || !(oscVisible || виднаСекция()))){
-      setTimeout(tick, 320); return;
-    }
-    первыйКадр = false;
-    t += 0.045;
-    const recording = document.querySelector('.echo-section')?.classList.contains('recording');
-    const base = recording ? 1.6 : 1;                 // запись — луч активнее
-    let d = `M0,${MID}`;
-    for(let i=1;i<=STEPS;i++){
-      const x = (i/STEPS)*W;
-      /* Покой — тоже ЖИВОЙ сигнал, а не гладкая синусоида.
-         Раньше в покое шли две медленные волны с близкими периодами: рисунок
-         почти повторялся, и глаз читал линию как неподвижную — отсюда жалоба
-         «луч не двигается», хотя путь пересчитывался каждый кадр.
-         Третья гармоника с несоизмеримым периодом и своей скоростью ломает
-         повторяемость: линия всё время разная, движение видно сразу. */
-      let y = MID + base * (28*Math.sin(x*0.04 + t)
-                          + 11*Math.sin(x*0.13 + t*1.7)
-                          +  6*Math.sin(x*0.37 + t*2.6));
-      /* При записи добавляем две частые гармоники с несоизмеримыми
-         периодами: они не совпадают ни между собой, ни с базовыми, поэтому
-         рисунок не повторяется и линия колеблется хаотично ПО ВСЕЙ ширине.
-         Прежде при записи менялась только амплитуда общей плавной волны —
-         визуально «жил» лишь левый участок, где базовая синусоида круче,
-         а правый оставался почти ровным. */
-      if(recording){
-        y += 9*Math.sin(x*0.29 + t*3.1) + 5.5*Math.sin(x*0.61 + t*4.7)
-           + 3.5*Math.sin(x*1.07 + t*6.3);
-      }
-      d += ` L${x.toFixed(1)},${y.toFixed(2)}`;
-    }
-    path.setAttribute('d', d);
-    if(ghostC) ghostC.setAttribute('d', d);
-    if(ghostR) ghostR.setAttribute('d', d);
-    requestAnimationFrame(tick);
-  }
-  tick();
 }
 /* Частотный код «дышит» — небольшой рандом в дробной части (английский формат) */
 function _echoStartFreq(){
@@ -31954,7 +31975,7 @@ function _spinEchoAuraDrum(onDone){
 
         <label class="chk-consent return-chk-consent" for="returnConsent">
           <input type="checkbox" id="returnConsent" class="chk-consent-input" required>
-          <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
+          <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
           <span class="chk-consent-text return-consent-text">
             <span class="return-consent-title">Подтверждаю отправку заявки<span class="req-star">*</span></span>
             <span class="return-consent-sub">Я понимаю, что заявка будет рассмотрена по условиям публичной оферты и законодательства РФ. Также подтверждаю согласие на обработку персональных данных в рамках обработки заявки.</span>
@@ -39484,17 +39505,32 @@ footer {
 
    Третья попытка — абсолютное позиционирование через top/left 50% и
    translate(-50%,-50%) — в Chromium давала ровный ноль, а на телефоне знак
-   всё равно ехал. Причина в самой конструкции: знак — КОРНЕВОЙ <svg>, и
-   процентную долю в translate WebKit разрешает относительно системы
-   координат viewBox (24 единицы), а не CSS-бокса (13px). Отсюда сдвиг,
-   которого не видно ни в одном замере на настольном движке.
+   всё равно ехал.
+
+   ЧЕСТНО О ПРИЧИНЕ: она не установлена. Дефект не воспроизводится ни в
+   Chromium, ни в headless WebKit из Playwright — контрольный прогон
+   заведомо сломанной версии (tools/webkit.mjs, PAGE=<файл>) показал ноль
+   смещения и там. Значит любое объяснение осталось бы догадкой.
+
+   Поэтому подход другой: не искать причину гаданием, а убрать сами
+   конструкции, чьё поведение зависит от движка. Их было две — процентная
+   доля в transform на КОРНЕВОМ <svg> (проценты и transform в SVG движки
+   разрешают по-разному) и лишний пересчёт координат через <use>.
 
    Здесь центрирование без процентов и без transform вообще: растянуть по
    всем четырём сторонам и отдать остаток полям. Ширина и высота заданы
    жёстко, поэтому margin:auto делит свободное место поровну — результат
    одинаков в любом движке, разрешать нечего.
    Меняется ТОЛЬКО прозрачность. Любой transform в правилах знака вернёт
-   расхождение — это уже третий раз, когда оно приходит именно оттуда. */
+   расхождение — это уже третий раз, когда оно приходит именно оттуда.
+
+   Заодно убран <use href="#i-x">: между знаком и экраном стоял ещё один
+   пересчёт координат — символ спрайта со СВОИМ viewBox, вложенный в
+   viewBox самого знака. Это второе место, где движки расходятся, и
+   проверить его на настольном браузере тоже нельзя: в Chromium и в
+   headless WebKit смещение ноль в обоих вариантах. Геометрия иконки
+   (та же Lucide X из спрайта проекта, линии 6→18) вписана напрямую —
+   пересчёт остался ровно один, вместе с viewBox самого знака. */
 .cb-mark{
   position: absolute;
   inset: 0;
