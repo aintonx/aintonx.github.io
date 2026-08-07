@@ -17721,17 +17721,17 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="glass cond-glass" id="condScreen">
           <div class="g-head">
             <span class="g-chip"><span class="g-dot w" id="condBarcode"></span>APERTURA · CONDENSATE FORMING</span>
-            <span class="g-aux" id="condPanelState">Диалог открыт</span>
+            <span class="g-aux" id="condPanelState">ДИАЛОГ ОТКРЫТ</span>
           </div>
           <div class="g-body">
-            <div class="cond-dlg">
-              <div class="cond-dlg-log" id="condConsole" aria-live="polite"></div>
-              <div class="cond-dlg-in" id="preorderFormBlock">
+            <div class="dlg">
+              <div class="dlg-log" id="condConsole" aria-live="polite"></div>
+              <div class="dlg-in" id="preorderFormBlock">
                 <input class="g-well" id="condDlgField" type="text" autocomplete="off"
                        autocorrect="off" spellcheck="false" placeholder="">
-                <button type="button" class="cond-dlg-send" id="condDlgSend" aria-label="Ответить">→</button>
+                <button type="button" class="dlg-send" id="condDlgSend" aria-label="Ответить"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
               </div>
-              <div class="cond-dlg-consent" id="condDlgConsent">
+              <div class="dlg-consent" id="condDlgConsent">
                 <label class="preorder-privacy" id="preorderConsentWrap" for="preorderConsent">
                   <input type="checkbox" id="preorderConsent" class="preorder-privacy-input" onchange="validatePreorderField('consent')">
                   <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" viewBox="-6.5 -6.5 37 37" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
@@ -17740,11 +17740,11 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
                   </span>
                 </label>
                 <div class="preorder-privacy-error" id="preorderConsentError" aria-live="polite"></div>
-                <button type="button" class="g-btn cond-send-btn" id="preorderBtn" onclick="submitPreorder()">Запросить конденсацию</button>
+                <button type="button" class="g-btn" id="preorderBtn" onclick="submitPreorder()">Запросить конденсацию</button>
               </div>
             </div>
           </div>
-          <div class="g-foot"><span>Зона конденсации активна</span><span>Только физическое · до 5 кг</span></div>
+          <div class="g-foot"><span>ЗОНА КОНДЕНСАЦИИ АКТИВНА</span><span>ТОЛЬКО ФИЗИЧЕСКОЕ · ДО 5 КГ</span></div>
         </div>
 
         <!-- Настоящие поля заказа. Скрыты: их заполняет диалог выше, а
@@ -28811,6 +28811,11 @@ async function submitPreorder(){
     }
   }catch(e){ console.warn('condensation bridge preview failed:', e); }
   startCondensateInterfaceGlitch(item, contact);
+  /* Итоговая карточка диалога — та самая .dlg-final из эталона: код
+     заявки, заголовок и адрес ответа. Вызов защищён проверкой типа: если
+     диалог по какой-то причине не собрался, отправка идёт как раньше. */
+  try{ if(typeof window._condDialogFinale === 'function') window._condDialogFinale(contact); }
+  catch(e){ console.warn('cond finale failed:', e); }
 
   // На мобиле убедимся, что пользователь на втором пейне (с формой/терминалом)
   const track=document.querySelector('.pre-swipe-track');
@@ -40399,6 +40404,20 @@ h1, h2, h3,
    стала квадратом, поле и кнопка встали столбиком, подвал слипся.
    Область видимости даёт панели её собственный полный набор и не
    пересекается с оформлением Эхо. */
+/* Моноширинный набор панели. У эталона он стоит на самой .glass, и от неё
+   наследуют чип, статус, подвал и реплики диалога; пропорциональный шрифт
+   явно задан только полю ввода, пузырю ответа и тексту итоговой карточки.
+   При переносе эта строка потерялась — панель набиралась шрифтом сайта,
+   отчего вопрос выглядел не как вывод терминала, а подвал не влезал в
+   строку и переносился. */
+.cond-glass{font-family: var(--font-mono);}
+/* Статус справа переносится ВНУТРИ СЕБЯ, оставаясь на одной строке с
+   чипом, — так он ведёт себя и в эталоне («ДИАЛОГ / ОТКРЫТ» в две
+   строки). Уезжал он за кромку из-за того, что у чипа стоит nowrap, а у
+   статуса не было min-width:0 — флекс не давал ему сжиматься. Перенос
+   всей шапки, который я поставил сначала, сбрасывал статус на отдельную
+   строку и от эталона уводил. */
+.cond-glass .g-aux{min-width: 0;}
 .cond-glass::before{content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 6;
   background: linear-gradient(135deg, rgba(255,255,255,0.32), rgba(120,220,255,0.1) 28%, rgba(255,255,255,0.02) 46%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.18));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -40419,12 +40438,12 @@ h1, h2, h3,
 .cond-glass .g-foot{display: flex; justify-content: space-between; gap: 12px; padding: 11px 20px 15px; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); position: relative; z-index: 1;}
 .cond-glass .g-foot [data-status]{transition: color 0.3s;}
 .cond-glass .g-actions{display: flex; gap: 10px; padding-top: 14px;}
-.cond-glass .g-btn{position: relative; overflow: hidden; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warm-hi); padding: 15px 18px; border-radius: 99px; background: rgba(209,160,74,0.09); border: 1px solid rgba(209,160,74,0.34); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 0 26px rgba(209,160,74,0.08); transition: box-shadow 0.3s var(--ease-out), background 0.3s, transform 0.15s;}
+.cond-glass .g-btn{position: relative; overflow: hidden; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warm-hi); padding: 15px 18px; border-radius: 99px; background: rgba(209,160,74,0.09); border: 1px solid rgba(209,160,74,0.34); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 0 26px rgba(209,160,74,0.08); transition: box-shadow 0.3s var(--ease-out), background 0.3s, transform 0.15s;}
 .cond-glass .g-btn:hover{background: rgba(209,160,74,0.15); box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 0 30px rgba(209,160,74,0.13), 0 0 30px rgba(209,160,74,0.2);}
 .cond-glass .g-btn:active{transform: scale(0.985);}
 .cond-glass .g-btn.quiet{color: var(--ink-2); background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);}
 .cond-glass .g-btn.quiet:hover{background: rgba(255,255,255,0.08);}
-.cond-glass .g-well{display: block; width: 100%; font-family: var(--text); font-size: 13px; color: var(--ink); background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px 15px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; resize: none;}
+.cond-glass .g-well{display: block; width: 100%; font-family: var(--font-input); font-size: 13px; color: var(--ink); background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px 15px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; resize: none;}
 .cond-glass .g-well::placeholder{color: var(--ink-3); opacity: 0.8;}
 .cond-glass .g-well:focus{border-color: rgba(0,200,200,0.4); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 3px rgba(0,200,200,0.08), 0 0 18px rgba(0,200,200,0.1); background: rgba(255,255,255,0.06);}
 .cond-glass .dlg-log{flex: 1; overflow-y: auto; scrollbar-width: none; padding: 4px 2px 10px; -webkit-mask-image: linear-gradient(180deg, transparent, #000 9%); mask-image: linear-gradient(180deg, transparent, #000 9%);}
@@ -40440,144 +40459,233 @@ h1, h2, h3,
 .cond-glass .dlg-consent.show{display: flex;}
 .cond-glass .dlg-consent::before{content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(240,240,248,0.11) 16%, rgba(240,240,248,0.11) 84%, transparent);}
 .cond-glass .dlg-consent .g-btn{padding: 12px 16px;}
-.cond-glass .dlg-consent .lnk{font-family: var(--text); font-size: 10.5px; color: var(--ink-4); text-decoration: underline; text-underline-offset: 3px; padding: 8px 4px; transition: color 0.2s;}
+.cond-glass .dlg-consent .lnk{font-family: var(--font-input); font-size: 10.5px; color: var(--ink-4); text-decoration: underline; text-underline-offset: 3px; padding: 8px 4px; transition: color 0.2s;}
 .cond-glass .dlg-consent .lnk:hover{color: var(--ink-2);}
 .cond-glass::after{animation: none; display: none;}
 .cond-glass .g-dot.c, .cond-glass .rung.x, .cond-glass .scanline{animation: none;}
-.cond-glass .g-head{padding: 13px 16px 0;}
-.cond-glass .g-body{padding: 14px 16px 16px;}
-.cond-glass .g-foot{padding: 10px 16px 14px; flex-wrap: wrap;}
-.cond-glass .g-actions{flex-direction: column;}
-.cond-glass .dlg{height: 380px;}
+
+/* ── СОДЕРЖИМОЕ ДИАЛОГА ───────────────────────────────────────────────
+   Эти правила при первом переносе потерялись: были взяты оболочка (лог,
+   строка ввода, кнопка), но не сами реплики. Из-за этого вопрос рисовался
+   моей самодельной плашкой вместо строки с циановым «>», а колонка не
+   имела высоты и панель гуляла. Здесь эталон целиком. */
+.cond-glass .dlg{display: flex; flex-direction: column; height: 348px;}
+.cond-glass .dlg-q{display: flex; gap: 10px; padding: 7px 0; font-size: 11.5px; letter-spacing: 0.05em; color: var(--ink-2);}
+.cond-glass .dlg-q .pfx{color: var(--cyan-hi); flex-shrink: 0;}
+.cond-glass .dlg-q .cur{display: inline-block; width: 7px; height: 12px; vertical-align: -2px; background: var(--cyan); margin-left: 2px; animation: condCurBlink 1s steps(2) infinite;}
+@keyframes condCurBlink{50%{opacity: 0;}}
+.cond-glass .dlg-a{display: flex; justify-content: flex-end; padding: 5px 0; animation: condAIn .4s var(--ease-out);}
+@keyframes condAIn{0%{opacity: 0; transform: translateY(6px);} 100%{opacity: 1; transform: none;}}
+.cond-glass .dlg-a span{max-width: 82%; font-family: var(--font-input); font-size: 12.5px; color: var(--ink); background: rgba(209,160,74,0.1); border: 1px solid rgba(209,160,74,0.3); border-radius: 14px 14px 4px 14px; padding: 8px 13px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);}
+.cond-glass .dlg-sys{padding: 5px 0; font-size: 10px; letter-spacing: 0.1em; color: var(--ink-4); animation: condAIn .4s var(--ease-out);}
+.cond-glass .dlg-sys.err{color: var(--red-hi);}
+.cond-glass .dlg-final{margin: 8px 0 2px; padding: 13px 15px; border-radius: 16px; background: rgba(0,200,200,0.05); border: 1px solid rgba(0,200,200,0.22); animation: condAIn .45s var(--ease-out);}
+.cond-glass .dlg-final .code{font-size: 10px; letter-spacing: 0.2em; color: var(--cyan-hi);}
+.cond-glass .dlg-final h4{font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--ink); margin: 6px 0 4px;}
+.cond-glass .dlg-final p{font-family: var(--font-input); font-size: 12px; color: var(--ink-3);}
+.cond-glass .dlg-final p b{color: var(--ink-2); font-weight: 500;}
+/* Согласие: у эталона это ряд из кнопки и ссылки. Нам нужен НАСТОЯЩИЙ
+   чек-бокс — он несёт юридический смысл, — поэтому строка переносится
+   на две: отметка во всю ширину, кнопка под ней. Рамка-разделитель
+   сверху и отступы остаются эталонными. */
+.cond-glass .dlg-consent{flex-wrap: wrap;}
+.cond-glass .dlg-consent .preorder-privacy{flex: 1 1 100%; margin: 0;}
+.cond-glass .dlg-consent .g-btn{flex: 1 1 auto;}
+.cond-glass .dlg-consent .preorder-privacy-error{flex: 1 1 100%; margin: 0;}
+
+/* Мобильные правила эталона. При переносе медиазапрос потерялся, и они
+   действовали на ВСЕХ ширинах — отсюда узкие поля на десктопе и колонка
+   в 380px там, где эталон держит 348. */
+@media (max-width: 640px){
+  .cond-glass .g-head{padding: 13px 16px 0;}
+  .cond-glass .g-body{padding: 14px 16px 16px;}
+  .cond-glass .g-foot{padding: 10px 16px 14px; flex-wrap: wrap;}
+  .cond-glass .g-actions{flex-direction: column;}
+  .cond-glass .dlg{height: 380px;}
+}
 </style>
 <style id="ew-cond-dialog-css">
-/* Диалог заказа конденсации. Разметка теперь РОДНАЯ (см. секцию заказа),
-   поэтому правил для инъекции больше нет — только вид самого диалога. */
-.cond-dlg{ display:flex; flex-direction:column; gap:10px; }
-.cond-dlg-log{
-  display:flex; flex-direction:column; gap:8px;
-  max-height:210px; overflow-y:auto; padding:2px 0;
-  -webkit-overflow-scrolling:touch;
-}
-.cond-dlg-line{
-  max-width:86%; padding:9px 12px; border-radius:13px;
-  font-family:var(--font-input); font-size:12.5px; line-height:1.5;
-  opacity:0; transform:translateY(6px);
-  transition:opacity .3s var(--ease-out-quart), transform .3s var(--ease-out-quart);
-}
-.cond-dlg-line.show{ opacity:1; transform:none; }
-.cond-dlg-line.ap{
-  align-self:flex-start; color:var(--ink-2);
-  background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09);
-}
-.cond-dlg-line.me{
-  align-self:flex-end; color:var(--ink);
-  background:rgba(0,200,200,.07); border:1px solid rgba(0,200,200,.26);
-}
-/* flex-direction задаём ЯВНО: у #preorderFormBlock осталось правило
-   старой формы с column, и поле с кнопкой вставали столбиком. */
-#preorderFormBlock.cond-dlg-in{
-  /* Снимаем оформление СТАРОЙ формы: у #preorderFormBlock остались фон
-     rgb(5,5,6), рамка, радиус 18px и внутренний отступ 28px — вокруг
-     строки ввода рисовалась чужая тёмная коробка, которой нет в эталоне.
-     Направление ряда задаём явно: то же правило ставило column, и поле
-     с кнопкой вставали столбиком. */
+/* Самодельный слой диалога удалён: вид полностью даёт перенесённый эталон
+   (.dlg / .dlg-log / .dlg-q / .dlg-a / .dlg-in / .dlg-send / .dlg-consent
+   в ew-cond-glass-css). Здесь остались только те правки, которых у эталона
+   быть не могло — они про НАСТОЯЩУЮ форму заказа под диалогом. */
+
+/* У #preorderFormBlock осталось оформление старой формы: тёмный фон
+   rgb(5,5,6), рамка, радиус 18px, отступ 28px и направление column. Всё
+   это рисовало чужую коробку вокруг строки ввода и ставило поле с кнопкой
+   столбиком. Снимаем, ряд задаём явно. */
+#preorderFormBlock.dlg-in{
   display:flex; flex-direction:row; gap:8px; align-items:center;
-  background:none; border:0; border-radius:0; padding:0; box-shadow:none;
+  background:none; border:0; border-radius:0; padding:10px 0 0; box-shadow:none;
 }
-#preorderFormBlock.cond-dlg-in .g-well{ flex:1 1 auto; min-width:0; width:auto; }
-.cond-dlg-send{
-  flex:0 0 auto; width:42px; height:42px; border-radius:50%;
-  display:grid; place-items:center; cursor:pointer;
-  background:rgba(209,160,74,.10); border:1px solid rgba(209,160,74,.36);
-  color:var(--warm-hi); font-size:15px; line-height:1;
-  transition:background .2s, border-color .2s;
-}
-.cond-dlg-send:disabled{ opacity:.4; cursor:default; }
-.cond-dlg-consent{ display:none; flex-direction:column; gap:10px; }
-.cond-dlg-consent.show{ display:flex; }
-.cond-send-btn{ width:100%; }
+#preorderFormBlock.dlg-in .g-well{ flex:1 1 auto; min-width:0; width:auto; }
+.cond-glass .dlg-send:disabled{ opacity:.4; cursor:default; }
+.cond-glass .dlg-send{ cursor:pointer; }
 /* Настоящие поля заказа скрыты — их заполняет диалог. */
-.cond-real-fields{ display:none; }
+.cond-real-fields{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; }
 </style>
 <script id="ew-cond-dialog-js">
 (function(){
   'use strict';
-  /* Диалог ведёт РОДНУЮ разметку панели (design/lens-terminals.html #cond).
-     Прежняя версия строила свои узлы поверх старой формы и прятала её —
-     получалась заплатка. Теперь панель родная, а скрипт только оживляет её.
+  /* ══ ДИАЛОГ КОНДЕНСАЦИИ · СЦЕНАРИЙ ЭТАЛОНА ═══════════════════════════
+     Перенос из design/lens-terminals.html, секция #cond. Прежняя версия
+     была самоделкой: реплики рисовались одинаковыми плашками с обеих
+     сторон, набора текста не было, итоговой карточки не было, а колонка
+     не имела высоты — панель выглядела полупустой.
 
-     Вопросы взяты из подсказок исходных полей: смысл заказа не меняется. */
+     Здесь поведение эталона: вопрос ПЕЧАТАЕТСЯ посимвольно строкой с
+     циановым «>», ответ ложится тёплым пузырём справа, ошибки идут
+     служебной строкой, в конце выпадает карточка с кодом заявки.
+
+     Отличие от эталона одно и оно вынужденное: ответы пишутся в
+     НАСТОЯЩИЕ поля заказа (#preorderItem, #preorderContact), а согласие
+     остаётся живым чек-боксом #preorderConsent. Путь отправки —
+     submitPreorder — не тронут и читает те же id, что и раньше. */
+  var КАДРЫ = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
   function старт(){
-    var лог = document.getElementById('condConsole');
-    var ввод = document.getElementById('condDlgField');
-    var шли = document.getElementById('condDlgSend');
+    var лог      = document.getElementById('condConsole');
+    var ввод     = document.getElementById('condDlgField');
+    var шли      = document.getElementById('condDlgSend');
+    var строка   = document.getElementById('preorderFormBlock');
     var согласие = document.getElementById('condDlgConsent');
-    var строка = document.getElementById('preorderFormBlock');
-    var статус = document.getElementById('condPanelState');
-    var поле1 = document.getElementById('preorderItem');
-    var поле2 = document.getElementById('preorderContact');
-    if(!лог || !ввод || !шли || !поле1 || !поле2) return;
+    var статус   = document.getElementById('condPanelState');
+    var точка    = document.getElementById('condBarcode');
+    var поле1    = document.getElementById('preorderItem');
+    var поле2    = document.getElementById('preorderContact');
+    if(!лог || !ввод || !шли || !строка || !поле1 || !поле2) return;
     if(лог.dataset.condDialog === '1') return;
     лог.dataset.condDialog = '1';
 
-    var ЦЕПЬ = [
-      { поле: поле1, вопрос: 'Какую реликвию желаете?' },
-      { поле: поле2, вопрос: 'Email для связи' }
+    var ШАГИ = [
+      { поле: поле1, тип: 'text',
+        в: 'Что должно появиться в вашем мире? Опишите простыми словами: форма, материал, ощущение.',
+        подсказка: 'Например: медная сова размером с ладонь',
+        проверка: function(v){ return v.length >= 2 ? '' : 'Сигнал слишком короткий. Опишите желаемое.'; } },
+      { поле: поле2, тип: 'email',
+        в: 'Куда прислать ответ, когда Архитектор проверит поток?',
+        подсказка: 'Email для связи',
+        проверка: function(v){ return v.indexOf('@') > 0 && v.indexOf('.') > 1 ? '' : 'Узел не отвечает. Проверьте адрес.'; } },
+      { согласие: true,
+        в: 'Осталось согласие на обработку персональных данных — без него сигнал не уйдёт.' }
     ];
-    var i = 0;
+    var шаг = -1, занят = false;
 
-    function реплика(текст, кто){
-      var э = document.createElement('div');
-      э.className = 'cond-dlg-line ' + кто;
-      э.textContent = текст;
-      лог.appendChild(э);
-      лог.scrollTop = лог.scrollHeight;
-      requestAnimationFrame(function(){ э.classList.add('show'); });
+    function вниз(){ лог.scrollTop = лог.scrollHeight; }
+
+    function печатать(текст, потом){
+      var q = document.createElement('div');
+      q.className = 'dlg-q';
+      q.innerHTML = '<span class="pfx">&gt;</span><span class="txt"></span><span class="cur"></span>';
+      лог.appendChild(q);
+      var т = q.querySelector('.txt'), к = q.querySelector('.cur');
+      if(!КАДРЫ){ т.textContent = текст; к.remove(); вниз(); потом && потом(); return; }
+      var i = 0;
+      (function ход(){
+        т.textContent = текст.slice(0, ++i);
+        вниз();
+        if(i < текст.length) setTimeout(ход, 16);
+        else { к.remove(); потом && потом(); }
+      })();
+    }
+    function ответ(текст){
+      var a = document.createElement('div');
+      a.className = 'dlg-a';
+      a.innerHTML = '<span></span>';
+      a.querySelector('span').textContent = текст;
+      лог.appendChild(a); вниз();
+    }
+    function служебно(текст, ошибка){
+      var c = document.createElement('div');
+      c.className = 'dlg-sys' + (ошибка ? ' err' : '');
+      c.textContent = текст;
+      лог.appendChild(c); вниз();
     }
 
-    function спросить(){
-      if(i >= ЦЕПЬ.length){ кСогласию(); return; }
-      реплика(ЦЕПЬ[i].вопрос, 'ap');
-      ввод.value = '';
-      ввод.placeholder = ЦЕПЬ[i].вопрос;
-      ввод.type = (ЦЕПЬ[i].поле.type === 'email') ? 'email' : 'text';
+    function дальше(){
+      шаг++;
+      var ш = ШАГИ[шаг];
+      if(!ш) return финал();
+      занят = true;
+      строка.classList.add('lock');
+      печатать(ш.в, function(){
+        занят = false;
+        if(ш.согласие){
+          строка.style.display = 'none';
+          if(согласие) согласие.classList.add('show');
+          if(статус) статус.textContent = 'ЖДУ СОГЛАСИЯ';
+        } else {
+          строка.classList.remove('lock');
+          ввод.placeholder = ш.подсказка;
+          ввод.value = '';
+          ввод.type = ш.тип;
+        }
+      });
     }
 
-    function ответить(){
+    function отправить(){
+      if(занят) return;
+      var ш = ШАГИ[шаг];
+      if(!ш || ш.согласие) return;
       var v = String(ввод.value || '').trim();
-      if(!v) return;
-      реплика(v, 'me');
-      /* Пишем в НАСТОЯЩЕЕ поле и поднимаем события — на них завязаны
-         существующие проверки формы и submitPreorder. */
-      ЦЕПЬ[i].поле.value = v;
-      ЦЕПЬ[i].поле.dispatchEvent(new Event('input', {bubbles:true}));
-      ЦЕПЬ[i].поле.dispatchEvent(new Event('change', {bubbles:true}));
-      i++;
-      setTimeout(спросить, 420);
+      var плохо = ш.проверка(v);
+      if(плохо){ служебно(плохо, true); return; }
+      /* Пишем в настоящее поле и поднимаем события: на них завязаны
+         существующие проверки формы и отправка. */
+      ш.поле.value = v;
+      ш.поле.dispatchEvent(new Event('input', {bubbles:true}));
+      ш.поле.dispatchEvent(new Event('change', {bubbles:true}));
+      ответ(v);
+      if(статус) статус.textContent = 'СИГНАЛ ФОРМИРУЕТСЯ';
+      дальше();
     }
 
-    function кСогласию(){
-      if(строка) строка.style.display = 'none';
-      реплика('Осталось подтвердить согласие — и я начну конденсацию.', 'ap');
-      if(согласие) согласие.classList.add('show');
-      if(статус) статус.textContent = 'Ожидание подтверждения';
+    function финал(){
+      занят = true;
+      if(точка){ точка.classList.remove('w'); точка.classList.add('c'); }
+      if(статус) статус.textContent = 'СИГНАЛ ПРИНЯТ';
     }
 
-    шли.addEventListener('click', ответить);
+    шли.addEventListener('click', отправить);
     ввод.addEventListener('keydown', function(e){
-      if(e.key === 'Enter'){ e.preventDefault(); ответить(); }
+      if(e.key === 'Enter'){ e.preventDefault(); отправить(); }
     });
 
-    спросить();
+    /* Диалог начинается, когда панель попадает в поле зрения — как в
+       эталоне. Печатать в невидимой секции незачем, а на слабом телефоне
+       это ещё и лишняя работа при загрузке. */
+    if('IntersectionObserver' in window){
+      var начат = false;
+      new IntersectionObserver(function(в, наб){
+        if(в[0].isIntersecting && !начат){ начат = true; наб.disconnect(); дальше(); }
+      }, {threshold: 0.3}).observe(лог.closest('.cond-glass') || лог);
+    } else {
+      дальше();
+    }
+
+    /* Итоговая карточка рисуется после успешной отправки. Зовёт её
+       submitPreorder через это окно — сам путь отправки не тронут. */
+    window._condDialogFinale = function(почта){
+      var код = 'КНД-' + String(Math.floor(1000 + Math.random() * 9000));
+      var f = document.createElement('div');
+      f.className = 'dlg-final';
+      f.innerHTML = '<div class="code"></div><h4>Сигнал принят</h4>' +
+        '<p>Архитектор проверит, есть ли в MARKETSPACE поток, способный принять форму желаемого. Ответ придёт на <b></b>.</p>';
+      f.querySelector('.code').textContent = код;
+      f.querySelector('b').textContent = почта || (поле2.value || '');
+      лог.appendChild(f); вниз();
+      if(согласие) согласие.classList.remove('show');
+      финал();
+    };
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', старт);
   else старт();
   window.inspectCondDialog = function(){
-    return { реплик: document.querySelectorAll('.cond-dlg-line').length,
+    return { вопросов: document.querySelectorAll('#condConsole .dlg-q').length,
+      ответов: document.querySelectorAll('#condConsole .dlg-a').length,
       согласиеПоказано: !!document.querySelector('#condDlgConsent.show'),
-      подпись: 'Конденсация · панель эталона' };
+      подпись: 'Конденсация · сценарий эталона' };
   };
 })();
 </script>
