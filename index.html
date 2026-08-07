@@ -4111,10 +4111,14 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   overflow: hidden;
   opacity: 0;
   position: relative;
-  transition: max-height .42s cubic-bezier(.16,1,.3,1),
-              opacity .26s ease,
-              padding-top .42s cubic-bezier(.16,1,.3,1),
-              padding-bottom .42s cubic-bezier(.16,1,.3,1);
+  /* Кривая .16,1,.3,1 проходила 83% пути за первую четверть времени —
+     раскрытие щёлкало и потом четверть секунды доезжало незаметно.
+     Здесь та же ровная кривая, что у .reveal-field и у высоты окна ввода:
+     раскрытия по всему сайту идут одним движением. */
+  transition: max-height .38s cubic-bezier(.4,0,.2,1),
+              opacity .3s cubic-bezier(.4,0,.2,1),
+              padding-top .38s cubic-bezier(.4,0,.2,1),
+              padding-bottom .38s cubic-bezier(.4,0,.2,1);
 }
 .echobody::before {
   /* Сканер-перо Апертуры — горизонтальная cyan-линия, пробегающая
@@ -4299,10 +4303,25 @@ button.clink { width: 100%; font: inherit; text-align: left; color: inherit; cur
   opacity: 0;
   transform: translateY(-6px);
   margin-top: 0 !important;
-  transition: max-height .44s cubic-bezier(.16,.84,.34,1),
-              opacity .32s ease,
-              transform .44s cubic-bezier(.16,.84,.34,1),
-              margin-top .44s cubic-bezier(.16,.84,.34,1);
+  /* Кривая .16,.84,.34,1 набирала 93% высоты за первые 180мс из 440 —
+     замер по кадрам показал 0→55px почти сразу, а последние 4px ползли
+     ещё четверть секунды. Глаз читает это как щелчок и следом пустоту,
+     то есть «рвано». Кадры при этом не терялись: дело было не в нагрузке.
+     --ease-out-quart не помогает: он той же природы, замер дал те же 95%.
+     Обе кривые кладут почти весь путь в первую четверть времени:
+                       25%    50%    75%
+       .16,.84,.34,1   0.74   0.93   0.99
+       .25,1,.5,1      0.69   0.93   0.99
+       .4,0,.2,1       0.24   0.78   0.96
+     Взята последняя — ход распределён ровно, дохлого хвоста нет. Она же
+     уже стоит на высоте окна ввода (#echoTabStage), так что раскрытия по
+     всему сайту идут одним движением.
+     Прозрачность подтянута к общей длительности: раньше она заканчивалась
+     на 120мс раньше геометрии, и поле «замирало» дорисованным. */
+  transition: max-height .38s cubic-bezier(.4,0,.2,1),
+              opacity .34s cubic-bezier(.4,0,.2,1),
+              transform .38s cubic-bezier(.4,0,.2,1),
+              margin-top .38s cubic-bezier(.4,0,.2,1);
 }
 .reveal-field.reveal-open {
   opacity: 1;
@@ -9243,8 +9262,14 @@ input, select, textarea {
    Чекбокс в духе вселенной — небольшой квадрат с cyan-tick. */
 .chk-consent {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  /* Выравнивание по ЦЕНТРУ строки, а не по её верху, и зазор 11 — ровно как
+     у «Прозвучать в обоих мирах» (#echoOrderBody .echo-reveal-toggle),
+     который принят за эталон. Геометрия самого знака у всех чек-боксов и
+     так одна и та же — коробка 22, знак 13, поля по 3.5; отличалась только
+     привязка коробки к тексту. При flex-start коробка липла к верхней
+     строке абзаца и на многострочном согласии выглядела съехавшей. */
+  align-items: center;
+  gap: 11px;
   padding: 12px 0 4px;
   cursor: pointer;
   user-select: none;
@@ -11453,8 +11478,13 @@ input, select, textarea {
   opacity: 0;
   margin-top: 0;
   transform: translateY(-6px);
-  transition: max-height .52s var(--ease-out), opacity .34s var(--ease-out),
-              transform .42s var(--ease-out), margin-top .42s var(--ease-out);
+  /* Было .52s на --ease-out: 97% высоты набиралось за первые 260мс, а
+     оставшиеся 260 секция стояла. Из всех раскрытий это било сильнее
+     всего — именно её человек видит в момент запуска барабана Ауры. */
+  transition: max-height .46s cubic-bezier(.4,0,.2,1),
+              opacity .4s cubic-bezier(.4,0,.2,1),
+              transform .46s cubic-bezier(.4,0,.2,1),
+              margin-top .46s cubic-bezier(.4,0,.2,1);
   pointer-events: none;
 }
 .echo-aura-section.is-armed {
@@ -16250,8 +16280,10 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       </div>
       <div class="g-body">
         <div class="beam" id="echoBeam" aria-hidden="true">
-          <!-- Лента вдвое шире окна: контейнер .osc-run занимает 200% ширины
-               и уезжает влево на половину себя — то есть ровно на одно окно.
+          <!-- Лента в СЕМЬ окон шириной, уезжает на шесть. Раньше было два
+               окна и один: рисунок возвращался каждые 6 секунд, и глаз
+               читал линию как заранее нарисованную — она и была таковой.
+               Теперь в окне 36 секунд не повторяется ничего.
                Стык невидим: путь построен из гармоник с целым числом периодов
                на окно, поэтому конец ленты совпадает с её началом.
                Двигается ОБЫЧНЫЙ HTML-контейнер, а не узел SVG. Так было
@@ -16263,13 +16295,13 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
                показывают. Два вложенных контейнера: внешний держит амплитуду
                (при записи громче), внутренний — ход; на одном узле два
                разных transform спорили бы. -->
-          <div class="osc-amp"><div class="osc-run">
-            <svg viewBox="0 0 800 200" preserveAspectRatio="none">
-              <path class="osc-ghost osc-ghost-c" id="echoOscGhostC" d="M0,100 L800,100"></path>
-              <path class="osc-ghost osc-ghost-r" id="echoOscGhostR" d="M0,100 L800,100"></path>
-              <path class="osc-live" id="echoOscPath" d="M0,100 L800,100"></path>
+          <div class="osc-glitch"><div class="osc-amp"><div class="osc-run">
+            <svg viewBox="0 0 2800 200" preserveAspectRatio="none">
+              <path class="osc-ghost osc-ghost-c" id="echoOscGhostC" d="M0,100 L2800,100"></path>
+              <path class="osc-ghost osc-ghost-r" id="echoOscGhostR" d="M0,100 L2800,100"></path>
+              <path class="osc-live" id="echoOscPath" d="M0,100 L2800,100"></path>
             </svg>
-          </div></div>
+          </div></div></div>
           <span class="fr" id="echoFreqDisplay">12.847 GHZ</span>
         </div>
 
@@ -17273,24 +17305,74 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
    ни headless WebKit из Playwright этого не воспроизводят — проверено
    контролем, поэтому доверять их зелёному результату здесь нельзя.
    will-change убран намеренно: он и был тем, что просило слой. */
-@keyframes ewOscRun { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+/* Три независимых слоя, у каждого своя работа и свой период. Живость
+   берётся из того, что периоды несоизмеримы: ход 36с, дыхание амплитуды
+   11.3с — совпасть они могут раз в несколько минут, и рисунок в окне
+   всё это время не повторяется. Ни одного пересчёта на кадр. */
+@keyframes ewOscRun { from { transform: translateX(0); } to { transform: translateX(calc(-100% * 6 / 7)); } }
+/* Дыхание: сигнал то садится, то разгоняется — как живой канал, а не
+   ровная синусоида, которую просто тянут вбок. */
+@keyframes ewOscBreath {
+  0%   { transform: scaleY(1);    }
+  17%  { transform: scaleY(1.22); }
+  29%  { transform: scaleY(.84);  }
+  44%  { transform: scaleY(1.36); }
+  58%  { transform: scaleY(.9);   }
+  71%  { transform: scaleY(1.14); }
+  86%  { transform: scaleY(.78);  }
+  100% { transform: scaleY(1);    }
+}
+@keyframes ewOscBreathHot {
+  0%   { transform: scaleY(1.35); }
+  20%  { transform: scaleY(1.9);  }
+  38%  { transform: scaleY(1.05); }
+  55%  { transform: scaleY(1.75); }
+  72%  { transform: scaleY(1.2);  }
+  88%  { transform: scaleY(1.6);  }
+  100% { transform: scaleY(1.35); }
+}
+/* Сбой при смене канала: экран дёргается, амплитуда скачет, из линии на
+   мгновение вылезают призрачные копии. steps() делает рывок ступенчатым —
+   плавный тут читался бы как качание, а не как срыв сигнала. */
+@keyframes ewOscGlitch {
+  0%   { transform: translateX(0)    scaleY(1);   }
+  10%  { transform: translateX(-8px) scaleY(1.8); }
+  22%  { transform: translateX(7px)  scaleY(.4);  }
+  34%  { transform: translateX(-5px) scaleY(1.5); }
+  48%  { transform: translateX(6px)  scaleY(.65); }
+  62%  { transform: translateX(-3px) scaleY(1.3); }
+  78%  { transform: translateX(3px)  scaleY(.88); }
+  100% { transform: translateX(0)    scaleY(1);   }
+}
+.echo-right .beam .osc-glitch { position: absolute; inset: 0; }
 .echo-right .beam .osc-amp {
   position: absolute; inset: 0;
-  transform-origin: 50% 50%;
-  transition: transform .35s var(--ease-out);
+  animation: ewOscBreath 11.3s ease-in-out infinite;
 }
 .echo-right .beam .osc-run {
   position: absolute; top: 0; left: 0;
-  width: 200%; height: 100%;
-  animation: ewOscRun 6s linear infinite;
+  width: 700%; height: 100%;
+  animation: ewOscRun 36s linear infinite;
 }
 /* Вне экрана ход стоит. Класс ставит наблюдатель; если тот не сработает,
    класса просто нет и луч продолжает идти — безопасный отказ. */
-.echo-right .beam.osc-asleep .osc-run { animation-play-state: paused; }
-.echo-section.recording .echo-right .beam .osc-amp { transform: scaleY(1.55); }
-.echo-section.recording .echo-right .beam .osc-run { animation-duration: 2.6s; }
+.echo-right .beam.osc-asleep .osc-run,
+.echo-right .beam.osc-asleep .osc-amp { animation-play-state: paused; }
+.echo-section.recording .echo-right .beam .osc-amp { animation: ewOscBreathHot 3.4s ease-in-out infinite; }
+.echo-section.recording .echo-right .beam .osc-run { animation-duration: 14s; }
+/* Сбой живёт на СВОЁМ узле: на .osc-amp он затирал бы дыхание, а два
+   разных transform на одном узле не уживаются. */
+.echo-right .beam.echo-retune .osc-glitch { animation: ewOscGlitch .48s steps(9) 1; }
+/* Призраки разведены и по фазе, и по цвету: на полсекунды сигнал будто
+   расслаивается на каналы. Тень с них снимаем — три свечения разом дают
+   мутное пятно вместо срыва. */
+.echo-right .beam.echo-retune .osc-ghost { opacity: .55; filter: none; }
+.echo-right .beam.echo-retune .osc-ghost-c { stroke: var(--cyan); }
+.echo-right .beam.echo-retune .osc-ghost-r { stroke: var(--red2); }
 @media (prefers-reduced-motion: reduce) {
-  .echo-right .beam .osc-run { animation: none; }
+  .echo-right .beam .osc-run,
+  .echo-right .beam .osc-amp,
+  .echo-right .beam.echo-retune .osc-glitch { animation: none; }
 }
 .echo-section.recording .echo-right .beam path,
 .echo-section.echo-typing .echo-right .beam path { stroke: var(--red-hi); filter: drop-shadow(0 0 6px rgba(230,69,69,0.55)); }
@@ -17640,9 +17722,12 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
    Не используем checkout .chk-consent, чтобы не сплющивать блок. */
 .preorder-privacy {
   display: grid;
-  grid-template-columns: 15px 1fr;
-  gap: 9px;
-  align-items: start;
+  /* Колонка была 15px при коробке 22 — знак стоял в колонке уже себя и
+     вылезал за её край. Приведено к эталону: колонка по ширине коробки,
+     зазор 11, привязка по центру. */
+  grid-template-columns: 22px 1fr;
+  gap: 11px;
+  align-items: center;
   margin: -2px 0 14px;
   color: var(--white-dim);
   font-family: var(--font-code);
@@ -30692,18 +30777,27 @@ function _echoSetTyping(on){
    Бесшовность держится на арифметике: каждая гармоника укладывает ЦЕЛОЕ
    число периодов в 400 единиц, поэтому значение на x=400 равно значению
    на x=0, и момент возврата ленты не виден. */
-function _ewОсцПуть(гармоники){
-  /* Шаг 2 единицы — 401 точка на ленту. Путь строится ОДИН раз, поэтому
-     плотность ничего не стоит, а на шаге 4 при трёхкратной плотности
-     пикселей была видна огранка. */
-  const W = 400, MID = 100, ШАГ = 2;
-  let d = '';
-  for(let x = 0; x <= W * 2; x += ШАГ){
-    let y = MID;
-    for(let k = 0; k < гармоники.length; k++){
-      const [n, a] = гармоники[k];
-      y += a * Math.sin(2 * Math.PI * n * x / W);
-    }
+function _ewОсцПуть(сдвиг){
+  /* Лента длиной 2800 единиц при окне в 400: уезжает она на 2400, и все
+     гармоники укладывают в эти 2400 ЦЕЛОЕ число периодов — поэтому конец
+     ленты совпадает с началом и возврата не видно. Числа периодов взяты
+     взаимно непохожие (18, 27, 48, 71, 114), чтобы в окне рисунок не
+     повторялся: полный цикл длится 36 секунд.
+
+     Прежняя лента была вдвое короче окна вдвое и возвращалась каждые 6
+     секунд — глаз успевал заучить рисунок, и линия читалась как заранее
+     нарисованная, каковой и была.
+
+     сдвиг — фазовое смещение в единицах. Призрачные копии строятся с ним,
+     чтобы при сбое канала они вылезали из-под линии, а не прятались под
+     ней: с одинаковым путём раздвоения не видно вовсе. */
+  var ЛЕНТА = 2800, ЦИКЛ = 2400, MID = 100, ШАГ = 2;
+  var Г = [[18, 22], [27, 7], [48, 11], [71, 5], [114, 6]];
+  var d = '', x, k, y, u;
+  for(x = 0; x <= ЛЕНТА; x += ШАГ){
+    u = x + (сдвиг || 0);
+    y = MID;
+    for(k = 0; k < Г.length; k++) y += Г[k][1] * Math.sin(2 * Math.PI * Г[k][0] * u / ЦИКЛ);
     d += (x ? ' L' : 'M') + x + ',' + y.toFixed(2);
   }
   return d;
@@ -30715,12 +30809,12 @@ function _echoStartOsc(){
   if(!path || path._echoOscBound) return;
   path._echoOscBound = true;
 
-  /* Три несоизмеримые на глаз гармоники (3, 8 и 19 периодов на окно) —
-     рисунок в окне нигде не повторяется, но лента замкнута. */
-  const d = _ewОсцПуть([[3, 26], [8, 10], [19, 5]]);
-  path.setAttribute('d', d);
-  if(ghostC) ghostC.setAttribute('d', d);
-  if(ghostR) ghostR.setAttribute('d', d);
+  path.setAttribute('d', _ewОсцПуть(0));
+  /* Призраки — та же лента, сдвинутая по фазе в разные стороны. Обычно они
+     полностью прозрачны и ничего не стоят; видимыми становятся только на
+     полсекунды сбоя при смене канала. */
+  if(ghostC) ghostC.setAttribute('d', _ewОсцПуть(9));
+  if(ghostR) ghostR.setAttribute('d', _ewОсцПуть(-9));
 
   /* Экономия вне экрана сохраняется, но с обратным поведением при сбое:
      по умолчанию ход ИДЁТ, наблюдатель только ставит на паузу, когда
@@ -32608,7 +32702,8 @@ function acceptCookies(){
    naturally pushes it down. */
 .echo-tab-stage {
   overflow: visible !important;
-  transition: height .34s cubic-bezier(.22,1,.36,1), min-height .34s cubic-bezier(.22,1,.36,1) !important;
+  transition: height .34s cubic-bezier(.4,0,.2,1),
+              min-height .34s cubic-bezier(.4,0,.2,1) !important;
 }
 .echo-tab-pane {
   transition: opacity .22s ease, transform .26s cubic-bezier(.22,1,.36,1) !important;
