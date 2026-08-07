@@ -17712,7 +17712,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="glass cond-glass" id="condScreen">
           <div class="g-head">
             <span class="g-chip"><span class="g-dot w" id="condBarcode"></span>APERTURA · CONDENSATE FORMING</span>
-            <span class="g-aux" id="condStatusLine">Диалог открыт</span>
+            <span class="g-aux" id="condPanelState">Диалог открыт</span>
           </div>
           <div class="g-body">
             <div class="cond-dlg">
@@ -17744,6 +17744,11 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
           <input type="text" id="preorderItem" maxlength="120" autocomplete="off" tabindex="-1">
           <input type="email" id="preorderContact" autocomplete="email" tabindex="-1">
           <span id="condMirrorItem"></span><span id="condMirrorContact"></span>
+          <!-- Приёмник для старого скрипта терминала: он пишет сюда
+               строки вида «> APERTURA AWAITS SIGNAL». Раньше этот id
+               висел на видимом статусе панели, и терминальный текст
+               затирал её состояние. -->
+          <span id="condStatusLine"></span>
         </div>
       </div><!-- /preorderRightCol -->
   </div>
@@ -40223,6 +40228,69 @@ h1, h2, h3,
 
      Тексты вопросов взяты ДОСЛОВНО из подсказок существующих полей,
      чтобы не менять смысл заказа. -->
+<style id="ew-cond-glass-css">
+/* ═══ СТЕКЛО ЭТАЛОНА ДЛЯ ПАНЕЛИ КОНДЕНСАЦИИ ═══════════════════════
+   Правила перенесены ИЗ design/lens-terminals.html как есть и заключены
+   в область видимости .cond-glass.
+
+   Зачем область. На сайте классы .glass/.g-* уже были, но их селекторы
+   привязаны к секции Эхо (.echo-right ...). Я проверил, что классы в
+   таблице ЕСТЬ, и не проверил, что селекторы попадут в мою разметку, —
+   панель осталась вовсе без стилей: чип развалился на две строки, точка
+   стала квадратом, поле и кнопка встали столбиком, подвал слипся.
+   Область видимости даёт панели её собственный полный набор и не
+   пересекается с оформлением Эхо. */
+.cond-glass::before{content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 6;
+  background: linear-gradient(135deg, rgba(255,255,255,0.32), rgba(120,220,255,0.1) 28%, rgba(255,255,255,0.02) 46%, rgba(255,175,120,0.08) 72%, rgba(255,255,255,0.18));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;}
+.cond-glass::after{content: ""; position: absolute; top: -60%; left: -55%; width: 52%; height: 220%; z-index: 5;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.05) 42%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 58%, transparent);
+  animation: sheen 15s ease-in-out infinite; animation-delay: var(--sheen, 0s);
+  pointer-events: none;}
+.cond-glass .g-head{display: flex; align-items: center; gap: 12px; padding: 15px 20px 0; position: relative; z-index: 1;}
+.cond-glass .g-chip{display: inline-flex; align-items: center; gap: 8px; font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-2); background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); white-space: nowrap;}
+.cond-glass .g-dot{width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; transition: background 0.4s, box-shadow 0.4s;}
+.cond-glass .g-dot.c{background: var(--cyan); box-shadow: 0 0 9px rgba(0,200,200,0.9); animation: breathe 3.2s ease-in-out infinite;}
+.cond-glass .g-dot.w{background: var(--warm); box-shadow: 0 0 9px rgba(209,160,74,0.9);}
+.cond-glass .g-dot.r{background: var(--red-hi); box-shadow: 0 0 9px rgba(230,69,69,0.9);}
+.cond-glass .g-aux{margin-left: auto; font-size: 9px; letter-spacing: 0.15em; color: var(--ink-4); text-align: right; transition: color 0.4s;}
+.cond-glass .g-body{padding: 16px 20px 18px; position: relative; z-index: 1;}
+.cond-glass .g-foot{display: flex; justify-content: space-between; gap: 12px; padding: 11px 20px 15px; font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); position: relative; z-index: 1;}
+.cond-glass .g-foot [data-status]{transition: color 0.3s;}
+.cond-glass .g-actions{display: flex; gap: 10px; padding-top: 14px;}
+.cond-glass .g-btn{position: relative; overflow: hidden; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warm-hi); padding: 15px 18px; border-radius: 99px; background: rgba(209,160,74,0.09); border: 1px solid rgba(209,160,74,0.34); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 0 26px rgba(209,160,74,0.08); transition: box-shadow 0.3s var(--ease-out), background 0.3s, transform 0.15s;}
+.cond-glass .g-btn:hover{background: rgba(209,160,74,0.15); box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 0 30px rgba(209,160,74,0.13), 0 0 30px rgba(209,160,74,0.2);}
+.cond-glass .g-btn:active{transform: scale(0.985);}
+.cond-glass .g-btn.quiet{color: var(--ink-2); background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);}
+.cond-glass .g-btn.quiet:hover{background: rgba(255,255,255,0.08);}
+.cond-glass .g-well{display: block; width: 100%; font-family: var(--text); font-size: 13px; color: var(--ink); background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px 15px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; resize: none;}
+.cond-glass .g-well::placeholder{color: var(--ink-3); opacity: 0.8;}
+.cond-glass .g-well:focus{border-color: rgba(0,200,200,0.4); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 3px rgba(0,200,200,0.08), 0 0 18px rgba(0,200,200,0.1); background: rgba(255,255,255,0.06);}
+.cond-glass .dlg-log{flex: 1; overflow-y: auto; scrollbar-width: none; padding: 4px 2px 10px; -webkit-mask-image: linear-gradient(180deg, transparent, #000 9%); mask-image: linear-gradient(180deg, transparent, #000 9%);}
+.cond-glass .dlg-log::-webkit-scrollbar{display: none;}
+.cond-glass .dlg-in{display: flex; gap: 8px; align-items: center; padding-top: 10px; position: relative;}
+.cond-glass .dlg-in::before{content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(240,240,248,0.11) 16%, rgba(240,240,248,0.11) 84%, transparent);}
+.cond-glass .dlg-in .g-well{flex: 1;}
+.cond-glass .dlg-send{position: relative; overflow: hidden; width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(209,160,74,0.1); border: 1px solid rgba(209,160,74,0.35); transition: background 0.2s, box-shadow 0.2s, opacity 0.3s;}
+.cond-glass .dlg-send svg{width: 15px; height: 15px; fill: none; stroke: var(--warm-hi); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;}
+.cond-glass .dlg-send:hover{background: rgba(209,160,74,0.17); box-shadow: 0 0 18px rgba(209,160,74,0.2);}
+.cond-glass .dlg-in.lock{opacity: 0.35; pointer-events: none;}
+.cond-glass .dlg-consent{display: none; gap: 8px; align-items: center; padding-top: 10px; position: relative;}
+.cond-glass .dlg-consent.show{display: flex;}
+.cond-glass .dlg-consent::before{content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(240,240,248,0.11) 16%, rgba(240,240,248,0.11) 84%, transparent);}
+.cond-glass .dlg-consent .g-btn{padding: 12px 16px;}
+.cond-glass .dlg-consent .lnk{font-family: var(--text); font-size: 10.5px; color: var(--ink-4); text-decoration: underline; text-underline-offset: 3px; padding: 8px 4px; transition: color 0.2s;}
+.cond-glass .dlg-consent .lnk:hover{color: var(--ink-2);}
+.cond-glass::after{animation: none; display: none;}
+.cond-glass .g-dot.c, .cond-glass .rung.x, .cond-glass .scanline{animation: none;}
+.cond-glass .g-head{padding: 13px 16px 0;}
+.cond-glass .g-body{padding: 14px 16px 16px;}
+.cond-glass .g-foot{padding: 10px 16px 14px; flex-wrap: wrap;}
+.cond-glass .g-actions{flex-direction: column;}
+.cond-glass .dlg{height: 380px;}
+</style>
 <style id="ew-cond-dialog-css">
 /* Диалог заказа конденсации. Разметка теперь РОДНАЯ (см. секцию заказа),
    поэтому правил для инъекции больше нет — только вид самого диалога. */
@@ -40247,8 +40315,18 @@ h1, h2, h3,
   align-self:flex-end; color:var(--ink);
   background:rgba(0,200,200,.07); border:1px solid rgba(0,200,200,.26);
 }
-.cond-dlg-in{ display:flex; gap:8px; align-items:center; }
-.cond-dlg-in .g-well{ flex:1; min-width:0; }
+/* flex-direction задаём ЯВНО: у #preorderFormBlock осталось правило
+   старой формы с column, и поле с кнопкой вставали столбиком. */
+#preorderFormBlock.cond-dlg-in{
+  /* Снимаем оформление СТАРОЙ формы: у #preorderFormBlock остались фон
+     rgb(5,5,6), рамка, радиус 18px и внутренний отступ 28px — вокруг
+     строки ввода рисовалась чужая тёмная коробка, которой нет в эталоне.
+     Направление ряда задаём явно: то же правило ставило column, и поле
+     с кнопкой вставали столбиком. */
+  display:flex; flex-direction:row; gap:8px; align-items:center;
+  background:none; border:0; border-radius:0; padding:0; box-shadow:none;
+}
+#preorderFormBlock.cond-dlg-in .g-well{ flex:1 1 auto; min-width:0; width:auto; }
 .cond-dlg-send{
   flex:0 0 auto; width:42px; height:42px; border-radius:50%;
   display:grid; place-items:center; cursor:pointer;
@@ -40277,7 +40355,7 @@ h1, h2, h3,
     var шли = document.getElementById('condDlgSend');
     var согласие = document.getElementById('condDlgConsent');
     var строка = document.getElementById('preorderFormBlock');
-    var статус = document.getElementById('condStatusLine');
+    var статус = document.getElementById('condPanelState');
     var поле1 = document.getElementById('preorderItem');
     var поле2 = document.getElementById('preorderContact');
     if(!лог || !ввод || !шли || !поле1 || !поле2) return;
