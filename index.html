@@ -7004,8 +7004,10 @@ footer {
   box-shadow: 0 0 10px rgba(192,40,40,0.30);
   animation: chkTapRed .55s cubic-bezier(.22,1,.36,1);
 }
-#returnModal .return-chk-consent .chk-consent-input:focus-visible + .chk-consent-box {
-  outline-color: var(--red2);
+@media (hover: hover) and (pointer: fine) {
+  #returnModal .return-chk-consent .chk-consent-input:focus-visible + .chk-consent-box {
+    outline-color: var(--red2);
+  }
 }
 /* Кнопка отправки — единый язык с cart-checkout-btn / echo-submit */
 .return-submit {
@@ -9338,9 +9340,20 @@ input, select, textarea {
 @keyframes chkTapRed {
   0%   { box-shadow: 0 0 0 0 rgba(192,40,40,0.30); }
   100% { box-shadow: 0 0 0 10px rgba(192,40,40,0), 0 0 10px rgba(192,40,40,0.30); }}
-.chk-consent-input:focus-visible + .chk-consent-box {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
+/* Кольцо фокуса ТОЛЬКО для мыши и клавиатуры. На iOS тап по метке ставит
+   фокус на скрытый input, и Safari нередко считает такой фокус «видимым»:
+   вокруг коробки 22px на мгновение вспыхивало циановое кольцо 2px с
+   отступом 2px и тут же гасло. Пальцем это читается как прыжок крестика в
+   момент нажатия — при том что сама геометрия неподвижна, покадровый замер
+   даёт ноль смещения во всех 29 кадрах.
+   У эталонного «Прозвучать в обоих мирах» такого правила нет вовсе — он
+   потому и не прыгает. Клавиатурный фокус на десктопе кольцо сохраняет:
+   pointer:fine как раз и означает мышь или трекпад. */
+@media (hover: hover) and (pointer: fine) {
+  .chk-consent-input:focus-visible + .chk-consent-box {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
 }
 .chk-consent-text {
   font-family: var(--font-code);
@@ -32180,6 +32193,27 @@ function _openLegalModal(id) {
   _hideAllNotifs();
   if(typeof _closeWorldDrop === 'function') _closeWorldDrop();
   m.classList.remove('closing');
+
+  /* ── ПАНЕЛЬ ЕДЕТ СЛОЕМ, А НЕ ПЕРЕРИСОВКОЙ ─────────────────────────
+     Документ — 8850 знаков и 4835px прокрутки под стеклом. Пока панель
+     ехала обычным узлом, каждый кадр анимации требовал перерисовать весь
+     этот текст: замер показал, что панель 95мс стоит на месте, а потом
+     одним шагом прыгает на 233px, догоняя расписание. Это и есть «рвано
+     открывается».
+
+     Первая попытка — отложить старт на кадр — сделала хуже (простой вырос
+     до 126мс, скачок до 330px): дело не в старте, а в цене КАЖДОГО кадра.
+
+     will-change просит вынести панель в отдельный слой: текст
+     растеризуется один раз, дальше слой только сдвигается. Снимаем флаг
+     после хода — постоянный слой держал бы память зря.
+     Ключевые кадры и механика нижнего листа не тронуты. */
+  var _панель = m.querySelector('.legal-modal');
+  if(_панель){
+    _панель.style.willChange = 'transform, opacity';
+    clearTimeout(m._legalСлой);
+    m._legalСлой = setTimeout(function(){ _панель.style.willChange = ''; }, 460);
+  }
   m.classList.add('open');
   // html.legal-modal-open — триггер для скрытия header/scroll-line
   document.documentElement.classList.add('legal-modal-open');
