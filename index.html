@@ -16250,18 +16250,26 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       </div>
       <div class="g-body">
         <div class="beam" id="echoBeam" aria-hidden="true">
-          <!-- Окно 400 единиц, лента внутри 800: она уезжает влево ровно на
-               400 и встаёт в исходное положение — стык невидим, потому что
-               путь построен из гармоник с целым числом периодов на 400.
-               Два вложенных узла: внешний держит амплитуду (запись громче),
-               внутренний — ход. На одном узле два разных transform спорили бы. -->
-          <svg viewBox="0 0 400 200" preserveAspectRatio="none">
-            <g class="osc-amp"><g class="osc-run">
+          <!-- Лента вдвое шире окна: контейнер .osc-run занимает 200% ширины
+               и уезжает влево на половину себя — то есть ровно на одно окно.
+               Стык невидим: путь построен из гармоник с целым числом периодов
+               на окно, поэтому конец ленты совпадает с её началом.
+               Двигается ОБЫЧНЫЙ HTML-контейнер, а не узел SVG. Так было
+               сделано сначала, и в настоящем Safari луч пропадал целиком:
+               продвижение SVG-группы в отдельный слой — известное больное
+               место WebKit, слой либо пуст, либо перерисовывается только
+               когда его пачкает чужое действие (отсюда «дёргается при
+               прокрутке»). Ни headless WebKit, ни Chromium этого не
+               показывают. Два вложенных контейнера: внешний держит амплитуду
+               (при записи громче), внутренний — ход; на одном узле два
+               разных transform спорили бы. -->
+          <div class="osc-amp"><div class="osc-run">
+            <svg viewBox="0 0 800 200" preserveAspectRatio="none">
               <path class="osc-ghost osc-ghost-c" id="echoOscGhostC" d="M0,100 L800,100"></path>
               <path class="osc-ghost osc-ghost-r" id="echoOscGhostR" d="M0,100 L800,100"></path>
               <path class="osc-live" id="echoOscPath" d="M0,100 L800,100"></path>
-            </g></g>
-          </svg>
+            </svg>
+          </div></div>
           <span class="fr" id="echoFreqDisplay">12.847 GHZ</span>
         </div>
 
@@ -17253,26 +17261,32 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 .echo-right .beam path { fill: none; stroke: var(--cyan-hi); stroke-width: 1.4; filter: drop-shadow(0 0 6px rgba(0,200,200,0.55)); transition: stroke 0.3s; }
 .echo-right .beam .osc-ghost { opacity: 0; }
 /* ── ХОД ЛУЧА ──────────────────────────────────────────────────────
-   Единственное, что движется, — transform на группе. Тень пути
-   растеризуется один раз, дальше слой только сдвигается: главный поток
-   не участвует, и ход не зависит ни от прокрутки, ни от чего-либо ещё.
-   Скорость: 400 единиц за 6с — тот же темп, что был у покадрового цикла. */
-@keyframes ewOscRun { from { transform: translateX(0); } to { transform: translateX(-400px); } }
+   Двигается ОБЫЧНЫЙ HTML-контейнер шириной 200%, а не узел SVG: он уезжает
+   на половину себя, то есть ровно на одно окно. Путь при этом не трогается
+   вовсе — тень растеризуется один раз, главный поток не участвует.
+
+   Почему не transform на SVG-группе, как было сделано сначала: в настоящем
+   Safari луч тогда пропадал целиком. Продвижение SVG-поддерева в отдельный
+   слой (transform + will-change на <g>) — известное больное место WebKit:
+   слой выходит либо пустым, либо обновляется только когда его пачкает
+   чужое действие. Это и давало «дёргается лишь при прокрутке». Ни Chromium,
+   ни headless WebKit из Playwright этого не воспроизводят — проверено
+   контролем, поэтому доверять их зелёному результату здесь нельзя.
+   will-change убран намеренно: он и был тем, что просило слой. */
+@keyframes ewOscRun { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.echo-right .beam .osc-amp {
+  position: absolute; inset: 0;
+  transform-origin: 50% 50%;
+  transition: transform .35s var(--ease-out);
+}
 .echo-right .beam .osc-run {
+  position: absolute; top: 0; left: 0;
+  width: 200%; height: 100%;
   animation: ewOscRun 6s linear infinite;
-  will-change: transform;   /* свой слой — тень не переснимается каждый кадр */
 }
 /* Вне экрана ход стоит. Класс ставит наблюдатель; если тот не сработает,
    класса просто нет и луч продолжает идти — безопасный отказ. */
 .echo-right .beam.osc-asleep .osc-run { animation-play-state: paused; }
-/* Амплитуда — отдельный узел: два transform на одном узле спорят.
-   transform-box задан явно, иначе точка отсчёта у групп разъезжается
-   между движками. */
-.echo-right .beam .osc-amp {
-  transform-box: view-box;
-  transform-origin: 200px 100px;
-  transition: transform .35s var(--ease-out);
-}
 .echo-section.recording .echo-right .beam .osc-amp { transform: scaleY(1.55); }
 .echo-section.recording .echo-right .beam .osc-run { animation-duration: 2.6s; }
 @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Замер на устройстве · крестик и луч</title>
+<!--
+  СТРАНИЦА-ЗАМЕР ДЛЯ РЕАЛЬНОГО УСТРОЙСТВА
+  ===========================================================================
+  Два дефекта — съезжающий крестик в чек-боксе и осциллограф, который идёт
+  рывками — не воспроизводятся ни в Chromium, ни в headless WebKit из
+  Playwright. Контрольный прогон заведомо сломанной версии дал там ноль
+  расхождений по обоим. Значит замеры на настольной машине бесполезны, и
+  цифры нужно снять с самого телефона.
+
+  Открывается без деплоя:  node tools/serve.mjs 4199
+  затем с телефона:        http://<IP-мака>:4199/tools/probe.html
+
+  Разметка чек-бокса и все правила скопированы из index.html ДОСЛОВНО.
+  В деплой не попадает: pages.yml копирует только белый список файлов,
+  tools/ туда не входит.
+-->
+<style>
+:root{
+  --ink:#e9e9ec; --ink-3:#8a8a93; --ink-4:#5f5f68;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --cyan-hi:#4fe8e8;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:18px 16px 60px;background:#0a0a0c;color:var(--ink);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  -webkit-text-size-adjust:100%}
+h1{font-size:15px;letter-spacing:.06em;margin:0 0 4px}
+h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);
+  margin:26px 0 10px;font-weight:600}
+p.hint{color:var(--ink-3);font-size:12px;margin:0 0 14px}
+.card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);
+  border-radius:14px;padding:14px;margin-bottom:12px}
+pre{margin:0;font:11px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--ink-3);white-space:pre-wrap;word-break:break-word}
+b.ok{color:#4fe8a0}
+b.bad{color:#ff6b6b}
+
+/* ─── Копия чек-бокса из index.html, дословно ─────────────────────── */
+.chk-consent{display:flex;align-items:flex-start;gap:11px;cursor:pointer}
+.chk-consent-input{position:absolute;opacity:0;width:0;height:0}
+.chk-consent-box{
+  position:relative;flex-shrink:0;
+  width:22px!important;height:22px!important;margin-top:0!important;
+  display:grid;place-items:center;
+  border-radius:7px!important;
+  background:rgba(255,255,255,.05)!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  transition:background .25s var(--ease-out),border-color .25s var(--ease-out),
+             box-shadow .3s var(--ease-out);
+}
+.cb-mark{
+  position:absolute;inset:0;margin:auto;
+  width:13px;height:13px;
+  color:var(--ink);fill:none;stroke:currentColor;stroke-width:2.4;
+  stroke-linecap:round;opacity:0;
+  transition:opacity .18s var(--ease-out);pointer-events:none;
+}
+.chk-consent-input:checked+.chk-consent-box{
+  background:rgba(255,255,255,.10)!important;
+  border-color:rgba(255,255,255,.34)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important;
+  animation:none!important;
+}
+.chk-consent-input:checked+.chk-consent-box .cb-mark{opacity:1}
+
+/* Увеличенная копия: тот же узел под лупой. Масштаб на ОБЁРТКЕ, поэтому
+   внутри всё считается ровно так же, как в боевом размере, — увеличивается
+   уже готовая картинка, и любой перекос видно невооружённым глазом. */
+.lupa{width:22px;height:22px;transform:scale(9);transform-origin:0 0;
+  image-rendering:-webkit-optimize-contrast}
+.lupa-box{position:relative;height:210px;margin:10px 0 0 8px}
+/* Перекрестие-эталон: ровно по центру коробки. Если крестик стоит по
+   месту, его линии проходят через пересечение этих нитей. */
+/* Нити кладём ВНУТРЬ увеличенной коробки, а не в карточку: у карточки свои
+   отступы, и отсчёт от неё промахивался мимо центра. */
+.nit{position:absolute;background:rgba(255,80,80,.9);pointer-events:none;z-index:2}
+.nit.v{left:99px;top:0;width:1px;height:198px}
+.nit.g{left:0;top:99px;height:1px;width:198px}
+
+/* ─── Копия осциллографа ──────────────────────────────────────────── */
+.beam{position:relative;height:40px;border-radius:10px;background:rgba(4,4,5,.35);
+  border:1px solid rgba(255,255,255,.07);overflow:hidden}
+.beam svg{display:block;width:100%;height:100%}
+.beam path{fill:none;stroke:var(--cyan-hi);stroke-width:1.4;
+  filter:drop-shadow(0 0 6px rgba(0,200,200,.55))}
+
+/* А. НОВЫЙ вариант: движется обычный HTML-контейнер шириной 200%. */
+@keyframes ewOscRun{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.beam .osc-amp{position:absolute;inset:0}
+.beam .osc-run{position:absolute;top:0;left:0;width:200%;height:100%;
+  animation:ewOscRun 6s linear infinite}
+
+/* Б. СТАРЫЙ вариант — оставлен нарочно, для сравнения: transform и
+   will-change на группе SVG. Если в этой карточке пусто, а в предыдущей
+   линия есть, значит дело именно в продвижении SVG-слоя. */
+@keyframes ewOscRunSVG{from{transform:translateX(0)}to{transform:translateX(-400px)}}
+.beam-svg .osc-run-svg{animation:ewOscRunSVG 6s linear infinite;will-change:transform}
+</style>
+</head>
+<body>
+
+<h1>Замер на устройстве</h1>
+<p class="hint">Ничего не отправляется наружу. Пролистайте до конца, сделайте
+два-три снимка экрана и пришлите.</p>
+
+<h2>1 · Крестик в чек-боксе</h2>
+<div class="card">
+  <label class="chk-consent">
+    <input type="checkbox" class="chk-consent-input" id="cb">
+    <span class="chk-consent-box" id="box" aria-hidden="true">
+      <svg class="cb-mark" id="mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+      </svg>
+    </span>
+    <span>Нажмите сюда — и посмотрите на увеличенную копию ниже</span>
+  </label>
+</div>
+
+<div class="card lupa-wrap">
+  <div class="lupa-box">
+    <div class="lupa">
+      <span class="chk-consent-box" id="box2" aria-hidden="true">
+        <svg class="cb-mark" id="mark2" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+        </svg>
+      </span>
+    </div>
+    <span class="nit v"></span><span class="nit g"></span>
+  </div>
+  <p class="hint" style="margin:14px 0 0">Красные нити проходят точно через
+  центр коробки. Крестик стоит верно, если его линии пересекаются на них.</p>
+</div>
+
+<div class="card"><pre id="out1">измеряю…</pre></div>
+
+<h2>2 · Осциллограф</h2>
+<p class="hint">Смотрите, не касаясь экрана: линия должна идти ровно и
+непрерывно. Числа ниже считают, сколько раз она реально сдвинулась.</p>
+<div class="card">
+  <p class="hint" style="margin:0 0 8px">А · движется HTML-контейнер (как теперь в коде)</p>
+  <div class="beam" id="beam">
+    <div class="osc-amp"><div class="osc-run">
+      <svg viewBox="0 0 800 200" preserveAspectRatio="none"><path id="p"></path></svg>
+    </div></div>
+  </div>
+</div>
+<div class="card">
+  <p class="hint" style="margin:0 0 8px">Б · движется группа SVG (как было — для сравнения)</p>
+  <div class="beam beam-svg">
+    <svg viewBox="0 0 400 200" preserveAspectRatio="none">
+      <g class="osc-run-svg"><path id="p2"></path></g>
+    </svg>
+  </div>
+</div>
+<div class="card"><pre id="out2">измеряю…</pre></div>
+
+<h2>3 · Об устройстве</h2>
+<div class="card"><pre id="out3"></pre></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ── Путь осциллографа: тот же расчёт, что в index.html ── */
+  var W=400,MID=100,ШАГ=2,Г=[[3,26],[8,10],[19,5]],d='';
+  for(var x=0;x<=W*2;x+=ШАГ){
+    var y=MID;
+    for(var k=0;k<Г.length;k++) y+=Г[k][1]*Math.sin(2*Math.PI*Г[k][0]*x/W);
+    d+=(x?' L':'M')+x+','+y.toFixed(2);
+  }
+  document.getElementById('p').setAttribute('d',d);
+  document.getElementById('p2').setAttribute('d',d);
+
+  function центр(el){var r=el.getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2];}
+  function окр(n){return Math.round(n*100)/100;}
+
+  /* ── 1. Смещение крестика ───────────────────────────────────────────
+     Меряем ДВА разных смещения, потому что прошлые замеры видели только
+     первое и всё время показывали ноль:
+       коробка↔знак — сдвинут ли элемент-носитель;
+       знак↔чернила — сдвинута ли САМА нарисованная линия внутри него.
+     Второе getBoundingClientRect не показывает вовсе: у <svg> он отдаёт
+     коробку элемента, а не то, где внутри лёг глиф. Для чернил берём
+     getBBox у пути и переводим в экранные координаты. */
+  function чернила(svg){
+    try{
+      var сум=null;
+      var пути=svg.querySelectorAll('path');
+      for(var i=0;i<пути.length;i++){
+        var b=пути[i].getBBox();
+        if(!сум) сум={x1:b.x,y1:b.y,x2:b.x+b.width,y2:b.y+b.height};
+        else{ сум.x1=Math.min(сум.x1,b.x); сум.y1=Math.min(сум.y1,b.y);
+              сум.x2=Math.max(сум.x2,b.x+b.width); сум.y2=Math.max(сум.y2,b.y+b.height); }
+      }
+      if(!сум) return null;
+      var vb=svg.viewBox.baseVal, r=svg.getBoundingClientRect();
+      var сx=(сум.x1+сум.x2)/2, сy=(сум.y1+сум.y2)/2;
+      /* viewBox → экран: preserveAspectRatio здесь по умолчанию, коробка
+         квадратная, поэтому масштаб по обеим осям один. */
+      var м=r.width/(vb.width||24);
+      return [r.left+(сx-vb.x)*м, r.top+(сy-vb.y)*м];
+    }catch(e){ return null; }
+  }
+
+  function замер1(){
+    var стр=[];
+    [['боевой размер','box','mark'],['под лупой','box2','mark2']].forEach(function(п){
+      var box=document.getElementById(п[1]), mark=document.getElementById(п[2]);
+      var цб=центр(box), цз=центр(mark), цч=чернила(mark);
+      var д1=[окр(цз[0]-цб[0]),окр(цз[1]-цб[1])];
+      var д2=цч?[окр(цч[0]-цб[0]),окр(цч[1]-цб[1])]:null;
+      var рб=box.getBoundingClientRect(), рз=mark.getBoundingClientRect();
+      стр.push(п[0]+':');
+      стр.push('  коробка '+окр(рб.width)+'×'+окр(рб.height)+
+               ', знак '+окр(рз.width)+'×'+окр(рз.height));
+      стр.push('  коробка↔знак   '+д1[0]+' , '+д1[1]+'   '+(!д1[0]&&!д1[1]?'ровно':'СМЕЩЕНО'));
+      стр.push('  коробка↔чернила '+(д2?д2текст(д2):'—'));
+    });
+    стр.push('transform у знака: '+getComputedStyle(document.getElementById('mark')).transform);
+    стр.push('отмечен: '+(document.getElementById('cb').checked?'да':'нет'));
+    document.getElementById('out1').innerHTML=стр.join('\n');
+  }
+  function д2текст(д2){
+    var ровно=Math.abs(д2[0])<0.6&&Math.abs(д2[1])<0.6;
+    return д2[0]+' , '+д2[1]+'   <b class="'+(ровно?'ok':'bad')+'">'+
+           (ровно?'ровно':'СМЕЩЕНО')+'</b>';
+  }
+  document.getElementById('cb').addEventListener('change',function(){
+    /* Увеличенную копию держим в том же состоянии, что и боевую */
+    document.getElementById('box2').className='chk-consent-box';
+    var m2=document.getElementById('mark2');
+    m2.style.opacity=this.checked?'1':'0';
+    setTimeout(замер1,60);
+    setTimeout(замер1,400);
+  });
+  замер1();
+
+  /* ── 2. Идёт ли луч сам ─────────────────────────────────────────────
+     Спрашиваем у самой анимации, где она сейчас. Это честнее, чем
+     смотреть на картинку: если движок анимацию не крутит, currentTime
+     стоять будет тоже. Отдельно считаем, ловит ли страница кадры вообще
+     и не связано ли движение с прокруткой. */
+  var прокруток=0;
+  addEventListener('scroll',function(){прокруток++;},{passive:true});
+  var замеры=[], t0=performance.now(), кадров=0;
+  (function кадр(){ кадров++; requestAnimationFrame(кадр); })();
+  setInterval(function(){
+    var g=document.querySelector('#beam .osc-run');
+    var gs=document.querySelector('.beam-svg .osc-run-svg');
+    var аs=gs&&gs.getAnimations?gs.getAnimations()[0]:null;
+    var а=g.getAnimations?g.getAnimations()[0]:null;
+    var t=а?Math.round(а.currentTime):-1;
+    замеры.push(t);
+    if(замеры.length>6) замеры.shift();
+    var шаги=[];
+    for(var i=1;i<замеры.length;i++) шаги.push(замеры[i]-замеры[i-1]);
+    var идёт=шаги.length&&шаги.every(function(s){return s>200;});
+    document.getElementById('out2').innerHTML=
+      'время анимации, мс: '+замеры.join(' → ')+
+      '\nприрост за 0.5с:   '+(шаги.join(' , ')||'—')+
+      '\nанимация найдена:  '+(а?'да':'НЕТ — движок её не крутит')+
+      '\nстарый вариант Б:  '+(аs?'анимация есть, время '+Math.round(аs.currentTime):'анимации нет')+
+      '\nкадров с загрузки: '+кадров+' за '+Math.round((performance.now()-t0)/1000)+'с'+
+      '\nпрокруток было:    '+прокруток+
+      '\nвывод: '+(идёт?'<b class="ok">луч идёт сам</b>'
+                      :'<b class="bad">луч стоит или рвётся</b>');
+  },500);
+
+  /* ── 3. Обстановка ── */
+  var э=[];
+  э.push('экран: '+innerWidth+'×'+innerHeight+' @'+(devicePixelRatio||1));
+  э.push('уменьшить движение: '+(matchMedia('(prefers-reduced-motion: reduce)').matches?'ВКЛЮЧЕНО':'нет'));
+  э.push('UA: '+navigator.userAgent);
+  document.getElementById('out3').textContent=э.join('\n');
+})();
+</script>
+</body>
+</html>
