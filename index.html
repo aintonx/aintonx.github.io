@@ -5982,6 +5982,25 @@ select:-webkit-autofill {
 .architect-in {
   max-width: 1360px; margin: 0 auto;
 }
+/* Поддержка стала отдельным разделом и должна выглядеть как раздел, а не
+   как продолжение предыдущего: те же поля, тот же фон, та же верхняя
+   линия. Верхняя граница снята — иначе на стыке с Архитектором рисуются
+   две линии подряд. */
+.donate-section{
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: var(--sec-y) var(--gutter);
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+}
+/* Стрелка в кнопке поддержки была красной — красный по паспорту только
+   тревога и запрет. */
+#archDonate .pre-pane-cta .pre-pane-cta-arrow{ background: var(--warm-hi); }
+#archDonate .pre-pane-cta .pre-pane-cta-arrow::after{
+  border-top-color: var(--warm-hi);
+  border-right-color: var(--warm-hi);
+}
 .architect-label {
   font-family: var(--font-code); font-size: 8px;
   letter-spacing: 0.28em; color: var(--red2);
@@ -5989,9 +6008,6 @@ select:-webkit-autofill {
   display: flex; align-items: center; gap: 10px;
 }
 .architect-label-pre { color: var(--white-dim); }
-.architect-body {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
-}
 .architect-code {
   font-family: var(--font-code); font-size: 8px;
   letter-spacing: 0.2em; color: var(--white-dim);
@@ -6026,16 +6042,6 @@ select:-webkit-autofill {
 .architect-link:hover::before { transform: scaleY(1); }}
 .architect-link svg { width: 14px; height: 14px; flex-shrink: 0; }
 .architect-arr { margin-left: 4px; color: var(--white-dim); }
-.architect-terminal {
-  background: var(--void); border: 1px solid var(--border2);
-  border-radius: var(--radius);
-  overflow: hidden; box-shadow: var(--shadow-panel); position: relative;
-}
-.architect-terminal::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--red), var(--cyan), var(--red));
-  background-size: 200%; animation: shimmer 3s linear infinite;
-}
 .architect-term-head {
   padding: 10px 16px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px; background: var(--surface2);
@@ -6044,42 +6050,11 @@ select:-webkit-autofill {
 .architect-term-body .term-line { padding: 5px 16px; font-size: 9px; }
 @media(max-width:960px) {
   .architect-section { overflow: hidden; }
-  .architect-body { grid-template-columns: 1fr; gap: 32px; }
   .architect-name { font-size: 36px; }
-  .architect-right { display: none; }
   /* Swipe track — applies when JS initialises */
-  .arch-swipe-track {
-    display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    overscroll-behavior-x: contain;
-    width: 100%;
-    margin-left: 0;
-    touch-action: auto;
-  }
-  .arch-swipe-track::-webkit-scrollbar { display: none; }
-  .arch-swipe-pane {
-    flex: 0 0 100%;
-    width: 100%;
-    min-width: 100%;
-    scroll-snap-align: center;
-    box-sizing: border-box;
-    padding: 0 16px 28px;   /* M7: боковой зазор, чтобы CTA не льнул к соседнему пейну */
-    /* touch-action: auto lets browser handle both horizontal snap AND vertical scroll */
-    touch-action: auto;
-    overflow-y: visible;
-  }
-  .arch-swipe-pane .architect-right {
-    display: block !important;
-    margin-left: -12px; margin-right: -12px;  /* T7: интерфейс шире — в ширину соседних интерфейсов */
-  }
   /* T7: убираем «квадратную подложку» — тяжёлый box-shadow-нимб, который
      на светлом фоне читался как отдельная подложка позади карточки.
      Соседние интерфейсы (cond-screen, радар Эхо) тени не имеют. */
-  .architect-terminal { box-shadow: none; min-height: 300px; }
   .arch-swipe-pane > .pre-pane-cta { top: -0.2px; }}
 
 /* ─── ДОНАТ-БЛОК: УСИЛЕНИЕ СИГНАЛА АНТЕННЫ ──────────────────────────
@@ -8478,10 +8453,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   /* Pre-swipe и arch-swipe pane — block layout. CTA получает фиксированный
      margin-top:32px от контента. Убираем «лишний» margin-bottom у последних
      элементов внутри pane, чтобы общий отступ был одинаковым в обоих секциях. */
-  .arch-swipe-pane .architect-desc { margin-bottom: 0; }
-
-  /* ── CLASSIFIED ── */
-  #classifiedBlock { flex-direction: column !important; gap: 24px !important; }}
+}
 
 @media(max-width:600px) {
   .hero-title { font-size: 36px; }
@@ -10244,10 +10216,6 @@ input, select, textarea {
 /* ── ARCHITECT SWIPE TRACK (mobile) — defined in @media(max-width:960px) below ── */
 
 /* ── ARCHITECT TERMINAL (locked rows) ── */
-.arch-locked-row {
-  cursor: pointer;
-  opacity: 0.84;
-}
 @media (hover:hover) and (pointer:fine) {
 
 .arch-locked-row:hover { background: rgba(255,255,255,0.025) !important; opacity: 1; }}
@@ -11661,7 +11629,6 @@ input, select, textarea {
 @media(max-width:380px) {
   .echo-pane-cta { top: 0; }
   .echo-right { min-height: 564px; }
-  .arch-swipe-pane .architect-terminal { min-height: 321px; }
   .donate-swipe-pane .donate-right { min-height: 321px; }}
 @media(max-width:365px) {
   .echo-right { min-height: 562px; }
@@ -11669,7 +11636,6 @@ input, select, textarea {
 @supports (-webkit-touch-callout: none) {
   @media(max-width:960px) {
     .echo-pane-cta { top: 6px; }
-    .arch-swipe-pane > .pre-pane-cta { top: 4.2px; }
     .arch-donate .pre-pane-cta { top: 0; }}}
 @media(min-width: 961px) {
   /* На десктопе свайп-навигация скрыта */
@@ -12084,255 +12050,6 @@ button, a, [role="button"], label,
    скругления, контейнеры, каталог под визуал, overflow-фиксы.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ──────────────── CLASSIFIED MATERIALS · личный интерфейс собирается ──── */
-.classified-outer {
-  position: relative;
-  width: 100%;
-  max-width: none;
-  min-height: 148px;
-  margin: 0;
-  padding: 38px 300px 38px 32px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  isolation: isolate;
-  z-index: 2;
-  cursor: pointer;
-  border: 1px solid rgba(124,130,150,0.24);
-  border-radius: var(--radius-lg);
-  background:
-    linear-gradient(100deg, rgba(72,76,94,0.30), rgba(42,46,62,0.20) 44%, rgba(24,27,38,0.14)),
-    radial-gradient(520px 190px at 88% 50%, rgba(128,136,160,0.16), transparent 70%),
-    rgba(20,20,24,0.60);
-  box-shadow: none !important;
-}
-.classified-outer::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background:
-    linear-gradient(90deg, rgba(130,138,160,0.15), transparent 32%, transparent 70%, rgba(104,112,134,0.10));
-  pointer-events: none;
-}
-.classified-outer::after {
-  content: none;
-}
-.classified-copy {
-  position: relative;
-  z-index: 2;
-  max-width: 720px;
-}
-.classified-kicker {
-  margin: 0 0 12px;
-  font-family: var(--font-code);
-  font-size: 10px;
-  line-height: 1;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  color: var(--red-hi);
-}
-.classified-text {
-  max-width: 650px;
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.85;
-  letter-spacing: .035em;
-  color: rgba(232,72,72,0.92);
-}
-.classified-big-lock {
-  position: absolute;
-  z-index: 1;
-  right: 74px;
-  top: 50%;
-  width: clamp(128px, 12vw, 188px);
-  height: clamp(128px, 12vw, 188px);
-  transform: translateY(-50%);
-  color: var(--red);
-  opacity: .34;
-  pointer-events: none;
-  filter: drop-shadow(0 0 18px rgba(192,40,40,.22));
-  mix-blend-mode: screen;
-  transition:
-    opacity .68s var(--ease-out),
-    filter .72s var(--ease-out),
-    transform .42s var(--ease-out);
-}
-.classified-big-lock svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-  stroke-width: 1.16;
-}
-.classified-lock-glitch {
-  position: absolute;
-  left: 0;
-  right: 0;
-  z-index: 3;
-  height: 1px;
-  pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(118,126,148,0.12) 18%,
-    rgba(220,224,238,0.22) 45%,
-    rgba(150,158,180,0.18) 55%,
-    rgba(104,112,134,0.12) 78%,
-    transparent 100%);
-  filter: blur(.15px);
-  mix-blend-mode: screen;
-}
-.classified-outer.classified-denied {
-  animation: classifiedCardDenySoft .56s steps(2, end) both;
-}
-.classified-outer.classified-denied .classified-big-lock {
-  animation: classifiedLockGlyph .72s var(--ease-out) both;
-}
-.classified-outer.classified-denied .classified-lock-glitch-a {
-  animation: classifiedLockLineA .42s steps(1,end) both;
-}
-.classified-outer.classified-denied .classified-lock-glitch-b {
-  animation: classifiedLockLineB .56s steps(1,end) both;
-}
-@media (hover:hover) and (pointer:fine) {
-  .classified-outer:hover {
-    border-color: rgba(146,154,176,0.34);
-    box-shadow: none !important;
-  }}
-.classified-outer:focus-visible {
-  outline: 1px solid rgba(150,158,180,0.32);
-  outline-offset: -6px;
-}
-@keyframes classifiedCardDenySoft {
-  0%, 100% {
-    transform: translate3d(0,0,0);
-    border-color: rgba(124,130,150,0.24);
-    box-shadow: none !important;
-  }
-  14% {
-    transform: translate3d(-3px,0,0);
-    border-color: rgba(154,162,184,0.42);
-    box-shadow: none !important;
-  }
-  28% {
-    transform: translate3d(2px,0,0);
-    border-color: rgba(118,126,148,0.30);
-    box-shadow: none !important;
-  }
-  42% {
-    transform: translate3d(-1px,1px,0);
-    border-color: rgba(142,150,172,0.36);
-  }
-  58% {
-    transform: translate3d(1px,-1px,0);
-    border-color: rgba(132,140,162,0.32);
-  }
-  74% {
-    transform: translate3d(0,0,0);
-    border-color: rgba(124,130,150,0.26);
-  }}
-@keyframes classifiedLockGlyph {
-  0%, 100% {
-    opacity: .26;
-    transform: translateY(-50%);
-    filter: drop-shadow(0 0 18px rgba(192,40,40,.22));
-  }
-  18% {
-    opacity: .31;
-    transform: translateY(-50%) translateX(1px);
-    filter: drop-shadow(0 0 22px rgba(192,40,40,.26));
-  }
-  36% {
-    opacity: .24;
-    transform: translateY(-50%) translateX(-1px);
-    filter: drop-shadow(0 0 15px rgba(192,40,40,.18));
-  }
-  62% {
-    opacity: .29;
-    transform: translateY(-50%);
-    filter: drop-shadow(0 0 20px rgba(192,40,40,.24));
-  }
-  86% {
-    opacity: .27;
-    transform: translateY(-50%);
-    filter: drop-shadow(0 0 18px rgba(192,40,40,.22));
-  }}
-@keyframes classifiedLockLineA {
-  0%, 100% { opacity: 0; top: 31%; transform: translateX(-6%); }
-  14% { opacity: .65; top: 31%; transform: translateX(-2%); }
-  28% { opacity: .24; top: 67%; transform: translateX(4%); }
-  44% { opacity: 0; top: 67%; transform: translateX(4%); }}
-@keyframes classifiedLockLineB {
-  0%, 100% { opacity: 0; top: 58%; transform: translateX(7%); }
-  22% { opacity: .42; top: 58%; transform: translateX(2%); }
-  40% { opacity: .18; top: 43%; transform: translateX(-4%); }
-  58% { opacity: 0; top: 43%; transform: translateX(-4%); }}
-@media (prefers-reduced-motion: reduce) {
-  .classified-outer.classified-denied,
-  .classified-outer.classified-denied .classified-big-lock,
-  .classified-outer.classified-denied .classified-lock-glitch {
-    animation: none !important;
-  }
-  .classified-lock-glitch { display: none !important; }}
-@media (max-width: 960px) {
-  .classified-outer {
-    width: calc(100% - 40px);
-    max-width: none;
-    min-height: 136px;
-    margin: 18px auto;
-    padding: 26px 132px 26px 26px;
-    border: 1px solid rgba(124,130,150,0.24);
-    border-radius: var(--radius-lg);
-    background:
-      linear-gradient(100deg, rgba(72,76,94,0.30), rgba(42,46,62,0.20) 44%, rgba(24,27,38,0.14)),
-      radial-gradient(420px 180px at 84% 50%, rgba(128,136,160,0.16), transparent 70%),
-      rgba(20,20,24,0.60);
-  }
-  .classified-kicker {
-    margin-bottom: 10px;
-    font-size: 9px;
-    letter-spacing: .2em;
-  }
-  .classified-text {
-    max-width: 340px;
-    font-size: 11px;
-    line-height: 1.75;
-  }
-  .classified-big-lock {
-    right: 10px;
-    top: 50%;
-    width: min(38vw, 142px);
-    height: min(38vw, 142px);
-    transform: translateY(-50%);
-    opacity: .30;
-  }}
-@media (max-width: 520px) {
-  .classified-outer {
-    width: calc(100% - 12px);
-    min-height: 144px;
-    margin-top: 14px;
-    margin-bottom: 14px;
-    padding: 26px 112px 26px 22px;
-  }
-  .classified-text {
-    max-width: 245px;
-  }
-  .classified-big-lock {
-    right: 0;
-    width: min(40vw, 146px);
-    height: min(40vw, 146px);
-    opacity: .28;
-  }}
-@media (max-width: 360px) {
-  .classified-outer {
-    padding-right: 102px;
-  }
-  .classified-big-lock {
-    width: 128px;
-    height: 128px;
-    right: 0;
-  }}
 
 /* ──────────────── ACCESS PILL (Уровень доступа [0]) ──── */
 .access-pill {
@@ -12373,7 +12090,6 @@ button, a, [role="button"], label,
 
 /* ──────────────── INLINE CONTAINER STYLING (re-style after stripping inline) ──── */
 /* Заменили inline-стили на классы — теперь оформляем через CSS */
-/* .classified-outer оформлен выше как цельная заблокированная карточка. */
 #preorderSection {
   background: var(--surface);
   border-top: 1px solid var(--line);
@@ -12401,7 +12117,7 @@ button, a, [role="button"], label,
 .echo-radar-wrap, .echo-tab-stage, .echo-rules, .echo-voice, .echo-osc,
 .echocard, .mfields .mfield, .cart-item, .echo-conf, .legal-modal,
 .aw-canvas, .world-card, .collab-link, .donate, .donate-left, .donate-right,
-.arch-term, .arch-body, .architect-section, .faq-item, .notif,
+.arch-term, .arch-body, .architect-section, .donate-section, .faq-item, .notif,
 .faq-unlock-card, .echo-mode-toggle, .echo-channel,
 .attr-result-panel, .attr-drum-section, .chk-summary, .collab,
 .cat-empty-state, .cat-expand, #preorderFormBlock,
@@ -12628,7 +12344,7 @@ button, a, [role="button"], label,
   /* ЕДИНЫЙ КОНТЕЙНЕР: одинаковая карточка во всех разделах, близко к краям
      экрана (поля 6px), чтобы вмещать больше текста и читаться консистентно. */
   .about, .tech-block, .apertura-worlds, .echo-section, .relic-section,
-  .collab, .architect-section, .faq-section,
+  .collab, .architect-section, .donate-section, .faq-section,
   #preorderSection, .catwrap {
     margin-left: 6px;
     margin-right: 6px;
@@ -17020,7 +16736,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
    остаётся на background-color), световой кант — inset-тенью. Без
    backdrop-filter и без переходов — политика стекла проекта запрещает
    анимировать стеклянные поверхности на iOS. */
-.about, .apertura-worlds, .collab, #preorderSection, .architect-section {
+.about, .apertura-worlds, .collab, #preorderSection, .architect-section, .donate-section {
   background-image: linear-gradient(180deg,
     rgba(255,255,255,0.042) 0,
     rgba(255,255,255,0.012) 110px,
@@ -17031,7 +16747,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   /* На мобиле разделы — карточки со скруглением: блик короче, чтобы
      читался отражением на грани, а не засветкой полотна. */
   .about, .tech-block, .apertura-worlds, .echo-section, .relic-section,
-  .collab, .architect-section, .faq-section,
+  .collab, .architect-section, .donate-section, .faq-section,
   #preorderSection, .catwrap {
     background-image: linear-gradient(180deg,
       rgba(255,255,255,0.05) 0,
@@ -17817,19 +17533,6 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   </div>
 </div>
 
-<!-- ===== CLASSIFIED BLOCK ===== -->
-<div class="classified-outer" id="classifiedMaterials" role="button" tabindex="0" aria-label="Личный кабинет — в разработке" onclick="triggerClassifiedLocked(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();triggerClassifiedLocked(this)}">
-  <div class="classified-copy">
-    <div class="classified-kicker">// Личный кабинет</div>
-    <p class="classified-text">Apertura уже собирает то, что позже станет вашим интерфейсом.</p>
-  </div>
-  <div class="classified-big-lock" aria-hidden="true">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lock"/></svg>
-  </div>
-  <span class="classified-lock-glitch classified-lock-glitch-a" aria-hidden="true"></span>
-  <span class="classified-lock-glitch classified-lock-glitch-b" aria-hidden="true"></span>
-</div>
-
 <!-- ===== FAQ ===== -->
 <section class="faq-section" id="faq">
   <div class="faq-in">
@@ -17966,34 +17669,37 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 <section class="architect-section" id="architect">
   <div class="architect-in">
     <div class="architect-label"><span class="architect-label-pre">//</span>Архитектор вселенных</div>
-    <div class="architect-body" id="architectBody">
-      <div class="architect-left" id="architectLeft">
+    <!-- ═══ ЗАПИСЬ ОБ АРХИТЕКТОРЕ ═══════════════════════════════════
+         Интерфейс-терминал убран. Осталась запись реестра, и она
+         собрана так, чтобы не выглядеть обрубком колонки: слева опознание
+         (артикул и имя), справа сам текст. На десктопе ряд занимает всю
+         ширину, на телефоне встаёт в столбик — одна раскладка на оба
+         случая, без отдельной мобильной версии.
+         Консоль Апертуры открывалась строкой терминала; чтобы не потерять
+         её вместе с ним, вход перенесён на имя. -->
+    <div class="arch-rec" id="architectBody">
+      <div class="arch-rec-id">
         <div class="architect-code">ART. ECH-0001</div>
-        <h2 class="architect-name">@aintonx</h2>
-        <p class="architect-desc">
-          Он построил <strong>Apertura</strong> — чтобы расслышать частоты, на которых рождаются миры.<br><br>
-          <strong>MARKETSPACE</strong> стал первым миром, чья частота прозвучала отчётливо. Остальные пока за шумом. Какие из них Архитектор откроет следующими — зависит от мощности антенны.
-        </p>
+        <h2 class="architect-name">
+          <button type="button" class="arch-rec-name" onclick="openArchitectConsoleGate(this)"
+                  aria-label="Архитектор @aintonx">@aintonx</button>
+        </h2>
+        <div class="arch-rec-des">DESIGNATION · <b>ARCHITECT</b> · УРОВЕНЬ X</div>
       </div>
-      <div class="architect-right" id="architectRight">
-        <div class="architect-terminal">
-          <div class="architect-term-head">
-            <div class="terminal-dots"><span></span><span></span><span></span></div>
-            <div class="terminal-title">ARCHITECT · REGISTRY</div>
-          </div>
-          <div class="architect-term-body" id="archTerminalBody">
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">DESIGNATION</span><span class="term-val-row term-lock-val"><span>ARCHITECT</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">IDENTIFIER</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">aintonx</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">ACCESS.LEVEL</span><span class="term-val-row term-lock-val"><span class="term-val" style="font-size:inherit">X</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.CREATED</span><span class="term-val-row term-lock-val"><span class="term-val white" style="font-size:inherit">1</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">WORLDS.PENDING</span><span class="term-val-row term-lock-val"><span class="term-val red" style="font-size:inherit"><svg class="ico ew-mask-icon ew-icon--infinity" aria-hidden="true"><use href="#i-infinity"/></svg></span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row arch-console-row" onclick="openArchitectConsoleGate(this)"><span class="term-key">APERTURA</span><span class="term-val-row term-lock-val"><span>CONSOLE</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-            <div class="term-line arch-locked-row" onclick="archAccessDenied(this)"><span class="term-key">STATUS</span><span class="term-val-row term-lock-val"><span>WORLD.BUILDING</span><span class="term-lock-icon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span></span></div>
-          </div>
-        </div>
-      </div>
+      <p class="arch-rec-text">
+        Он построил <strong>Apertura</strong> — чтобы расслышать частоты, на которых рождаются миры.<br><br>
+        <strong>MARKETSPACE</strong> стал первым миром, чья частота прозвучала отчётливо. Остальные пока за шумом. Какие из них Архитектор откроет следующими — зависит от мощности антенны.
+      </p>
     </div>
+  </div>
+</section>
 
+<!-- ═══ УСИЛЕНИЕ СИГНАЛА · ОТДЕЛЬНЫЙ РАЗДЕЛ ═══════════════════════════
+     Донат жил ВНУТРИ секции Архитектора и держался на её интерфейсе: два
+     блока читались как одно целое. Интерфейс убран — и вложенность стала
+     бессмысленной, поэтому поддержка вынесена в собственный раздел. -->
+<section class="donate-section" id="donate">
+  <div class="architect-in">
     <!-- ═══════════════════════════════════════════════════════════════
          УСИЛЕНИЕ СИГНАЛА АНТЕННЫ — двухколонный блок:
          слева kicker+desc, справа интерфейс с антенной (SVG + radar)
@@ -23907,19 +23613,6 @@ function _ewShouldSuppressNotif(text, opts){
   return false;
 }
 /* Копирование ника (раздел «В социальных сетях») с короткой обратной связью */
-function triggerClassifiedLocked(el){
-  try{
-    var target = el || document.getElementById('classifiedMaterials');
-    if(target){
-      target.classList.remove('classified-denied');
-      void target.offsetWidth;
-      target.classList.add('classified-denied');
-      clearTimeout(target._classifiedDenyTimer);
-      target._classifiedDenyTimer = setTimeout(function(){ target.classList.remove('classified-denied'); }, 980);
-    }
-  }catch(e){}
-  showNotif('// Личный кабинет — в разработке. Доступ откроется после запуска системы.');
-}
 function copyNick(btn, text){
   try{
     if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text); }
@@ -25031,11 +24724,9 @@ function showLockedNotif(text, level) {
 }
 
 /* ── ARCHITECT REGISTRY — click handler ── */
-function archAccessDenied(rowEl) {
-  const termBody = rowEl ? rowEl.closest('.architect-term-body') : null;
-  triggerTerminalGlitch(termBody);
-  showLockedNotif('// Доступ запрещён. Требуется уровень доступа X.', 'X');
-}
+/* archAccessDenied удалён вместе со строками терминала Архитектора —
+   больше их некому подсвечивать. */
+
 
 
 /* ── APERTURA ARCHITECT CONSOLE & STATUS ──────────────────────────── */
@@ -30355,58 +30046,9 @@ function initPreorderSwipe(){
 
 
 /* ── ARCHITECT SECTION — mobile swipe (same mechanic as preorder) ── */
-function initArchitectSwipe(){
-  if(window.innerWidth>960) return;
-  const body=document.getElementById('architectBody');
-  const left=document.getElementById('architectLeft');
-  const right=document.getElementById('architectRight');
-  if(!body||!left||!right||body.dataset.swipeInit) return;
-  body.dataset.swipeInit='1';
+/* initArchitectSwipe удалён вместе с интерфейсом Архитектора: он
+   существовал только чтобы листать между текстом и терминалом. */
 
-  /* Build track */
-  const track=document.createElement('div');
-  track.className='arch-swipe-track';
-
-  /* Pane 1: architect info + CTA to swipe */
-  const pane1=document.createElement('div');
-  pane1.className='arch-swipe-pane';
-  pane1.appendChild(left);
-
-  /* CTA button to navigate to second pane */
-  const cta=document.createElement('button');
-  cta.className='pre-pane-cta';
-  cta.type='button';
-  cta.setAttribute('aria-label','Открыть интерфейс Архитектора');
-  cta.innerHTML=`<span class="pre-pane-cta-label">Интерфейс Архитектора</span><div class="pre-pane-cta-arrow"></div>`;
-  cta.onclick=()=>track.scrollTo({left:track.offsetWidth,behavior:'smooth'});
-  pane1.appendChild(cta);
-  track.appendChild(pane1);
-
-  /* Pane 2: terminal */
-  const pane2=document.createElement('div');
-  pane2.className='arch-swipe-pane';
-  right.style.display='block';
-  pane2.appendChild(right);
-  track.appendChild(pane2);
-
-  /* Nav dots */
-  const nav=document.createElement('div');
-  nav.className='swipe-bar pre-swipe-nav';
-  const dot1=document.createElement('div'); dot1.className='swipe-dot pre-swipe-nav-dot on';
-  const dot2=document.createElement('div'); dot2.className='swipe-dot pre-swipe-nav-dot';
-  dot1.onclick=()=>track.scrollTo({left:0,behavior:'smooth'});
-  dot2.onclick=()=>track.scrollTo({left:track.offsetWidth,behavior:'smooth'});
-  nav.appendChild(dot1); nav.appendChild(dot2);
-
-  track.addEventListener('scroll',()=>{
-    const p=track.scrollLeft/(track.scrollWidth-track.offsetWidth||1);
-    dot1.classList.toggle('on',p<0.5);
-    dot2.classList.toggle('on',p>=0.5);
-  },{passive:true});
-
-  body.replaceWith(track);
-  track.after(nav);
-}
 
 /* ── DONATE SECTION — mobile swipe (same mechanic as architect) ──
    pane1 — текст про антенну + CTA «Усилить сигнал»;
@@ -30492,7 +30134,6 @@ function mobileInit(){
   initAwNavigation();
   initHeroSwipe();
   initPreorderSwipe();
-  initArchitectSwipe();
   initDonateSwipe();
   if(typeof initEchoSwipe === 'function') initEchoSwipe();
   syncMobCartCount();
@@ -33117,7 +32758,6 @@ svg.ew-mask-icon {
 .ico.ew-mask-icon use,
 svg.ew-mask-icon use,
 .term-lock-icon svg use,
-.classified-big-lock svg use,
 .donate-ant * {
   vector-effect: non-scaling-stroke;
 }
@@ -33305,41 +32945,6 @@ svg.ew-mask-icon use,
 @media (max-width: 960px) {
   .mbtn-share .ico.ew-mask-icon { --ew-icon-size: 21px; }
   .echo-voice-icon.ew-mask-icon { --ew-icon-size: 34px; }
-}
-
-.classified-outer {
-  padding-right: clamp(158px, 17vw, 224px) !important;
-}
-.classified-big-lock {
-  width: clamp(76px, 7vw, 116px) !important;
-  height: clamp(76px, 7vw, 116px) !important;
-  right: clamp(28px, 5vw, 64px) !important;
-  top: 50% !important;
-  opacity: .21 !important;
-  color: var(--red) !important;
-  filter: drop-shadow(0 0 12px rgba(192,40,40,.16)) !important;
-  mix-blend-mode: screen;
-}
-.classified-big-lock svg {
-  width: 100% !important;
-  height: 100% !important;
-  display: block !important;
-  fill: none !important;
-  stroke: currentColor !important;
-  stroke-width: 1.16 !important;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-@media (max-width: 760px) {
-  .classified-outer {
-    padding-right: 90px !important;
-  }
-  .classified-big-lock {
-    width: 58px !important;
-    height: 58px !important;
-    right: 16px !important;
-    opacity: .16 !important;
-  }
 }
 
 .donate-ant {
@@ -33777,28 +33382,9 @@ svg.ew-mask-icon use,
   }
 }
 
-/* PATCH · ARCHITECT/SIGNAL MOBILE ALIGNMENT · 208
-   Сохраняем нижнее выравнивание CTA с интерфейсами, но убираем ощущение
-   пустой "лишней строки" в терминале Архитектора и лишний воздух над
-   кнопкой усиления сигнала на обычных мобильных ширинах. */
-@media (max-width: 960px) {
-  .arch-swipe-pane .architect-terminal {
-    display: flex !important;
-    flex-direction: column !important;
-  }
-  .arch-swipe-pane .architect-term-body {
-    flex: 1 1 auto !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: stretch !important;
-  }
-  .arch-swipe-pane .architect-term-body .term-line {
-    flex: 1 1 0 !important;
-    min-height: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-  }
-}
+/* PATCH · SIGNAL MOBILE ALIGNMENT · 208
+   Правило про терминал Архитектора ушло вместе с самим терминалом; здесь
+   осталось только выравнивание кнопки усиления сигнала. */
 @media (min-width: 381px) and (max-width: 960px) {
   .donate-radar {
     min-height: 151px !important;
@@ -41004,170 +40590,73 @@ h1, h2, h3,
 
      Надстройка. Строки DESIGNATION / IDENTIFIER / ACCESS.LEVEL прячем:
      их содержимое теперь несёт сама печать. Остальные строки и их
-     обработчики (archAccessDenied) не трогаем. -->
-<style id="ew-arch-seal-css">
-.arch-seal{ display:flex; flex-direction:column; align-items:center; gap:9px; padding:6px 0 14px; }
-.arch-seal-x{
-  position:relative; width:74px; height:74px; border-radius:50%;
-  display:grid; place-items:center; cursor:pointer;
-  background:rgba(192,40,40,.09); border:1px solid rgba(230,69,69,.42);
-  color:var(--red-hi); font-family:var(--font-display); font-weight: 700; font-size:30px;
-  transition:background .25s var(--ease-out), border-color .25s var(--ease-out), transform .15s;
+     обработчики не трогаем. -->
+<style id="ew-arch-record-css">
+/* ══ ЗАПИСЬ ОБ АРХИТЕКТОРЕ ═══════════════════════════════════════════
+   Интерфейс-терминал убран, вместе с ним ушла и «печать», которая его
+   заменяла. Осталась одна запись реестра.
+
+   Задача была не дать ей выглядеть обрубком колонки: без правого блока
+   текст занимал бы половину экрана, а вторая половина пустовала. Решение
+   не в новом интерфейсе, а в раскладке — ряд из двух долей: слева
+   опознание (артикул, имя, уровень), справа сам текст. На десктопе ряд
+   держит всю ширину, на телефоне встаёт в столбик. Одна раскладка на оба
+   случая, отдельной мобильной версии не нужно. */
+.arch-rec{
+  display: grid;
+  grid-template-columns: minmax(220px, .78fr) minmax(0, 1.22fr);
+  gap: 46px;
+  align-items: start;
 }
-.arch-seal-x:active{ transform:scale(.97); }
-.arch-seal-x .halo{
-  position:absolute; inset:-6px; border-radius:50%; pointer-events:none;
-  border:1px solid rgba(230,69,69,.28); opacity:0; transform:scale(.9);
+.arch-rec-id{ min-width: 0; }
+.arch-rec .architect-code{ margin-bottom: 10px; }
+/* Имя — кнопка: консоль Апертуры открывалась строкой терминала, и вместе
+   с ним потеряла бы единственный вход. Внешне это по-прежнему заголовок. */
+.arch-rec-name{
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: color .25s var(--ease-out);
 }
-.arch-seal.verifying .arch-seal-x .halo{ animation:archHalo 1.15s var(--ease-out) 2; }
-@keyframes archHalo{
-  0%{ opacity:.85; transform:scale(.9); }
-  100%{ opacity:0; transform:scale(1.5); }
+@media (hover: hover) and (pointer: fine){
+  .arch-rec-name:hover{ color: var(--red2); }
 }
-.arch-seal.verified .arch-seal-x{
-  background:rgba(0,200,200,.09); border-color:rgba(0,200,200,.42); color:var(--cyan-hi);
+.arch-rec-des{
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: .24em;
+  color: var(--ink-4);
+  text-transform: uppercase;
 }
-.arch-seal-name{
-  font-family:var(--font-mono); font-size:11px; letter-spacing:.2em;
-  color:var(--ink); text-transform:uppercase;
+.arch-rec-des b{ color: var(--red2); font-weight: 600; }
+.arch-rec-text{
+  /* Тонкая линия-разделитель, а не цветная полоса-акцент: она отбивает
+     колонки и на телефоне пропадает вместе с двухколонной раскладкой. */
+  border-left: 1px solid rgba(255,255,255,.08);
+  padding-left: 46px;
+  max-width: 68ch;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--white-mid);
 }
-.arch-seal-des{
-  font-family:var(--font-mono); font-size:8px; letter-spacing:.16em;
-  color:var(--ink-4); text-transform:uppercase; text-align:center;
-}
-.arch-seal-des b{ color:var(--ink-2); font-weight:600; }
-.arch-seal-status{
-  font-family:var(--font-mono); font-size:8px; letter-spacing:.16em;
-  color:var(--ink-3); text-transform:uppercase; text-align:center;
-  transition:color .3s var(--ease-out);
-}
-.arch-seal.verified .arch-seal-status{ color:var(--cyan); }
-.arch-seal-wave{
-  width:100%; margin-top:4px;
-  border:1px solid rgba(255,255,255,.08); border-radius:12px;
-  background:rgba(255,255,255,.025); padding:8px 10px 6px;
-}
-.arch-seal-wave svg{ display:block; width:100%; height:44px; }
-.arch-seal-wave path{
-  fill:none; stroke:rgba(230,69,69,.55); stroke-width:1.4;
-  transition:stroke .35s var(--ease-out);
-}
-.arch-seal.verified .arch-seal-wave path{ stroke:var(--cyan); }
-.arch-seal-cap{
-  display:block; margin-top:5px;
-  font-family:var(--font-mono); font-size:7px; letter-spacing:.18em;
-  color:var(--ink-4); text-transform:uppercase; text-align:center;
+.arch-rec-text strong{ color: var(--white); font-weight: 500; }
+
+@media (max-width: 900px){
+  .arch-rec{ grid-template-columns: 1fr; gap: 22px; }
+  .arch-rec-text{
+    border-left: 0;
+    padding-left: 0;
+    border-top: 1px solid rgba(255,255,255,.08);
+    padding-top: 22px;
+    font-size: 13px;
+  }
 }
 </style>
-<script id="ew-arch-seal-js">
-(function(){
-  'use strict';
-  var ИМЯ = 'aintonx';
-
-  /* Подпись вычисляется из имени: коды букв задают амплитуды, частоты и
-     фазы гармоник. Одно имя — одна волна, всегда одинаковая. */
-  function гармоники(имя){
-    var г = [];
-    for(var i = 0; i < имя.length; i++){
-      var к = имя.charCodeAt(i);
-      г.push({
-        амп: 4 + (к % 11),
-        част: 0.012 + ((к % 7) + 1) * 0.006,
-        фаза: (к % 13) / 13 * Math.PI * 2
-      });
-    }
-    return г;
-  }
-
-  function путь(г, сдвиг){
-    var W = 400, MID = 27, ШАГ = 4;
-    var d = 'M0,' + MID;
-    for(var x = ШАГ; x <= W; x += ШАГ){
-      var y = MID;
-      for(var i = 0; i < г.length; i++){
-        y += г[i].амп * Math.sin(x * г[i].част + г[i].фаза + сдвиг);
-      }
-      /* Держим кривую внутри окна: подпись не должна вылезать за рамку. */
-      y = Math.max(4, Math.min(50, y));
-      d += ' L' + x + ',' + y.toFixed(2);
-    }
-    return d;
-  }
-
-  function старт(){
-    var тело = document.getElementById('archTerminalBody');
-    if(!тело || тело.dataset.archSeal === '1') return;
-    тело.dataset.archSeal = '1';
-
-    var печать = document.createElement('div');
-    печать.className = 'arch-seal';
-    печать.innerHTML =
-      '<button type="button" class="arch-seal-x" id="archSealBtn" ' +
-        'aria-label="Сверить частоту с печатью Архитектора">' +
-        '<span class="halo" aria-hidden="true"></span><b>X</b>' +
-      '</button>' +
-      '<div class="arch-seal-name">@' + ИМЯ + '</div>' +
-      '<div class="arch-seal-des">DESIGNATION · <b>ARCHITECT</b> · УРОВЕНЬ X</div>' +
-      '<div class="arch-seal-status" id="archSealStatus">Нажмите печать · сверка частоты</div>' +
-      '<div class="arch-seal-wave">' +
-        '<svg viewBox="0 0 400 54" preserveAspectRatio="none" aria-hidden="true">' +
-          '<path id="archSealPath"></path></svg>' +
-        '<span class="arch-seal-cap">Частота Архитектора · вычислена из имени</span>' +
-      '</div>';
-    тело.insertBefore(печать, тело.firstChild);
-
-    /* Эти три строки теперь дублируют печать — прячем, обработчики целы. */
-    Array.prototype.forEach.call(тело.querySelectorAll('.term-line'), function(с){
-      var к = с.querySelector('.term-key');
-      if(!к) return;
-      var т = (к.textContent || '').trim().toUpperCase();
-      if(т === 'DESIGNATION' || т === 'IDENTIFIER' || т === 'ACCESS.LEVEL'){
-        с.style.display = 'none';
-      }
-    });
-
-    var г = гармоники(ИМЯ);
-    var линия = document.getElementById('archSealPath');
-    var кнопка = document.getElementById('archSealBtn');
-    var статус = document.getElementById('archSealStatus');
-    if(линия) линия.setAttribute('d', путь(г, 0));
-
-    var идёт = false;
-    кнопка.addEventListener('click', function(){
-      if(идёт) return;
-      идёт = true;
-      печать.classList.remove('verified');
-      печать.classList.add('verifying');
-      статус.textContent = 'Сверка частоты…';
-
-      /* Волна «проигрывается»: фаза едет два цикла ореола, затем
-         останавливается на исходной — подпись возвращается к своей. */
-      var t0 = performance.now(), ДЛИТ = 2300;
-      (function кадр(t){
-        var доля = Math.min(1, (t - t0) / ДЛИТ);
-        if(линия) линия.setAttribute('d', путь(г, доля * Math.PI * 4));
-        if(доля < 1){ requestAnimationFrame(кадр); return; }
-        if(линия) линия.setAttribute('d', путь(г, 0));
-        печать.classList.remove('verifying');
-        печать.classList.add('verified');
-        статус.textContent = 'Частота совпала · протокол семи';
-        идёт = false;
-      })(t0);
-    });
-  }
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', старт);
-  else старт();
-  window.inspectArchSeal = function(){
-    var п = document.querySelector('.arch-seal');
-    return { есть: !!п,
-      состояние: п ? (п.className.replace('arch-seal','').trim() || 'покой') : '—',
-      длинаПодписи: (document.getElementById('archSealPath') || {}).getAttribute
-        ? (document.getElementById('archSealPath').getAttribute('d') || '').length : 0,
-      подпись: 'Архитектор · модель «печать»' };
-  };
-})();
-</script>
 <!-- ═══════════════════════════════════════════════════════════════
      ПОДДЕРЖКА · МОЩНОСТЬ АНТЕННЫ
      ───────────────────────────────────────────────────────────────

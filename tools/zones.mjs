@@ -76,7 +76,9 @@ export const ZONES = [
      зона молча пропускалась и не проверялась вовсе. Новый узел — #condScreen. */
   { id: 'system',        имя: 'Система и Конденсация',   sel: '#condScreen, #system' },
   { id: 'worlds',        имя: 'Миры',                    sel: '#worlds, .worlds' },
-  { id: 'architect',     имя: 'Архитектор',              sel: '.architect-terminal, .arch-term' },
+  /* Терминал Архитектора снят по решению владельца — зона указывала на него
+     и молча пропускалась. Теперь снимается сама запись. */
+  { id: 'architect',     имя: 'Архитектор',              sel: '.arch-rec, #architect' },
   { id: 'partners',      имя: 'Партнёрства',             sel: '.collab, .clink' },
   { id: 'donate',        имя: 'Поддержка',               sel: '.donate-right, .donate' },
   { id: 'faq',           имя: 'FAQ',                     sel: '#faq, .faq' },
