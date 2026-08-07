@@ -18,7 +18,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { ZONES, РАЗМЕРЫ } from './zones.mjs';
-import { изолировать , подготовить } from './stub.mjs';
+import { изолировать, подготовить, вишУжеВиден } from './stub.mjs';
 
 const КОРЕНЬ = process.cwd();
 const args = process.argv.slice(2);
@@ -63,6 +63,7 @@ const page = await (await браузер.newContext({
 })).newPage();
 
 await изолировать(page, базовый);
+  await вишУжеВиден(page);
 
 const ошибки = [];
 page.on('pageerror', (e) => ошибки.push(e.message));

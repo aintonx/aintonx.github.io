@@ -26,7 +26,7 @@ import path from 'node:path';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import { ZONES, РАЗМЕРЫ } from './zones.mjs';
-import { изолировать, ШУМ , подготовить } from './stub.mjs';
+import { изолировать, ШУМ, подготовить, вишУжеВиден } from './stub.mjs';
 
 const КОРЕНЬ = process.cwd();
 const args = process.argv.slice(2);
@@ -213,6 +213,7 @@ async function снятьЗону(ctx, зона, размер, базовый, �
          чужую недоступность вместо нашей вёрстки. Стенд должен быть
          автономным и повторяемым. */
       await изолировать(page, базовый);
+  await вишУжеВиден(page);
 
       /* Барабаны атрибутов и Ауры тянут значения из Math.random — без
          фиксации каждый прогон выдаёт другие слова, и регрессия ругается на

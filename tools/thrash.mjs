@@ -18,7 +18,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ZONES } from './zones.mjs';
-import { изолировать, подготовить } from './stub.mjs';
+import { изолировать, подготовить, вишУжеВиден } from './stub.mjs';
 
 const КОРЕНЬ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const srv = createServer(async (req, res) => {
@@ -41,6 +41,7 @@ const ctx = await br.newContext({
 });
 const page = await ctx.newPage();
 await изолировать(page, база);
+  await вишУжеВиден(page);
 await page.goto(база, { waitUntil: 'domcontentloaded' });
 await подготовить(page);
 await ZONES.find((z) => z.id === 'checkout-2').open(page);
