@@ -17693,74 +17693,59 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <p class="about-text">Если нужной реликвии нет в каталоге, вы можете отправить индивидуальный сигнал в Apertura. Архитектор проверит, есть ли в MARKETSPACE поток, способный принять форму желаемого предмета.<br><br>Опишите реликвию простыми словами: форма, материал, ощущение, назначение. Чем точнее сигнал, тем легче отличить настоящее желание от случайного шума.<br><br><em>Важно: Apertura принимает запросы только на физические предметы. Цифровые объекты, живые существа и предметы тяжелее 5 кг сейчас вне зоны конденсации.</em></p>
     </div>
     <!-- Правая колонка: форма + терминал (переключаются) -->
-    <div id="preorderRightCol" style="position:relative;">
-      <!-- СКАНЕР-ПРОЖЕКТОР конденсации -->
-      <div class="cond-screen" id="condScreen">
-        <div class="cond-screen-head">
-          <div class="cond-screen-dot"></div>
-          <span>APERTURA · CONDENSATE FORMING</span>
-          <span class="cond-screen-ico"><svg class="ico ew-mask-icon ew-icon--locate-fixed" aria-hidden="true"><use href="#i-x"/></svg></span>
-        </div>
-        <div class="cond-screen-body">
-          <div class="cond-console" id="condConsole">
-            <div class="cond-console-line" id="condStatusLine">&gt; APERTURA AWAITS SIGNAL<span class="cond-await-cursor"></span></div>
-            <div class="cond-console-feed">
-              <div class="cond-feed-row"><span class="cond-feed-key">RELIC.SIGNAL</span><span class="cond-feed-val" id="condMirrorItem">—</span></div>
-              <div class="cond-feed-row"><span class="cond-feed-key">CONTACT.NODE</span><span class="cond-feed-val" id="condMirrorContact">—</span></div>
+    <div class="preorder-right-col" id="preorderRightCol">
+        <!-- ═══ ЗАКАЗ КОНДЕНСАЦИИ · интерфейс из design/lens-terminals.html (#cond)
+             ───────────────────────────────────────────────────────────────
+             Старый вид (экран .cond-screen плюс «терминал» с тремя цветными
+             кружками в духе macOS) удалён целиком, а не накрыт сверху: он
+             принадлежал прошлому языку и спорил со стеклом остального сайта.
+
+             Панель собрана на СУЩЕСТВУЮЩЕЙ стеклянной системе (.glass, .g-head,
+             .g-chip, .g-dot, .g-aux, .g-body, .g-foot, .g-well, .g-btn) —
+             её уже перенесли из этого же эталона для Эхо. Ничего нового
+             рисовать не пришлось, и обе секции говорят на одном языке.
+
+             Идентификаторы живой механики ПЕРЕНЕСЕНЫ на новые узлы: скрипты
+             обращаются к ним по id, и ни одна ссылка не оборвалась.
+             #preorderItem / #preorderContact / #preorderConsent / #preorderBtn
+             держат путь отправки — submitPreorder читает их как раньше. -->
+        <div class="glass cond-glass" id="condScreen">
+          <div class="g-head">
+            <span class="g-chip"><span class="g-dot w" id="condBarcode"></span>APERTURA · CONDENSATE FORMING</span>
+            <span class="g-aux" id="condStatusLine">Диалог открыт</span>
+          </div>
+          <div class="g-body">
+            <div class="cond-dlg">
+              <div class="cond-dlg-log" id="condConsole" aria-live="polite"></div>
+              <div class="cond-dlg-in" id="preorderFormBlock">
+                <input class="g-well" id="condDlgField" type="text" autocomplete="off"
+                       autocorrect="off" spellcheck="false" placeholder="">
+                <button type="button" class="cond-dlg-send" id="condDlgSend" aria-label="Ответить">→</button>
+              </div>
+              <div class="cond-dlg-consent" id="condDlgConsent">
+                <label class="preorder-privacy" id="preorderConsentWrap" for="preorderConsent">
+                  <input type="checkbox" id="preorderConsent" class="preorder-privacy-input" onchange="validatePreorderField('consent')">
+                  <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
+                  <span class="preorder-privacy-text">Согласен на обработку
+                    <button type="button" class="preorder-privacy-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>.
+                  </span>
+                </label>
+                <div class="preorder-privacy-error" id="preorderConsentError" aria-live="polite"></div>
+                <button type="button" class="g-btn cond-send-btn" id="preorderBtn" onclick="submitPreorder()">Запросить конденсацию</button>
+              </div>
             </div>
           </div>
-          <div class="cond-barcode" id="condBarcode" aria-hidden="true">
-            <span></span><span></span><span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span><span></span><span></span>
-          </div>
+          <div class="g-foot"><span>Зона конденсации активна</span><span>Только физическое · до 5 кг</span></div>
         </div>
-      </div>
-      <!-- ФОРМА — показывается по умолчанию -->
-      <div id="preorderFormBlock">
-        <!-- T5: переливающаяся полоска перенесена отсюда наверх интерфейса — на .cond-screen::before (над «APERTURA · CONDENSATE FORMING») -->
-        <div style="margin-bottom:12px;">
-          <input type="text" id="preorderItem" placeholder="Какую реликвию желаете? *" maxlength="120" autocomplete="off" autocorrect="off" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--white);font-family:var(--font-input);font-size:13px;letter-spacing:.005em;padding:11px 14px;outline:none;transition:border-color .2s, box-shadow .2s;-webkit-appearance:none;appearance:none;" onfocus="this.style.borderColor='var(--cyan)';this.style.boxShadow='0 0 0 1px rgba(0,200,200,0.22), 0 0 14px rgba(0,200,200,0.10)';" onblur="this.style.borderColor='var(--border)';this.style.boxShadow='';">
+
+        <!-- Настоящие поля заказа. Скрыты: их заполняет диалог выше, а
+             submitPreorder и проверки читают те же id, что и раньше. -->
+        <div class="cond-real-fields" aria-hidden="true">
+          <input type="text" id="preorderItem" maxlength="120" autocomplete="off" tabindex="-1">
+          <input type="email" id="preorderContact" autocomplete="email" tabindex="-1">
+          <span id="condMirrorItem"></span><span id="condMirrorContact"></span>
         </div>
-        <div style="margin-bottom:16px;">
-          <input type="email" id="preorderContact" placeholder="Email для связи *" autocomplete="email" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="email" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--white);font-family:var(--font-input);font-size:13px;letter-spacing:.005em;padding:11px 14px;outline:none;transition:border-color .2s, box-shadow .2s;-webkit-appearance:none;appearance:none;" onfocus="this.style.borderColor='var(--cyan)';this.style.boxShadow='0 0 0 1px rgba(0,200,200,0.22), 0 0 14px rgba(0,200,200,0.10)';" onblur="this.style.borderColor='var(--border)';this.style.boxShadow='';">
-        </div>
-        <label class="preorder-privacy" id="preorderConsentWrap" for="preorderConsent">
-          <input type="checkbox" id="preorderConsent" class="preorder-privacy-input" onchange="validatePreorderField('consent')">
-          <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></span>
-          <span class="preorder-privacy-text">
-            Подтверждаю согласие на обработку
-            <button type="button" class="preorder-privacy-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>.
-          </span>
-        </label>
-        <div class="preorder-privacy-error" id="preorderConsentError" aria-live="polite"></div>
-        <button id="preorderBtn" onclick="submitPreorder()" style="width:100%;font-family:var(--font-code);font-size:9px;letter-spacing:.22em;text-transform:uppercase;padding:16px 18px;background:var(--red);border:1px solid var(--red2);color:var(--white);cursor:pointer;transition:all .2s;">Запросить конденсацию</button>
-      </div>
-      <!-- ТЕРМИНАЛ — показывается после отправки (скрыт по умолчанию) -->
-      <div class="preorder-terminal" id="preorderTerminal">
-        <div class="pt-head">
-          <div class="pt-dots">
-            <div class="pt-dot" style="background:#ff5f57"></div>
-            <div class="pt-dot" style="background:#ffbd2e"></div>
-            <div class="pt-dot" style="background:#28ca41"></div>
-          </div>
-          <div class="pt-title">APERTURA · CONDENSATE SCANNER</div>
-        </div>
-        <div class="pt-body" id="ptBody">
-          <div class="pt-scan-line" id="ptScanLine" style="display:none;"></div>
-          <div id="ptIdle" class="pt-idle">
-            <div style="color:var(--cyan);margin-bottom:4px;">// APERTURA ГОТОВА К ПРИЁМУ</div>
-            <div>&gt; ожидание индивидуального сигнала<span class="pt-idle-cursor"></span></div>
-            <div style="margin-top:6px;opacity:.5;">&gt; Архитектор · канал открыт</div>
-            <div style="opacity:.5;">&gt; MARKETSPACE · поток прослушивается</div>
-            <div style="opacity:.5;">&gt; зона конденсации · активна</div>
-          </div>
-          <div class="pt-typing" id="ptTyping" style="display:none;"></div>
-          <div class="pt-lines" id="ptLines"></div>
-        </div>
-      </div>
-    </div><!-- /preorderRightCol -->
+      </div><!-- /preorderRightCol -->
   </div>
 </div>
 
@@ -30675,7 +30660,15 @@ function _echoStartOsc(){
     let d = `M0,${MID}`;
     for(let i=1;i<=STEPS;i++){
       const x = (i/STEPS)*W;
-      let y = MID + base * (28*Math.sin(x*0.04 + t) + 11*Math.sin(x*0.13 + t*1.7));
+      /* Покой — тоже ЖИВОЙ сигнал, а не гладкая синусоида.
+         Раньше в покое шли две медленные волны с близкими периодами: рисунок
+         почти повторялся, и глаз читал линию как неподвижную — отсюда жалоба
+         «луч не двигается», хотя путь пересчитывался каждый кадр.
+         Третья гармоника с несоизмеримым периодом и своей скоростью ломает
+         повторяемость: линия всё время разная, движение видно сразу. */
+      let y = MID + base * (28*Math.sin(x*0.04 + t)
+                          + 11*Math.sin(x*0.13 + t*1.7)
+                          +  6*Math.sin(x*0.37 + t*2.6));
       /* При записи добавляем две частые гармоники с несоизмеримыми
          периодами: они не совпадают ни между собой, ни с базовыми, поэтому
          рисунок не повторяется и линия колеблется хаотично ПО ВСЕЙ ширине.
@@ -30973,13 +30966,25 @@ function _echoWaveStart(stream){
     const buf = new Uint8Array(_echoWaveAnalyser.frequencyBinCount);
     const bars = wave.children;
     const step = Math.floor(buf.length / bars.length) || 1;
+    /* ФОРМА ВОЛНЫ, А НЕ СПЕКТР.
+       Было getByteFrequencyData — спектр частот. У человеческого голоса вся
+       энергия сидит в низких частотах, то есть в левых ячейках; правые почти
+       всегда пустые. Оттого при записи оживала только левая часть ленты, а
+       справа стояли мёртвые точки — это и было видно на экране.
+       getByteTimeDomainData даёт форму сигнала: каждая полоса берёт СВОЙ
+       отрезок времени, поэтому колеблется вся лента целиком. */
     (function tick(){
       if(!_echoWaveAnalyser) return;
-      _echoWaveAnalyser.getByteFrequencyData(buf);
+      _echoWaveAnalyser.getByteTimeDomainData(buf);
       for(let i=0;i<bars.length;i++){
-        let sum = 0;
-        for(let k=0;k<step;k++) sum += buf[i*step+k] || 0;
-        const v = Math.min(100, 12 + (sum/step) / 255 * 150);
+        /* Берём пик отклонения от тишины (128) на своём отрезке — так
+           полоса показывает громкость именно этого момента. */
+        let peak = 0;
+        for(let k=0;k<step;k++){
+          const d = Math.abs((buf[i*step+k] === undefined ? 128 : buf[i*step+k]) - 128);
+          if(d > peak) peak = d;
+        }
+        const v = Math.min(100, 12 + (peak / 128) * 190);
         bars[i].style.height = v.toFixed(1) + '%';
         bars[i].classList.toggle('on', v > 18);
       }
@@ -40219,17 +40224,17 @@ h1, h2, h3,
      Тексты вопросов взяты ДОСЛОВНО из подсказок существующих полей,
      чтобы не менять смысл заказа. -->
 <style id="ew-cond-dialog-css">
-#condDialog{ display:none; }
-#preorderSection.cond-dialog-on #condDialog{ display:block; }
-#preorderSection.cond-dialog-on .cond-hidden{ display:none !important; }
+/* Диалог заказа конденсации. Разметка теперь РОДНАЯ (см. секцию заказа),
+   поэтому правил для инъекции больше нет — только вид самого диалога. */
+.cond-dlg{ display:flex; flex-direction:column; gap:10px; }
 .cond-dlg-log{
   display:flex; flex-direction:column; gap:8px;
-  max-height:210px; overflow-y:auto; padding:2px 0 10px;
+  max-height:210px; overflow-y:auto; padding:2px 0;
   -webkit-overflow-scrolling:touch;
 }
 .cond-dlg-line{
   max-width:86%; padding:9px 12px; border-radius:13px;
-  font-size:12.5px; line-height:1.5;
+  font-family:var(--font-input); font-size:12.5px; line-height:1.5;
   opacity:0; transform:translateY(6px);
   transition:opacity .3s var(--ease-out-quart), transform .3s var(--ease-out-quart);
 }
@@ -40243,17 +40248,7 @@ h1, h2, h3,
   background:rgba(0,200,200,.07); border:1px solid rgba(0,200,200,.26);
 }
 .cond-dlg-in{ display:flex; gap:8px; align-items:center; }
-.cond-dlg-in input{
-  flex:1; min-width:0;
-  background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.12);
-  border-radius:13px; color:var(--ink); font-family:var(--font-input);
-  font-size:13px; padding:11px 14px; outline:none;
-  transition:border-color .2s, box-shadow .2s;
-}
-.cond-dlg-in input:focus{
-  border-color:rgba(0,200,200,.5);
-  box-shadow:0 0 0 3px rgba(0,200,200,.10);
-}
+.cond-dlg-in .g-well{ flex:1; min-width:0; }
 .cond-dlg-send{
   flex:0 0 auto; width:42px; height:42px; border-radius:50%;
   display:grid; place-items:center; cursor:pointer;
@@ -40262,54 +40257,37 @@ h1, h2, h3,
   transition:background .2s, border-color .2s;
 }
 .cond-dlg-send:disabled{ opacity:.4; cursor:default; }
-.cond-dlg-consent{ display:none; padding-top:4px; }
-.cond-dlg-consent.show{ display:block; }
+.cond-dlg-consent{ display:none; flex-direction:column; gap:10px; }
+.cond-dlg-consent.show{ display:flex; }
+.cond-send-btn{ width:100%; }
+/* Настоящие поля заказа скрыты — их заполняет диалог. */
+.cond-real-fields{ display:none; }
 </style>
 <script id="ew-cond-dialog-js">
 (function(){
   'use strict';
+  /* Диалог ведёт РОДНУЮ разметку панели (design/lens-terminals.html #cond).
+     Прежняя версия строила свои узлы поверх старой формы и прятала её —
+     получалась заплатка. Теперь панель родная, а скрипт только оживляет её.
+
+     Вопросы взяты из подсказок исходных полей: смысл заказа не меняется. */
   function старт(){
-    var секция = document.getElementById('preorderSection');
+    var лог = document.getElementById('condConsole');
+    var ввод = document.getElementById('condDlgField');
+    var шли = document.getElementById('condDlgSend');
+    var согласие = document.getElementById('condDlgConsent');
+    var строка = document.getElementById('preorderFormBlock');
+    var статус = document.getElementById('condStatusLine');
     var поле1 = document.getElementById('preorderItem');
     var поле2 = document.getElementById('preorderContact');
-    var согласие = document.getElementById('preorderConsentWrap');
-    var кнопка = document.getElementById('preorderBtn');
-    if(!секция || !поле1 || !поле2 || !кнопка) return;
-    if(секция.dataset.condDialog === '1') return;
-    секция.dataset.condDialog = '1';
+    if(!лог || !ввод || !шли || !поле1 || !поле2) return;
+    if(лог.dataset.condDialog === '1') return;
+    лог.dataset.condDialog = '1';
 
-    /* Вопросы — дословно подсказки существующих полей, без звёздочек. */
     var ЦЕПЬ = [
       { поле: поле1, вопрос: 'Какую реликвию желаете?' },
       { поле: поле2, вопрос: 'Email для связи' }
     ];
-
-    var диалог = document.createElement('div');
-    диалог.id = 'condDialog';
-    диалог.innerHTML =
-      '<div class="cond-dlg-log" id="condDlgLog" aria-live="polite"></div>' +
-      '<div class="cond-dlg-in" id="condDlgIn">' +
-        '<input type="text" id="condDlgField" autocomplete="off" autocorrect="off" spellcheck="false">' +
-        '<button type="button" class="cond-dlg-send" id="condDlgSend" aria-label="Ответить">→</button>' +
-      '</div>' +
-      '<div class="cond-dlg-consent" id="condDlgConsent"></div>';
-    поле1.parentNode.insertBefore(диалог, поле1);
-
-    /* Прячем исходные поля, но оставляем в разметке: значения пишем в них,
-       и submitPreorder читает их как раньше. */
-    [поле1, поле2].forEach(function(э){
-      var обёртка = э.closest('.preorder-field') || э.parentElement;
-      (обёртка || э).classList.add('cond-hidden');
-    });
-    if(согласие) согласие.classList.add('cond-hidden');
-    кнопка.classList.add('cond-hidden');
-    секция.classList.add('cond-dialog-on');
-
-    var лог = document.getElementById('condDlgLog');
-    var ввод = document.getElementById('condDlgField');
-    var шли = document.getElementById('condDlgSend');
-    var местоСогласия = document.getElementById('condDlgConsent');
-    var строка = document.getElementById('condDlgIn');
     var i = 0;
 
     function реплика(текст, кто){
@@ -40327,15 +40305,14 @@ h1, h2, h3,
       ввод.value = '';
       ввод.placeholder = ЦЕПЬ[i].вопрос;
       ввод.type = (ЦЕПЬ[i].поле.type === 'email') ? 'email' : 'text';
-      ввод.focus({preventScroll:true});
     }
 
     function ответить(){
       var v = String(ввод.value || '').trim();
       if(!v) return;
       реплика(v, 'me');
-      /* Пишем в НАСТОЯЩЕЕ поле и поднимаем input — на него завязаны
-         существующие проверки формы. */
+      /* Пишем в НАСТОЯЩЕЕ поле и поднимаем события — на них завязаны
+         существующие проверки формы и submitPreorder. */
       ЦЕПЬ[i].поле.value = v;
       ЦЕПЬ[i].поле.dispatchEvent(new Event('input', {bubbles:true}));
       ЦЕПЬ[i].поле.dispatchEvent(new Event('change', {bubbles:true}));
@@ -40344,15 +40321,10 @@ h1, h2, h3,
     }
 
     function кСогласию(){
-      строка.style.display = 'none';
+      if(строка) строка.style.display = 'none';
       реплика('Осталось подтвердить согласие — и я начну конденсацию.', 'ap');
-      if(согласие){
-        согласие.classList.remove('cond-hidden');
-        местоСогласия.appendChild(согласие);
-      }
-      кнопка.classList.remove('cond-hidden');
-      местоСогласия.appendChild(кнопка);
-      местоСогласия.classList.add('show');
+      if(согласие) согласие.classList.add('show');
+      if(статус) статус.textContent = 'Ожидание подтверждения';
     }
 
     шли.addEventListener('click', ответить);
@@ -40366,10 +40338,9 @@ h1, h2, h3,
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', старт);
   else старт();
   window.inspectCondDialog = function(){
-    var с = document.getElementById('preorderSection');
-    return { включён: !!(с && с.classList.contains('cond-dialog-on')),
-      реплик: document.querySelectorAll('.cond-dlg-line').length,
-      подпись: 'Конденсация · модель «диалог»' };
+    return { реплик: document.querySelectorAll('.cond-dlg-line').length,
+      согласиеПоказано: !!document.querySelector('#condDlgConsent.show'),
+      подпись: 'Конденсация · панель эталона' };
   };
 })();
 </script>
