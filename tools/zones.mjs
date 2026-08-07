@@ -72,7 +72,9 @@ export const ZONES = [
   { id: 'power',         имя: 'Мощь Реликвии',           sel: '.relic, #relic' },
   { id: 'catalog',       имя: 'Каталог',                 sel: '.catwrap, .catalog-main-section' },
   { id: 'echo',          имя: 'Эхо · передатчик',        sel: '.echo-right' },
-  { id: 'system',        имя: 'Система и Конденсация',   sel: '.cond-screen, #system' },
+  /* .cond-screen убран при переносе интерфейса конденсации с эталона —
+     зона молча пропускалась и не проверялась вовсе. Новый узел — #condScreen. */
+  { id: 'system',        имя: 'Система и Конденсация',   sel: '#condScreen, #system' },
   { id: 'worlds',        имя: 'Миры',                    sel: '#worlds, .worlds' },
   { id: 'architect',     имя: 'Архитектор',              sel: '.architect-terminal, .arch-term' },
   { id: 'partners',      имя: 'Партнёрства',             sel: '.collab, .clink' },

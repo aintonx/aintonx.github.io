@@ -1420,6 +1420,7 @@ button,
 }
 .ew-btn-swap > .ew-btn-out {
   position: absolute; left: 0; right: 0; top: 50%;
+  text-align: center;   /* абсолютный узел выпал из центрирующего флекса кнопки */
   opacity: 0; transform: translateY(-50%) translateY(-190%);
 }
 .ew-btn-swap > .ew-btn-in { opacity: 0; transform: translateY(190%); }
@@ -16306,9 +16307,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         </div>
 
         <div class="g-actions">
-          <button type="button" class="g-btn" id="echoSubmitBtn" onclick="openEchoOrder()">
-            Передать Эхо<span id="echoSubmitPrice">· 599 ₽</span>
-          </button>
+          <button type="button" class="g-btn" id="echoSubmitBtn" onclick="openEchoOrder()"><span class="ew-captcha-button-text">Передать Эхо · 599 ₽</span></button>
         </div>
       </div>
       <div class="g-foot">
@@ -30538,8 +30537,17 @@ function _startEchoTabGlitchWave(){ /* no-op — RGB-split в CSS */ }
 function _updateEchoSubmitPrice(){
   const price = _echoMode === 'voice' ? '1499 ₽' : '599 ₽';
   // (Цены: текст 599 ₽ / голос 1499 ₽)
-  const el = document.getElementById('echoSubmitPrice');
-  if(el) el.textContent = '· ' + price;
+  /* Подпись прокручивается, как значение в барабане: прежняя уходит вверх,
+     новая приходит снизу. Тот же механизм, что у кнопки в форме заказа
+     (_ewCaptchaSetButtonText + .ew-btn-swap). Цена меняется при переключении
+     текст/голос, и мгновенная подмена читалась как подёргивание.
+     Первый вызов ставит подпись сразу, без хода — переливать нечего. */
+  const btn = document.getElementById('echoSubmitBtn');
+  if(btn && typeof _ewCaptchaSetButtonText === 'function'){
+    _ewCaptchaSetButtonText(btn, 'Передать Эхо · ' + price);
+    return;
+  }
+  if(btn) btn.textContent = 'Передать Эхо · ' + price;
 }
 
 /* Скролл к интерфейсу эхо (мобильный свайп: pane2) */
@@ -30978,25 +30986,87 @@ function _echoWaveStart(stream){
        справа стояли мёртвые точки — это и было видно на экране.
        getByteTimeDomainData даёт форму сигнала: каждая полоса берёт СВОЙ
        отрезок времени, поэтому колеблется вся лента целиком. */
-    (function tick(){
-      if(!_echoWaveAnalyser) return;
+    _echoWaveВести(bars, function(i, t){
       _echoWaveAnalyser.getByteTimeDomainData(buf);
-      for(let i=0;i<bars.length;i++){
-        /* Берём пик отклонения от тишины (128) на своём отрезке — так
-           полоса показывает громкость именно этого момента. */
-        let peak = 0;
-        for(let k=0;k<step;k++){
-          const d = Math.abs((buf[i*step+k] === undefined ? 128 : buf[i*step+k]) - 128);
-          if(d > peak) peak = d;
-        }
-        const v = Math.min(100, 12 + (peak / 128) * 190);
-        bars[i].style.height = v.toFixed(1) + '%';
-        bars[i].classList.toggle('on', v > 18);
+      let peak = 0;
+      for(let k=0;k<step;k++){
+        const d = Math.abs((buf[i*step+k] === undefined ? 128 : buf[i*step+k]) - 128);
+        if(d > peak) peak = d;
       }
-      _echoWaveRaf = requestAnimationFrame(tick);
-    })();
+      return (peak / 128);
+    });
   }catch(e){ /* нет Web Audio — волна просто останется в покое */ }
 }
+/* ── ЛЕНТА ПОЛОС: ОДИН ДВИЖОК НА ЗАПИСЬ И ПРОСЛУШИВАНИЕ ──────────────
+   Лента колеблется ТОЛЬКО когда идёт запись или проигрывается записанное —
+   в покое стоит. Раньше она питалась спектром частот (getByteFrequencyData):
+   у голоса вся энергия в низких частотах, то есть в левых ячейках, поэтому
+   оживала лишь левая часть, а справа стояли мёртвые точки.
+
+   Теперь источник даёт громкость момента, а к ней подмешивается своя для
+   каждой полосы медленная волна. Подмешивание нужно по двум причинам: даже
+   на ровном звуке лента дышит целиком, и если Web Audio недоступен или
+   микрофон молчит — полосы всё равно живут, а не выглядят сломанными. */
+function _echoWaveВести(bars, уровень){
+  const t0 = performance.now();
+  cancelAnimationFrame(_echoWaveRaf);
+  (function tick(){
+    const t = (performance.now() - t0) / 1000;
+    for(let i=0;i<bars.length;i++){
+      let u = 0;
+      try{ u = уровень ? уровень(i, t) : 0; }catch(e){ u = 0; }
+      /* Своя фаза и частота у каждой полосы — лента не пульсирует разом. */
+      const своя = 0.5 + 0.5*Math.sin(t*(2.1 + i*0.37) + i*1.7);
+      /* Множитель ровно на оставшуюся высоту (100 − 12 = 88), а не 190.
+         С прежним числом сумма выходила за 100 уже на середине сигнала,
+         и всё, что громче, залипало на потолке: замер показывал, что
+         колеблются 13 полос из 16, а три громкие стоят. Обрезка снизу
+         оставлена страховкой — при этом масштабе она не срабатывает. */
+      const v = Math.min(100, 12 + (u*0.72 + своя*0.28) * 88);
+      bars[i].style.height = v.toFixed(1) + '%';
+      bars[i].classList.toggle('on', v > 26);
+    }
+    _echoWaveRaf = requestAnimationFrame(tick);
+  })();
+}
+
+/* Прослушивание: тот же вид ленты, но источник — само аудио. Анализатор
+   на элементе даёт настоящую громкость; если браузер его не отдал, остаётся
+   подмешанная волна, и лента всё равно колеблется. */
+function _echoWaveИзАудио(audio){
+  const wave = _echoWaveInit();
+  if(!wave || !audio) return;
+  const bars = wave.children;
+  let буфер = null, анализ = null;
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(AC){
+      if(!audio._echoCtx){
+        audio._echoCtx = new AC();
+        audio._echoSrc = audio._echoCtx.createMediaElementSource(audio);
+        audio._echoAn = audio._echoCtx.createAnalyser();
+        audio._echoAn.fftSize = 256;
+        audio._echoSrc.connect(audio._echoAn);
+        audio._echoAn.connect(audio._echoCtx.destination);
+      }
+      if(audio._echoCtx.state === 'suspended') audio._echoCtx.resume();
+      анализ = audio._echoAn;
+      буфер = new Uint8Array(анализ.frequencyBinCount);
+    }
+  }catch(e){ анализ = null; }
+  const шаг = буфер ? (Math.floor(буфер.length / bars.length) || 1) : 1;
+  _echoWaveВести(bars, function(i){
+    if(!анализ || !буфер) return 0;
+    анализ.getByteTimeDomainData(буфер);
+    let peak = 0;
+    for(let k=0;k<шаг;k++){
+      const d = Math.abs((буфер[i*шаг+k] === undefined ? 128 : буфер[i*шаг+k]) - 128);
+      if(d > peak) peak = d;
+    }
+    return peak / 128;
+  });
+}
+
 function _echoWaveStop(keep){
   if(_echoWaveRaf){ cancelAnimationFrame(_echoWaveRaf); _echoWaveRaf = 0; }
   _echoWaveAnalyser = null;
@@ -31071,9 +31141,9 @@ function _echoInitPlayer(){
     if(lbl) lbl.textContent = on ? 'ПАУЗА' : 'ПРОСЛУШАТЬ';
     if(btn) btn.setAttribute('aria-label', on ? 'Пауза' : 'Прослушать запись');
   }
-  audio.addEventListener('play',  ()=>{ player.classList.add('playing'); setPlayState(true); _echoRingSet(0, 'play'); });
-  audio.addEventListener('pause', ()=>{ player.classList.remove('playing'); setPlayState(false); if(!audio.ended) _echoRingSet(0, 'off'); });
-  audio.addEventListener('ended', ()=>{ player.classList.remove('playing'); setPlayState(false); _echoRingFinish(); if(fill) fill.style.width='100%'; });
+  audio.addEventListener('play',  ()=>{ player.classList.add('playing'); setPlayState(true); _echoRingSet(0, 'play'); try{ _echoWaveИзАудио(audio); }catch(e){} });
+  audio.addEventListener('pause', ()=>{ player.classList.remove('playing'); setPlayState(false); if(!audio.ended) _echoRingSet(0, 'off'); try{ cancelAnimationFrame(_echoWaveRaf); }catch(e){} });
+  audio.addEventListener('ended', ()=>{ player.classList.remove('playing'); setPlayState(false); _echoRingFinish(); if(fill) fill.style.width='100%'; try{ cancelAnimationFrame(_echoWaveRaf); _echoWaveReset(); }catch(e){} });
   /* Кольцо ведёт воспроизведение тем же кругом, что и запись. */
   audio.addEventListener('timeupdate', ()=>{
     const d = _echoPlayerDur();
@@ -39412,15 +39482,23 @@ footer {
    зависело от того, как движок посчитает размер SVG до первой отрисовки.
    Safari считает это иначе, чем Chromium, отсюда и расхождение.
 
-   Абсолютное позиционирование убирает саму возможность сдвига: знак
-   вынесен из потока и привязан к центру коробки. Что бы ни решил движок о
-   его собственных размерах, точка привязки останется той же.
-   Меняется ТОЛЬКО прозрачность — никаких transform, которые могли бы
-   сдвинуть точку отсчёта. */
+   Третья попытка — абсолютное позиционирование через top/left 50% и
+   translate(-50%,-50%) — в Chromium давала ровный ноль, а на телефоне знак
+   всё равно ехал. Причина в самой конструкции: знак — КОРНЕВОЙ <svg>, и
+   процентную долю в translate WebKit разрешает относительно системы
+   координат viewBox (24 единицы), а не CSS-бокса (13px). Отсюда сдвиг,
+   которого не видно ни в одном замере на настольном движке.
+
+   Здесь центрирование без процентов и без transform вообще: растянуть по
+   всем четырём сторонам и отдать остаток полям. Ширина и высота заданы
+   жёстко, поэтому margin:auto делит свободное место поровну — результат
+   одинаков в любом движке, разрешать нечего.
+   Меняется ТОЛЬКО прозрачность. Любой transform в правилах знака вернёт
+   расхождение — это уже третий раз, когда оно приходит именно оттуда. */
 .cb-mark{
   position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  margin: auto;
   width: 13px; height: 13px;
   color: var(--ink);
   fill: none;
@@ -40033,12 +40111,10 @@ h1, h2, h3,
           '<button type="button" class="chk-nav-btn chk-nav-next">' +
           (i === 0 ? 'Далее · канал связи' : 'Далее · подтверждение') + '</button>';
         короб.appendChild(нав);
-      } else {
-        var назад = document.createElement('div');
-        назад.className = 'chk-nav chk-nav-last';
-        назад.innerHTML = '<button type="button" class="chk-nav-btn chk-nav-back">Назад</button>';
-        короб.appendChild(назад);
       }
+      /* На последнем шаге кнопки «Назад» НЕТ. Она стояла под кнопкой
+         отправки и лезла на секцию ауры, которая раскрывается прямо под
+         ней. Возврат остаётся у реликвии, где под последним шагом пусто. */
       шаги.push(короб);
     });
 
@@ -40159,6 +40235,7 @@ h1, h2, h3,
   function сброс(){
     if(!собрать()) return;
     тек = 0;
+    вернутьКнопку();   /* на время барабана она уезжала под секцию ауры */
     if(сцена){
       сцена.classList.remove('назад');
       clearTimeout(сцена._ewОтпустить);
@@ -40181,20 +40258,48 @@ h1, h2, h3,
     if(рейка) рейка.style.display = '';
   }
 
-  /* Барабан ауры запускается — форма уступает ему место, как у реликвии. */
-  var исхБарабан = window.startEchoAuraDrum || window._echoStartAuraDrum;
-  ['startEchoAuraDrum','_echoStartAuraDrum','runEchoAuraDrum'].forEach(function(имя){
-    var исх = window[имя];
-    if(typeof исх !== 'function') return;
-    window[имя] = function(){
-      if(построено){
-        if(рейка) рейка.style.display = 'none';
-        шаги.forEach(function(к){ к.style.display = 'none'; });
-        if(сцена) сцена.style.display = 'none';
-      }
-      return исх.apply(this, arguments);
+  /* ── БАРАБАН ЗАБИРАЕТ ЭКРАН ───────────────────────────────────────
+     Как у реликвии: пошла Аура — форма уходит целиком, остаётся барабан,
+     под ним его характеристика и ниже кнопка отправки.
+
+     Кнопку для этого приходится ПЕРЕНОСИТЬ. Она принадлежит третьему
+     шагу и лежит внутри его коробки, а коробка на время барабана
+     скрывается — вместе с кнопкой. Поэтому на время подбора кнопка
+     переезжает в конец формы, то есть под секцию ауры, а сброс при
+     следующем открытии возвращает её на место.
+
+     Имя перехватываемой функции — _spinEchoAuraDrum. Прошлая версия
+     висела на трёх выдуманных именах (startEchoAuraDrum и подобных),
+     ни одного из которых в файле нет: перехват молча не срабатывал, и
+     на снимке форма оставалась на экране вместе с барабаном. */
+  var кнопкаДом = null;
+  function уступитьБарабану(){
+    if(!построено) return;
+    var тело = document.getElementById('echoOrderBody');
+    var форма = тело && тело.querySelector('form');
+    if(!форма) return;
+    if(рейка) рейка.style.display = 'none';
+    if(сцена) сцена.style.display = 'none';
+    шаги.forEach(function(к){ к.style.display = 'none'; });
+    var кнопка = форма.querySelector('.echo-order-submit-wrap');
+    var аура = форма.querySelector('.echo-aura-section');
+    if(кнопка && аура){
+      if(!кнопкаДом) кнопкаДом = кнопка.parentNode;
+      форма.appendChild(кнопка);        /* аура — последний блок, кнопка встаёт под неё */
+    }
+  }
+  function вернутьКнопку(){
+    if(!кнопкаДом) return;
+    var кнопка = document.querySelector('#echoOrderBody .echo-order-submit-wrap');
+    if(кнопка && кнопка.parentNode !== кнопкаДом) кнопкаДом.appendChild(кнопка);
+  }
+  var исхБарабан = window._spinEchoAuraDrum;
+  if(typeof исхБарабан === 'function'){
+    window._spinEchoAuraDrum = function(){
+      уступитьБарабану();
+      return исхБарабан.apply(this, arguments);
     };
-  });
+  }
 
   /* Сброс вешаем на открытие окна Эхо — единственную точку входа. */
   var исхОткрыть = window.openEchoOrder;
