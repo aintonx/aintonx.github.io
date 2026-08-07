@@ -12003,10 +12003,18 @@ input, select, textarea {
   background: var(--red-hi);
 }
 
-/* ── Глобальная фокус-обводка (доступность: только клавиатура) ── */
+/* ── Глобальная фокус-обводка (доступность: только клавиатура) ──
+   Была КРАСНОЙ. По паспорту «Линзы» красный означает тревогу и запрет,
+   а фокус — это «сюда попал ввод», роль цианового. На поле ввода красное
+   кольцо читалось как ошибка ещё до того, как человек что-то набрал.
+   Плюс на iOS тап по полю Safari нередко считает «видимым» фокусом, так
+   что кольцо всплывало и от пальца.
+   Отступ убран внутрь (-2px): наружное кольцо срезалось краем панели и
+   полосой горизонтального листания, у которых своя обрезка. Внутреннее
+   срезать нечем. */
 :focus-visible {
-  outline: 2px solid var(--red-hi);
-  outline-offset: 2px;
+  outline: 2px solid var(--cyan);
+  outline-offset: -2px;
   border-radius: var(--radius-sm);
 }
 /* Мышь / тап — никакой рамки: focus-visible отключает для pointer-устройств
@@ -30269,7 +30277,11 @@ function initPreorderSwipe(){
   cta.setAttribute('aria-label','Перейти к запросу конденсации');
   cta.innerHTML=`<span class="pre-pane-cta-label">Запросить конденсацию</span><div class="pre-pane-cta-arrow"></div>`;
   cta.onclick=()=>track.scrollTo({left:track.offsetWidth,behavior:'smooth'});
-  pane1.appendChild(cta);
+  /* Кнопка кладётся ВНУТРЬ колонки описания, а не рядом с ней: иначе она
+     остаётся за рамкой панели и на экране получается «текст в рамке, а
+     кнопка сама по себе». Механика свайпа не тронута — у пейна по-прежнему
+     ровно один ребёнок. */
+  descCol.appendChild(cta);
   track.appendChild(pane1);
 
   /* Пейн 2: форма + терминал */
@@ -40451,11 +40463,10 @@ h1, h2, h3,
 .cond-glass .g-btn.quiet:hover{background: rgba(255,255,255,0.08);}
 .cond-glass .g-well{display: block; width: 100%; font-family: var(--font-input); font-size: 13px; color: var(--ink); background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px 15px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; resize: none;}
 .cond-glass .g-well::placeholder{color: var(--ink-3); opacity: 0.8;}
-.cond-glass .g-well:focus{border-color: rgba(0,200,200,0.4); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 3px rgba(0,200,200,0.08), 0 0 18px rgba(0,200,200,0.1); background: rgba(255,255,255,0.06);}
+.cond-glass .g-well:focus{border-color: rgba(0,200,200,0.45); box-shadow: none; background: rgba(255,255,255,0.06);}
 .cond-glass .dlg-log{flex: 1; overflow-y: auto; scrollbar-width: none; padding: 4px 2px 10px; -webkit-mask-image: linear-gradient(180deg, transparent, #000 9%); mask-image: linear-gradient(180deg, transparent, #000 9%);}
 .cond-glass .dlg-log::-webkit-scrollbar{display: none;}
 .cond-glass .dlg-in{display: flex; gap: 8px; align-items: center; padding-top: 10px; position: relative;}
-.cond-glass .dlg-in::before{content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(240,240,248,0.11) 16%, rgba(240,240,248,0.11) 84%, transparent);}
 .cond-glass .dlg-in .g-well{flex: 1;}
 .cond-glass .dlg-send{position: relative; overflow: hidden; width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(209,160,74,0.1); border: 1px solid rgba(209,160,74,0.35); transition: background 0.2s, box-shadow 0.2s, opacity 0.3s;}
 .cond-glass .dlg-send svg{width: 15px; height: 15px; fill: none; stroke: var(--warm-hi); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;}
@@ -40463,7 +40474,6 @@ h1, h2, h3,
 .cond-glass .dlg-in.lock{opacity: 0.35; pointer-events: none;}
 .cond-glass .dlg-consent{display: none; gap: 8px; align-items: center; padding-top: 10px; position: relative;}
 .cond-glass .dlg-consent.show{display: flex;}
-.cond-glass .dlg-consent::before{content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(240,240,248,0.11) 16%, rgba(240,240,248,0.11) 84%, transparent);}
 .cond-glass .dlg-consent .g-btn{padding: 12px 16px;}
 .cond-glass .dlg-consent .lnk{font-family: var(--font-input); font-size: 10.5px; color: var(--ink-4); text-decoration: underline; text-underline-offset: 3px; padding: 8px 4px; transition: color 0.2s;}
 .cond-glass .dlg-consent .lnk:hover{color: var(--ink-2);}
@@ -40499,6 +40509,73 @@ h1, h2, h3,
 .cond-glass .dlg-consent .g-btn{flex: 1 1 auto;}
 .cond-glass .dlg-consent .preorder-privacy-error{flex: 1 1 100%; margin: 0;}
 
+/* ── ОПИСАНИЕ ТОЖЕ В РАМКЕ ────────────────────────────────────────────
+   Слева лежали заголовок, текст и кнопка «навалом», справа — собранная
+   панель. На экране это читалось как «половина раздела оформлена, а
+   половина нет». Теперь описание — такая же стеклянная панель: рамка,
+   поля, кнопка внутри. Кнопку в неё перенёс скрипт свайпа (одна строка),
+   механика свайпа не тронута. */
+#preorderDescCol{
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  padding: 22px 22px 20px;
+  background: rgba(255,255,255,.022);
+  border: 1px solid rgba(255,255,255,.07);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+/* Порядок детей возвращаем в естественный. У заголовка и метки уже стояли
+   order:1 и order:2 — в блочном контейнере они ничего не значили, а мой
+   display:flex их активировал, и заголовок уехал под текст. */
+#preorderDescCol > *{ order: 0; }
+/* Кнопка прижата к низу рамки — так же, как раньше к низу пейна. */
+#preorderDescCol > .pre-pane-cta{ order: 1; margin-top: auto; }
+#preorderDescCol > .about-text{ margin-bottom: 22px; }
+
+/* Стрелка в кнопке была КРАСНОЙ. По паспорту «Линзы» красный означает
+   только тревогу и запрет, действие — тёплое; ревизор это и отмечал.
+   Перекрашиваем ТОЛЬКО цвет: сама стрелка собрана из линии (фон) и
+   уголка (границы), и общий background превращал её в ромб. */
+#preorderDescCol > .pre-pane-cta .pre-pane-cta-arrow{
+  background: var(--warm-hi);
+}
+#preorderDescCol > .pre-pane-cta .pre-pane-cta-arrow::after{
+  border-top-color: var(--warm-hi);
+  border-right-color: var(--warm-hi);
+}
+
+/* ── ПАНЕЛЬ ЗАПОЛНЯЕТ ЭКРАН ЦЕЛИКОМ ──────────────────────────────────
+   На телефоне раздел листается вбок: слева описание с кнопкой внизу,
+   справа диалог. Кнопка стояла у нижнего края, а поле ввода — на 200px
+   выше, и при листании активный элемент прыгал. Панель теперь тянется на
+   всю высоту пейна, диалог занимает остаток, и строка ввода встаёт вровень
+   с кнопкой соседнего экрана. */
+@media (max-width: 960px){
+  .pre-swipe-pane > .cond-glass{ height: 100%; display: flex; flex-direction: column; }
+  .pre-swipe-pane > .cond-glass .g-body{ flex: 1; display: flex; min-height: 0; }
+  .pre-swipe-pane > .cond-glass .dlg{ height: auto; flex: 1; min-height: 0; width: 100%; }
+  /* Пейны растягивает трек, но их собственная высота при этом остаётся
+     «неопределённой»: flex внутри не видит, что распределять, и рамка
+     описания оставалась по высоте текста (замер: 618px при доступных
+     662) — кнопка вставала сразу после абзаца, а не у нижнего края.
+     Grid растягивает по фактическому размеру и от этой тонкости не
+     зависит. Меняем раскладку только у пейнов конденсации, чтобы не
+     трогать карусели Архитектора и Поддержки. */
+  #preorderSection .pre-swipe-pane{ display: grid; align-content: stretch; }
+  #preorderSection .pre-swipe-pane > *{ min-height: 0; }
+  /* Запас снизу равен подвалу соседней панели («ЗОНА КОНДЕНСАЦИИ
+     АКТИВНА…») плюс её нижнее поле: подвал стоит ПОД строкой ввода, и без
+     запаса кнопка оказывалась ниже поля.
+
+     Величина НЕ подбирается брейкпоинтами: подвал переносится на две
+     строки не на круглой ширине, а там, где перестаёт помещаться текст.
+     Подгонка порогами промахивалась на 54px в середине диапазона.
+     Поэтому запас считается по факту — наблюдателем за размером подвала
+     (см. скрипт ew-cond-align-js), а здесь только запасное значение на
+     случай, если скрипт не отработал. */
+  .pre-swipe-pane > #preorderDescCol{ padding-bottom: var(--cond-подвал, 62px); }
+}
+
 /* Мобильные правила эталона. При переносе медиазапрос потерялся, и они
    действовали на ВСЕХ ширинах — отсюда узкие поля на десктопе и колонка
    в 380px там, где эталон держит 348. */
@@ -40530,6 +40607,68 @@ h1, h2, h3,
 /* Настоящие поля заказа скрыты — их заполняет диалог. */
 .cond-real-fields{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; }
 </style>
+<script id="ew-cond-align-js">
+(function(){
+  'use strict';
+  /* Строка ввода в панели диалога и кнопка на соседнем экране должны
+     стоять на одной линии: телефон листает раздел вбок, и прыгающий
+     активный элемент выдаёт, что это два разных макета.
+
+     Считаем не по формуле, а по ФАКТУ. Формулу я выводил дважды (высота
+     подвала, потом плюс нижнее поле тела) — на 390 сходилось, на 620–900
+     промахивало на 30–50px, потому что в зазор входит ещё и то, что я в
+     модель не заложил. Здесь берётся готовая разница между нижними краями
+     кнопки и поля и целиком уходит в нижний отступ рамки описания: связь
+     прямая, один к одному, поэтому одного прохода достаточно. */
+  function связать(){
+    var рамка = document.getElementById('preorderDescCol');
+    var поле  = document.getElementById('condDlgField');
+    if(!рамка || !поле) return;
+
+    function свести(){
+      var кн = рамка.querySelector('.pre-pane-cta');
+      /* Ниже 960 раздел листается вбок и выравнивание имеет смысл; выше —
+         колонки стоят рядом, и подгонять нечего. */
+      if(!кн || !window.matchMedia('(max-width: 960px)').matches){
+        рамка.style.removeProperty('--cond-подвал');
+        return;
+      }
+      var было = parseFloat(getComputedStyle(рамка).paddingBottom) || 0;
+      var разница = поле.getBoundingClientRect().bottom - кн.getBoundingClientRect().bottom;
+      /* Нижнего предела нет: на широких экранах текст короче, кнопка
+         поднимается выше поля, и нужный отступ уходит в ноль. Предел в
+         14px оставлял промах в 19px. */
+      var стало = Math.max(0, Math.round(было - разница));
+      if(Math.abs(стало - было) < 1) return;
+      рамка.style.setProperty('--cond-подвал', стало + 'px');
+    }
+
+    var ждём = false;
+    function позже(){
+      if(ждём) return;
+      ждём = true;
+      requestAnimationFrame(function(){ ждём = false; свести(); });
+    }
+    свести();
+    window.addEventListener('resize', позже, {passive:true});
+    if('ResizeObserver' in window){
+      var н = new ResizeObserver(позже);
+      н.observe(рамка);
+      var подвал = document.querySelector('#condScreen .g-foot');
+      if(подвал) н.observe(подвал);
+    }
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(позже);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', связать);
+  else связать();
+  window.inspectCondAlign = function(){
+    var кн = document.querySelector('#preorderDescCol .pre-pane-cta');
+    var п  = document.getElementById('condDlgField');
+    if(!кн || !п) return null;
+    return { расхождение: Math.round(кн.getBoundingClientRect().bottom - п.getBoundingClientRect().bottom) };
+  };
+})();
+</script>
 <script id="ew-cond-dialog-js">
 (function(){
   'use strict';
@@ -40566,7 +40705,7 @@ h1, h2, h3,
     var ШАГИ = [
       { поле: поле1, тип: 'text',
         в: 'Что должно появиться в вашем мире? Опишите простыми словами: форма, материал, ощущение.',
-        подсказка: 'Например: медная сова размером с ладонь',
+        подсказка: 'Например: медная сова',
         проверка: function(v){ return v.length >= 2 ? '' : 'Сигнал слишком короткий. Опишите желаемое.'; } },
       { поле: поле2, тип: 'email',
         в: 'Куда прислать ответ, когда Архитектор проверит поток?',
