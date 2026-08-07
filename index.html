@@ -6995,20 +6995,9 @@ footer {
   letter-spacing: 0.02em;
 }
 #returnModal .return-chk-consent { margin-bottom: 14px; }
-#returnModal .return-chk-consent .chk-consent-box::after {
-  background: var(--red2);
-}
-#returnModal .return-chk-consent .chk-consent-input:checked + .chk-consent-box {
-  border-color: var(--red2);
-  background: rgba(192,40,40,0.12);
-  box-shadow: 0 0 10px rgba(192,40,40,0.30);
-  animation: chkTapRed .55s cubic-bezier(.22,1,.36,1);
-}
-@media (hover: hover) and (pointer: fine) {
-  #returnModal .return-chk-consent .chk-consent-input:focus-visible + .chk-consent-box {
-    outline-color: var(--red2);
-  }
-}
+/* Красный вариант коробки живёт в общем определении чек-боксов внизу файла
+   вместе со всеми остальными — здесь его больше нет. Пульс chkTapRed убран
+   заодно: он остался от кружка с точкой и на плитке ничего не добавлял. */
 /* Кнопка отправки — единый язык с cart-checkout-btn / echo-submit */
 .return-submit {
   width: 100%;
@@ -9291,70 +9280,12 @@ input, select, textarea {
   white-space: nowrap;
   border: 0;
 }
-.chk-consent-box {
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--border2);
-  border-radius: 50%;
-  background: var(--void);
-  position: relative;
-  transition: border-color .28s var(--ease-out), background .28s var(--ease-out), box-shadow .28s var(--ease-out);
-  margin-top: 1px;
-}
-@media (hover:hover) and (pointer:fine) {
-
-.chk-consent:hover .chk-consent-box {
-  border-color: var(--white-dim);
-}}
-/* Точка-сигнал живёт в боксе всегда и «материализуется» масштабом —
-   плавное технологичное срабатывание вместо резкого появления. */
-.chk-consent-box::after {
-  content: '';
-  position: absolute;
-  left: 50%; top: 50%;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--cyan);
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0);
-  transition: transform .32s cubic-bezier(.34,1.45,.64,1), opacity .2s ease;
-}
-.chk-consent-input:checked + .chk-consent-box {
-  border-color: var(--cyan);
-  background: rgba(0,200,200,0.1);
-  box-shadow: 0 0 8px rgba(0,200,200,0.25);
-  animation: chkTap .55s cubic-bezier(.22,1,.36,1);
-}
-.chk-consent-input:checked + .chk-consent-box::after {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-/* Мягкий «пульс»-отклик при отметке — расходящееся cyan-кольцо (микро-фидбек,
-   на «Прозвучать» читается как звуковая волна в оба мира). Один раз при входе
-   в :checked. */
-@keyframes chkTap {
-  0%   { box-shadow: 0 0 0 0 rgba(0,200,200,0.32); }
-  100% { box-shadow: 0 0 0 10px rgba(0,200,200,0), 0 0 8px rgba(0,200,200,0.25); }}
-/* Красная версия пульса — Эхо / Сектор Тишины */
+/* Пульс chkTap удалён вместе с кружком-точкой: после переезда чек-боксов на
+   плитку со знаком его никто не звал. Красная версия ниже ещё в ходу —
+   её используют .echo-checkbox и .return-consent. */
 @keyframes chkTapRed {
   0%   { box-shadow: 0 0 0 0 rgba(192,40,40,0.30); }
   100% { box-shadow: 0 0 0 10px rgba(192,40,40,0), 0 0 10px rgba(192,40,40,0.30); }}
-/* Кольцо фокуса ТОЛЬКО для мыши и клавиатуры. На iOS тап по метке ставит
-   фокус на скрытый input, и Safari нередко считает такой фокус «видимым»:
-   вокруг коробки 22px на мгновение вспыхивало циановое кольцо 2px с
-   отступом 2px и тут же гасло. Пальцем это читается как прыжок крестика в
-   момент нажатия — при том что сама геометрия неподвижна, покадровый замер
-   даёт ноль смещения во всех 29 кадрах.
-   У эталонного «Прозвучать в обоих мирах» такого правила нет вовсе — он
-   потому и не прыгает. Клавиатурный фокус на десктопе кольцо сохраняет:
-   pointer:fine как раз и означает мышь или трекпад. */
-@media (hover: hover) and (pointer: fine) {
-  .chk-consent-input:focus-visible + .chk-consent-box {
-    outline: 2px solid var(--cyan);
-    outline-offset: 2px;
-  }
-}
 .chk-consent-text {
   font-family: var(--font-code);
   font-size: 9.5px;
@@ -11418,39 +11349,6 @@ input, select, textarea {
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
-}
-.echo-reveal-check {
-  width: 18px; height: 18px;
-  border: 1px solid var(--border2);
-  border-radius: 50%;
-  background: var(--surface);
-  position: relative;
-  transition: border-color .28s var(--ease-out), background .28s var(--ease-out), box-shadow .28s var(--ease-out);
-  margin-top: 2px;
-}
-.echo-reveal-check::after {
-  content: '';
-  position: absolute;
-  left: 50%; top: 50%;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--cyan);
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0);
-  transition: transform .32s cubic-bezier(.34,1.45,.64,1), opacity .2s ease;
-}
-@media (hover:hover) and (pointer:fine) {
-
-.echo-reveal-toggle:hover .echo-reveal-check { border-color: var(--cyan); }}
-.echo-reveal-toggle input:checked + .echo-reveal-check {
-  background: rgba(0,200,200,0.1);
-  border-color: var(--cyan);
-  box-shadow: 0 0 8px rgba(0,200,200,0.25);
-  animation: chkTap .55s cubic-bezier(.22,1,.36,1);
-}
-.echo-reveal-toggle input:checked + .echo-reveal-check::after {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
 }
 .echo-reveal-text { display: flex; flex-direction: column; gap: 6px; }
 .echo-reveal-title {
@@ -16827,7 +16725,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <!-- ── СОГЛАСИЕ НА ОБРАБОТКУ ПД (152-ФЗ) ── -->
       <label class="chk-consent" for="chkConsent">
         <input type="checkbox" id="chkConsent" class="chk-consent-input">
-        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
+        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="-6.5 -6.5 37 37" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
         <span class="chk-consent-text">
           Подтверждаю согласие на обработку<span class="req-star">*</span>
           <button type="button" class="chk-consent-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>
@@ -16954,7 +16852,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
         <div class="echo-reveal-block">
           <label class="echo-reveal-toggle" for="echoOrderReveal">
             <input type="checkbox" id="echoOrderReveal" onchange="toggleEchoOrderReveal()">
-            <span class="echo-reveal-check" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
+            <span class="echo-reveal-check" aria-hidden="true"><svg class="cb-mark" viewBox="-6.5 -6.5 37 37" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
             <span class="echo-reveal-text">
               <span class="echo-reveal-title">Прозвучать в обоих мирах</span>
               <span class="echo-reveal-sub">По умолчанию Эхо анонимно — голос ниоткуда. Отметив, вы попросите MARKETSPACE и наш мир знать, чей это сигнал. Ваш Маркер появится в потоке данных рядом с Эхо, которое прозвучало.</span>
@@ -16991,7 +16889,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <!-- Согласие на ПД (та же структура что в основном чекауте) -->
       <label class="chk-consent" for="echoOrderConsent">
         <input type="checkbox" id="echoOrderConsent" class="chk-consent-input" onchange="_updateEchoOrderSubmit()">
-        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
+        <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="-6.5 -6.5 37 37" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
         <span class="chk-consent-text">
           Подтверждаю согласие на обработку<span class="req-star">*</span>
           <button type="button" class="chk-consent-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>
@@ -17755,39 +17653,6 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
   opacity: 0;
   pointer-events: none;
 }
-.preorder-privacy-box {
-  width: 15px;
-  height: 15px;
-  margin-top: 1px;
-  border: 1px solid var(--border2);
-  border-radius: 2px;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.018);
-  position: relative;
-  transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
-}
-.preorder-privacy-box::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 2px;
-  width: 4px;
-  height: 7px;
-  border: solid var(--cyan);
-  border-width: 0 1px 1px 0;
-  transform: rotate(45deg) scale(.6);
-  opacity: 0;
-  transition: opacity .16s ease, transform .16s ease;
-}
-.preorder-privacy-input:checked + .preorder-privacy-box {
-  border-color: var(--cyan);
-  background: rgba(0,200,200,.08);
-  box-shadow: 0 0 10px rgba(0,200,200,.10);
-}
-.preorder-privacy-input:checked + .preorder-privacy-box::after {
-  opacity: 1;
-  transform: rotate(45deg) scale(1);
-}
 .preorder-privacy.is-error .preorder-privacy-box {
   border-color: var(--red2);
   box-shadow: 0 0 10px rgba(192,40,40,.18);
@@ -17869,7 +17734,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
               <div class="cond-dlg-consent" id="condDlgConsent">
                 <label class="preorder-privacy" id="preorderConsentWrap" for="preorderConsent">
                   <input type="checkbox" id="preorderConsent" class="preorder-privacy-input" onchange="validatePreorderField('consent')">
-                  <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
+                  <span class="preorder-privacy-box" aria-hidden="true"><svg class="cb-mark" viewBox="-6.5 -6.5 37 37" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
                   <span class="preorder-privacy-text">Согласен на обработку
                     <button type="button" class="preorder-privacy-link" onclick="event.preventDefault();openPrivacyModal();">персональных данных</button>.
                   </span>
@@ -32096,7 +31961,7 @@ function _spinEchoAuraDrum(onDone){
 
         <label class="chk-consent return-chk-consent" for="returnConsent">
           <input type="checkbox" id="returnConsent" class="chk-consent-input" required>
-          <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
+          <span class="chk-consent-box" aria-hidden="true"><svg class="cb-mark" viewBox="-6.5 -6.5 37 37" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
           <span class="chk-consent-text return-consent-text">
             <span class="return-consent-title">Подтверждаю отправку заявки<span class="req-star">*</span></span>
             <span class="return-consent-sub">Я понимаю, что заявка будет рассмотрена по условиям публичной оферты и законодательства РФ. Также подтверждаю согласие на обработку персональных данных в рамках обработки заявки.</span>
@@ -39609,111 +39474,121 @@ footer {
 }
 #chkBody .attr-pay-btn:active{ transform: scale(.985); }
 
-/* ── ЧЕК-БОКСЫ ─────────────────────────────────────────────────────
-   Были кружки 16px с точкой внутри — язык прошлого сайта. Стали плитки
-   языка «Линза» со знаком наведения.
-   Знак — i-locate-fixed из набора Lucide, он уже лежит в спрайте проекта:
-   перекрестие с точкой в центре. Читается как «наведено и зафиксировано»,
-   а не как канцелярская галочка. Свой глиф рисовать нельзя — он выпадет из
-   набора по толщине штриха и сетке. */
+/* ══ ЧЕК-БОКСЫ · ОДНО ОПРЕДЕЛЕНИЕ НА ВЕСЬ САЙТ ═══════════════════════
+   Написано заново вместо пяти слоёв, воевавших между собой через
+   !important: кружок 16px с точкой (чекаут), кружок 18px («Прозвучать»),
+   квадратик 15px с галочкой (Конденсация) и два слоя-перекрытия поверх.
+   Знак при этом целый день «съезжал» на телефоне, и починить это по
+   одному правилу не выходило — чинилось одно, оставались остальные.
+
+   ГЛАВНОЕ ЗДЕСЬ: центрировать больше НЕЧЕГО.
+
+   Раньше знак был отдельной коробкой 13×13 внутри коробки 22×22, и его
+   приходилось ставить по центру — то сеткой, то процентным transform, то
+   полями margin:auto. Каждый способ по-своему зависит от движка, и
+   расхождения ловились только на устройстве.
+
+   Теперь знак ЗАПОЛНЯЕТ коробку целиком (width/height 100%), а размер и
+   положение крестика заданы внутри viewBox: линии Lucide X идут 6→18 при
+   поле обзора -6.5…30.5, то есть центр рисунка (12) совпадает с центром
+   поля обзора (12) по построению. Поле обзора квадратное, окно тоже —
+   значит масштаб по обеим осям один и смещения нет вовсе.
+   Ни отступов, ни процентов, ни transform, ни <use>: съезжать нечему.
+
+   Визуальный размер сохранён прежний: чернила занимают 14.4 единицы из
+   37, то есть 38.9% от 20px = 7.8px — ровно как было у знака 13px внутри
+   viewBox 24. Толщина штриха тоже: 2.4 × 20/37 = 1.30px.
+
+   Кольца фокуса на касании нет: на iOS тап по метке ставит фокус на
+   скрытый input, Safari нередко считает такой фокус «видимым», и кольцо
+   вспыхивало ровно в момент нажатия. Оставлено только для мыши и
+   клавиатуры — pointer:fine. */
+
+/* Строка: колонка под коробку, текст рядом, всё по центру строки. */
+.chk-consent,
+.preorder-privacy{
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 11px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Настоящий input убран с глаз, но остаётся в потоке и доступен с
+   клавиатуры. Не display:none и не visibility:hidden — иначе он выпадает
+   из последовательности обхода и перестаёт переключаться по пробелу. */
+.chk-consent-input,
+.echo-reveal-toggle input,
+.preorder-privacy-input{
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: 0; padding: 0; border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* Коробка. box-sizing: border-box стоит глобально, поэтому 22px — это
+   вместе с рамкой, а внутреннее поле ровно 20×20. */
 .chk-consent-box,
 .echo-reveal-check,
 .preorder-privacy-box{
+  display: block;
   position: relative;
-  flex-shrink: 0;
-  width: 22px !important;
-  height: 22px !important;
-  margin-top: 0 !important;
-  display: grid;
-  place-items: center;
-  border-radius: 7px !important;
-  background: rgba(255,255,255,.05) !important;
-  border: 1px solid rgba(255,255,255,.16) !important;
+  flex-shrink: 0;          /* «Прозвучать» лежит во flex-строке */
+  width: 22px; height: 22px;
+  margin: 0;
+  border-radius: 7px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.16);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-  transition: background .25s var(--ease-out), border-color .25s var(--ease-out),
-              box-shadow .3s var(--ease-out);
+  transition: background .22s var(--ease-out),
+              border-color .22s var(--ease-out);
 }
-/* Точка прежнего оформления больше не нужна — её место занял знак. */
-.chk-consent-box::after,
-.echo-reveal-check::after,
-.preorder-privacy-box::after{ display: none !important; }
-
-/* Знак ПРИБИТ к центру коробки и только проявляется.
-   Две прошлые попытки чинили это полумерами: сначала убрал масштаб .7→1,
-   потом добавил viewBox. В Chromium замер каждый раз показывал ноль
-   смещения, а на телефоне знак продолжал ехать — значит виновата была не
-   анимация, а сама раскладка: знак стоял элементом сетки, и его положение
-   зависело от того, как движок посчитает размер SVG до первой отрисовки.
-   Safari считает это иначе, чем Chromium, отсюда и расхождение.
-
-   Третья попытка — абсолютное позиционирование через top/left 50% и
-   translate(-50%,-50%) — в Chromium давала ровный ноль, а на телефоне знак
-   всё равно ехал.
-
-   ЧЕСТНО О ПРИЧИНЕ: она не установлена. Дефект не воспроизводится ни в
-   Chromium, ни в headless WebKit из Playwright — контрольный прогон
-   заведомо сломанной версии (tools/webkit.mjs, PAGE=<файл>) показал ноль
-   смещения и там. Значит любое объяснение осталось бы догадкой.
-
-   Поэтому подход другой: не искать причину гаданием, а убрать сами
-   конструкции, чьё поведение зависит от движка. Их было две — процентная
-   доля в transform на КОРНЕВОМ <svg> (проценты и transform в SVG движки
-   разрешают по-разному) и лишний пересчёт координат через <use>.
-
-   Здесь центрирование без процентов и без transform вообще: растянуть по
-   всем четырём сторонам и отдать остаток полям. Ширина и высота заданы
-   жёстко, поэтому margin:auto делит свободное место поровну — результат
-   одинаков в любом движке, разрешать нечего.
-   Меняется ТОЛЬКО прозрачность. Любой transform в правилах знака вернёт
-   расхождение — это уже третий раз, когда оно приходит именно оттуда.
-
-   Заодно убран <use href="#i-x">: между знаком и экраном стоял ещё один
-   пересчёт координат — символ спрайта со СВОИМ viewBox, вложенный в
-   viewBox самого знака. Это второе место, где движки расходятся, и
-   проверить его на настольном браузере тоже нельзя: в Chromium и в
-   headless WebKit смещение ноль в обоих вариантах. Геометрия иконки
-   (та же Lucide X из спрайта проекта, линии 6→18) вписана напрямую —
-   пересчёт остался ровно один, вместе с viewBox самого знака. */
+/* Знак. Никаких размеров и отступов — он просто занимает всё поле. */
 .cb-mark{
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 13px; height: 13px;
+  display: block;
+  width: 100%; height: 100%;
   color: var(--ink);
   fill: none;
   stroke: currentColor;
   stroke-width: 2.4;
   stroke-linecap: round;
+  stroke-linejoin: round;
   opacity: 0;
-  transition: opacity .18s var(--ease-out);
+  transition: opacity .16s linear;
   pointer-events: none;
 }
+input:checked + .chk-consent-box,
+input:checked + .echo-reveal-check,
+input:checked + .preorder-privacy-box{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.34);
+}
+input:checked + .chk-consent-box .cb-mark,
+input:checked + .echo-reveal-check .cb-mark,
+input:checked + .preorder-privacy-box .cb-mark{ opacity: 1; }
 
-/* Отметка простая и понятная: крестик появляется, коробка чуть светлеет.
-   Циановое свечение и пульс-кольцо убраны — они остались от прежнего
-   варианта и перетягивали внимание на служебную галочку. */
-.chk-consent-input:checked + .chk-consent-box,
-.preorder-privacy-input:checked + .preorder-privacy-box,
-.echo-reveal-toggle input:checked + .echo-reveal-check{
-  background: rgba(255,255,255,.10) !important;
-  border-color: rgba(255,255,255,.34) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12) !important;
-  animation: none !important;
+/* Сектор Тишины — та же коробка, красный акцент раздела. */
+#returnModal .return-chk-consent input:checked + .chk-consent-box{
+  border-color: rgba(230,90,90,.5);
+  background: rgba(192,40,40,.12);
 }
-/* ТОЛЬКО прозрачность. Здесь оставался transform:scale(1) от прежнего
-   варианта со «всплытием» знака — и он затирал центрирующий
-   translate(-50%,-50%), из-за чего в момент отметки знак прыгал ровно на
-   половину своего размера (замерено: 6.5px по обеим осям при ширине 13px).
-   Это и был тот самый съезд. Любой transform в этом правиле вернёт его. */
-.chk-consent-input:checked + .chk-consent-box .cb-mark,
-.preorder-privacy-input:checked + .preorder-privacy-box .cb-mark,
-.echo-reveal-toggle input:checked + .echo-reveal-check .cb-mark{
-  opacity: 1;
-}
-@media (hover:hover) and (pointer:fine){
+#returnModal .return-chk-consent .cb-mark{ color: #ffb9b9; }
+
+@media (hover: hover) and (pointer: fine){
   .chk-consent:hover .chk-consent-box,
-  .echo-reveal-toggle:hover .echo-reveal-check{
-    border-color: rgba(255,255,255,.28) !important;
+  .echo-reveal-toggle:hover .echo-reveal-check,
+  .preorder-privacy:hover .preorder-privacy-box{
+    border-color: rgba(255,255,255,.28);
+  }
+  .chk-consent-input:focus-visible + .chk-consent-box,
+  .echo-reveal-toggle input:focus-visible + .echo-reveal-check,
+  .preorder-privacy-input:focus-visible + .preorder-privacy-box{
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
 }
 
