@@ -301,7 +301,7 @@ html.ew-first-boot-ready #ewFirstBoot{
      отдельный сигнал «DOM готов, а шрифтов всё ещё нет». */
   var PROBE_BUDGET = 300;          /* пока про кеш ничего не известно */
   var PROBE_BUDGET_CACHED = 900;   /* css шрифтов пришёл из кеша — даём дозагрузиться */
-  var CRITICAL_FONTS = ['700 16px "Exo 2"', '400 16px "Overpass"', '400 16px "IBM Plex Mono"'];
+  var CRITICAL_FONTS = ['600 16px "Oswald"', '400 16px "Overpass"', '400 16px "IBM Plex Mono"'];
   var probeInfo = { supported: false, css: null, facesMs: -1, fontsMs: -1, cold: null, why: '', totalMs: -1 };
   function fontsRegistered(){
     try{ return !!(document.fonts && document.fonts.size > 0); }catch(_){ return false; }
@@ -810,10 +810,10 @@ html.ew-first-boot-ready #ewFirstBoot{
 <link rel="dns-prefetch" href="https://yastatic.net">
 
 <!-- Шрифты — display:swap уже в URL, защита от FOUT.
-     Exo 2 — заголовки (технологичный гротеск, техно-характер);
+     Oswald — заголовки (узкий строгий гротеск, вариант 05 подборки);
      Overpass — основной текст (читаемый «инфраструктурный» гротеск);
      IBM Plex Mono — системные лейблы (GHZ, ART, //). Все с кириллицей. -->
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700;800&family=Overpass:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Overpass:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
 
 <!-- Безопасность: CSP ограничивает источники скриптов и стилей.
      'unsafe-inline' для script и style необходим — много inline-стилей. -->
@@ -937,10 +937,10 @@ html.ew-first-boot-ready #ewFirstBoot{
   --block-gap:   clamp(20px, 2.5vw, 32px);  /* блок → блок внутри секции */
 
   /* ── ТИПОГРАФИКА ──
-     display — Exo 2: заголовки, технологичный гротеск (техно-характер);
+     display — Oswald: заголовки, узкий строгий гротеск (вариант 05);
      body    — Overpass: основной читаемый «инфраструктурный» гротеск;
      mono/code — IBM Plex Mono: системные лейблы (GHZ, ART, //). */
-  --font-display: 'Exo 2', system-ui, sans-serif;
+  --font-display: 'Oswald', system-ui, sans-serif;
   --font-mono:    'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
   --font-body:    'Overpass', system-ui, sans-serif;
   --font-code:    'IBM Plex Mono', monospace;
@@ -1946,9 +1946,9 @@ header.scrolled {
 
 .hero-title {
   font-family: var(--font-display);
-  /* Exo 2 — технологичный гротеск обычного регистра; вес 700 держит
-     заголовок сильным, но не «кричащим». */
-  font-weight: 700;
+  /* Oswald — узкий строгий гротеск (вариант 05 подборки). Вес 600: у
+     этого шрифта 600 уже звучит плотно, 700 на крупном кегле кричит. */
+  font-weight: 600;
   font-size: clamp(32px, 3.9vw, 54px);
   line-height: 1.05;
   letter-spacing: -0.012em;
@@ -1956,7 +1956,9 @@ header.scrolled {
   margin-bottom: 24px;
 }
 .hero-title-line { display: inline-block; white-space: nowrap; }
-.hero-title .dim { color: var(--white-dim); font-weight: 400; }
+/* Приглушённое слово — вес 500 по варианту 05. У Oswald 400 слишком
+   лёгок рядом с 600 и рвёт строку на два разных заголовка. */
+.hero-title .dim { color: var(--white-dim); font-weight: 500; }
 .hero-title .accent { color: var(--red2); }
 .hero-dash {
   display: inline-block;
@@ -2519,7 +2521,9 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   top: 50%;
   transform: translateY(-50%) rotate(90deg);
   font-family: var(--font-display);
-  font-weight: 800;
+  /* У Oswald нет начертания 800: браузер подделал бы жирность, а это ровно
+     тот «битый шрифт», с которым разбирались. Максимум у него 700. */
+  font-weight: 700;
   font-size: 100px;
   color: rgba(255,255,255,0.015);
   letter-spacing: 0.1em;
@@ -4958,7 +4962,7 @@ body.scroll-restoring .cart-overlay.cart-closing { animation-play-state: running
   text-transform: uppercase; color: var(--cyan); margin-bottom: 7px;
 }
 .cart-title {
-  font-family: var(--font-display); font-weight: 800;
+  font-family: var(--font-display); font-weight: 700;
   font-size: 26px; letter-spacing: -0.02em; color: var(--white); line-height: 1; margin: 0;
 }
 .cart-close { background: var(--surface2); border: 1px solid var(--border2); font-family: var(--font-code); font-size: 14px; color: var(--white-dim); cursor: pointer; padding: 0; transition: all .2s; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -5017,7 +5021,7 @@ body.scroll-restoring .cart-overlay.cart-closing { animation-play-state: running
   letter-spacing: 0.02em; color: #626276; margin-bottom: 16px; line-height: 1;
 }
 .cart-empty-h {
-  font-family: var(--font-display); font-weight: 800; font-size: 24px;
+  font-family: var(--font-display); font-weight: 700; font-size: 24px;
   letter-spacing: -0.02em; color: var(--white); margin-bottom: 12px; line-height: 1.1;
 }
 .cart-empty-p {
@@ -5971,7 +5975,7 @@ select:-webkit-autofill {
   content: 'ARCHITECT';
   position: absolute; right: -10px; top: 50%;
   transform: translateY(-50%) rotate(90deg);
-  font-family: var(--font-display); font-weight: 800;
+  font-family: var(--font-display); font-weight: 700;
   font-size: 80px; color: rgba(255,255,255,0.012);
   letter-spacing: 0.1em; pointer-events: none; white-space: nowrap;
 }
@@ -5994,7 +5998,7 @@ select:-webkit-autofill {
   text-transform: uppercase; margin-bottom: 12px;
 }
 .architect-name {
-  font-family: var(--font-display); font-weight: 800;
+  font-family: var(--font-display); font-weight: 700;
   font-size: 48px; color: var(--white); line-height: 1;
   letter-spacing: -0.02em; margin-bottom: 20px;
 }
@@ -7295,7 +7299,7 @@ html.legal-modal-open .cookie-banner.show {
 }
 .aw-title {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: clamp(34px, 4.4vw, 56px);
   line-height: 1.02;
   letter-spacing: -0.02em;
@@ -10542,7 +10546,7 @@ input, select, textarea {
 }
 .echo-title {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   /* 40px max / 3vw — «MARKETSPACE» помещается в половину контейнера на всех
      десктоп-ширинах (961→1440+), чтобы левая колонка не распирала сетку. */
   font-size: clamp(28px, 3vw, 40px);
@@ -12003,6 +12007,15 @@ input, select, textarea {
   background: var(--red-hi);
 }
 
+/* ── НИКАКОЙ ПОДДЕЛЬНОЙ ЖИРНОСТИ ──────────────────────────────────
+   Ни один подключённый шрифт не имеет начертания 800: ни Oswald (макс.
+   700), ни Overpass (700), ни IBM Plex Mono (600). Все девять мест, где
+   в файле стояло 800, браузер рисовал синтетикой — растягивал контуры.
+   Это и читается как «битые буквы». Веса приведены к настоящим, а это
+   правило запрещает подделку и на будущее: недостающее начертание
+   отрисуется ближайшим реальным, а не искусственным. */
+*, *::before, *::after { font-synthesis-weight: none; }
+
 /* ── Глобальная фокус-обводка (доступность: только клавиатура) ──
    Была КРАСНОЙ. По паспорту «Линзы» красный означает тревогу и запрет,
    а фокус — это «сюда попал ввод», роль цианового. На поле ввода красное
@@ -13063,7 +13076,7 @@ button, a, [role="button"], label,
   font-family: var(--font-display);
   font-size: 24px;
   line-height: 1.1;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--white);
 }
 .ap-gate-level,
@@ -13218,7 +13231,7 @@ button, a, [role="button"], label,
   font-size: 30px;
   line-height: 1.08;
   color: var(--white);
-  font-weight: 800;
+  font-weight: 700;
 }
 .ap-status-text {
   max-width: 680px;
@@ -15230,7 +15243,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel {
    Классы и стили как в v2 (.hdr-logo/.hdr-nav/.hdr-cart/.hdr-burger).
    Капсула v2 (.hdr) наложена на .header-inner — так сохраняется встроенная
    механика <header> (sticky/скролл/_blurW/отступ контента). Шрифты/токены —
-   финальные боевые (Exo 2 / Overpass / IBM Plex Mono). */
+   финальные боевые (Oswald / Overpass / IBM Plex Mono). */
 header {
   background: transparent;
   background-image: none;
@@ -40078,7 +40091,7 @@ input:checked + .preorder-privacy-box .cb-mark{ opacity: 1; }
      ───────────────────────────────────────────────────────────────
      ЧТО ЛОМАЛОСЬ. Заголовки читались как «кривые буквы с плавающими
      линиями». Диагностика на живом сайте сняла две ходовые версии:
-     кириллица берётся из самого Exo 2, а не из запасного шрифта
+     кириллица бралась из самого шрифта заголовков, а не из запасного
      (ширины 475.9 против 472.9 — подмены нет), и вес 700 приходит
      настоящим, подделки жирности нет.
 
@@ -40101,7 +40114,10 @@ h1, h2, h3,
    .architect-name сюда НЕ входит: там «@aintonx», чистая латиница, и
    сжатие на ней работает как задумано. */
 .aw-title, .about-title {
-  letter-spacing: normal;
+  /* Вариант 05 подборки: у Oswald трекинг +0.005em. Узкий гротеск на
+     кириллице ставит буквы плотно сам, и сжимать его нечем — прежний
+     минус здесь был бы вдвойне лишним. */
+  letter-spacing: 0.005em;
 }
 </style>
 <!-- ═══════════════════════════════════════════════════════════════
@@ -40855,7 +40871,7 @@ h1, h2, h3,
   position:relative; width:74px; height:74px; border-radius:50%;
   display:grid; place-items:center; cursor:pointer;
   background:rgba(192,40,40,.09); border:1px solid rgba(230,69,69,.42);
-  color:var(--red-hi); font-family:var(--font-display); font-weight:800; font-size:30px;
+  color:var(--red-hi); font-family:var(--font-display); font-weight: 700; font-size:30px;
   transition:background .25s var(--ease-out), border-color .25s var(--ease-out), transform .15s;
 }
 .arch-seal-x:active{ transform:scale(.97); }
