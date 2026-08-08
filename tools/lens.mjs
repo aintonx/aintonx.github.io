@@ -107,7 +107,13 @@ const ПРОВЕРКИ = () => {
                    (s.webkitBackdropFilter && s.webkitBackdropFilter !== 'none');
     if (!стекло || !виден(el)) return;
     const п = s.transitionProperty || '';
-    if (/\bfilter\b|\bbackdrop-filter\b|\ball\b/.test(п)) {
+    /* Нулевая длительность — это значение по умолчанию (`all 0s`), а не
+       чья-то правка: на таком элементе не анимируется вообще ничего.
+       Без этой проверки ревизор ругался на каждую стеклянную панель без
+       переходов, а ревизор, который врёт, хуже отсутствующего. */
+    const идёт = (s.transitionDuration || '')
+      .split(',').some((д) => parseFloat(д) > 0);
+    if (идёт && /\bfilter\b|\bbackdrop-filter\b|\ball\b/.test(п)) {
       из.push({ вид: 'дорогое свойство на стекле', тяжесть: 'важно',
         где: имя(el), что: 'transition: ' + п.slice(0, 60) });
     }
