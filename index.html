@@ -17474,12 +17474,19 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
              ниже скрытыми: путь отправки не тронут. -->
         <div class="glass cond-glass" id="condScreen">
           <div class="g-head">
-            <span class="g-chip"><span class="g-dot w" id="condBarcode"></span>APERTURA</span>
+            <span class="g-chip"><span class="g-dot w" id="condBarcode"></span>APERTURA-CHAT</span>
             <span class="g-aux" id="condPanelState">НА СВЯЗИ</span>
           </div>
 
           <div class="cnv" id="condCanvas">
-            <div class="cnv-log" id="condConsole" role="log" aria-live="polite"></div>
+            <!-- Рамка вокруг ленты. Она нужна не для красоты: когда переписка
+                 заполняется, палец листает ЧАТ, а не страницу, и человек
+                 должен видеть, где кончается одна поверхность и начинается
+                 другая. Рамка держит границу и обрезку, лента внутри
+                 растворяет содержимое у краёв. -->
+            <div class="cnv-frame">
+              <div class="cnv-log" id="condConsole" role="log" aria-live="polite"></div>
+            </div>
 
             <!-- Подвал переписки: одна коробка постоянной высоты. Внутри
                  меняется содержимое — ввод или подтверждение, — но сама
@@ -17496,6 +17503,13 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 
               <div class="cnv-bar cnv-bar-ok" id="condDlgConsent">
                 <button type="button" class="cnv-go" id="preorderBtn" onclick="submitPreorder()">Отправить сигнал</button>
+              </div>
+
+              <!-- После отправки подвал не пустеет: на месте строки ввода
+                   встаёт спокойная кнопка нового сигнала. Иначе внизу
+                   оставалась дыра высотой в строку. -->
+              <div class="cnv-bar cnv-bar-again" id="condDlgAgain">
+                <button type="button" class="cnv-go cnv-go-quiet" id="condDlgAgainBtn">Новый сигнал</button>
               </div>
             </div>
           </div>
@@ -40109,27 +40123,47 @@ h1, h2, h3,
   /* Поля были у .g-body, которого в новой разметке нет: без них реплики
      упирались в кромку панели. */
   padding: 14px 18px 16px;
-  height: clamp(420px, 70vh, 620px);
+  /* Ниже, чем было (70vh / 620). На телефоне раздел листается вбок, и оба
+     экрана всегда одной высоты — по самому высокому. Чат был выше текста
+     слева, поэтому в текстовом экране между абзацем и кнопкой зияла
+     пустота. Теперь высоту задаёт текст, а чат в неё умещается. */
+  height: clamp(380px, 60vh, 520px);
   min-height: 0;
   position: relative;
   z-index: 1;
 }
 /* Лента прокручивается внутри себя. min-height:0 обязателен: без него
    флекс-ребёнок не даёт себя сжать и вместо прокрутки растёт наружу. */
+/* Рамка переписки. Границу видно — значит понятно, что внутри своя
+   прокрутка: палец листает чат, а не страницу. Обрезка и скругление на
+   рамке, растворение краёв на самой ленте: если положить маску на рамку,
+   она размыла бы и её собственную кромку. */
+.cond-glass .cnv-frame{
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  border-radius: 15px;
+  background: rgba(4,4,5,.3);
+  border: 1px solid rgba(255,255,255,.07);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  overflow: hidden;
+}
 .cond-glass .cnv-log{
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
   scrollbar-width: none;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 4px 2px 14px;
-  /* Верхняя кромка растворяется — реплики уезжают в туман, а не режутся. */
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 22px);
-  mask-image: linear-gradient(180deg, transparent, #000 22px);
+  padding: 14px 13px 14px;
+  /* Растворение у ОБОИХ краёв: содержимое уходит в туман, а не режется
+     кромкой — так видно, что лента продолжается за границей. */
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 18px, #000 calc(100% - 14px), transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 18px, #000 calc(100% - 14px), transparent);
 }
 .cond-glass .cnv-log::-webkit-scrollbar{ display: none; }
 /* Переписка начинается снизу, как в любом мессенджере: пока реплик мало,
@@ -40148,9 +40182,17 @@ h1, h2, h3,
   font-size: 12.5px;
   line-height: 1.5;
   border-radius: 15px;
-  animation: cnvIn .34s cubic-bezier(.4,0,.2,1) both;
+  /* Реплика не возникает, а всплывает: чуть дольше и с лёгким набором
+     масштаба — так читается как «пришло», а не «подставилось». */
+  animation: cnvIn .46s cubic-bezier(.22,.61,.36,1) both;
 }
-@keyframes cnvIn{ from{ opacity: 0; transform: translateY(8px); } to{ opacity: 1; transform: none; } }
+@keyframes cnvIn{
+  from{ opacity: 0; transform: translateY(10px) scale(.985); }
+  to{ opacity: 1; transform: none; }
+}
+/* Замена точек «печатает» на готовый текст — перетеканием, а не подменой. */
+.cond-glass .msg-swap{ animation: cnvSwap .34s cubic-bezier(.4,0,.2,1) both; }
+@keyframes cnvSwap{ from{ opacity: .25; } to{ opacity: 1; } }
 .cond-glass .msg-ap{
   align-self: flex-start;
   color: var(--ink-2);
@@ -40345,6 +40387,13 @@ h1, h2, h3,
   transition: background .2s, opacity .25s;
 }
 .cond-glass .cnv-go:disabled{ opacity: .35; cursor: default; }
+/* Кнопка нового сигнала — тихая: разговор уже состоялся, звать в него
+   повторно тёплым главным действием незачем. */
+.cond-glass .cnv-go-quiet{
+  color: var(--ink-2);
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.13);
+}
 
 @media (prefers-reduced-motion: reduce){
   .cond-glass .msg{ animation: none; }
@@ -40372,6 +40421,76 @@ h1, h2, h3,
 .cond-real-fields{ position:absolute; width:1px; height:1px; overflow:hidden;
   clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; }
 </style>
+<script id="ew-cond-fit-js">
+(function(){
+  'use strict';
+  /* ══ ЧАТ ПОДГОНЯЕТСЯ ПОД СОСЕДНИЙ ЭКРАН ══════════════════════════════
+     На телефоне раздел листается вбок, и оба экрана всегда одной высоты —
+     по самому высокому. Если чат выше текста, в текстовом экране между
+     абзацем и кнопкой зияет пустота; если ниже — пустота под чатом.
+
+     Высоту чата фиксированным числом не поймать: слева текст переносится
+     по-разному на каждой ширине. Поэтому она считается по ФАКТУ. Кнопка в
+     текстовом экране прижата к низу через margin-top:auto, и браузер сам
+     кладёт в этот отступ весь излишек — остаётся вычесть его из высоты
+     чата. Связь один к одному, одного прохода достаточно.
+
+     Пределы оставлены: на очень длинном тексте чат не должен вырастать до
+     неудобного, на коротком — схлопываться. */
+  var БАЗА = 22;               /* собственный отступ кнопки из стилей */
+  var МИН = 360, МАКС = 560;
+
+  function подогнать(){
+    var окно = document.querySelector('#condScreen .cnv');
+    var кн   = document.querySelector('#preorderSection .pre-pane-cta');
+    if(!окно) return;
+    /* Выше 960 экраны стоят рядом, подгонять нечего. */
+    if(!кн || !window.matchMedia('(max-width: 960px)').matches){
+      окно.style.removeProperty('height');
+      return;
+    }
+    var излишек = (parseFloat(getComputedStyle(кн).marginTop) || 0) - БАЗА;
+    if(Math.abs(излишек) < 2) return;
+    var текущая = окно.getBoundingClientRect().height;
+    var новая = Math.max(МИН, Math.min(МАКС, Math.round(текущая - излишек)));
+    if(Math.abs(новая - текущая) < 2) return;
+    окно.style.height = новая + 'px';
+    /* Второй проход: смена высоты чата меняет и высоту экрана, поэтому
+       остаток излишка виден только на следующем кадре. Замер показывал,
+       что после одного прохода зазор садится со 106 до 42, а не до нуля.
+       Счётчик не даёт зациклиться, если раскладка почему-то не сходится. */
+    if(подогнать._шаг === undefined) подогнать._шаг = 0;
+    if(подогнать._шаг < 3){
+      подогнать._шаг++;
+      requestAnimationFrame(function(){ подогнать(); подогнать._шаг = 0; });
+    }
+  }
+
+  function связать(){
+    var ждём = false;
+    function позже(){
+      if(ждём) return;
+      ждём = true;
+      requestAnimationFrame(function(){ ждём = false; подогнать(); });
+    }
+    подогнать();
+    window.addEventListener('resize', позже, {passive:true});
+    if('ResizeObserver' in window){
+      var кол = document.getElementById('preorderDescCol');
+      if(кол) new ResizeObserver(позже).observe(кол);
+    }
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(позже);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', связать);
+  else связать();
+  window.inspectCondFit = function(){
+    var кн = document.querySelector('#preorderSection .pre-pane-cta');
+    var о = document.querySelector('#condScreen .cnv');
+    return { излишек: кн ? Math.round((parseFloat(getComputedStyle(кн).marginTop)||0) - 22) : null,
+             высотаЧата: о ? Math.round(о.getBoundingClientRect().height) : null };
+  };
+})();
+</script>
 <script id="ew-cond-dialog-js">
 (function(){
   'use strict';
@@ -40426,14 +40545,20 @@ h1, h2, h3,
 
     /* Лента всегда показывает последнее. Плавно, когда человек уже читает,
        и мгновенно на первой реплике, чтобы не было холостого проезда. */
-    /* Доводим ленту до низа МГНОВЕННО. Плавная прокрутка здесь вредна:
-       она успевает не доехать до появления следующей реплики, и последнее
-       сообщение остаётся наполовину за кромкой — замер показывал
-       прокрутку 30 там, где нужно 76. Само сообщение при этом приходит с
-       анимацией, так что рывка не видно. */
+    /* Лента доезжает вниз ПЛАВНО (scroll-behavior: smooth в стилях), но с
+       гарантией: мягкая прокрутка сама по себе успевает не доехать, если
+       следом приходит ещё одна реплика — замер показывал 30 там, где нужно
+       было 76. Поэтому через полсекунды положение дожимается насухо, уже
+       без анимации. Рывка не видно: к этому моменту лента и так на месте. */
     function вниз(){
       лента.scrollTop = лента.scrollHeight;
-      requestAnimationFrame(function(){ лента.scrollTop = лента.scrollHeight; });
+      clearTimeout(лента._добор);
+      лента._добор = setTimeout(function(){
+        var было = лента.style.scrollBehavior;
+        лента.style.scrollBehavior = 'auto';
+        лента.scrollTop = лента.scrollHeight;
+        лента.style.scrollBehavior = было;
+      }, 520);
     }
 
     function реплика(класс, текст){
@@ -40451,15 +40576,20 @@ h1, h2, h3,
       var э = реплика('msg-ap msg-typing');
       э.innerHTML = '<i></i><i></i><i></i>';
       return function(текст){
-        э.className = 'msg msg-ap';
+        /* Не подмена, а перетекание: точки гаснут, текст проявляется на
+           их месте. Класс cnvIn снимается — иначе реплика всплыла бы
+           второй раз, уже стоя на месте. */
+        э.className = 'msg msg-ap msg-swap';
         э.textContent = текст;
         вниз();
       };
     }
 
+    var зановоБар = document.getElementById('condDlgAgain');
     function полосу(какую){
       полоса.classList.toggle('is-on', какую === 'ввод');
       согл.classList.toggle('is-on', какую === 'согласие');
+      if(зановоБар) зановоБар.classList.toggle('is-on', какую === 'заново');
     }
 
     function спросить(){
@@ -40535,9 +40665,28 @@ h1, h2, h3,
     if(галка) галка.addEventListener('change', сверитьГалку);
     сверитьГалку();
 
+    /* Разговор начинается заново: лента чистится, поля обнуляются, полоса
+       ввода возвращается. Панель при этом не меняет высоту — она задана в
+       стилях и от содержимого не зависит. */
+    function заново(){
+      лента.innerHTML = '';
+      шаг = -1;
+      поле1.value = ''; поле2.value = '';
+      [поле1, поле2].forEach(function(п){
+        п.dispatchEvent(new Event('input', {bubbles:true}));
+        п.dispatchEvent(new Event('change', {bubbles:true}));
+      });
+      if(точка){ точка.classList.remove('c'); точка.classList.add('w'); }
+      if(статус) статус.textContent = 'НА СВЯЗИ';
+      полосу('ввод');
+      спросить();
+    }
+    var кнЗаново = document.getElementById('condDlgAgainBtn');
+    if(кнЗаново) кнЗаново.addEventListener('click', заново);
+
     /* Итог рисуется после успешной отправки — зовёт submitPreorder. */
     window._condDialogFinale = function(почта){
-      полосу('нет');
+      полосу('заново');
       var f = реплика('msg-final');
       f.innerHTML = '<div class="code"></div><h4>Сигнал принят</h4>' +
         '<p>Архитектор проверит, есть ли в MARKETSPACE поток, способный принять форму желаемого. Ответ придёт на <b></b>.</p>';
