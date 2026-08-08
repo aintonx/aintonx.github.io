@@ -301,7 +301,12 @@ html.ew-first-boot-ready #ewFirstBoot{
      отдельный сигнал «DOM готов, а шрифтов всё ещё нет». */
   var PROBE_BUDGET = 300;          /* пока про кеш ничего не известно */
   var PROBE_BUDGET_CACHED = 900;   /* css шрифтов пришёл из кеша — даём дозагрузиться */
-  var CRITICAL_FONTS = ['600 16px "Oswald"', '400 16px "Overpass"', '400 16px "IBM Plex Mono"'];
+  /* Ждём ВСЕ веса заголовочного шрифта, а не один. В строке героя рядом
+     стоят 600 («Каждая», «часть вселенной») и 500 («реликвия»); если ждать
+     только 600, второе слово приходит позже и строка перевёрстывается уже
+     после показа. 700 держит остальные заголовки сайта. */
+  var CRITICAL_FONTS = ['500 16px "Oswald"', '600 16px "Oswald"', '700 16px "Oswald"',
+                        '400 16px "Overpass"', '400 16px "IBM Plex Mono"'];
   var probeInfo = { supported: false, css: null, facesMs: -1, fontsMs: -1, cold: null, why: '', totalMs: -1 };
   function fontsRegistered(){
     try{ return !!(document.fonts && document.fonts.size > 0); }catch(_){ return false; }
@@ -813,7 +818,18 @@ html.ew-first-boot-ready #ewFirstBoot{
      Oswald — заголовки (узкий строгий гротеск, вариант 05 подборки);
      Overpass — основной текст (читаемый «инфраструктурный» гротеск);
      IBM Plex Mono — системные лейблы (GHZ, ART, //). Все с кириллицей. -->
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Overpass:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<!-- Заголовочный шрифт отдельной ссылкой и с display=optional.
+     ПОЧЕМУ ОТДЕЛЬНО. При swap браузер рисует заголовок запасным шрифтом и
+     подменяет его, когда придёт настоящий. Oswald узкий, запасной обычной
+     ширины — строка «Каждая реликвия — часть вселенной» перевёрстывалась
+     на глазах. Раньше это не бросалось в глаза: Exo 2 был обычной ширины
+     и подмена почти не двигала строку.
+     optional убирает подмену как явление: если шрифт не готов к первой
+     отрисовке, страница ВСЮ загрузку идёт на запасном и не перевёрстывается
+     вовсе. При тёплом кеше — а это почти всегда — заголовок сразу свой.
+     Текстовые шрифты остаются на swap: они той же ширины, прыжка не дают. -->
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=optional" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
 
 <!-- Безопасность: CSP ограничивает источники скриптов и стилей.
      'unsafe-inline' для script и style необходим — много inline-стилей. -->
