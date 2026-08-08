@@ -11943,13 +11943,13 @@ button, a, [role="button"], label,
 
 /* Крупные контейнеры */
 .pcard, .tech-card, .aw-card, .clink, .hero-terminal,
-.echo-section, .echo-in, .echo-left, .echo-right, .echo-form,
+.echo-in, .echo-left, .echo-right, .echo-form,
 .echo-radar-wrap, .echo-tab-stage, .echo-rules, .echo-voice, .echo-osc,
 .echocard, .mfields .mfield, .cart-item, .echo-conf, .legal-modal,
 .aw-canvas, .world-card, .collab-link, .donate, .donate-left, .donate-right,
-.arch-term, .arch-body, .architect-section, .donate-section, .faq-item, .notif,
+.arch-term, .arch-body, .faq-item, .notif,
 .faq-unlock-card, .echo-mode-toggle, .echo-channel,
-.attr-result-panel, .attr-drum-section, .chk-summary, .collab,
+.attr-result-panel, .attr-drum-section, .chk-summary,
 .cat-empty-state, .cat-expand, #preorderFormBlock,
 .preorder-grid > div, .preorder-card,
 .donate-payment, .donate-method-card,
@@ -12165,6 +12165,38 @@ button, a, [role="button"], label,
   word-break: normal;
   overflow-wrap: anywhere;
   hyphens: auto;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   РАЗДЕЛЫ — ПЛИТЫ ОДНОЙ ФОРМЫ
+   ──────────────────────────────────────────────────────────────────
+   На телефоне все разделы давно были одинаковыми карточками (правило
+   ниже). На широком экране такого правила не существовало, и форма
+   разделов сложилась случайно: .echo-section, .collab и
+   .architect-section попали в общую группу «крупные контейнеры» и
+   получили скругление, а .relic-section, .about, .apertura-worlds,
+   .faq-section, #preorderSection и .catwrap остались прямыми
+   прямоугольниками во всю ширину окна. Три плиты со скруглением и
+   шесть без — это и читалось дёшево.
+
+   Здесь та же карточка, что на телефоне, в десктопной мере.
+
+   Поля по бокам ровно 8px: при них внутренний контейнер раздела
+   остаётся ровно 1360px и содержимое не сдвигается ни на пиксель
+   (запас между 1440 и 1360 как раз 2×8 сверх полей раздела). Шире —
+   и все колонки сайта поехали бы.
+
+   overflow:hidden безопасен: sticky-узлов внутри разделов нет,
+   проверено обходом дерева. */
+@media (min-width: 721px){
+  .about, .tech-block, .apertura-worlds, .echo-section, .relic-section,
+  .collab, .architect-section, .faq-section,
+  #preorderSection, .catwrap {
+    margin: 12px 8px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
