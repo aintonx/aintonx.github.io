@@ -17431,7 +17431,7 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
 
 </style>
 <div id="preorderSection">
-  <div id="preorderGrid" style="max-width:1360px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;">
+  <div id="preorderGrid" style="max-width:1360px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;">
     <!-- Левая колонка: описание -->
     <div id="preorderDescCol">
       <div class="about-label" style="margin-bottom:16px;">Индивидуальный запрос</div>
@@ -28656,7 +28656,13 @@ async function submitPreorder(){
     el.style.zIndex=String(zIndex);
   }
 
-  if(formBlock && formHeight>0){
+  /* Хореография «форма растворяется в терминал» осталась от прежнего вида
+     секции. Терминала (#preorderTerminal) в разметке больше нет, а порча
+     оставалась: строке ввода вешался класс растворения, pointer-events:none
+     и инлайновое абсолютное позиционирование. После «Нового сигнала» полоса
+     возвращалась по классу, но инлайновые стили держали её мёртвой — поле
+     не появлялось. Играем это только когда терминал действительно есть. */
+  if(formBlock && terminal && formHeight>0){
     pinToFormSlot(formBlock, 2);
     formBlock.classList.add('cond-form-dissolve');
     formBlock.style.pointerEvents='none';
@@ -40234,8 +40240,15 @@ h1, h2, h3,
 .cond-glass .msg-typing i:nth-child(3){ animation-delay: .32s; }
 @keyframes cnvDot{ 0%,60%,100%{ opacity:.3; transform: translateY(0); } 30%{ opacity:1; transform: translateY(-3px); } }
 
-/* Карточка согласия в ленте: та же реплика Апертуры, но с отметкой. */
-.cond-glass .msg-agree{ max-width: 92%; padding: 12px 13px; }
+/* Согласие в ленте — БЕЗ пузыря. Оно не реплика Апертуры, а действие
+   человека, и рамка вокруг него читалась как лишняя белая коробка. */
+.cond-glass .msg-agree{
+  max-width: 100%;
+  align-self: stretch;
+  padding: 4px 2px;
+  background: none;
+  border: 0;
+}
 .cond-glass .msg-agree .cnv-agree{ margin: 0; }
 
 /* Итог переписки — карточка с кодом заявки. */
@@ -40362,8 +40375,13 @@ h1, h2, h3,
   color: var(--ink-3);
 }
 .cond-glass .cnv-link{
+  /* Это <button> ради доступности, но выглядеть он должен ссылкой:
+     чужие рамка, фон и поля от кнопки рисовали вокруг текста коробку. */
   font: inherit;
   color: var(--cyan-hi);
+  background: none;
+  border: 0;
+  padding: 0;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -40393,6 +40411,14 @@ h1, h2, h3,
   color: var(--ink-2);
   background: rgba(255,255,255,.05);
   border-color: rgba(255,255,255,.13);
+}
+
+/* На десктопе колонки стоят рядом, и высоту раздела задаёт чат: при 520px
+   под текстом слева оставалось 234px пустоты. Здесь окно ниже, а сама
+   колонка с текстом выровнена по центру — остаток распределяется сверху и
+   снизу и читается как центрирование, а не как дыра. */
+@media (min-width: 961px){
+  .cond-glass .cnv{ height: clamp(320px, 42vh, 430px); }
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -40669,6 +40695,11 @@ h1, h2, h3,
        ввода возвращается. Панель при этом не меняет высоту — она задана в
        стилях и от содержимого не зависит. */
     function заново(){
+      /* Страховка: если какой-то старый путь всё же оставил на полосе
+         инлайновые стили или класс растворения, снимаем их — иначе поле
+         вернётся по классу, но останется невидимым и неотзывчивым. */
+      полоса.classList.remove('cond-form-dissolve', 'is-vanishing');
+      полоса.removeAttribute('style');
       лента.innerHTML = '';
       шаг = -1;
       поле1.value = ''; поле2.value = '';
