@@ -28621,9 +28621,16 @@ async function submitPreorder(){
   // Сначала блокируем реальный внешний слот, затем его родителей, которые могут
   // пересчитать высоту страницы на мобильном свайпе. Так нижние секции не
   // получают ни одного кадра для подъёма наверх во время замены интерфейса.
-  const slotHeight=lockBoxHeight(activeSlot);
-  lockBoxHeight(activeTrack);
-  lockBoxHeight(activeSection);
+  /* Заморозка габаритов и слот-обёртка нужны были только на время замены
+     формы терминалом. Терминала в разметке нет, а последствия оставались:
+     слот получал overflow:hidden, и внешнее свечение панели обрезалось в
+     жёсткий квадрат — вокруг чата после отправки появлялась рамка.
+     Играем это только когда терминал действительно есть. */
+  const slotHeight=terminal?lockBoxHeight(activeSlot):0;
+  if(terminal){
+    lockBoxHeight(activeTrack);
+    lockBoxHeight(activeSection);
+  }
 
   // Фиксируем геометрию формы до любых display/opacity-изменений.
   // На время перехода форма и терминал становятся абсолютными слоями в одной
@@ -28635,7 +28642,7 @@ async function submitPreorder(){
   const formTop=(formRect&&slotRect)?Math.round(formRect.top-slotRect.top):0;
   const formLeft=(formRect&&slotRect)?Math.round(formRect.left-slotRect.left):0;
 
-  if(activeSlot){
+  if(activeSlot && terminal){
     activeSlot.classList.add('cond-transition-slot');
     if(getComputedStyle(activeSlot).position==='static'){
       activeSlot.style.position='relative';
@@ -40419,6 +40426,20 @@ h1, h2, h3,
    снизу и читается как центрирование, а не как дыра. */
 @media (min-width: 961px){
   .cond-glass .cnv{ height: clamp(320px, 42vh, 430px); }
+}
+
+/* ── ЧИП ВРОВЕНЬ С СОСЕДНЕЙ НАДПИСЬЮ ────────────────────────────────
+   На телефоне экраны листаются вбок, и глаз сравнивает их первые строки:
+   слева «// ИНДИВИДУАЛЬНЫЙ ЗАПРОС» стоит у верхней кромки, а справа чип
+   APERTURA-CHAT был ниже ровно на верхнее поле шапки панели (13px, выше
+   640 — 15px). Поднимаем панель на эту величину: внутренние поля шапки
+   остаются, чип встаёт на одну линию с меткой. На десктопе колонки стоят
+   рядом и там это уже совпадает. */
+@media (max-width: 960px){
+  .pre-swipe-pane > .cond-glass{ margin-top: -15px; }
+}
+@media (max-width: 640px){
+  .pre-swipe-pane > .cond-glass{ margin-top: -13px; }
 }
 
 @media (prefers-reduced-motion: reduce){
