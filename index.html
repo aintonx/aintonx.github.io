@@ -6121,14 +6121,7 @@ select:-webkit-autofill{
    как продолжение предыдущего: те же поля, тот же фон, та же верхняя
    линия. Верхняя граница снята — иначе на стыке с Архитектором рисуются
    две линии подряд. */
-.donate-section{
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: var(--sec-y) var(--gutter);
-  position: relative;
-  z-index: 2;
-  overflow: visible;
-}
+
 /* Стрелка в кнопке поддержки была красной — красный по паспорту только
    тревога и запрет. */
 #archDonate .pre-pane-cta .pre-pane-cta-arrow{ background: var(--warm-hi); }
@@ -6136,13 +6129,8 @@ select:-webkit-autofill{
   border-top-color: var(--warm-hi);
   border-right-color: var(--warm-hi);
 }
-.architect-label{
-  font-family: var(--font-code); font-size: 8px;
-  letter-spacing: 0.28em; color: var(--red2);
-  text-transform: uppercase; margin-bottom: var(--head-gap);
-  display: flex; align-items: center; gap: 10px;
-}
-.architect-label-pre{ color: var(--white-dim); }
+
+
 .architect-name{
   font-family: var(--font-display); font-weight: 700;
   font-size: 48px; color: var(--white); line-height: 1;
@@ -6216,37 +6204,13 @@ select:-webkit-autofill{
      начинается с одной вертикали и на компе, и на телефоне. */
 }
 .donate-left::before{ display: none; }
-.arch-donate-kicker{
-  display: flex; align-items: center; gap: 10px;
-  font-family: var(--font-code); font-size: 8px;
-  letter-spacing: 0.28em; color: var(--cyan);
-  text-transform: uppercase;
-}
-.arch-donate-kicker-dot{
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
-  animation: pulse 2.4s ease-in-out infinite;
-}
+
+
 /* Крупный sans-описание — заполняет левый блок воздухом без пустоты.
    Под капотом — clamp для плавной адаптации десктоп ↔ мобила. */
-.arch-donate-desc{
-  font-family: var(--font-sans);
-  font-size: 11px;
-  line-height: 1.9;
-  color: var(--white-mid);
-  letter-spacing: 0.03em;
-  margin: 6px 0 0;
-  max-width: 440px;
-}
-.arch-donate-desc strong{
-  color: var(--white);
-  font-weight: 400;
-}
-.arch-donate-desc em{
-  color: var(--cyan);
-  font-style: normal;
-  font-weight: 400;
-}
+
+
+
 /* ══ ИНТЕРФЕЙС ПОДДЕРЖКИ ═════════════════════════════════════════════
    Прежний вариант (красная консоль с радаром, сеткой-осциллографом,
    крупной антенной и кнопкой-строкой) удалён целиком — 269 строк.
@@ -17436,67 +17400,51 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
   </div>
 </section>
 
-<!-- ===== ARCHITECT ===== -->
-<section class="architect-section" id="architect">
-  <div class="architect-in">
-    <div class="architect-label"><span class="architect-label-pre">//</span>Архитектор вселенных</div>
-    <!-- ═══ ЗАПИСЬ ОБ АРХИТЕКТОРЕ ═══════════════════════════════════
-         Интерфейс-терминал убран. Осталась запись реестра, и она
-         собрана так, чтобы не выглядеть обрубком колонки: слева опознание
-         (артикул и имя), справа сам текст. На десктопе ряд занимает всю
-         ширину, на телефоне встаёт в столбик — одна раскладка на оба
-         случая, без отдельной мобильной версии.
-         Консоль Апертуры открывалась строкой терминала; чтобы не потерять
-         её вместе с ним, вход перенесён на имя. -->
-    <div class="arch-rec" id="architectBody">
-      <div class="arch-rec-id">
-        <h2 class="architect-name">
-          <button type="button" class="arch-rec-name" onclick="openArchitectConsoleGate(this)"
-                  aria-label="Архитектор @aintonx">@aintonx</button>
-        </h2>
-        <div class="arch-rec-des">DESIGNATION · <b>ARCHITECT</b> · УРОВЕНЬ X</div>
-      </div>
-      <p class="arch-rec-text">
-        Он построил <strong>Apertura</strong> — чтобы расслышать частоты, на которых рождаются миры.<br><br>
-        <strong>MARKETSPACE</strong> стал первым миром, чья частота прозвучала отчётливо. Остальные пока за шумом. Какие из них Архитектор откроет следующими — зависит от мощности антенны.
-      </p>
-    </div>
-  </div>
-</section>
+<!-- ===== АРХИТЕКТОР И ЕГО АНТЕННА ================================
+     Раньше это были два раздела подряд: запись об Архитекторе и поддержка
+     сигнала. Разделены они были только границей секций — а текст один и
+     тот же рассказ: запись кончается словами «зависит от мощности
+     антенны», поддержка ровно с этого начинается. Между двумя фразами
+     стояли 144px межсекционного воздуха, и обе колонки при этом были
+     «недокормлены»: запись 132px в разделе на 559, текст поддержки 163px
+     против панели в 483.
 
-<!-- ═══ УСИЛЕНИЕ СИГНАЛА · ОТДЕЛЬНЫЙ РАЗДЕЛ ═══════════════════════════
-     Донат жил ВНУТРИ секции Архитектора и держался на её интерфейсе: два
-     блока читались как одно целое. Интерфейс убран — и вложенность стала
-     бессмысленной, поэтому поддержка вынесена в собственный раздел. -->
-<section class="donate-section" id="donate">
+     Теперь раздел один. Слева весь рассказ, справа прибор, о котором он
+     идёт. Имя работает заголовком — метка «// Архитектор вселенных»
+     говорила то же самое и слабее. Метка «// УСИЛЕНИЕ СИГНАЛА АНТЕННЫ»
+     не удалена, а переехала внутрь текста: она отмечает место, где
+     рассказ поворачивает от Апертуры к антенне.
+
+     Ни одно слово не переписано. Абзацы собраны из тех же строк, просто
+     <br><br> заменены настоящими <p>.
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="architect-section" id="architect">
+  <!-- Якорь прежнего раздела поддержки: ссылки на #donate ведут сюда же. -->
+  <span id="donate" class="arch-anchor" aria-hidden="true"></span>
   <div class="architect-in">
-    <!-- ═══════════════════════════════════════════════════════════════
-         УСИЛЕНИЕ СИГНАЛА АНТЕННЫ — двухколонный блок:
-         слева kicker+desc, справа интерфейс с антенной (SVG + radar)
-         и кнопкой рублёвой поддержки (СБП-заглушка).
-         На мобиле через initDonateSwipe превращается в swipe-track
-         по подобию блока Архитектора (pane1 → текст+CTA, pane2 → интерфейс).
-         ═══════════════════════════════════════════════════════════ -->
     <div class="arch-donate" id="archDonate">
       <div class="donate-body" id="donateBody">
         <div class="donate-left" id="donateLeft">
-          <div class="arch-donate-kicker">
-            <div class="arch-donate-kicker-dot"></div>
-            <span>// УСИЛЕНИЕ СИГНАЛА АНТЕННЫ</span>
+          <h2 class="architect-name">
+            <button type="button" class="arch-rec-name" onclick="openArchitectConsoleGate(this)"
+                    aria-label="Архитектор @aintonx">@aintonx</button>
+          </h2>
+          <div class="arch-rec-des">DESIGNATION · <b>ARCHITECT</b> · УРОВЕНЬ X</div>
+
+          <div class="arch-story">
+            <p class="arch-lede">Он построил <strong>Apertura</strong> — чтобы расслышать частоты, на которых рождаются миры.</p>
+            <p><strong>MARKETSPACE</strong> стал первым миром, чья частота прозвучала отчётливо. Остальные пока за шумом. Какие из них Архитектор откроет следующими — зависит от мощности антенны.</p>
+            <p class="arch-turn">// УСИЛЕНИЕ СИГНАЛА АНТЕННЫ</p>
+            <p>Apertura уже слышит первые миры. Дальние — тонут в шуме: антенне не хватает <strong>мощности</strong>.</p>
+            <p>Каждый сигнал поддержки идёт в усиление: выше <strong>мощность передатчика</strong>, шире <strong>апертура</strong> приёма, ниже <strong>шумовой порог</strong>. Чем чище канал — тем дальше слышно. Тем больше миров Архитектор откроет следующими.</p>
           </div>
-          <p class="arch-donate-desc">
-            Apertura уже слышит первые миры. Дальние — тонут в шуме: антенне не хватает <strong>мощности</strong>.<br><br>
-            Каждый сигнал поддержки идёт в усиление: выше <strong>мощность передатчика</strong>, шире <strong>апертура</strong> приёма, ниже <strong>шумовой порог</strong>. Чем чище канал — тем дальше слышно. Тем больше миров Архитектор откроет следующими.
-          </p>
         </div>
+
         <!-- ═══ ИНТЕРФЕЙС ПОДДЕРЖКИ · перенос с эталона ══════════════
              design/lens-terminals.html → раздел «Поддержка · усиление
-             сигнала антенны». Разметка взята оттуда как есть: шапка с
-             чипом канала, тело с мачтой-передатчиком, шкалой мощности и
-             тремя строками состояния, действия и подвал.
-             Классы g-* — те же, что у эталона; на сайте они уже живут в
-             двух переносах (.echo-right и .cond-glass) и всегда заперты
-             контейнером. Здесь контейнер — .sup-glass. -->
+             сигнала антенны». Разметка взята оттуда как есть; классы g-*
+             заперты контейнером .sup-glass — так же, как те же классы
+             заперты в .echo-right и .cond-glass. -->
         <div class="donate-right sup-glass" id="donateRight" style="--sheen:12s">
           <div class="g-head">
             <span class="g-chip"><span class="g-dot w"></span>SIGNAL SUPPORT</span>
@@ -40657,63 +40605,60 @@ h1, h2, h3,
 }
 </style>
 <style id="ew-arch-record-css">
-/* ══ ЗАПИСЬ ОБ АРХИТЕКТОРЕ ═══════════════════════════════════════════
-   Интерфейс-терминал убран, вместе с ним ушла и «печать», которая его
-   заменяла. Осталась одна запись реестра.
+/* ══ АРХИТЕКТОР И ЕГО АНТЕННА ════════════════════════════════════════
+   Раздел собран из двух прежних. Слева весь рассказ, справа прибор.
 
-   ЧТО ИЗМЕНЕНО ПО ЗАМЕЧАНИЯМ. Разделительная линия между долями снята —
-   и на десктопе (вертикальная), и на телефоне (горизонтальная). Линия
-   решала техническую задачу: не дать двум колонкам развалиться. Но
-   разделять — это последнее, что нужно записи, которая должна читаться
-   как одно имя с пояснением. Вместо линии колонки держит выравнивание:
-   имя и первая строка текста стартуют с одной высоты, и глаз сам
-   достраивает связь.
+   ГЛАВНОЕ РЕШЕНИЕ — иерархия внутри текста, а не вокруг него. Четыре
+   абзаца одного кегля и одного тона читаются серой стеной, сколько
+   отступов между ними ни ставь. Поэтому первый абзац идёт лидом: ступень
+   кегля 16 → 14 и ступень тона ink-2 → white-mid. Метка раздела при этом
+   не нужна вовсе: её работу — объявить, о чём речь — делает сам лид,
+   голосом, а не ярлыком.
 
-   Артикул ART. ECH-0001 убран. Он занимал верхнюю ступень и отодвигал имя
-   от края — теперь имя стоит первым, ровно напротив текста.
+   ВТОРОЕ — имя работает заголовком. Прежняя метка «// Архитектор
+   вселенных» стояла над именем и говорила ровно то же, что имя под ней.
+   Два слоя шапки на один смысл.
 
-   Подписи собраны в одну связку: имя и строка обозначения идут вплотную
-   (одно целое, а не два блока), а воздух вынесен наружу — между связкой и
-   текстом. Дорогое впечатление даёт не украшение, а расстояния: крупное
-   имя, тихая подпись под ним и много пустоты вокруг. */
-.arch-rec{
+   ТРЕТЬЕ — панель по центру. Текста больше, чем прибора, и прижатая к
+   верху панель оставляла под собой пустоту. По центру эта разница
+   расходится на два поля и перестаёт читаться как незаполненное место. */
+
+/* Якорь прежнего раздела поддержки: ссылки на #donate ведут в этот же
+   раздел. Узел нулевой, из потока выведен. */
+.arch-anchor{ display: block; height: 0; }
+
+.donate-body{
   display: grid;
-  /* Доли и просвет — ровно те, что были до правок: текст справа обязан
-     стоять на прежнем месте (644px от края раздела при ширине 1440).
-     Убрана только линия; её место — те же 46px отступа у текста — оставлено
-     как чистое расстояние, поэтому колонка не сдвинулась ни на пиксель. */
-  grid-template-columns: minmax(220px, .78fr) minmax(0, 1.22fr);
-  gap: 46px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 640px;
+  gap: 72px;
+  align-items: center;   /* панель по центру рассказа */
 }
-/* Имя с обозначением — по центру относительно текста справа. Прижатая к
-   верху связка в 66px против текста в 132 выглядела оборванной: у правой
-   доли есть низ, у левой его не было. */
-.arch-rec-id{ min-width: 0; align-self: center; }
+/* Колонка была флекс-столбцом со своим gap, и он молча прибавлялся к
+   каждому заданному отступу: подпись отъезжала от имени на 36px вместо
+   14, рассказ от подписи на 52 вместо 30. Расстояния здесь задаются
+   правилами самих элементов, поэтому колонка — обычный блок. */
+.donate-left{ min-width: 0; display: block; gap: 0; }
 
-/* Имя — кнопка: консоль Апертуры открывалась строкой терминала, и вместе
+/* Имя — кнопка: консоль Апертуры открывалась строкой терминала и вместе
    с ним потеряла бы единственный вход. Внешне это по-прежнему заголовок. */
-.arch-rec .architect-name{
-  margin-bottom: 0;
-  font-size: clamp(40px, 3.6vw, 52px);
-  line-height: 1;
+.donate-left .architect-name{
+  margin: 0;
+  font-size: clamp(44px, 4vw, 60px);
+  /* Меньше единицы намеренно: у Oswald под глифами остаётся ещё 11px
+     метрического запаса, и при line-height:1 подпись отъезжала от имени
+     на 47px вместо заданных 14. Здесь коробка садится на сами буквы. */
+  line-height: .82;
 }
 .arch-rec-name{
-  font: inherit;
-  color: inherit;
-  letter-spacing: inherit;
-  background: none;
-  border: 0;
-  padding: 0;
+  font: inherit; color: inherit; letter-spacing: inherit;
+  background: none; border: 0; padding: 0;
   cursor: pointer;
   transition: color .25s var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine){
   .arch-rec-name:hover{ color: var(--red2); }
 }
-/* Подпись прижата к имени вплотную: 14px — это расстояние внутри связки,
-   а не между блоками. Раньше было 30 и подпись читалась отдельной строкой
-   неизвестно к чему. */
+/* Подпись прижата к имени вплотную: это расстояние внутри связки. */
 .arch-rec-des{
   margin-top: 14px;
   font-family: var(--font-mono);
@@ -40724,30 +40669,47 @@ h1, h2, h3,
   white-space: nowrap;
 }
 .arch-rec-des b{ color: var(--red2); font-weight: 600; }
-.arch-rec-text{
-  /* Рамки нет, отступ под неё остался: он и держал колонку на месте.
-     Без него текст переехал бы на 46px влево и прижался к левой доле. */
-  padding-left: 46px;
-  max-width: 68ch;
+
+/* ── РАССКАЗ ────────────────────────────────────────────────────────
+   Тот же наборный шрифт и тот же кегль, что в лидах остальных разделов. */
+.arch-story{
+  margin-top: 38px;
+  max-width: 62ch;
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.8;
   color: var(--white-mid);
 }
-.arch-rec-text strong{ color: var(--white); font-weight: 500; }
+.arch-story p{ margin: 0 0 22px; }
+.arch-story p:last-child{ margin-bottom: 0; }
+.arch-story strong{ color: var(--white); font-weight: 500; }
+.arch-lede{
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  margin-bottom: 26px !important;
+}
+/* Поворот рассказа к антенне. Это единственная метка на весь раздел, и
+   она стоит по делу — ровно там, где меняется предмет речи. Точки-пульса
+   у неё больше нет: мигающий огонёк посреди абзаца отвлекает от чтения. */
+.arch-turn{
+  margin: 34px 0 20px !important;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: .24em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+}
 
-/* Ниже 1100px левая доля перестаёт помещаться рядом с удобной строкой
-   текста — переходим в столбик заранее, а не когда станет тесно. */
 @media (max-width: 1100px){
-  .arch-rec{ grid-template-columns: 1fr; gap: 34px; }
-  /* В столбик отступ слева не нужен — он был расстоянием между колонками. */
-  .arch-rec-text{ padding-left: 0; max-width: 62ch; }
+  .donate-body{ grid-template-columns: 1fr; gap: 34px; }
+  .arch-story{ max-width: 64ch; }
 }
 @media (max-width: 640px){
-  .arch-rec{ gap: 30px; }
-  .arch-rec .architect-name{ font-size: 40px; }
-  /* На узком экране подпись переносить можно — иначе она вылезает за край. */
+  .donate-left .architect-name{ font-size: 40px; }
   .arch-rec-des{ white-space: normal; line-height: 2; }
-  .arch-rec-text{ font-size: 13.5px; line-height: 1.78; }
+  .arch-story{ margin-top: 30px; font-size: 13.5px; line-height: 1.78; }
+  .arch-lede{ font-size: 15px; }
 }
 </style>
 <!-- ═══════════════════════════════════════════════════════════════
@@ -40760,99 +40722,9 @@ h1, h2, h3,
      Тексты и значения взяты из эталона дословно (34%, УЗКАЯ, ВЫСОКИЙ,
      III · IV) — это утверждённый макет, а не данные с сервера. Появится
      живой источник — менять нужно будет только цифру в ДОЛЯ. -->
-<style id="ew-donate-power-css">
-.donate-power{ display:flex; align-items:center; gap:12px; padding:14px 0 4px; }
-.donate-seg{ display:flex; gap:3px; flex:1; min-width:0; }
-.donate-seg span{
-  flex:1; height:14px; border-radius:2px;
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.05);
-}
-.donate-seg span.lit{
-  background:linear-gradient(180deg, var(--red-hi), rgba(192,40,40,.55));
-  border-color:rgba(230,69,69,.4);
-  box-shadow:0 0 7px rgba(230,69,69,.35);
-}
-.donate-pow{ flex:0 0 auto; text-align:right; line-height:1.15; }
-.donate-pow b{
-  display:block; font-family:var(--font-display); font-weight:700;
-  font-size:17px; color:var(--ink);
-}
-.donate-pow i{
-  display:block; font-style:normal; font-family:var(--font-mono);
-  font-size:7px; letter-spacing:.18em; color:var(--ink-4); text-transform:uppercase;
-}
-.donate-state{ display:flex; flex-direction:column; gap:1px; padding:10px 0 2px; }
-.donate-state-row{
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:9px 0; border-top:1px solid rgba(255,255,255,.06);
-}
-.donate-state-row .k{
-  font-family:var(--font-mono); font-size:8px; letter-spacing:.16em;
-  color:var(--ink-4); text-transform:uppercase;
-}
-.donate-state-row .v{
-  font-family:var(--font-mono); font-size:8.5px; letter-spacing:.14em;
-  color:var(--ink-2); text-transform:uppercase; white-space:nowrap;
-}
-.donate-state-row .v.r{ color:var(--red-label); }
-</style>
-<script id="ew-donate-power-js">
-(function(){
-  'use strict';
-  var ДОЛЯ = 34;                 /* из эталона; сегментов всего 10 */
-  var СТРОКИ = [
-    ['Апертура приёма', 'Узкая', ''],
-    ['Шумовой порог',   'Высокий', 'r'],
-    ['Миры в очереди',  'III · IV', '']
-  ];
-
-  function старт(){
-    var правая = document.getElementById('donateRight');
-    if(!правая || правая.dataset.donatePower === '1') return;
-    var антенна = правая.querySelector('.donate-ant');
-    var действия = правая.querySelector('.donate-actions');
-    if(!антенна) return;
-    правая.dataset.donatePower = '1';
-
-    var горит = Math.round(ДОЛЯ / 10);
-    var сег = '';
-    for(var i = 0; i < 10; i++) сег += '<span' + (i < горит ? ' class="lit"' : '') + '></span>';
-
-    var шкала = document.createElement('div');
-    шкала.className = 'donate-power';
-    шкала.innerHTML =
-      '<div class="donate-seg" role="img" aria-label="Мощность передатчика ' + ДОЛЯ + '%">' + сег + '</div>' +
-      '<div class="donate-pow"><b>' + ДОЛЯ + '%</b><i>Мощность</i></div>';
-
-    var состояние = document.createElement('div');
-    состояние.className = 'donate-state';
-    состояние.innerHTML = СТРОКИ.map(function(с){
-      return '<div class="donate-state-row"><span class="k">' + с[0] + '</span>' +
-             '<span class="v' + (с[2] ? ' ' + с[2] : '') + '">' + с[1] + '</span></div>';
-    }).join('');
-
-    /* Ставим между антенной и кнопками — порядок эталона. */
-    var якорь = действия || антенна.nextSibling;
-    if(якорь && якорь.parentNode === антенна.parentNode){
-      антенна.parentNode.insertBefore(шкала, якорь);
-      антенна.parentNode.insertBefore(состояние, якорь);
-    } else {
-      антенна.parentNode.appendChild(шкала);
-      антенна.parentNode.appendChild(состояние);
-    }
-  }
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', старт);
-  else старт();
-  window.inspectDonatePower = function(){
-    return { шкалаЕсть: !!document.querySelector('.donate-power'),
-      горитСегментов: document.querySelectorAll('.donate-seg span.lit').length,
-      всегоСегментов: document.querySelectorAll('.donate-seg span').length,
-      строкСостояния: document.querySelectorAll('.donate-state-row').length,
-      подпись: 'Поддержка · мощность антенны' };
-  };
-})();
-</script>
+<!-- Слой ew-donate-power (шкала мощности и строки состояния, собиравшиеся
+     скриптом) удалён: панель поддержки перенесена с эталона и несёт их
+     разметкой. Скрипт всё равно выходил на первой строке — искал
+     .donate-ant, которой больше нет. -->
 </body>
 </html>
