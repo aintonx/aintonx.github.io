@@ -11,7 +11,8 @@
     "shots:baseline": "node tools/shots.mjs --baseline",
     "shots:diff": "node tools/shots.mjs --diff",
     "thrash": "node tools/thrash.mjs",
-    "lens": "node tools/lens.mjs"
+    "lens": "node tools/lens.mjs",
+    "settle": "node tools/settle.mjs"
   },
   "devDependencies": {
     "stylelint": "^16.10.0",

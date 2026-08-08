@@ -957,10 +957,13 @@ html.ew-first-boot-ready #ewFirstBoot{
      body    — Overpass: основной читаемый «инфраструктурный» гротеск;
      mono/code — IBM Plex Mono: системные лейблы (GHZ, ART, //). */
   --font-display: 'Oswald', system-ui, sans-serif;
-  --font-mono:    'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
-  --font-body:    'Overpass', system-ui, sans-serif;
-  --font-code:    'IBM Plex Mono', monospace;
-  --font-input:   'Overpass', system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', 'Plex Mono Подмена', 'JetBrains Mono', ui-monospace, monospace;
+  /* Запасной шрифт подставлен ПЕРЕД system-ui намеренно — см. блок
+     «ЗАПАСНОЙ ПОД МЕТРИКУ OVERPASS» ниже: он держит ту же ширину строки,
+     поэтому подмена настоящим Overpass ничего не перевёрстывает. */
+  --font-body:    'Overpass', 'Overpass Подмена', system-ui, sans-serif;
+  --font-code:    'IBM Plex Mono', 'Plex Mono Подмена', monospace;
+  --font-input:   'Overpass', 'Overpass Подмена', system-ui, sans-serif;
   --font-num:     'Overpass', 'IBM Plex Mono', monospace;
 
   /* ── ЛИНЗА · материал интерфейса (жидкое стекло) ──
@@ -1187,6 +1190,104 @@ html::-webkit-scrollbar-thumb {
 @media (hover:hover) and (pointer:fine) {
 
 html::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }}
+
+/* ── ГЕОМЕТРИЯ МОБИЛЬНОЙ ШАПКИ · РАНО ────────────────────────────────
+   Копия геометрии из блока «@media (max-width:960px)» в конце файла.
+   Там шапка переводится из sticky в fixed, а телу выдаётся отступ 66px.
+   Пока парсер до того блока не дошёл — а это 80% от полутора миллионов
+   байт — шапка ещё стоит в потоке высотой 80px, и первый экран нарисован
+   на 14 пикселей ниже, чем окажется потом. Замерено: верх секции героя
+   80 → 66 на 1352-й миллисекунде, вместе с ним уезжает вся страница.
+
+   Значения намеренно совпадают с исходным блоком до последнего пикселя:
+   обе копии говорят одно и то же, и в какой бы момент парсер ни оказался,
+   раскладка уже стоит окончательная. Правится только МОМЕНТ применения,
+   а не сама раскладка. */
+@media (max-width: 960px) {
+  :root { --ew-mobile-header-h: 66px; }
+  html { scroll-padding-top: calc(var(--ew-mobile-header-h) + 14px); }
+  body { padding-top: var(--ew-mobile-header-h) !important; }
+  header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    transform: translate3d(0,0,0) !important;
+  }
+  header .header-inner { height: var(--ew-mobile-header-h) !important; }
+}
+
+/* ── ЗАПАСНОЙ ПОД МЕТРИКУ OVERPASS ────────────────────────────────────
+   Основной текст грузится с display=swap: страница рисуется запасным
+   шрифтом, а когда доедет настоящий — подменяется. В комментарии к
+   ссылкам на шрифты было написано, что текстовые гарнитуры «той же
+   ширины и прыжка не дают». Это оказалось неправдой, и вот замер:
+   лид первого экрана в момент подмены перевёрстывался с 9 строк на 8,
+   высота абзаца 169 → 144 пикселя, и всё под ним уезжало вверх.
+
+   Причина в метриках. Прежний запасной system-ui на 7.5% уже Overpass;
+   ширина строки другая — перенос слов встаёт по-другому. Замерено на
+   строке лида при кегле 100px: Overpass 5887.36px, system-ui 5475.45px,
+   Helvetica Neue 5902.20px — то есть Helvetica отличается на 0.25%,
+   практически совпадает.
+
+   Поэтому запасной объявлен явно: берём Helvetica (на технике Apple она
+   есть всегда), доводим ширину до Overpass через size-adjust, а
+   восходящую и нисходящую части — до его же значений, чтобы не разъехались
+   строки там, где интерлиньяж не задан числом. Метрики Overpass измерены
+   в браузере: восход 88.3%, нисход 38.3%, зазор строк 0. */
+@font-face{
+  font-family: 'Overpass Подмена';
+  src: local('Helvetica Neue'), local('HelveticaNeue'), local('Helvetica'),
+       local('Arial'), local('Roboto'), local('Segoe UI');
+  size-adjust: 99.75%;
+  ascent-override: 88.3%;
+  descent-override: 38.3%;
+  line-gap-override: 0%;
+  font-display: swap;
+}
+
+/* Та же история у моноширинного: у IBM Plex Mono строка при line-height
+   normal занимает 130% кегля, у любого системного моно — около 115%.
+   Ширина при этом совпадает почти точно (замер на метке первого экрана
+   при кегле 100px: Plex 2280.00px, Courier New 2280.38px, Menlo 2287.80px)
+   — моноширинные шрифты одного кегля дают одинаковый шаг. Разъезжалась
+   именно высота строки: метка «// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE»
+   подрастала на пиксель в момент подмены, и всё под ней сдвигалось.
+   Поэтому запасному выправляется не ширина, а восходящая и нисходящая
+   части — до значений Plex. */
+@font-face{
+  font-family: 'Plex Mono Подмена';
+  src: local('Menlo'), local('Courier New'), local('DejaVu Sans Mono'), local('Consolas');
+  size-adjust: 99.7%;
+  ascent-override: 102.5%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+  font-display: swap;
+}
+
+/* ── ТРЕКИНГ ЗАГОЛОВКОВ · РАНО ────────────────────────────────────────
+   Ровно то же правило, что и в блоке ew-heading-tracking в конце файла.
+   Копия здесь не «на всякий случай», она чинит конкретный дефект.
+
+   Документ весит 1.9 МБ, и браузер рисует первый экран задолго до того,
+   как доедет его хвост. Пока парсер не дошёл до конца, заголовки стояли
+   со старым сжатым трекингом, а на хвосте перещёлкивались на новый —
+   строка «Каждая реликвия — часть вселенной» меняла ширину прямо на
+   глазах, тем сильнее чем медленнее сеть. Замерено на живом сайте:
+   letter-spacing −0.432px → 0.18px на 748-й миллисекунде, ширина первой
+   строки 290.6 → 301px.
+
+   Правило продублировано СЮДА, а конкретные значения у самих
+   компонентов ниже по файлу приведены к тому же 0.005em. Обе копии
+   говорят одно и то же, поэтому в какой бы момент парсер ни оказался —
+   разметка уже стоит на своих местах и не переезжает. */
+h1, h2, h3,
+.hero h1, .mname, .pname, .aw-name, .faq-q,
+.aw-title, .about-title {
+  letter-spacing: 0.005em;
+}
 
 body {
   background: var(--void);
@@ -1967,7 +2068,11 @@ header.scrolled {
   font-weight: 600;
   font-size: clamp(32px, 3.9vw, 54px);
   line-height: 1.05;
-  letter-spacing: -0.012em;
+  /* Было −0.012em. Минус остался от прежнего широкого шрифта и вступал
+     в спор с общим трекингом заголовков, который лежит в конце файла:
+     до хвоста документа строка стояла сжатой, после — раздвигалась.
+     Значение приведено к общему, спорить больше нечему. */
+  letter-spacing: 0.005em;
   color: var(--white);
   margin-bottom: 24px;
 }
@@ -1985,11 +2090,16 @@ header.scrolled {
   transform-origin: 50% 50%;
 }
 
+/* Интерлиньяж, трекинг и семейство продублированы из правила ниже по
+   файлу (.hero-sub у «HERO» второго слоя). Там они уже стояли, но парсер
+   доходил до них позже первой отрисовки, и лид перевёрстывался: высота
+   абзаца скакала со 169 на 144 пикселя — на строку. */
 .hero-sub {
+  font-family: var(--font-body);
   font-size: 12px;
   color: var(--white-mid);
-  line-height: 1.85;
-  letter-spacing: 0.03em;
+  line-height: 1.7;
+  letter-spacing: 0;
   max-width: 500px;
   margin-bottom: 30px;
 }
@@ -2580,7 +2690,7 @@ strong { color: var(--white) !important; font-weight: 400 !important; }
   font-size: clamp(28px, 3.4vw, 44px);
   color: var(--ink);
   line-height: 1.05;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.005em;      /* было −0.02em: спор с общим трекингом */
   order: 1;
   white-space: nowrap;
 }
@@ -5704,12 +5814,14 @@ select:-webkit-autofill {
   color: var(--cyan);
   text-transform: uppercase;
 }
+/* Значения совпадают со слоем «Протокол вопросов» в конце файла —
+   иначе подпись меняла шрифт и кегль по ходу загрузки страницы. */
 .faq-unlock-action {
-  font-family: var(--font-display);
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--white);
-  letter-spacing: -0.005em;
+  font-family: var(--font-input);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--ink);
 }
 .faq-unlock-meta {
   font-family: var(--font-code);
@@ -5733,8 +5845,8 @@ select:-webkit-autofill {
   filter: none;
 }
 .faq-unlock.opened .faq-unlock-action::before { content: 'Свернуть протокол'; }
-.faq-unlock.opened .faq-unlock-action { font-size: 0; }
-.faq-unlock.opened .faq-unlock-action::before { font-size: 16px; font-family: var(--font-display); font-weight: 600; color: var(--white); }
+.faq-unlock.opened .faq-unlock-action { font-size: 14px; color: transparent; }
+.faq-unlock.opened .faq-unlock-action::before { font-size: 14px; font-family: var(--font-input); font-weight: 400; color: var(--ink); }
 
 .faq-grid {
   display: grid;
@@ -5842,8 +5954,8 @@ select:-webkit-autofill {
 
 @media(max-width:600px) {
   .faq-unlock { padding: 18px 18px; gap: 14px; }
-  .faq-unlock-action { font-size: 15px; }
-  .faq-unlock.opened .faq-unlock-action::before { font-size: 15px; }
+  .faq-unlock-action { font-size: 14px; }
+  .faq-unlock.opened .faq-unlock-action::before { font-size: 14px; }
   .faq-unlock-meta { font-size: 8px; letter-spacing: 0.12em; }}
 .faq-item {
   position: relative;
@@ -5875,13 +5987,17 @@ select:-webkit-autofill {
 @media (hover:hover) and (pointer:fine) {
 
   .faq-item:hover::before { transform: scaleY(0); }}}
+/* Гарнитура, кегль и вес приведены к тем, что задаёт слой «Протокол
+   вопросов» в конце файла. Раньше они расходились, и пока парсер шёл к
+   хвосту документа, вопросы стояли другим шрифтом и другого кегля. */
 .faq-q {
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 600;
+  font-family: var(--font-input);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
   color: var(--white);
   margin-bottom: 0;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.005em;      /* было 0.02em: спор с общим трекингом */
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -5948,18 +6064,18 @@ select:-webkit-autofill {
     white-space: nowrap;
   }
   .faq-unlock.opened .faq-unlock-action {
-    font-size: 17px;
+    font-size: 14px;
     color: transparent;
   }
   .faq-unlock.opened .faq-unlock-action::before {
     position: absolute;
     left: 0;
     top: 0;
-    font-size: 17px;
+    font-size: 14px;
     line-height: 1.2;
-    font-family: var(--font-display);
-    font-weight: 600;
-    color: var(--white);
+    font-family: var(--font-input);
+    font-weight: 400;
+    color: var(--ink);
   }
   .faq-q {
     min-height: 20px;
@@ -7293,7 +7409,7 @@ html.legal-modal-open .cookie-banner.show {
   font-weight: 700;
   font-size: clamp(34px, 4.4vw, 56px);
   line-height: 1.02;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.005em;      /* было −0.02em: спор с общим трекингом */
   color: var(--white);
   margin-bottom: 22px;
 }
@@ -7477,7 +7593,7 @@ html.legal-modal-open .cookie-banner.show {
   font-size: 18px;
   font-weight: 700;
   color: var(--white);
-  letter-spacing: -0.01em;
+  letter-spacing: 0.005em;      /* было −0.01em: спор с общим трекингом */
 }
 .aw-desc {
   padding: 0 16px 18px;
@@ -7579,7 +7695,7 @@ html.legal-modal-open .cookie-banner.show {
   .aw-title {
     font-size: clamp(22px, 6.1vw, 26px);
     line-height: 1.08;
-    letter-spacing: -0.045em;
+    letter-spacing: 0.005em;      /* было −0.045em: спор с общим трекингом */
     max-width: 100%;
     word-break: keep-all;
     overflow-wrap: normal;
@@ -7588,7 +7704,7 @@ html.legal-modal-open .cookie-banner.show {
   .aw-title {
     font-size: clamp(20.5px, 5.8vw, 22px);
     line-height: 1.1;
-    letter-spacing: -0.052em;
+    letter-spacing: 0.005em;      /* было −0.052em: спор с общим трекингом */
   }}
 
 /* ── LORE NOTIFICATION ── */
@@ -8869,7 +8985,7 @@ html.theme-soft .mnav-theme-icons * { transition: none !important; }
   font-weight: 700;
   font-size: 15.5px;
   color: var(--ink);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.005em;      /* было 0.01em: спор с общим трекингом */
   line-height: 1.25;
   margin-bottom: 0;
 }
@@ -40864,7 +40980,7 @@ h1, h2, h3,
   background: var(--warm);
   box-shadow: 0 0 8px rgba(209,160,74,.6);
 }
-#faq .faq-title{ color: var(--ink); letter-spacing: 0; text-wrap: balance; }
+#faq .faq-title{ color: var(--ink); text-wrap: balance; }
 /* Лид раздела говорит тем же голосом, что и лиды остальных секций:
    моноширинный набор здесь звучал служебной строкой, а это обращение. */
 #faq .faq-sub{
@@ -41048,7 +41164,6 @@ h1, h2, h3,
   font-size: 14px;
   line-height: 1.45;
   font-weight: 400;
-  letter-spacing: 0;
   color: var(--ink-2);
   transition: color .22s var(--ease-out);
 }
@@ -41139,7 +41254,7 @@ h1, h2, h3,
 @media (max-width: 760px){
   #faq .faq-grid{ padding: 0 14px 8px; }
   #faq .faq-item::before{ inset: 2px -9px 5px; }
-  #faq .faq-q{ font-size: 13.5px; padding: 15px 2px; gap: 10px; }
+  #faq .faq-q{ padding: 15px 2px; gap: 10px; }
   #faq .faq-a{ font-size: 12.5px; }
   #faq .faq-unlock{ grid-template-columns: 44px minmax(0,1fr); gap: 10px 14px; }
   #faq .faq-unlock-icon{ width: 44px; height: 44px; }
