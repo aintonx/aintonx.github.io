@@ -5788,7 +5788,7 @@ select:-webkit-autofill {
   42% { opacity: 1; filter: drop-shadow(0 0 10px rgba(0,200,200,.36)); transform: scale(1.035); }
   100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(0,200,200,.18)); transform: scale(1); }}
 @keyframes faqFpMaskClose {
-  0% { opacity: 1; filter: drop-shadow(0 0 8px rgba(192,40,40,.25)); }
+  0% { opacity: 1; filter: none; }
   100% { opacity: .72; filter: none; }}
 
 .faq-grid { position: relative; }
@@ -16787,7 +16787,10 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
    ══════════════════════════════════════════════════════════════ */
 
 /* ── ПЛИТКА ─────────────────────────────────────────────────────── */
-.tech-card, .world-card, .clink, .faq-unlock, .faq-item,
+/* .faq-item убран из группы: в новом «Протоколе вопросов» вопрос —
+   строка реестра, а не плитка. Правила группы идут с !important и
+   перебивали бы любую точечную правку. */
+.tech-card, .world-card, .clink, .faq-unlock,
 .arch-stat, .echocard, .donate-method-card,
 .aw-card, .collab-link {
   background: rgba(255,255,255,0.035) !important;
@@ -17592,103 +17595,103 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
       <div class="faq-group-label">// ЗАКАЗ</div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Что я получу после заказа?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Что я получу после заказа?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Вы получаете не просто предмет, а реликвию с происхождением: физический объект, авторскую упаковку, имя и биографию Виша, а также фрагмент его жизни — восстановленную Apertura последовательность сцен.<br><br>Если вы добавите Эхо, Виш произнесёт ваши слова внутри одного из фрагментов. После открытия личного интерфейса рядом с реликвией появится её Цифровая Подпись.<div class="faq-cta-row"><a class="faq-mini-cta" href="#catalog" onclick="event.stopPropagation();">Открыть каталог</a></div></div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Как проходит оплата и доставка?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Как проходит оплата и доставка?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">После оформления заказа сайт фиксирует одну реликвию за вашим циклом и открывает платёжный канал ЮKassa. Оплата проходит в рублях Российской Федерации на стороне платёжного провайдера; EchoWorld не хранит данные банковской карты.<br><br>Доставка сейчас доступна по России. Базовый способ — Почта России, 5–14 дней после отправки. Подготовка заказа занимает до 14 календарных дней после подтверждения оплаты и получения всех необходимых данных.<br><br>Исполнитель применяет НПД: после успешной оплаты доход регистрируется в сервисе «Мой налог», а чек самозанятого направляется покупателю на указанный контактный канал.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Что будет после оплаты?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Что будет после оплаты?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">После оплаты заказ становится подтверждённым сигналом. Apertura фиксирует его в MARKETSPACE и запускает цикл рождения Виша — того, чья жизнь позже станет основой вашей реликвии.<br><br>С этого момента реликвия выходит из активного потока и больше не доступна другим покупателям. Apertura сопровождает путь Виша до Перехода: фиксирует его имя, события, выборы и будущие фрагменты. Когда Переход завершается, Apertura удерживает то, что могло исчезнуть на границе миров: имя Виша, его биографию и видео-фрагмент прожитой жизни.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Сколько ждать реликвию?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Сколько ждать реликвию?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">До отправки проходит до 14 календарных дней. Время в MARKETSPACE течёт иначе: пока в нашем мире проходит несколько дней, Виш успевает родиться, пройти свой путь и приблизиться к Переходу.<br><br>Apertura сопровождает этот цикл и удерживает то, что должно сохраниться после границы миров: имя, биографию и видео-фрагмент прожитой жизни. Когда Переход завершается, реликвия появляется в нашем мире и передаётся в отправку.<br><br>После отправки срок зависит от Почты России — обычно 5–14 дней по региону.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Куда сейчас доставляем?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Куда сейчас доставляем?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Сейчас — только по территории Российской Федерации.<br><br>Маршруты за пределы первого сектора требуют отдельной калибровки. MARKETSPACE не знает границ — логистика пока знает.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Можно ли вернуть реликвию?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Можно ли вернуть реликвию?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">До оплаты заказ не запускает процесс: если вы закрыли страницу или передумали, реликвия остаётся в активном потоке и может быть выбрана другим покупателем.<br><br>После оплаты Apertura фиксирует ваш сигнал и запускает цикл рождения Виша. После доставки возврат возможен только по условиям возврата и зависит от состояния реликвии. Поэтому мы просим выбирать осознанно: каждая реликвия существует в единственном экземпляре.<br><br>Если заказ отменяется уже после запуска цикла, сигнал уходит в сектор тишины: Apertura больше не выводит его в активный поток, пока Архитектор не определит его дальнейшую судьбу.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Можно ли заказать реликвию, которой нет в каталоге?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Можно ли заказать реликвию, которой нет в каталоге?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Да. Если нужной реликвии нет в каталоге, вы можете отправить индивидуальный сигнал в Apertura.<br><br>Опишите предмет простыми словами: форму, материал, ощущение, назначение. Архитектор проверит, есть ли в MARKETSPACE поток, способный принять эту форму.<div class="faq-cta-row"><a class="faq-mini-cta" href="#preorderSection" onclick="event.stopPropagation();">Заказать конденсацию</a></div></div>
       </div>
 
       <div class="faq-group-label">// РЕЛИКВИИ</div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Что такое EchoWorld?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Что такое EchoWorld?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">EchoWorld — интерфейс между нашим миром и MARKETSPACE. Через него вы можете получить физическую реликвию: предмет, появившийся после жизни и Перехода.<br><br>Это не обычный магазин. После подтверждения сигнала Apertura запускает цикл рождения Виша — того, чья жизнь, имя и история позже станут основой вашей реликвии.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Кто такие Виши?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Кто такие Виши?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Виши — живые существа из MARKETSPACE, рождённые из человеческих желаний. Внешне они похожи на людей: рождаются, растут, учатся, влюбляются, строят планы и не знают, куда приведёт их путь.<br><br>Они не знают о нашем мире, заказах, покупателях, сайте или Apertura. Те, чей путь ведёт к Предназначению, однажды проходят Переход — и появляются в нашем мире как физическая реликвия.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Что такое Переход?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Что такое Переход?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Переход — момент конвертации Виша в физическую реликвию.<br><br>До Перехода Виш живёт в MARKETSPACE как обычный человек: взрослеет, учится, строит отношения, принимает решения и не знает, куда приведёт его путь. После Перехода он появляется в нашем мире как предмет: не копия, не реплика, а реликвия с именем, биографией и историей.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Почему каждая реликвия существует в одном экземпляре?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Почему каждая реликвия существует в одном экземпляре?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Форма предмета может повторяться в нашем мире миллионами копий. Виш — нет.<br><br>У каждого Виша один путь, одна биография и один Переход. Поэтому реликвия может напоминать знакомый предмет, но её история не повторяется: второй такой же реликвии не существует.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Что такое Мощь Реликвии?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Что такое Мощь Реликвии?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Мощь Реликвии показывает, насколько глубоко предмет связан с MARKETSPACE.<br><br>Сейчас она проявляется через классы K · Излом, C · Скопление, R · Резонанс, S · Сингулярность: чем выше класс, тем больше видео-фрагментов становится доступно и тем больше Эхо может прозвучать во фрагментах.<br><br>Видео-фрагмент выглядит как обычное видео, но для Apertura это реконструкция из потока данных.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Почему на реликвии может быть логотип бренда?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Почему на реликвии может быть логотип бренда?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Виш не рождается из одного желания. Он формируется из слияния потоков — миллионов импульсов, накапливавшихся, сталкивавшихся, резонировавших. Если в потоке доминировал один производитель, Виш впитал и его частоту.<br><br>Логотип на реликвии — Импринт Перехода. След того, чем чаще всего было это желание. EchoWorld не стирает Импринты: то, из чего рождён Виш, остаётся с реликвией.</div>
       </div>
 
       <div class="faq-group-label">// ЭХО И ПАМЯТЬ</div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Что такое Эхо?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Что такое Эхо?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Эхо — это короткое сообщение, которое прозвучит в одном из фрагментов жизни Виша.<br><br>Его можно добавить к заказу реликвии или отправить отдельно: до <strong>7 слов</strong> текстом или до <strong>3 секунд</strong> голосом. Виш не знает, кто оставил эти слова. Для него Эхо звучит как голос тех, кто ушёл в Исток.<div class="faq-cta-row"><a class="faq-mini-cta" href="#echo" onclick="event.stopPropagation();">Отправить Эхо</a></div></div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Чем отличается Эхо с реликвией и без неё?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Чем отличается Эхо с реликвией и без неё?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Эхо в заказе привязано к конкретной реликвии. Виш произнесёт ваши слова внутри своей истории: количество Эхо зависит от Мощи Реликвии.<br><br>Эхо без реликвии не связано с конкретным Вишем из каталога. Это самостоятельный сигнал в Apertura: он получает частотный код, Ауру и позже появится в личном интерфейсе.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Нужно ли мне разбираться в NFT?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Нужно ли мне разбираться в NFT?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Нет. Чтобы заказать физическую реликвию или отправить Эхо, вам не нужно разбираться в технической стороне NFT.<br><br>NFT-реликвия — это будущая цифровая форма предмета. Она не заменяет физическую версию, а дополняет её: помогает подтвердить происхождение, связь с владельцем и место в коллекции EchoWorld.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Что такое Память Apertura?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Что такое Память Apertura?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Память Apertura — внутренний слой системы, где сохраняются ваши действия: заказы, отправленные Эхо, Цифровые Подписи и незавершённые сигналы.<br><br>Пока личный интерфейс закрыт, эти данные не отображаются. Но они не теряются: после открытия интерфейса история подтянется автоматически.</div>
       </div>
 
       <div class="faq-group-label">// ЛИЧНЫЙ ИНТЕРФЕЙС</div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Что такое уровни доступа?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Что такое уровни доступа?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Уровни доступа — будущая система личного кабинета EchoWorld. Это будет не обычный профиль, а закрытый контур внутри Apertura: место, где ваши реликвии, Эхо и другие действия начнут собираться в личную историю.<br><br>Сейчас все посетители находятся на гостевом уровне — уровне 0. После открытия кабинета первые действия в EchoWorld подтянутся автоматически и станут основой начального доступа. С каждым уровнем будут открываться скрытые слои системы: архивы циклов, закрытые материалы Периметра и то, что пока остаётся вне общего доступа.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Когда откроется личный кабинет?<span class="faq-q-toggle">+</span></div>
+        <div class="faq-q">Когда откроется личный кабинет?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Личный кабинет откроется после запуска системы, которая свяжет ваши реликвии, Эхо и уровни доступа в один интерфейс.<br><br>До этого момента ваши действия не пропадают: Apertura сохраняет заказы, Эхо и незавершённые сигналы, чтобы после открытия кабинета собрать вашу историю в одном месте.</div>
       </div>
     </div>    </div>
@@ -29662,8 +29665,10 @@ function _fpColor(unlock, mode){
   const ridges = unlock.querySelectorAll('.fp-ridge');
   const maskFp = unlock.querySelector('.faq-fp.ew-mask-icon');
   const cs = getComputedStyle(document.documentElement);
+  /* Сворачивание — не тревога и не запрет, поэтому знак гаснет в спокойный
+     серый, а не краснеет. Красный в языке «Линзы» означает только тревогу. */
   const col = mode==='open' ? cs.getPropertyValue('--cyan').trim()
-            : (mode==='close' ? cs.getPropertyValue('--red2').trim() : '');
+            : (mode==='close' ? cs.getPropertyValue('--ink-4').trim() : '');
 
   clearTimeout(unlock._fpRevert);
   clearTimeout(unlock._fpTimer);
@@ -29687,7 +29692,7 @@ function _fpColor(unlock, mode){
     maskFp.style.opacity = '1';
     maskFp.style.filter = mode==='open'
       ? 'drop-shadow(0 0 7px rgba(0,200,200,.22))'
-      : 'drop-shadow(0 0 7px rgba(192,40,40,.22))';
+      : 'none';
     maskFp.style.transform = 'scale(1)';
 
     void maskFp.offsetWidth;
@@ -29730,7 +29735,10 @@ function toggleFaqSection(){
     grid.classList.add('expanded');
     unlock.classList.add('opened');
     _fpColor(unlock,'open');
-    grid.querySelectorAll('.faq-item').forEach((it,i)=>{ it.style.animationDelay=(i*45)+'ms'; });
+    /* Задержка считается по ВСЕМ строкам подряд, а не только по вопросам:
+       иначе заголовок раздела проявлялся мгновенно посреди уже идущей
+       лесенки. Шаг уменьшен с 45 до 26 мс — строк теперь 23. */
+    grid.querySelectorAll('.faq-item, .faq-group-label').forEach((it,i)=>{ it.style.animationDelay=(i*26)+'ms'; });
     grid.classList.remove('fxin'); void grid.offsetWidth; grid.classList.add('fxin');
   }
 }
@@ -33044,10 +33052,13 @@ svg.ew-mask-icon use,
   42%  { opacity: 1;   filter: drop-shadow(0 0 10px rgba(0,200,200,.34)); transform: scale(1.035); }
   100% { opacity: 1;   filter: drop-shadow(0 0 6px rgba(0,200,200,.18)); transform: scale(1); }
 }
+/* Сворачивание протокола — не тревога и не запрет: красное свечение убрано,
+   знак просто гаснет в покой. Эта версия правила перекрывает такую же выше
+   по файлу, поэтому правились обе. */
 @keyframes faqFpMaskClose {
-  0%   { opacity: 1;   filter: drop-shadow(0 0 8px rgba(192,40,40,.25)); transform: scale(1.01); }
-  78%  { opacity: 1;   filter: drop-shadow(0 0 5px rgba(192,40,40,.16)); transform: scale(1); }
-  100% { opacity: .92; filter: drop-shadow(0 0 2px rgba(192,40,40,.06)); transform: scale(1); }
+  0%   { opacity: 1;   filter: none; transform: scale(1.01); }
+  78%  { opacity: 1;   filter: none; transform: scale(1); }
+  100% { opacity: .92; filter: none; transform: scale(1); }
 }
 
 
@@ -40808,6 +40819,341 @@ h1, h2, h3,
      Надстройка. Строки DESIGNATION / IDENTIFIER / ACCESS.LEVEL прячем:
      их содержимое теперь несёт сама печать. Остальные строки и их
      обработчики не трогаем. -->
+<style id="ew-faq-css">
+/* ══ ПРОТОКОЛ ВОПРОСОВ ═══════════════════════════════════════════════
+   Раздел остался из прошлого языка: сетка в две колонки из девятнадцати
+   отдельных карточек с рамками, «плюсик» вместо маркера, красная полоса
+   слева у раскрытого вопроса и надпись «// ПРОТОКОЛ ВОПРОСОВ» вообще без
+   стиля — класса .tech-label в файле не существовало ни разу. Читалось
+   как чужая вставка.
+
+   Ключевое решение — не карточки. Девятнадцать коробок с рамками спорят
+   друг с другом и рассыпают раздел; здесь это ОДИН документ: стеклянная
+   панель, внутри которой разделы отбиты моноширинными заголовками, а
+   вопросы идут строками через волосяные линии. Так это читается как
+   реестр Апертуры, а не как набор плиток.
+
+   Тексты не тронуты: ни один вопрос, ответ или подпись не изменены.
+   Заменён только служебный знак «+» на шеврон из спрайта проекта —
+   свои глифы рисовать нельзя.
+
+   Старые правила раздела лежат выше по файлу и перекрыты отсюда весом id.
+   Вырезать их автоматически я не стал: в этом файле медиазапросы
+   закрываются вместе с последним правилом, и такая чистка уже ломала
+   баланс скобок. Два места, где вес id не помогает, поправлены по месту:
+   .faq-item убран из группы-унификатора плиток (там !important), а
+   красный на сворачивании убран из _fpColor. */
+
+/* ── ШАПКА РАЗДЕЛА ──────────────────────────────────────────────────
+   Марка приведена к той же, что у «Каталога» и «Мощи реликвии»: моно,
+   разрядка .22em, тёплый штрих слева. Текст марки не менялся. */
+#faq .tech-label{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--head-kicker);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .22em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+}
+#faq .tech-label::before{
+  content: "";
+  width: 26px; height: 1px;
+  background: var(--warm);
+  box-shadow: 0 0 8px rgba(209,160,74,.6);
+}
+#faq .faq-title{ color: var(--ink); letter-spacing: 0; text-wrap: balance; }
+/* Лид раздела говорит тем же голосом, что и лиды остальных секций:
+   моноширинный набор здесь звучал служебной строкой, а это обращение. */
+#faq .faq-sub{
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.72;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  max-width: 66ch;
+}
+
+/* ── ПОЛОСА ДОСТУПА ─────────────────────────────────────────────────
+   Материал плитки берётся из общей группы стекла (она с !important и это
+   правильно — полоса должна выглядеть как остальные плитки сайта).
+   Здесь только раскладка: круглый колодец со знаком, подпись и счётчик. */
+/* Ширина по мере чтения, а не по контейнеру. На 1440 полоса растягивалась
+   на 1360px, и между подписью и счётчиком зияло восемьсот пустых пикселей.
+   Тот же приём, что у шапок «Мощи реликвии» и «Каталога» — колонка текста
+   прижата влево и не тянется за раздел. */
+#faq .faq-unlock,
+#faq .faq-grid{ max-width: 940px; }
+#faq .faq-unlock{
+  display: grid;
+  grid-template-columns: 46px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 15px 18px;
+  min-height: 0;
+  margin-bottom: 0;
+  font-family: var(--font-input);
+}
+#faq .faq-unlock-strip{ display: none; }   /* полоска прошлого языка */
+#faq .faq-unlock-icon{
+  flex: none;
+  width: 46px; height: 46px;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  color: var(--ink-4);
+  transition: background .3s var(--ease-out), border-color .3s var(--ease-out);
+}
+#faq .faq-unlock-icon svg{
+  width: 21px; height: 21px;
+  min-width: 0; min-height: 0;
+  flex-basis: auto;
+}
+#faq .faq-unlock.opened .faq-unlock-icon{
+  background: rgba(0,200,200,.08);
+  border-color: rgba(0,200,200,.28);
+}
+#faq .faq-unlock-text{ display: flex; flex-direction: column; gap: 4px; min-width: 0; min-height: 0; }
+#faq .faq-unlock-label{
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: .2em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+}
+/* Подпись действия подменяется через ::before (так было и раньше — текст
+   в разметке трогать нельзя). Настоящая строка становится прозрачной, но
+   продолжает держать место, подмена ложится поверх — поэтому при
+   раскрытии ничего не прыгает. Оба состояния описаны здесь одним
+   набором: до этого их задавали три разных слоя с разными кеглями. */
+#faq .faq-unlock-action{
+  position: relative;
+  display: block;
+  min-height: 0;
+  white-space: nowrap;
+  font-family: var(--font-input);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--ink);
+}
+#faq .faq-unlock.opened .faq-unlock-action{ font-size: 14px; color: transparent; }
+#faq .faq-unlock.opened .faq-unlock-action::before{
+  position: absolute; left: 0; top: 0;
+  font-family: var(--font-input);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--ink);
+}
+#faq .faq-unlock-meta{
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .16em;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+/* ── ПАНЕЛЬ ПРОТОКОЛА ───────────────────────────────────────────────
+   Одна поверхность вместо девятнадцати карточек. Предел max-height взят
+   по фактической высоте содержимого (около 2200px на узком экране с одним
+   раскрытым ответом), а не «с запасом на всякий случай»: девять тысяч
+   делали кривую сворачивания рваной — почти всё время шло на пустоту. */
+#faq .faq-grid{
+  display: block;
+  padding: 0 18px 10px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.022);
+  border: 1px solid transparent;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height .46s cubic-bezier(.4,0,.2,1),
+              opacity .34s cubic-bezier(.4,0,.2,1),
+              margin-top .46s cubic-bezier(.4,0,.2,1),
+              border-color .46s cubic-bezier(.4,0,.2,1);
+}
+#faq .faq-grid.expanded{
+  max-height: 3000px;
+  opacity: 1;
+  margin-top: 14px;
+  border-color: rgba(255,255,255,.07);
+}
+
+/* Заголовок раздела внутри документа. */
+#faq .faq-group-label{
+  display: block;
+  margin: 26px 0 2px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: .24em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+}
+#faq .faq-group-label:first-child{ margin-top: 20px; }
+
+/* ── СТРОКА ВОПРОСА ─────────────────────────────────────────────────
+   Высоту ответа ведут строки сетки (0fr → 1fr): это точная высота без
+   замеров в скрипте и без max-height, подобранного на глаз, — раньше
+   ответ раскрывался «до 1200px», и длинные ответы шли рывком. */
+#faq .faq-item{
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 0fr;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  border-radius: 0;
+  overflow: visible;
+  cursor: pointer;
+  transition: grid-template-rows .4s cubic-bezier(.4,0,.2,1);
+}
+#faq .faq-item:last-child{ border-bottom: 0; }
+#faq .faq-item.open{ grid-template-rows: auto 1fr; }
+
+/* Подсветка раскрытой строки. Занимает место прежней красной полосы:
+   разметка та же, роль другая — не тревога, а «эта запись открыта».
+   Выходит за поля панели отрицательным inset, поэтому читается как
+   выделенная строка реестра, а не как вложенная плашка. */
+#faq .faq-item::before{
+  content: "";
+  position: absolute;
+  inset: 2px -12px 5px;
+  width: auto;
+  background: rgba(255,255,255,.032);
+  border-radius: 12px;
+  transform: none;
+  opacity: 0;
+  transition: opacity .32s var(--ease-out);
+  pointer-events: none;
+}
+#faq .faq-item.open::before{ opacity: 1; }
+/* Содержимое позиционируется, чтобы лечь поверх подсветки по порядку в
+   дереве — без z-index и без своего слоя. */
+#faq .faq-q, #faq .faq-a{ position: relative; }
+
+#faq .faq-q{
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 17px 2px;
+  font-family: var(--font-input);
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-2);
+  transition: color .22s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine){
+  #faq .faq-item:hover .faq-q{ color: var(--ink); }
+}
+#faq .faq-item.open .faq-q{ color: var(--ink); }
+
+#faq .faq-q-toggle{
+  margin-left: auto;
+  flex: none;
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.09);
+  font-size: 0;
+  transition: background .25s var(--ease-out), border-color .25s var(--ease-out),
+              transform .34s cubic-bezier(.4,0,.2,1);
+}
+#faq .faq-q-toggle svg{
+  width: 12px; height: 12px;
+  display: block;
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke .25s var(--ease-out);
+}
+#faq .faq-item.open .faq-q-toggle{
+  transform: rotate(180deg);
+  background: rgba(0,200,200,.08);
+  border-color: rgba(0,200,200,.28);
+}
+#faq .faq-item.open .faq-q-toggle svg{ stroke: var(--cyan-hi); }
+
+#faq .faq-a{
+  overflow: hidden;
+  min-height: 0;
+  max-height: none;
+  margin-top: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--ink-3);
+  max-width: 74ch;
+  opacity: 0;
+  transition: opacity .3s cubic-bezier(.4,0,.2,1);
+}
+#faq .faq-item.open .faq-a{ max-height: none; margin-top: 0; opacity: 1; }
+/* Отступы держат псевдоэлементы: положенные на саму строку сетки, в
+   свёрнутом состоянии они дали бы полоску в несколько пикселей. */
+#faq .faq-a::before{ content: ""; display: block; height: 1px; }
+#faq .faq-a::after{ content: ""; display: block; height: 20px; }
+
+/* Действие внутри ответа — тёплая капсула главного действия сайта. */
+#faq .faq-cta-row{ margin-top: 16px; }
+#faq .faq-mini-cta{
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 18px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--warm-hi);
+  background: rgba(209,160,74,.09);
+  border: 1px solid rgba(209,160,74,.3);
+  transition: background .25s var(--ease-out), border-color .25s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine){
+  #faq .faq-mini-cta:hover{ background: rgba(209,160,74,.15); border-color: rgba(209,160,74,.5); }
+}
+
+/* Проявление строк при раскрытии протокола: короткая лесенка сверху вниз
+   (шаг задаёт toggleFaqSection), а не выезд всего разом. */
+@keyframes faqRowIn{
+  from{ opacity: 0; transform: translateY(6px); }
+  to{ opacity: 1; transform: none; }
+}
+#faq .faq-grid.fxin .faq-item,
+#faq .faq-grid.fxin .faq-group-label{
+  animation: faqRowIn .4s cubic-bezier(.4,0,.2,1) both;
+}
+
+@media (max-width: 760px){
+  #faq .faq-grid{ padding: 0 14px 8px; }
+  #faq .faq-item::before{ inset: 2px -9px 5px; }
+  #faq .faq-q{ font-size: 13.5px; padding: 15px 2px; gap: 10px; }
+  #faq .faq-a{ font-size: 12.5px; }
+  #faq .faq-unlock{ grid-template-columns: 44px minmax(0,1fr); gap: 10px 14px; }
+  #faq .faq-unlock-icon{ width: 44px; height: 44px; }
+  #faq .faq-unlock-meta{ grid-column: 2; justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce){
+  #faq .faq-item,
+  #faq .faq-grid,
+  #faq .faq-q-toggle,
+  #faq .faq-item::before{ transition: none; }
+  #faq .faq-grid.fxin .faq-item,
+  #faq .faq-grid.fxin .faq-group-label{ animation: none; }
+}
+</style>
 <style id="ew-arch-record-css">
 /* ══ ЗАПИСЬ ОБ АРХИТЕКТОРЕ ═══════════════════════════════════════════
    Интерфейс-терминал убран, вместе с ним ушла и «печать», которая его
