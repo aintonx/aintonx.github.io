@@ -8160,6 +8160,11 @@ html.theme-soft .mnav-theme-icons *{ transition: none !important; }
   #preorderSection { padding: 0 !important; overflow: hidden; position: relative; }
   #preorderGrid { display: block !important; }
   #preorderRightCol { position: static !important; }
+  /* Дорожка и пейны — без своей заливки. Она была нужна, когда раздел
+     шёл сплошным полотном: тогда карточку рисовала сама дорожка. Теперь
+     карточка — это плита раздела, а дорожка внутри неё была второй
+     коробкой: своя заливка --surface, прямые углы, во всю ширину. Её-то
+     углы и срезало скругление плиты — раздел выглядел обрезанным. */
   .pre-swipe-track {
     display: flex;
     overflow-x: auto;
@@ -8167,7 +8172,7 @@ html.theme-soft .mnav-theme-icons *{ transition: none !important; }
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     width: 100%;
-    background: var(--surface);
+    background: transparent;
     touch-action: auto;
     overscroll-behavior-x: contain;
   }
@@ -8177,7 +8182,7 @@ html.theme-soft .mnav-theme-icons *{ transition: none !important; }
     scroll-snap-align: start;
     padding: var(--sec-y) var(--gutter) var(--sec-y);
     box-sizing: border-box;
-    background: var(--surface);
+    background: transparent;
     display: flex; flex-direction: column;
   }
   /* Две кнопки «Запросить конденсацию» (CTA на пейне-описании + сабмит на
@@ -12191,11 +12196,16 @@ button, a, [role="button"], label,
 @media (min-width: 721px){
   .about, .tech-block, .apertura-worlds, .echo-section, .relic-section,
   .collab, .architect-section, .faq-section,
-  #preorderSection, .catwrap {
+  #preorderSection, .catwrap, footer {
     margin: 12px 8px;
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
+    border: 1px solid var(--line-hi);
     overflow: hidden;
+    /* Обсидиан — тот же камень, что у плит на телефоне. До этого на
+       широком экране половина разделов была на --surface, половина
+       вообще прозрачной: одни читались плитой, другие продолжением
+       фона. Цвет один на все. */
+    background: var(--raised);
   }
 }
 
@@ -12207,7 +12217,7 @@ button, a, [role="button"], label,
      экрана (поля 6px), чтобы вмещать больше текста и читаться консистентно. */
   .about, .tech-block, .apertura-worlds, .echo-section, .relic-section,
   .collab, .architect-section, .donate-section, .faq-section,
-  #preorderSection, .catwrap {
+  #preorderSection, .catwrap, footer {
     margin-left: 6px;
     margin-right: 6px;
     margin-top: 14px;
@@ -16487,7 +16497,11 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
    остаётся на background-color), световой кант — inset-тенью. Без
    backdrop-filter и без переходов — политика стекла проекта запрещает
    анимировать стеклянные поверхности на iOS. */
-.about, .apertura-worlds, .collab, #preorderSection, .architect-section, .donate-section{
+/* Блик кладётся на ВСЕ плиты. Раньше он был у шести разделов из
+   девяти, и три оставшихся выглядели матовыми рядом с ними — при
+   одинаковом цвете это читалось как разный материал. */
+.about, .apertura-worlds, .collab, #preorderSection, .architect-section,
+.echo-section, .relic-section, .faq-section, .catwrap, footer{
   background-image: linear-gradient(180deg,
     rgba(255,255,255,0.042) 0,
     rgba(255,255,255,0.012) 110px,
@@ -16499,7 +16513,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
      читался отражением на грани, а не засветкой полотна. */
   .about, .tech-block, .apertura-worlds, .echo-section, .relic-section,
   .collab, .architect-section, .donate-section, .faq-section,
-  #preorderSection, .catwrap{
+  #preorderSection, .catwrap, footer{
     background-image: linear-gradient(180deg,
       rgba(255,255,255,0.05) 0,
       rgba(255,255,255,0.014) 64px,
