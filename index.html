@@ -17291,6 +17291,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <span class="faq-unlock-label">// ДОСТУП РАЗРЕШЁН</span>
         <span class="faq-unlock-action">Развернуть протокол</span>
       </span>
+      <span class="faq-unlock-rule" aria-hidden="true"></span>
       <span class="faq-unlock-meta">19 записей</span>
     </button>
     <div class="faq-grid" id="faqGrid">
@@ -40173,15 +40174,15 @@ h1, h2, h3,
    Материал плитки берётся из общей группы стекла (она с !important и это
    правильно — полоса должна выглядеть как остальные плитки сайта).
    Здесь только раскладка: круглый колодец со знаком, подпись и счётчик. */
-/* Ширина по мере чтения, а не по контейнеру. На 1440 полоса растягивалась
-   на 1360px, и между подписью и счётчиком зияло восемьсот пустых пикселей.
-   Тот же приём, что у шапок «Мощи реликвии» и «Каталога» — колонка текста
-   прижата влево и не тянется за раздел. */
-#faq .faq-unlock,
-#faq .faq-grid{ max-width: 940px; }
+/* Полоса и панель занимают всю ширину раздела: обрезанные по 940px, они
+   читались куском, приставленным к левому краю.
+   Пустоту между подписью и счётчиком, из-за которой их и обрезали, держит
+   теперь ведущая линия — та же волосяная кромка, что у строк протокола.
+   Она не украшение: линия ведёт глаз от действия к числу записей, как в
+   оглавлении ведёт точечный пунктир. */
 #faq .faq-unlock{
   display: grid;
-  grid-template-columns: 46px minmax(0,1fr) auto;
+  grid-template-columns: 46px auto minmax(24px, 1fr) auto;
   align-items: center;
   gap: 16px;
   padding: 15px 18px;
@@ -40242,6 +40243,14 @@ h1, h2, h3,
   line-height: 1.3;
   color: var(--ink);
 }
+#faq .faq-unlock-rule{
+  height: 1px;
+  background: linear-gradient(90deg, rgba(240,240,248,.13), rgba(240,240,248,.05));
+  transition: background .3s var(--ease-out);
+}
+#faq .faq-unlock.opened .faq-unlock-rule{
+  background: linear-gradient(90deg, rgba(0,200,200,.28), rgba(0,200,200,.06));
+}
 #faq .faq-unlock-meta{
   font-family: var(--font-mono);
   font-size: 9px;
@@ -40255,9 +40264,18 @@ h1, h2, h3,
    по фактической высоте содержимого (около 2200px на узком экране с одним
    раскрытым ответом), а не «с запасом на всякий случай»: девять тысяч
    делали кривую сворачивания рваной — почти всё время шло на пустоту. */
+/* Две колонки на широком экране. Одной колонкой девятнадцать строк
+   вытягивались в ленту на полтора экрана — на компьютере это читалось
+   списком дел, а не реестром. Заголовки разделов идут во всю ширину
+   панели и делят её на полосы.
+   align-items:start — чтобы раскрытый ответ растил только свою ячейку, а
+   соседняя не растягивалась вслед за ним. */
 #faq .faq-grid{
-  display: block;
-  padding: 0 18px 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  column-gap: 56px;
+  padding: 0 22px 14px;
   border-radius: 18px;
   background: rgba(255,255,255,.022);
   border: 1px solid transparent;
@@ -40279,6 +40297,7 @@ h1, h2, h3,
 /* Заголовок раздела внутри документа. */
 #faq .faq-group-label{
   display: block;
+  grid-column: 1 / -1;
   margin: 26px 0 2px;
   padding: 0 0 10px;
   border-bottom: 1px solid rgba(255,255,255,.07);
@@ -40428,8 +40447,12 @@ h1, h2, h3,
   animation: faqRowIn .4s cubic-bezier(.4,0,.2,1) both;
 }
 
+@media (max-width: 1100px){
+  #faq .faq-grid{ grid-template-columns: minmax(0, 1fr); column-gap: 0; }
+}
 @media (max-width: 760px){
   #faq .faq-grid{ padding: 0 14px 8px; }
+  #faq .faq-unlock-rule{ display: none; }
   #faq .faq-item::before{ inset: 2px -9px 5px; }
   #faq .faq-q{ padding: 15px 2px; gap: 10px; }
   #faq .faq-a{ font-size: 12.5px; }
