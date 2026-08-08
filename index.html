@@ -6114,6 +6114,9 @@ select:-webkit-autofill {
 .architect-in {
   max-width: 1360px; margin: 0 auto;
 }
+/* .architect-code (ART. ECH-0001) снят по решению владельца: приписка ничего
+   не сообщала, а в записи держала лишнюю ступень. Правило удалено вместе с
+   разметкой, чтобы не копить мёртвый CSS. */
 /* Поддержка стала отдельным разделом и должна выглядеть как раздел, а не
    как продолжение предыдущего: те же поля, тот же фон, та же верхняя
    линия. Верхняя граница снята — иначе на стыке с Архитектором рисуются
@@ -6140,11 +6143,6 @@ select:-webkit-autofill {
   display: flex; align-items: center; gap: 10px;
 }
 .architect-label-pre { color: var(--white-dim); }
-.architect-code {
-  font-family: var(--font-code); font-size: 8px;
-  letter-spacing: 0.2em; color: var(--white-dim);
-  text-transform: uppercase; margin-bottom: 12px;
-}
 .architect-name {
   font-family: var(--font-display); font-weight: 700;
   font-size: 48px; color: var(--white); line-height: 1;
@@ -17828,7 +17826,6 @@ body.menu-open .menu-side { animation: ewMenuItemIn .45s var(--ease-out) both; a
          её вместе с ним, вход перенесён на имя. -->
     <div class="arch-rec" id="architectBody">
       <div class="arch-rec-id">
-        <div class="architect-code">ART. ECH-0001</div>
         <h2 class="architect-name">
           <button type="button" class="arch-rec-name" onclick="openArchitectConsoleGate(this)"
                   aria-label="Архитектор @aintonx">@aintonx</button>
@@ -41274,22 +41271,44 @@ h1, h2, h3,
    Интерфейс-терминал убран, вместе с ним ушла и «печать», которая его
    заменяла. Осталась одна запись реестра.
 
-   Задача была не дать ей выглядеть обрубком колонки: без правого блока
-   текст занимал бы половину экрана, а вторая половина пустовала. Решение
-   не в новом интерфейсе, а в раскладке — ряд из двух долей: слева
-   опознание (артикул, имя, уровень), справа сам текст. На десктопе ряд
-   держит всю ширину, на телефоне встаёт в столбик. Одна раскладка на оба
-   случая, отдельной мобильной версии не нужно. */
+   ЧТО ИЗМЕНЕНО ПО ЗАМЕЧАНИЯМ. Разделительная линия между долями снята —
+   и на десктопе (вертикальная), и на телефоне (горизонтальная). Линия
+   решала техническую задачу: не дать двум колонкам развалиться. Но
+   разделять — это последнее, что нужно записи, которая должна читаться
+   как одно имя с пояснением. Вместо линии колонки держит выравнивание:
+   имя и первая строка текста стартуют с одной высоты, и глаз сам
+   достраивает связь.
+
+   Артикул ART. ECH-0001 убран. Он занимал верхнюю ступень и отодвигал имя
+   от края — теперь имя стоит первым, ровно напротив текста.
+
+   Подписи собраны в одну связку: имя и строка обозначения идут вплотную
+   (одно целое, а не два блока), а воздух вынесен наружу — между связкой и
+   текстом. Дорогое впечатление даёт не украшение, а расстояния: крупное
+   имя, тихая подпись под ним и много пустоты вокруг. */
 .arch-rec{
   display: grid;
-  grid-template-columns: minmax(220px, .78fr) minmax(0, 1.22fr);
-  gap: 46px;
+  /* Левая доля ровно по содержимому (max-content), а не долей от ширины
+     раздела: доля растягивалась до 400px при подписи в 310, и между именем
+     и текстом зияла пустая полоса в две сотни пикселей. Теперь расстояние
+     между долями ровно одно — тот самый gap, и оно читается как решение,
+     а не как остаток.
+     Вся запись ограничена мерой чтения: растянутая на 1360px строка в 14px
+     даёт под сотню знаков — глазу такую строку вести тяжело. */
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 72px;
   align-items: start;
+  max-width: 1040px;
 }
 .arch-rec-id{ min-width: 0; }
-.arch-rec .architect-code{ margin-bottom: 10px; }
+
 /* Имя — кнопка: консоль Апертуры открывалась строкой терминала, и вместе
    с ним потеряла бы единственный вход. Внешне это по-прежнему заголовок. */
+.arch-rec .architect-name{
+  margin-bottom: 0;
+  font-size: clamp(40px, 3.6vw, 52px);
+  line-height: 1;
+}
 .arch-rec-name{
   font: inherit;
   color: inherit;
@@ -41303,36 +41322,42 @@ h1, h2, h3,
 @media (hover: hover) and (pointer: fine){
   .arch-rec-name:hover{ color: var(--red2); }
 }
+/* Подпись прижата к имени вплотную: 14px — это расстояние внутри связки,
+   а не между блоками. Раньше было 30 и подпись читалась отдельной строкой
+   неизвестно к чему. */
 .arch-rec-des{
-  margin-top: 10px;
+  margin-top: 14px;
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 9px;
   letter-spacing: .24em;
   color: var(--ink-4);
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .arch-rec-des b{ color: var(--red2); font-weight: 600; }
 .arch-rec-text{
-  /* Тонкая линия-разделитель, а не цветная полоса-акцент: она отбивает
-     колонки и на телефоне пропадает вместе с двухколонной раскладкой. */
-  border-left: 1px solid rgba(255,255,255,.08);
-  padding-left: 46px;
-  max-width: 68ch;
+  /* Ни рамки, ни отступа под неё: колонки держит выравнивание по верху.
+     Первая строка текста и верх имени стоят на одной высоте. */
+  padding: 6px 0 0;
+  max-width: 66ch;
   font-size: 14px;
-  line-height: 1.75;
+  line-height: 1.8;
   color: var(--white-mid);
 }
 .arch-rec-text strong{ color: var(--white); font-weight: 500; }
 
-@media (max-width: 900px){
-  .arch-rec{ grid-template-columns: 1fr; gap: 22px; }
-  .arch-rec-text{
-    border-left: 0;
-    padding-left: 0;
-    border-top: 1px solid rgba(255,255,255,.08);
-    padding-top: 22px;
-    font-size: 13px;
-  }
+/* Ниже 1100px левая доля перестаёт помещаться рядом с удобной строкой
+   текста — переходим в столбик заранее, а не когда станет тесно. */
+@media (max-width: 1100px){
+  .arch-rec{ grid-template-columns: 1fr; gap: 34px; }
+  .arch-rec-text{ padding-top: 0; max-width: 62ch; }
+}
+@media (max-width: 640px){
+  .arch-rec{ gap: 30px; }
+  .arch-rec .architect-name{ font-size: 40px; }
+  /* На узком экране подпись переносить можно — иначе она вылезает за край. */
+  .arch-rec-des{ white-space: normal; line-height: 2; }
+  .arch-rec-text{ font-size: 13.5px; line-height: 1.78; }
 }
 </style>
 <!-- ═══════════════════════════════════════════════════════════════
