@@ -1620,6 +1620,10 @@ header{
   position: sticky;
   top: 0;
   z-index: 500;
+  /* Отступ от краёв задан сразу и равен отступу плит разделов, чтобы
+     капсула не переезжала по ходу загрузки. Мобильное значение — ниже,
+     сразу за этим правилом. */
+  padding: 14px 8px 0;
   background-color: var(--void);
   background-image: linear-gradient(var(--safari-header-bg), var(--safari-header-bg));
   /* backdrop-filter убран: на iOS Safari размытие у sticky-хедера и было
@@ -1636,6 +1640,12 @@ header{
   backface-visibility: hidden;
   will-change: transform;
 }
+/* Мобильный отступ капсулы — ранней копией, рядом с самим правилом:
+   на телефоне он 6px, как у плит разделов, и должен быть таким уже на
+   первом кадре. */
+@media (max-width: 720px){
+  header{ padding-left: 6px; padding-right: 6px; }
+}
 /* При скролле — хедер уплотняется: чуть темнее фон, тонкая красная линия снизу,
    лёгкая тень. Остаётся в духе сайта, не выбивается из стиля. */
 header.scrolled{
@@ -1646,7 +1656,11 @@ header.scrolled{
 }
 
 .header-inner{
-  max-width: 1360px;
+  /* Ограничения ширины нет с самой первой отрисовки. Раньше здесь стояло
+     1360px, ниже по файлу 1160px, а окончательное значение приходило в
+     самом конце — и капсула на глазах меняла ширину дважды, пока
+     догружался документ. Теперь все три точки согласованы. */
+  max-width: none;
   margin: 0 auto;
   padding: 0 32px;
   display: flex;
@@ -14837,7 +14851,13 @@ header{
   background-image: none;
   border-bottom: none;
   box-shadow: none;
-  padding: 14px 12px 0;
+  padding: 14px 8px 0;
+}
+/* Сокращённая запись padding выше перебивает раннюю мобильную копию —
+   поэтому она повторена и здесь. Без этого на телефоне капсула держала
+   8px до самого конца файла и в последний момент переезжала на 6px. */
+@media (max-width: 720px){
+  header{ padding-left: 6px; padding-right: 6px; }
 }
 header.scrolled{
   background: transparent;
@@ -14847,7 +14867,7 @@ header.scrolled{
 }
 /* Капсула = v2 .hdr */
 .header-inner{
-  max-width: 1160px;
+  max-width: none;
   height: auto;
   margin: 0 auto;
   padding: 12px 14px 12px 22px;
