@@ -12221,12 +12221,6 @@ button, a, [role="button"], label,
 
    overflow:hidden безопасен: sticky-узлов внутри разделов нет,
    проверено обходом дерева. */
-/* У раздела «Заказать конденсацию» клип снят: внутри него горизонтальная
-   прокрутка, и любой прямоугольный клип поверх скруглённой плиты давал
-   срез в углах. Обрезать здесь нечего — дорожка прокрутки клипует своё
-   содержимое сама, а фон плиты и без того ограничен её радиусом. */
-#preorderSection{ overflow: visible; }
-
 @media (min-width: 721px){
   .about, .tech-block, .apertura-worlds, .echo-section, .relic-section,
   .collab, .architect-section, .faq-section,
@@ -12241,8 +12235,6 @@ button, a, [role="button"], label,
        фона. Цвет один на все. */
     background: var(--raised);
   }
-  /* см. пояснение выше: у конденсации клип снят намеренно */
-  #preorderSection{ overflow: visible; }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -12263,8 +12255,6 @@ button, a, [role="button"], label,
     border: 1px solid var(--line-hi);
     background: var(--raised);
   }
-  /* см. пояснение выше: у конденсации клип снят намеренно */
-  #preorderSection{ overflow: visible; }
   .about { background: var(--raised); }
   .about::after { display: none; }
 
@@ -16601,9 +16591,28 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
 .donate-method-card:active{ transform: scale(0.985); }
 
 /* ── ПАНЕЛЬ ─────────────────────────────────────────────────────── */
-.cond-screen, .preorder-terminal, .arch-term, .cookie-banner,
+/* .cookie-banner получал отсюда position:relative и терял своё
+   position:fixed. Из-за этого left:12px сдвигал его вправо, а right:12px
+   переставал действовать: баннер вылезал за правый край на 12px и делал
+   страницу таскаемой вбок на телефоне. Материал панели ему нужен,
+   позиция — нет, поэтому он вынесен в отдельную строку ниже. */
+.cond-screen, .preorder-terminal, .arch-term,
 .attr-drum-section, .attr-result-panel{
   position: relative;
+  background: var(--glass-bg) !important;
+  border: 0 !important;
+  border-radius: 24px !important;
+  -webkit-backdrop-filter: blur(26px) saturate(175%);
+  backdrop-filter: blur(26px) saturate(175%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.16),
+    inset 0 -24px 48px rgba(0,0,0,0.2),
+    0 30px 90px rgba(0,0,0,0.55) !important;
+  overflow: hidden;
+}
+/* Тот же материал, но своя позиция: баннер кук закреплён у нижнего края
+   окна, как и задумано его собственным правилом. */
+.cookie-banner{
   background: var(--glass-bg) !important;
   border: 0 !important;
   border-radius: 24px !important;
@@ -40681,14 +40690,18 @@ h1, h2, h3,
 }
 </style>
 <style id="ew-preorder-clip-css">
-/* Клип у раздела «Заказать конденсацию» снят окончательно.
-   Правило стоит последним намеренно: overflow:hidden прилетал этому
-   разделу из трёх мест — общей плиты на десктопе, такой же на мобиле и
-   ещё одного слоя ниже по файлу. Внутри раздела горизонтальная
-   прокрутка, и любой прямоугольный клип поверх скруглённой плиты
-   срезал углы. Обрезать здесь нечего: дорожка прокрутки клипует своё
-   содержимое сама, а фон плиты ограничен её собственным радиусом. */
-#preorderSection{ overflow: visible !important; }
+/* Клип разделу «Заказать конденсацию» ВОЗВРАЩЁН.
+   Я снимал его, чтобы убрать срез в углах, и этим открыл разделу выезд
+   за край экрана на 21px: страницу на телефоне стало можно таскать вбок
+   там, где двигаться нечему.
+
+   Срез был не от клипа как такового. Внутри лежит дорожка горизонтальной
+   прокрутки, а такой узел получает собственный композитный слой и
+   скруглением предка не ограничивается — его прямой угол ложился поверх
+   дуги. Лечится это не снятием клипа у раздела, а собственным радиусом
+   у самой дорожки (см. .pre-swipe-track): раздел клипует, дорожка
+   скруглена, оба условия выполнены. */
+#preorderSection{ overflow: hidden !important; }
 </style>
 <style id="ew-support-css">
 /* ══ ПОДДЕРЖКА · УСИЛЕНИЕ СИГНАЛА АНТЕННЫ ════════════════════════════
