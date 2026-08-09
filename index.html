@@ -13475,28 +13475,28 @@ button, a, [role="button"], label,
   .ap-status-fields{ grid-template-columns: 1fr; }
   .ap-status-title{ font-size: 24px; }}
 
-/* PATCH · INSTAGRAM ENTRY STATUS READABILITY · 2026-07-08
-   Только для ?signal=instagram. Не меняет общую механику APERTURA STATUS:
+/* PATCH · ВНЕШНИЙ СИГНАЛ · ЧИТАЕМОСТЬ ОКНА ВХОДА · 2026-07-08
+   Только для окна входа по ?signal=... Не меняет общую механику APERTURA STATUS:
    #_blurW остаётся штатным blur(12px) brightness(0.5), mobile bottom-sheet
    остаётся прежним. Исправляет две вещи: убирает тяжёлую дополнительную
    чёрную плёнку поверх уже заблюренного сайта и не анимирует filter на
    самой панели, чтобы текст не становился мыльным в iOS/Safari. */
-#apStatusOverlay[data-status-key="entry-instagram"]{
+#apStatusOverlay[data-status-key="entry-signal"]{
   background:
     radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.10), transparent 46%),
     radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.10), transparent 54%),
     rgba(5,5,6,.46) !important;
 }
-#apStatusOverlay[data-status-key="entry-instagram"] .ap-status-panel{
+#apStatusOverlay[data-status-key="entry-signal"] .ap-status-panel{
   -webkit-filter: none !important;
   filter: none !important;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
 }
-#apStatusOverlay[data-status-key="entry-instagram"].open .ap-status-panel{
+#apStatusOverlay[data-status-key="entry-signal"].open .ap-status-panel{
   animation: apEntryStatusIn .34s cubic-bezier(.22,0,.48,1) forwards !important;
 }
-#apStatusOverlay[data-status-key="entry-instagram"].closing .ap-status-panel{
+#apStatusOverlay[data-status-key="entry-signal"].closing .ap-status-panel{
   animation: apEntryStatusOut .26s cubic-bezier(.55,0,.78,1) forwards !important;
 }
 @keyframes apEntryStatusIn{
@@ -13506,10 +13506,10 @@ button, a, [role="button"], label,
   from { opacity: 1; transform: none; }
   to { opacity: 0; transform: translateY(22px) scale(.985); }}
 @media(max-width:720px){
-  #apStatusOverlay[data-status-key="entry-instagram"].open .ap-status-panel{
+  #apStatusOverlay[data-status-key="entry-signal"].open .ap-status-panel{
     animation: apEntryStatusMobIn .32s cubic-bezier(.22,0,.48,1) forwards !important;
   }
-  #apStatusOverlay[data-status-key="entry-instagram"].closing .ap-status-panel{
+  #apStatusOverlay[data-status-key="entry-signal"].closing .ap-status-panel{
     animation: apEntryStatusMobOut .26s cubic-bezier(.55,0,.78,1) forwards !important;
   }}
 @keyframes apEntryStatusMobIn{
@@ -14246,7 +14246,7 @@ body._blur-fading #_blurW{
   100% { transform: translateX(0); }}
 
 /* APERTURA STATUS / Architect уже имеют отдельный overlay; меняем только
-   физику панели, не трогая цветовые/читабельные правила signal=instagram. */
+   физику панели, не трогая цветовые/читабельные правила окна входа. */
 .ap-console-panel,
 .ap-status-panel{
   will-change: transform, opacity, filter;
@@ -26352,27 +26352,34 @@ function showAperturaStatus(key, opts){
   });
 }
 
-/* INSTAGRAM ENTRY · мягкий вход для внешнего слоя (?signal=instagram).
+/* ВНЕШНИЙ СИГНАЛ · мягкий вход по ссылке ?signal=...
    Не меняет URL, не трогает scroll/touch/cart/checkout/API и не мешает
-   deep-link карточек: если есть ?relic=..., карточка остаётся главным входом. */
+   deep-link карточек: если есть ?relic=..., карточка остаётся главным входом.
+
+   Раньше распознавалось единственное значение — instagram, и ссылки для
+   других мест просто не срабатывали. Теперь окно открывает ЛЮБОЕ значение
+   параметра, и даже голый ?signal без значения: одну ссылку можно ставить
+   везде, а слово после знака равенства выбирать по вкусу. Прежние ссылки
+   с ?signal=instagram при этом продолжают работать.
+
+   Отслеживания источника здесь нет и не задумано: значение никуда не
+   записывается и ни на что не влияет — оно только для читаемости ссылки. */
 const EW_ENTRY_SIGNAL_PARAM = 'signal';
-const EW_ENTRY_SIGNAL_INSTAGRAM = 'instagram';
-const EW_ENTRY_SIGNAL_INSTAGRAM_KEY = 'ew:entry-signal:instagram:v1';
-function isInstagramEntrySignal(){
+const EW_ENTRY_SIGNAL_KEY = 'ew:entry-signal:v2';
+function isEntrySignal(){
   try{
     const url = new URL(location.href);
-    const signal = String(url.searchParams.get(EW_ENTRY_SIGNAL_PARAM) || '').trim().toLowerCase();
-    if(signal !== EW_ENTRY_SIGNAL_INSTAGRAM) return false;
+    if(!url.searchParams.has(EW_ENTRY_SIGNAL_PARAM)) return false;
     if(url.searchParams.has(RELIC_DEEP_LINK_PARAM)) return false;
     return true;
   }catch(e){
     return false;
   }
 }
-function showInstagramEntryStatus(){
+function showEntrySignalStatus(){
   _renderAperturaStatus({
-    key: 'entry-instagram',
-    source: 'entry-instagram',
+    key: 'entry-signal',
+    source: 'entry-signal',
     kicker: '// APERTURA · ENTRY STATUS',
     title: 'Внешний сигнал распознан',
     text: 'Вы вошли в EchoWorld — интерфейс, через который в наш мир попадают физические реликвии из MARKETSPACE.',
@@ -26384,16 +26391,19 @@ function showInstagramEntryStatus(){
     ]
   });
 }
-function bootInstagramEntrySignal(){
-  if(!isInstagramEntrySignal()) return;
+function bootEntrySignal(){
+  if(!isEntrySignal()) return;
   try{
-    if(sessionStorage.getItem(EW_ENTRY_SIGNAL_INSTAGRAM_KEY) === '1') return;
-    sessionStorage.setItem(EW_ENTRY_SIGNAL_INSTAGRAM_KEY, '1');
+    /* Один показ за сеанс — и отметка теперь общая, без привязки к
+       источнику: заходы по разным ссылкам в одном сеансе не покажут
+       окно дважды. */
+    if(sessionStorage.getItem(EW_ENTRY_SIGNAL_KEY) === '1') return;
+    sessionStorage.setItem(EW_ENTRY_SIGNAL_KEY, '1');
   }catch(e){}
-  setTimeout(showInstagramEntryStatus, 520);
+  setTimeout(showEntrySignalStatus, 520);
 }
-(function setupInstagramEntrySignalBoot(){
-  function boot(){ bootInstagramEntrySignal(); }
+(function setupEntrySignalBoot(){
+  function boot(){ bootEntrySignal(); }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 })();
@@ -33562,12 +33572,12 @@ svg.ew-mask-icon use,
   z-index: 1;
   will-change: transform, opacity, filter;
 }
-/* entry-instagram сохраняет собственную читаемую плёнку, но теперь она тоже
+/* entry-signal сохраняет собственную читаемую плёнку, но теперь она тоже
    живёт на backdrop-layer, а не на самом overlay-контейнере. */
-#apStatusOverlay[data-status-key="entry-instagram"]{
+#apStatusOverlay[data-status-key="entry-signal"]{
   background: transparent !important;
 }
-#apStatusOverlay[data-status-key="entry-instagram"]::before{
+#apStatusOverlay[data-status-key="entry-signal"]::before{
   background:
     radial-gradient(ellipse at 50% 12%, rgba(0,200,200,.10), transparent 46%),
     radial-gradient(ellipse at 50% 100%, rgba(192,40,40,.10), transparent 54%),
@@ -35033,7 +35043,7 @@ body.ap-status-open #apConsoleOverlay.open .ap-console-panel{
 #apStatusOverlay.open::before,
 #apStatusOverlay.closing::before,
 #apStatusOverlay.ew-ap-status-pivoting::before,
-#apStatusOverlay[data-status-key="entry-instagram"]::before{
+#apStatusOverlay[data-status-key="entry-signal"]::before{
   background: rgba(5,5,6,.88) !important;
 }</style>
 <script id="ew-apertura-status-cyan-wash-off-js">
