@@ -1318,6 +1318,18 @@ html::-webkit-scrollbar-thumb:hover{ background: var(--ink-4); }}
   font-display: swap;
 }
 
+/* Заголовки окон — тем же трекингом и тоже рано. Копия правила из блока
+   ew-unify-css в конце файла: без неё стенд оседания ловил заголовки
+   документов, которые меняли трекинг, когда до хвоста доезжал парсер. */
+/* Только настоящие заголовки — Oswald крупным кеглем без капслока.
+   .ap-console-title, .cart-title и .offer-h1 сюда не входят: замер
+   показал, что это метки (Plex Mono 9px капслоком) и капслочный
+   заголовок документа с трекингом .16em — им канон заголовка сбивает
+   собственный рисунок. */
+.ap-status-title, .ap-gate-title, .cart-empty-h{
+  letter-spacing: 0.005em;
+}
+
 /* ── ТРЕКИНГ ЗАГОЛОВКОВ · РАНО ────────────────────────────────────────
    Ровно то же правило, что и в блоке ew-heading-tracking в конце файла.
    Копия здесь не «на всякий случай», она чинит конкретный дефект.
@@ -41018,6 +41030,149 @@ h1, h2, h3,
 .ap-status-text, .ap-status-note, .ap-status-info{
   font-size: 12px !important;
   line-height: 1.65 !important;
+}
+</style>
+<style id="ew-unify-css">
+/* ═══ ЕДИНЫЙ ВИД: КНОПКИ · КРЕСТИКИ · ФУТЕР · ВОЗВРАТ · СИГНАЛ · ТРЕКИНГ ═══
+
+   Эталоны сняты с боевого сайта, а не выдуманы:
+     кнопка   .cart-checkout-btn / .chk-nav-btn — капсула 99px,
+              тёплая заливка rgba(209,160,74,.09), кромка .34, текст #e8c37a
+     крестик  .panel-close / .legal-modal-close — круг 44x44,
+              фон rgba(255,255,255,.10 от белого = .05), глиф 17px, цвет ink-3
+     заголовок  «Заказать конденсацию» — 44px/700, трекинг +0.005em         */
+
+/* ── 1. КНОПКИ ─────────────────────────────────────────────────────────
+   Прямые углы 6-10px на органе управления — след старого набора. Здесь
+   остались три: кнопка аварийного окна (10px), кнопка формы возврата
+   (6px) и кнопка оплаты. Плюс отдельная беда с цветом: у кнопки оплаты
+   и у кнопки кук заливка var(--red). Красный в языке означает тревогу и
+   запрет, поэтому главное действие им красить нельзя — читается как
+   «стоп» на кнопке, которую как раз надо нажать.                        */
+#apStatusPanel .ap-status-action,
+#apConsolePanel .ap-status-action,
+.ap-status-panel .ap-status-action,
+.ap-status-action,
+.ap-test-btn,
+#returnModalPanel .return-submit, .return-submit,
+.chk-pay-btn,
+.cookie-banner-ok{
+  border-radius: 99px !important;
+}
+/* Уточнение по кнопке отправки Эхо: у неё есть красное правило
+   .echo-order-submit:not(:disabled):not(.spinning) с !important. В окне
+   заказа его перекрывает более сильное правило с якорем #echoOrderBody,
+   но вне этого контейнера кнопка снова стала бы красной. Повторяю тот же
+   набор состояний, чтобы тёплый цвет держался везде. Приглушённый вид у
+   выключенной и циановый у «в работе» не трогаю — это законные роли. */
+.chk-pay-btn:not(:disabled):not(.spinning),
+.echo-order-submit:not(:disabled):not(.spinning),
+.chk-pay-btn, .cookie-banner-ok,
+#returnModalPanel .return-submit, .return-submit{
+  background: rgba(209,160,74,.09) !important;
+  border: 1px solid rgba(209,160,74,.34) !important;
+  color: var(--warm-hi) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12),
+              inset 0 0 26px rgba(209,160,74,.08) !important;
+  text-shadow: none !important;
+}
+.return-submit:hover:not(:disabled), .return-submit:active:not(:disabled),
+.chk-pay-btn:hover:not(:disabled), .cookie-banner-ok:hover{
+  background: rgba(209,160,74,.15) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14),
+              inset 0 0 30px rgba(209,160,74,.13),
+              0 0 30px rgba(209,160,74,.2) !important;
+}
+.return-submit:disabled{
+  background: rgba(255,255,255,.04) !important;
+  border-color: rgba(255,255,255,.10) !important;
+  color: var(--ink-4) !important;
+  box-shadow: none !important;
+}
+
+/* ── 2. КРЕСТИКИ ───────────────────────────────────────────────────────
+   Два крестика Апертуры были голым глифом 28px без круга, остальные
+   шесть — круг 44x44 с глифом 17px. Здесь их приводят к общему виду.
+   Глиф у них лежит текстом в разметке, а не в ::before, поэтому кегль
+   задаётся напрямую — разметку не трогаю.                              */
+.ap-status-close, .ap-console-close{
+  width: 44px !important; height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important; justify-content: center !important;
+  border-radius: 50% !important;
+  background: rgba(255,255,255,.05) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  font-size: 17px !important; line-height: 1 !important;
+  color: var(--ink-3) !important; text-shadow: none !important;
+  transition: background .2s var(--ease-out), color .2s var(--ease-out),
+              border-color .2s var(--ease-out);
+}
+.ap-status-close:hover, .ap-console-close:hover{
+  background: rgba(255,255,255,.08) !important;
+  border-color: rgba(255,255,255,.20) !important;
+  color: var(--ink) !important;
+}
+
+/* ── 3. ССЫЛКИ ФУТЕРА ──────────────────────────────────────────────────
+   «Реквизиты · Публичная оферта · Политика конфиденциальности · Возврат
+   реликвии» — это фразы, а не технические метки, и набраны они были
+   машинописью 11px. Рядом с наборным текстом баннера кук разница видна
+   сразу. Кегль 12px вместо 11: Overpass у́же, при 11px строка выглядела
+   бы мельче прежней.                                                    */
+.foot-legal-link{
+  font-family: var(--font-body) !important;
+  font-size: 12px !important;
+  letter-spacing: normal !important;
+}
+
+/* ── 4. ФОРМА ВОЗВРАТА ─────────────────────────────────────────────────
+   Разметка у неё уже общая с формой заказа (chk-field, chk-section,
+   chk-head, panel-close chk-close) — расходилось оформление собственных
+   классов return- и req-, оставшееся от старого красного набора:
+   подтверждённый чек-бокс заливался красным, разделитель уходил красным
+   градиентом, выделение в лид-абзаце было красным. По языку красный —
+   только тревога; «выбрано и подтверждено» показывают нейтральной
+   заливкой, как в форме заказа (правило input:checked + .chk-consent-box).
+   Красной остаётся звёздочка обязательного поля — это законная роль,
+   но берётся тот же мягкий тон --red-label, что и в форме заказа.       */
+#returnModal .return-chk-consent input:checked + .chk-consent-box{
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.34) !important;
+  box-shadow: none !important;
+}
+#returnModal .req-divider{
+  background: var(--line-hi) !important;
+  opacity: 1 !important;
+}
+#returnModal .req-modal-lore strong,
+#reqModal .req-modal-lore strong{
+  color: var(--ink) !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+}
+#returnModal .req-star, #reqModal .req-star{
+  color: var(--red-label) !important;
+  font-weight: 400 !important;
+}
+
+/* ── 5. СИГНАЛ ИЗ MARKETSPACE ──────────────────────────────────────────
+   У плашки сигнала стоял фон rgba(17,17,21,.46), но backdrop-filter не
+   стоял вовсе — то есть полупрозрачная подложка без размытия. Из-за
+   этого сквозь неё читалось содержимое страницы. У соседнего уведомления
+   размытие есть; здесь ставится такое же.                              */
+#loreNotif, .lore-notif{
+  backdrop-filter: blur(26px) saturate(175%) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(175%) !important;
+  background: rgba(17,17,21,.62) !important;
+}
+
+/* ── 6. ТРЕКИНГ ЗАГОЛОВКОВ ОКОН ────────────────────────────────────────
+   У заголовка аварийного окна трекинг был -0.022em, а на мобиле -0.032em
+   — буквы стянуты. Канон снят с «Заказать конденсацию»: 44px/700 при
+   +0.005em. Ставится он же; у Oswald это тот трекинг, при котором узкий
+   гротеск не слипается.                                                 */
+.ap-status-title, .ap-gate-title, .cart-empty-h{
+  letter-spacing: 0.005em !important;
 }
 </style>
 <style id="ew-preorder-clip-css">
