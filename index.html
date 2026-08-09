@@ -2667,9 +2667,10 @@ strong{ color: var(--white) !important; font-weight: 400 !important; }
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 20px;
-  margin-bottom: var(--head-gap);
-  padding-bottom: var(--sp-5);
-  border-bottom: 1px solid var(--line);
+  /* Та же линия, что была у каталога, и снята по той же причине.
+     padding-bottom сложен с margin-bottom, чтобы расстояние до текста
+     осталось прежним. */
+  margin-bottom: calc(var(--head-gap) + var(--sp-5));
 }
 .about-body{ max-width: 880px; }
 .about-label{
@@ -2724,8 +2725,10 @@ strong{ color: var(--white) !important; font-weight: 400 !important; }
   color: var(--white-mid);
   line-height: 1.75;
   letter-spacing: 0.03em;
+  /* Боковая полоса-акцент убрана: приём из старого набора, в языке
+     «Линзы» его нет вовсе. Отступ слева оставлен — строка по-прежнему
+     сдвинута относительно абзацев, и это отличает её без черты. */
   padding-left: 14px;
-  border-left: 2px solid var(--cyan);
 }
 .about-followup.followup-red{
   border-left-color: var(--red2);
@@ -2758,9 +2761,10 @@ strong{ color: var(--white) !important; font-weight: 400 !important; }
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: var(--head-gap);
-  padding-bottom: var(--sp-5);
-  border-bottom: 1px solid var(--border);
+  /* Третья и последняя черта под шапкой раздела. Снята вместе с теми,
+     что были у каталога и «О системе»; отступ сложен, чтобы расстояние
+     до содержимого не изменилось. */
+  margin-bottom: calc(var(--head-gap) + var(--sp-5));
 }
 .tech-title{
   font-family: var(--font-display);
@@ -2965,9 +2969,11 @@ button.clink{ width: 100%; font: inherit; text-align: left; color: inherit; curs
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+  /* Линия под заголовком снята: у Эха, Миров, FAQ и Архитектора её нет,
+     и там шапка раздела читается свободнее. Отступ, который она держала,
+     переведён в margin — иначе заголовок подскочил бы к содержимому на
+     16 пикселей. Расстояние прежнее, черты нет. */
+  margin-bottom: 40px;
 }
 .cat-title{
   font-family: var(--font-code);
@@ -6234,6 +6240,7 @@ select:-webkit-autofill{
     scrollbar-width: none;
     overscroll-behavior-x: contain;
     width: auto;
+    border-radius: var(--radius-lg);   /* см. пояснение у .pre-swipe-track */
     /* Дорожка выходит за поля контейнера ровно на них же, а сам зазор
        между пейнами переезжает внутрь пейна. Иначе поле складывалось
        дважды — контейнерное плюс своё — и всё содержимое поддержки
@@ -6289,9 +6296,9 @@ select:-webkit-autofill{
   line-height: 0;
 }
 .nft-footnote{
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px dashed rgba(0,234,255,0.18);
+  /* Пунктир над сноской снят — единственная штриховая линия на сайте.
+     Её место держит увеличенный отступ. */
+  margin-top: 24px;
   font-family: var(--font-body);
   font-size: 11px;
   line-height: 1.7;
@@ -8167,6 +8174,14 @@ html.theme-soft .mnav-theme-icons *{ transition: none !important; }
      углы и срезало скругление плиты — раздел выглядел обрезанным. */
   .pre-swipe-track {
     display: flex;
+    /* Свой радиус у дорожки — не украшение. Дорожка это контейнер
+       горизонтальной прокрутки, а такой контейнер режет своё содержимое
+       ПРЯМОУГОЛЬНИКОМ, поверх скругления плиты: углы раздела выглядели
+       срезанными. Радиус дорожки повторяет радиус плиты, и срез идёт по
+       той же дуге. Раздел «Заказать конденсацию» единственный, где
+       прокрутка доходит до самых краёв плиты — у остальных её нет вовсе
+       либо она отбита полями. */
+    border-radius: var(--radius-lg);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -14917,7 +14932,7 @@ body.menu-open .hdr-burger i:nth-child(2){ top: 21px; transform: rotate(-45deg);
 @media (hover:hover) and (pointer:fine){ .ew-obs .obs-lock:hover{ background: rgba(255,255,255,0.04); } }
 .ew-obs .obs-dots::after{ content: ""; animation: ewRecDots 1.6s steps(4) infinite; }
 @keyframes ewRecDots{ 0% { content: ""; } 25% { content: "·"; } 50% { content: "··"; } 75% { content: "···"; } }
-.ew-obs .obs-foot{ position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 20px 15px; font-family: var(--font-code); font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); border-top: 1px solid var(--hairline); }
+.ew-obs .obs-foot{ position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 20px 15px; font-family: var(--font-code); font-size: 8.5px; letter-spacing: 0.14em; color: var(--ink-4); }
 .ew-obs .obs-foot span{ white-space: nowrap; }
 @media (prefers-reduced-motion: reduce){ .ew-obs .obs-dot{ animation: none; } .ew-obs .obs-dots::after{ animation: none; content: "···"; } }
 
