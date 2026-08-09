@@ -140,7 +140,11 @@ html.ew-first-boot-ready #ewFirstBoot{
   justify-content:space-between;
   gap:14px;
   margin:0 0 20px;
-  font:700 9px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* Был системный моно — единственное место на сайте, где текст рисовался
+     не шрифтом проекта. Токен работает и здесь, хотя блок стоит выше
+     объявления :root: переменные разрешаются при вычислении стиля, а не
+     при разборе. */
+  font:700 9px/1.2 var(--font-mono);
   letter-spacing:.26em;
   text-transform:uppercase;
   color:rgba(246,244,239,.54);
@@ -160,7 +164,10 @@ html.ew-first-boot-ready #ewFirstBoot{
 }
 .ew-boot-title{
   margin:0;
-  font:800 clamp(15px,4vw,19px)/1.15 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* 700 вместо 800: у IBM Plex Mono восьмисотого начертания нет, а подделка
+     жирности на сайте запрещена глобально (font-synthesis-weight: none) —
+     800 всё равно отрисовалось бы семисотым. */
+  font:700 clamp(15px,4vw,19px)/1.15 var(--font-mono);
   letter-spacing:.14em;
   text-transform:uppercase;
   color:rgba(246,244,239,.92);
@@ -211,7 +218,7 @@ html.ew-first-boot-ready #ewFirstBoot{
 .ew-boot-status{
   margin:13px 0 0;
   min-height:13px;
-  font:700 9px/1.25 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font:700 9px/1.25 var(--font-mono);
   letter-spacing:.18em;
   text-transform:uppercase;
   color:rgba(246,244,239,.48);
@@ -40867,6 +40874,10 @@ h1, h2, h3,
    списка — красные тире. Ни одно из трёх не тревога: это обычный текст
    договора. */
 .legal-modal-label{ color: var(--ink-4) !important; }
+/* Крестик документов рисовался Arial: у <button> своего шрифта нет, а
+   правило ему шрифт не задавало. Единственное место, где всплывал
+   системный шрифт браузера. */
+.legal-modal-close{ font-family: var(--font-mono) !important; }
 .req-modal-lore{
   border-left: 0 !important;
   padding-left: 0 !important;
