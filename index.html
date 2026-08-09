@@ -92,13 +92,20 @@ html.ew-first-boot-ready #ewFirstBoot{
   visibility:hidden;
   pointer-events:none;
 }
+/* Карточка переведена на материал панелей сайта: стекло, радиус 20px,
+   световой кант. Цвета шкалы и надписей оставлены прежними — по решению
+   владельца меняем материал и форму, а не палитру загрузчика. */
 .ew-boot-card{
   position:relative;
   width:min(392px, calc(100vw - 36px));
-  border:1px solid rgba(246,244,239,.17);
-  border-radius:12px;
-  background:rgba(7,7,13,.94);
-  box-shadow:0 18px 54px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.055);
+  border:1px solid rgba(240,240,248,.16);
+  border-radius:20px;
+  background:rgba(17,17,21,.46);
+  -webkit-backdrop-filter:blur(26px) saturate(175%);
+  backdrop-filter:blur(26px) saturate(175%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),
+             inset 0 -24px 48px rgba(0,0,0,.2),
+             0 30px 90px rgba(0,0,0,.55);
   overflow:hidden;
   transform:translateZ(0);
   animation:ewBootCardIn .26s cubic-bezier(.22,1,.36,1) both;
@@ -125,7 +132,7 @@ html.ew-first-boot-ready #ewFirstBoot{
 .ew-boot-inner{
   position:relative;
   z-index:1;
-  padding:20px 20px 18px;
+  padding:22px 22px 20px;
 }
 .ew-boot-kicker{
   display:flex;
@@ -170,7 +177,9 @@ html.ew-first-boot-ready #ewFirstBoot{
   position:relative;
   display:block;
   height:12px;
-  border-radius:2px;
+  /* было 2px — прямой угол вне четвёрки форм языка; тот же радиус, что у
+     сегментов шкалы мощности в панели поддержки */
+  border-radius:5px;
   background:rgba(246,244,239,.10);
   overflow:hidden;
 }
@@ -178,7 +187,7 @@ html.ew-first-boot-ready #ewFirstBoot{
   content:"";
   position:absolute;
   inset:2px;
-  border-radius:1px;
+  border-radius:4px;
   background:var(--ew-seg-color);
   opacity:.18;
   transform:scaleX(0);
@@ -226,7 +235,7 @@ html.ew-first-boot-ready #ewFirstBoot{
 #ewFirstBoot.ew-boot-quiet::after{animation:none;opacity:0;}
 @media (max-width:720px){
   #ewFirstBoot{padding:16px;}
-  .ew-boot-card{width:min(360px, calc(100vw - 28px));border-radius:10px;}
+  .ew-boot-card{width:min(360px, calc(100vw - 28px));}   /* радиус общий, 20px */
   .ew-boot-inner{padding:18px 17px 17px;}
   .ew-boot-kicker{margin-bottom:18px;font-size:8px;letter-spacing:.23em;}
   .ew-boot-title{font-size:clamp(14px,4.2vw,18px);letter-spacing:.12em;}
@@ -40731,6 +40740,197 @@ h1, h2, h3,
 @media (prefers-reduced-motion: reduce){
   #mclarity .mclarity-plus,
   #mclarity .mclarity-item::before{ transition: none; }
+}
+</style>
+<style id="ew-apertura-status-css">
+/* ══ ОКНА СТАТУСОВ АПЕРТУРЫ · ЦВЕТ-РОЛЬ ══════════════════════════════
+   Разбор показал: все 26 сценариев реестра плюс пять внереестровых идут
+   через один шаблон, и у всех 26 из 26 главная кнопка была красной, а
+   крестик закрытия — тоже. Красным оказывались покрашены и успехи:
+   «Платёж подтверждён», «Резерв снят», «Заказ зафиксирован». У варианта
+   «-success» вдобавок красной заливалась шапка панели.
+
+   По языку «Линзы» красный означает только тревогу и запрет. Здесь он
+   стоял на обычном действии — то есть на всём подряд.
+
+   Правится только цвет-роль и материал. Разметка, обработчики, тексты,
+   набор кнопок, порядок действий не тронуты.
+
+   Слой стоит последним намеренно: прежние правила разбросаны по семи
+   местам файла и часть из них с !important — перебить их точечно нельзя,
+   а собирать их вместе значило бы переписывать чужие блоки целиком. */
+
+/* ── ГЛАВНОЕ ДЕЙСТВИЕ — ТЁПЛОЕ ──────────────────────────────────────
+   Та же капсула, что у «Усилить сигнал через СБП» и «Передать Эхо»:
+   действие во всех окнах сайта выглядит одинаково. */
+/* Вес селектора поднят намеренно. Прежнее правило записано как
+   .ap-console-overlay[data-status-key] .ap-status-action.primary — из-за
+   атрибута оно тяжелее обычной цепочки классов, а !important
+   разрешается сначала по весу и только потом по порядку. Первая моя
+   попытка стояла последней в файле и всё равно проигрывала. */
+#apStatusOverlay .ap-status-action.primary,
+.ap-console-overlay[data-status-key] .ap-status-panel .ap-status-action.primary,
+.ap-console-overlay[data-status-key$="-success"] .ap-status-panel .ap-status-action.primary{
+  color: var(--warm-hi) !important;
+  background: rgba(209,160,74,.09) !important;
+  border: 1px solid rgba(209,160,74,.34) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12),
+              inset 0 0 26px rgba(209,160,74,.08) !important;
+  text-shadow: none !important;
+}
+@media (hover: hover) and (pointer: fine){
+  #apStatusOverlay .ap-status-action.primary:hover,
+  .ap-console-overlay[data-status-key] .ap-status-panel .ap-status-action.primary:hover,
+  .ap-console-overlay[data-status-key$="-success"] .ap-status-panel .ap-status-action.primary:hover{
+    background: rgba(209,160,74,.15) !important;
+    border-color: rgba(209,160,74,.5) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14),
+                inset 0 0 30px rgba(209,160,74,.13),
+                0 0 30px rgba(209,160,74,.2) !important;
+  }
+}
+#apStatusOverlay .ap-status-action.primary:active,
+#apStatusOverlay .ap-status-action.primary.ap-pressing,
+#apStatusOverlay .ap-status-action.primary:focus,
+#apStatusOverlay .ap-status-action.primary:focus-visible,
+.ap-console-overlay[data-status-key] .ap-status-panel .ap-status-action.primary:active,
+.ap-console-overlay[data-status-key$="-success"] .ap-status-panel .ap-status-action.primary:active{
+  background: rgba(209,160,74,.2) !important;
+  border-color: rgba(209,160,74,.55) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14) !important;
+  transform: scale(.985);
+}
+
+/* ── КРЕСТИК ЗАКРЫТИЯ — НЕЙТРАЛЬНЫЙ ─────────────────────────────────
+   Красный крестик читается как «отмена с потерей», хотя это обычное
+   закрытие окна. */
+.ap-console-close,
+.ap-status-close,
+.ap-console-overlay[data-status-key$="-success"] .ap-status-close{
+  color: var(--ink-3) !important;
+  text-shadow: none !important;
+  transition: color .22s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine){
+  .ap-console-close:hover,
+  .ap-status-close:hover{ color: var(--ink) !important; }
+}
+
+/* ── ШАПКА ПАНЕЛИ ───────────────────────────────────────────────────
+   Красно-оранжевая переливающаяся полоска снималась по всему сайту ещё
+   раньше; в окнах статусов она осталась последней. Снимается и здесь —
+   вместе с красной заливкой шапки у варианта «-success». */
+.ap-console-panel::before,
+.ap-status-panel::before,
+.ap-console-overlay[data-status-key$="-success"] .ap-status-head::before{
+  display: none !important;
+}
+.ap-console-overlay[data-status-key$="-success"] .ap-status-head{
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* ── ВОРОТА КОНСОЛИ АРХИТЕКТОРА ─────────────────────────────────────
+   Кнопка входа была сплошной красной. Вход в консоль — обычное действие,
+   а не тревога, поэтому она становится тёплой капсулой, как все главные
+   действия сайта. Материал панели ворота уже получают ниже: у них тот же
+   класс .ap-console-panel.
+
+   Красный здесь остаётся ровно там, где он по делу: строка уровня
+   доступа, рамка поля при неверном коде и текст ошибки под ним. Это и
+   есть «статус отказа». */
+#apConsoleGatePanel .ap-gate-submit,
+.ap-gate-panel .ap-gate-submit{
+  color: var(--warm-hi) !important;
+  background: rgba(209,160,74,.09) !important;
+  border: 1px solid rgba(209,160,74,.34) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12),
+              inset 0 0 26px rgba(209,160,74,.08) !important;
+  border-radius: 99px !important;
+  padding: 15px 18px !important;
+  font-weight: 600;
+  letter-spacing: .2em;
+}
+@media (hover: hover) and (pointer: fine){
+  #apConsoleGatePanel .ap-gate-submit:hover,
+  .ap-gate-panel .ap-gate-submit:hover{
+    background: rgba(209,160,74,.15) !important;
+    border-color: rgba(209,160,74,.5) !important;
+    color: var(--warm-hi) !important;
+    transform: none !important;
+  }
+}
+
+/* ── ДОКУМЕНТЫ ИЗ ФУТЕРА ────────────────────────────────────────────
+   Панель у них давно стеклянная, а внутри оставался старый набор: метка
+   протокола красная, вводный абзац с красной боковой полосой, маркеры
+   списка — красные тире. Ни одно из трёх не тревога: это обычный текст
+   договора. */
+.legal-modal-label{ color: var(--ink-4) !important; }
+.req-modal-lore{
+  border-left: 0 !important;
+  padding-left: 0 !important;
+  /* Вводный абзац отбивается не полосой, а полем и тоном — так же, как
+     отбит рассказ в разделе Архитектора. */
+  color: var(--ink-2) !important;
+}
+.legal-modal-body li::before{ color: var(--ink-4) !important; }
+
+/* ── ПЛАШКИ: УВЕДОМЛЕНИЕ, СИГНАЛ, ОТКАЗ ─────────────────────────────
+   У всех трёх была боковая полоса-акцент — приём из старого набора,
+   которого в языке нет. Материал плоский, радиус у сигнала 10px, то есть
+   вне четвёрки форм.
+
+   Смысл отказа сохранён, но несёт его не полоса, а точка-маркер слева:
+   тот же знак состояния, что у чипов каналов на панелях. */
+.notif,
+.lore-notif{
+  border-left: 0 !important;
+  border-radius: 18px !important;
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(175%);
+  backdrop-filter: blur(26px) saturate(175%);
+  border: 1px solid var(--hairline-hi) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16),
+              0 24px 60px rgba(0,0,0,.5) !important;
+}
+.access-denied-notif{ border-left: 0 !important; }
+/* Точка-маркер вместо полосы. Красная — только у отказа, у обычного
+   уведомления тёплая, у сигнала из MARKETSPACE циановая. */
+.notif::after,
+.lore-notif::after{
+  content: "";
+  position: absolute;
+  left: 14px; top: 50%;
+  width: 5px; height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  background: var(--warm);
+  box-shadow: 0 0 9px rgba(209,160,74,.9);
+  pointer-events: none;
+}
+.lore-notif::after{ background: var(--cyan); box-shadow: 0 0 9px rgba(0,200,200,.9); }
+.access-denied-notif::after{ background: var(--red2); box-shadow: 0 0 9px rgba(192,40,40,.9); }
+.notif, .lore-notif{ position: fixed; padding-left: 30px !important; }
+/* Метка уведомления была красной — это обычная подпись отправителя, а не
+   тревога. У отказа она остаётся красной: там это по делу. */
+.ntitle{ color: var(--ink-4) !important; }
+.access-denied-notif .ntitle{ color: var(--red-label) !important; }
+
+/* ── МАТЕРИАЛ ПАНЕЛИ ────────────────────────────────────────────────
+   Панель выглядела стеклом, но стеклом не была: backdrop-filter не стоял
+   вовсе. Теперь это тот же материал, что у панелей Эха, Конденсации и
+   Поддержки. */
+.ap-status-panel,
+.ap-console-panel{
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(175%);
+  backdrop-filter: blur(26px) saturate(175%);
+  border: 1px solid var(--hairline-hi) !important;
+  border-radius: 20px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16),
+              inset 0 -24px 48px rgba(0,0,0,.2),
+              0 30px 90px rgba(0,0,0,.55) !important;
 }
 </style>
 <style id="ew-preorder-clip-css">
