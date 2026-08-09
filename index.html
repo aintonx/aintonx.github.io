@@ -41196,6 +41196,106 @@ h1, h2, h3,
 .hbtn.danger:active{
   transform: translate3d(0,1px,0) scale(.992) !important;
 }
+
+/* ── CTA пейнов: «Запросить конденсацию» и «Усилить сигнал» ─────────
+   Это один класс .pre-pane-cta — в разделе конденсации он подписан
+   «Запросить конденсацию», в разделе архитектора «Усилить сигнал».
+   Он остался целиком в старом наборе: красная кромка и красный текст
+   в покое, красное свечение на наведении, красная стрелка и радиус
+   10px вместо капсулы. Перевод когда-то начали — в разделе архитектора
+   стрелке уже задали тёплый тон, — но не закончили, и две копии одной
+   кнопки выглядели по-разному.
+
+   Эталон рядом и сомнений не вызывает: .echo-pane-cta («Открыть канал»)
+   — тот же орган с той же ролью, он ведёт на пейн с интерфейсом, а не
+   совершает действие. Он тихий, поэтому и эти два тихие. Собственно
+   действие в этих разделах — «Отправить сигнал» и «Усилить сигнал через
+   СБП», они тёплые и остаются такими. */
+.pre-pane-cta{
+  border-radius: 99px !important;
+  background: rgba(255,255,255,.05) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  color: var(--ink-2) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1) !important;
+}
+.pre-pane-cta:hover, .pre-pane-cta:focus-visible{
+  background: rgba(255,255,255,.08) !important;
+  border-color: rgba(255,255,255,.20) !important;
+  color: var(--ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+.pre-pane-cta:active{
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.24) !important;
+  color: var(--ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14),
+              0 0 22px rgba(255,255,255,.08) !important;
+  transform: translate3d(0,1px,0) scale(.992) !important;
+}
+/* Два прежних правила красят эти кнопки красным при нажатии и делают это
+   с !important и большей значимостью, чем простой .pre-pane-cta:active:
+   «.arch-donate .pre-pane-cta:active» и группа в медиа-блоке для узких
+   экранов. Значимость решает раньше, чем порядок, поэтому здесь повторены
+   те же селекторы — иначе на телефоне «Усилить сигнал» продолжала бы
+   вспыхивать красным.
+
+   В той же группе оказался #preorderBtn — это «Отправить сигнал», тёплая
+   кнопка отправки заявки. Она краснела при нажатии по той же причине;
+   возвращаю ей её собственный тёплый. */
+.arch-swipe-pane > .pre-pane-cta:active,
+.arch-donate .pre-pane-cta:active{
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.24) !important;
+  color: var(--ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14),
+              0 0 22px rgba(255,255,255,.08) !important;
+  filter: none !important;
+  transform: translate3d(0,1px,0) scale(.992) !important;
+}
+#preorderBtn:active{
+  background: rgba(209,160,74,.18) !important;
+  border-color: rgba(209,160,74,.50) !important;
+  color: var(--warm-hi) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14),
+              inset 0 0 30px rgba(209,160,74,.16),
+              0 0 26px rgba(209,160,74,.22) !important;
+  filter: none !important;
+  transform: translate3d(0,1px,0) scale(.992) !important;
+}
+
+/* Стрелка идёт за текстом, а не живёт своим цветом. Повторяю всю связку
+   селекторов из прежних правил: они красят стрелку и подпись отдельно от
+   кнопки и делают это значимостью выше простого .pre-pane-cta — иначе
+   кнопка бы не краснела, а стрелка внутри неё краснела бы по-прежнему. */
+.pre-pane-cta .pre-pane-cta-arrow,
+#archDonate .pre-pane-cta .pre-pane-cta-arrow,
+.pre-pane-cta:active .pre-pane-cta-arrow,
+.pre-pane-cta:hover .pre-pane-cta-arrow,
+.arch-swipe-pane > .pre-pane-cta:active .pre-pane-cta-arrow,
+.arch-swipe-pane > .pre-pane-cta:hover .pre-pane-cta-arrow,
+.arch-donate .pre-pane-cta:active .pre-pane-cta-arrow,
+.arch-donate .pre-pane-cta:hover .pre-pane-cta-arrow{
+  background: currentColor !important;
+}
+.pre-pane-cta .pre-pane-cta-arrow::after,
+#archDonate .pre-pane-cta .pre-pane-cta-arrow::after,
+.pre-pane-cta:active .pre-pane-cta-arrow::after,
+.pre-pane-cta:hover .pre-pane-cta-arrow::after,
+.arch-swipe-pane > .pre-pane-cta:active .pre-pane-cta-arrow::after,
+.arch-swipe-pane > .pre-pane-cta:hover .pre-pane-cta-arrow::after,
+.arch-donate .pre-pane-cta:active .pre-pane-cta-arrow::after,
+.arch-donate .pre-pane-cta:hover .pre-pane-cta-arrow::after{
+  border-top-color: currentColor !important;
+  border-right-color: currentColor !important;
+}
+.pre-pane-cta:active .pre-pane-cta-label,
+.pre-pane-cta:hover .pre-pane-cta-label,
+.arch-swipe-pane > .pre-pane-cta:active .pre-pane-cta-label,
+.arch-swipe-pane > .pre-pane-cta:hover .pre-pane-cta-label,
+.arch-donate .pre-pane-cta:active .pre-pane-cta-label,
+.arch-donate .pre-pane-cta:hover .pre-pane-cta-label{
+  color: inherit !important;
+}
 </style>
 <style id="ew-cart-css">
 /* ═══ КОРЗИНА · ПОДВАЛ И КНОПКИ ═════════════════════════════════════
