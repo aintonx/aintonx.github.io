@@ -2316,6 +2316,197 @@ async function smartcaptchaVerify(event) {
   }
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   ЗАЯВКИ БЕЗ ДЕНЕГ · конденсация и возврат
+
+   Обе формы не касаются платежей, поэтому работают без ключей ЮKassa.
+   Пишут в таблицы из schema/requests.yql.
+
+   Идентификатор записи считается от черновика, присланного сайтом, —
+   поэтому повторная отправка той же заявки (человек нажал дважды, связь
+   моргнула) не плодит дубликаты: UPSERT перезапишет ту же строку.
+   ═══════════════════════════════════════════════════════════════════ */
+
+function isValidEmail(value) {
+  const text = String(value || "").trim();
+  if (text.length < 6 || text.length > 160) return false;
+  return /^[^@\s]+@[^@\s.]+\.[^@\s]{2,}$/.test(text);
+}
+
+function yqlBool(value) {
+  return isTrueFlag(value) ? "true" : "false";
+}
+
+function condensationPayload(event) {
+  const body = parseBody(event);
+
+  return {
+    draftId: cleanScalar(body.requestDraftId || body.request_draft_id || "", 80),
+    clientSessionId: cleanScalar(body.clientSessionId || body.client_session_id || "", 160),
+    item: cleanScalar(body.item, 160),
+    email: cleanScalar(body.email, 160),
+    consent: isTrueFlag(body.consent),
+    source: cleanScalar(body.source || "site", 40),
+    createdAtClient: cleanScalar(body.createdAtClient || body.created_at_client || "", 40)
+  };
+}
+
+async function condensationCreate(event) {
+  const payload = condensationPayload(event);
+
+  if (!payload.item || !payload.email) {
+    return json(400, { ok: false, error: "missing_fields", ts: nowIso() });
+  }
+
+  if (!isValidEmail(payload.email)) {
+    return json(400, { ok: false, error: "invalid_email", ts: nowIso() });
+  }
+
+  /* Согласие проверяем на сервере, а не только галочкой на странице:
+     запись персональных данных без него недопустима. */
+  if (!payload.consent) {
+    return json(400, { ok: false, error: "consent_required", ts: nowIso() });
+  }
+
+  const id = makeHashId("cond", [
+    payload.draftId,
+    payload.clientSessionId,
+    payload.email.toLowerCase(),
+    payload.item.toLowerCase()
+  ], 26);
+
+  const query = `
+    UPSERT INTO condensation_requests (
+      id,
+      request_draft_id,
+      client_session_id,
+      item,
+      email,
+      consent,
+      source,
+      status,
+      created_at_client,
+      created_at,
+      updated_at
+    )
+    VALUES (
+      ${yqlUtf8(id)},
+      ${yqlNullableUtf8(payload.draftId, 80)},
+      ${yqlNullableUtf8(payload.clientSessionId, 160)},
+      ${yqlUtf8(payload.item)},
+      ${yqlUtf8(payload.email)},
+      ${yqlBool(payload.consent)},
+      ${yqlUtf8(payload.source)},
+      "new",
+      ${yqlNullableUtf8(payload.createdAtClient, 40)},
+      CurrentUtcTimestamp(),
+      CurrentUtcTimestamp()
+    );
+  `;
+
+  await ydbQuery(query);
+
+  return json(200, {
+    ok: true,
+    request_id: id,
+    status: "new",
+    ts: nowIso()
+  });
+}
+
+function returnRequestPayload(event) {
+  const body = parseBody(event);
+  const contact = body.contact && typeof body.contact === "object" ? body.contact : {};
+
+  return {
+    draftId: cleanScalar(body.returnDraftId || body.return_draft_id || "", 80),
+    clientSessionId: cleanScalar(body.clientSessionId || body.client_session_id || "", 160),
+    name: cleanScalar(body.name, 120),
+    email: cleanScalar(contact.email || body.email || "", 160),
+    telegram: cleanScalar(contact.telegram || body.telegram || "", 80),
+    relicCode: cleanScalar(body.artifact_id || body.artifactId || body.relic_code || "", 40),
+    orderId: cleanScalar(body.order_id || body.orderId || "", 60),
+    reason: cleanScalar(body.description || body.reason || "", 900),
+    consent: isTrueFlag(body.consent),
+    createdAtClient: cleanScalar(body.createdAtClient || body.created_at_client || "", 40)
+  };
+}
+
+async function returnCreate(event) {
+  const payload = returnRequestPayload(event);
+
+  /* Форма требует имя, артикул и причину; хотя бы один канал связи —
+     почта или телеграм. Те же правила, что и на странице, повторены
+     здесь: страницу можно обойти, сервер обойти нельзя. */
+  if (!payload.name || !payload.relicCode || !payload.reason) {
+    return json(400, { ok: false, error: "missing_fields", ts: nowIso() });
+  }
+
+  if (!payload.email && !payload.telegram) {
+    return json(400, { ok: false, error: "contact_required", ts: nowIso() });
+  }
+
+  if (payload.email && !isValidEmail(payload.email)) {
+    return json(400, { ok: false, error: "invalid_email", ts: nowIso() });
+  }
+
+  if (!payload.consent) {
+    return json(400, { ok: false, error: "consent_required", ts: nowIso() });
+  }
+
+  const id = makeHashId("ret", [
+    payload.draftId,
+    payload.clientSessionId,
+    payload.relicCode.toLowerCase(),
+    payload.email.toLowerCase() || payload.telegram.toLowerCase()
+  ], 26);
+
+  const query = `
+    UPSERT INTO return_requests (
+      id,
+      return_draft_id,
+      client_session_id,
+      customer_name,
+      customer_email,
+      telegram,
+      relic_code,
+      order_id,
+      reason,
+      consent,
+      status,
+      created_at_client,
+      created_at,
+      updated_at
+    )
+    VALUES (
+      ${yqlUtf8(id)},
+      ${yqlNullableUtf8(payload.draftId, 80)},
+      ${yqlNullableUtf8(payload.clientSessionId, 160)},
+      ${yqlUtf8(payload.name)},
+      ${yqlNullableUtf8(payload.email, 160)},
+      ${yqlNullableUtf8(payload.telegram, 80)},
+      ${yqlUtf8(payload.relicCode)},
+      ${yqlNullableUtf8(payload.orderId, 60)},
+      ${yqlUtf8(payload.reason)},
+      ${yqlBool(payload.consent)},
+      "new",
+      ${yqlNullableUtf8(payload.createdAtClient, 40)},
+      CurrentUtcTimestamp(),
+      CurrentUtcTimestamp()
+    );
+  `;
+
+  await ydbQuery(query);
+
+  return json(200, {
+    ok: true,
+    request_id: id,
+    status: "new",
+    ts: nowIso()
+  });
+}
+
 exports.handler = async function handler(event) {
   const method = getMethod(event);
 
@@ -2367,6 +2558,14 @@ exports.handler = async function handler(event) {
       return await checkoutCreate(event);
     }
 
+    if (method === "POST" && (route === "condensation/create" || route === "condensation")) {
+      return await condensationCreate(event);
+    }
+
+    if (method === "POST" && (route === "return/create" || route === "returns/create")) {
+      return await returnCreate(event);
+    }
+
     return json(404, {
       ok: false,
       error: "route_not_found",
@@ -2383,7 +2582,9 @@ exports.handler = async function handler(event) {
         "POST ?route=checkout/create",
         "GET ?route=checkout/status&order_id=ord_...&status_token=...",
         "POST ?route=checkout/cancel",
-        "POST ?route=payment/create"
+        "POST ?route=payment/create",
+        "POST ?route=condensation/create",
+        "POST ?route=return/create"
       ],
       ts: nowIso()
     });

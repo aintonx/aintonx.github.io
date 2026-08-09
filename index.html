@@ -7570,21 +7570,23 @@ html.legal-modal-open .cookie-banner.show{
   background: var(--surface);
   border: 1px solid var(--border2);
   border-left: 2px solid var(--red2);
-  padding: 12px 16px;
+  /* Поля и ширина подтянуты под сигнал из MARKETSPACE — но только размер:
+     собственное оформление плашки (кромка слева, фон) остаётся своим. */
+  padding: 16px 18px;
   z-index: 800;
   display: none;
   transform: translate3d(calc(100% + 32px), 0, 0);
   animation: nIn .42s cubic-bezier(.16,1,.3,1) both;
   will-change: transform;
-  max-width: 280px;
+  max-width: 340px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 @keyframes nIn{
   from { transform: translate3d(calc(100% + 32px), 0, 0); }
   to   { transform: translate3d(0, 0, 0); }}
 .notif.show{ display: block; }
-.ntitle{ font-family: var(--font-code); font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 4px; color: var(--red2); }
-.nbody{ font-family: var(--font-code); font-size: 10px; color: var(--white-mid); line-height: 1.5; }
+.ntitle{ font-family: var(--font-code); font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 4px; color: var(--red2); }
+.nbody{ font-family: var(--font-code); font-size: 11px; color: var(--white-mid); line-height: 1.5; }
 
 /* ── MOBILE NAV DRAWER ── */
 .mob-burger{
@@ -22206,6 +22208,15 @@ function toggleCart(){
   if(panel.classList.contains('cart-opening') || panel.classList.contains('cart-closing')) return;
   toggleCart._lock = _tcNow;
   const isOpen=panel.classList.contains('open');
+  /* Мембрана меню полноэкранная и лежит выше корзины. Если открыть корзину,
+     не закрыв меню, на body повисают оба класса разом: корзина уезжает под
+     мембрану, и со стороны это выглядит так, будто она не открылась, а шапка
+     исчезла. Закрываем меню перед открытием — при любом способе вызова, а не
+     только с кнопки в шапке. Замок прокрутки при этом сбалансирован: меню
+     снимает свой, корзина ставит свой. */
+  if(!isOpen && document.body.classList.contains('menu-open')){
+    try{ if(typeof closeMobNav === 'function') closeMobNav(); }catch(e){}
+  }
   if(isOpen){
     // ── ЗАКРЫТИЕ корзины: keyframe-анимация уезда вправо ──────────
     // Через transition закрытие иногда «съедалось»: остаточный inline
@@ -24827,7 +24838,13 @@ const APERTURA_API_MODES = {
   API_TEST: 'api-test'
 };
 const APERTURA_API_MODE_KEY = 'ew:apertura-api-mode';
-const APERTURA_API_MODE_DEFAULT = APERTURA_API_MODES.PREVIEW;
+/* Режим по умолчанию переведён на PRODUCTION. Сам по себе он ничего не
+   открывает: каждый маршрут дополнительно закрыт своим флагом, и
+   aperturaFetch отказывает выключенному маршруту (ROUTE_DISABLED) вне
+   зависимости от режима. Живыми становятся только те записи, у которых
+   флаг явно включён ниже, — сейчас это заявка на конденсацию и заявка
+   на возврат. Платёжные маршруты остаются выключенными. */
+const APERTURA_API_MODE_DEFAULT = APERTURA_API_MODES.PRODUCTION;
 
 function _apAllowedApiMode(mode){
   return Object.keys(APERTURA_API_MODES).map(k=>APERTURA_API_MODES[k]).indexOf(mode) !== -1;
@@ -24865,7 +24882,9 @@ const APERTURA_API_MODE_RULES = {
 
 const APERTURA_FEATURE_FLAGS = {
   businessApi: {
-    enabled: false,
+    /* Главный рубильник записей. Включён, но он лишь разрешает запись как
+       явление — что именно писать, решают флаги отдельных маршрутов. */
+    enabled: true,
     modes: ['production','api-test'],
     note: 'Master switch for orders, payments, uploads and catalog writes. Keep false until write integrations are ready.'
   },
@@ -24883,8 +24902,8 @@ const APERTURA_FEATURE_FLAGS = {
   orderStatus: {enabled:false, modes:['production','api-test'], note:'Future backend order lifecycle check.'},
   echoUpload: {enabled:false, modes:['production','api-test'], note:'Future Object Storage upload init/commit/retry.'},
   echoOrder: {enabled:false, modes:['production','api-test'], note:'Future Echo order/frequency/aura persistence.'},
-  condensationCreate: {enabled:false, modes:['production','api-test'], note:'Future real Condensation request write.'},
-  returnCreate: {enabled:false, modes:['production','api-test'], note:'Future real return request write.'},
+  condensationCreate: {enabled:true, modes:['production','api-test'], note:'Заявка на конденсацию пишется в condensation_requests. Денег не касается.'},
+  returnCreate: {enabled:true, modes:['production','api-test'], note:'Заявка на возврат пишется в return_requests. Денег не касается.'},
   leadCreate: {enabled:false, modes:['production','api-test'], note:'Future catalog subscription/support lead route.'},
   supportEscalate: {enabled:false, modes:['production','api-test'], note:'Future manual review / Architect help route.'},
   antiabuseCheck: {enabled:true, modes:['production','preview','api-test'], kind:'safety', note:'Already wired protective route; do not route business records through it.'},
@@ -24907,6 +24926,12 @@ function _apBusinessApiAllowed(){
   return !!(rules.businessApiAllowed && _apFeatureEnabled('businessApi'));
 }
 
+/* У всех маршрутов записи здесь не был указан base, и адрес собирался
+   как относительный путь вида /condensation/create — то есть запрос ушёл
+   бы на сам сайт, где такого адреса нет, и проверка URL отбивала его
+   кодом UNSAFE_ROUTE_URL. Дефект был тихим: пока флаги стояли выключенными,
+   до сборки адреса дело не доходило. Найден стендом npm run dbcheck.
+   Проставлено всем; каждый маршрут по-прежнему закрыт своим флагом. */
 const APERTURA_ROUTE_REGISTRY = {
   smartcaptchaVerify: {
     feature: 'smartCaptchaVerify',
@@ -24952,6 +24977,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'reservations/create',
+    base: 'EW_APERTURA_API_URL',
     contract: 'reservationCreate'
   },
   reservationStatus: {
@@ -24960,6 +24986,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'GET',
     route: 'reservations/status',
+    base: 'EW_APERTURA_API_URL',
     contract: 'reservationStatus'
   },
   paymentCreate: {
@@ -24968,6 +24995,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'payments/create',
+    base: 'EW_APERTURA_API_URL',
     contract: 'paymentCreate'
   },
   paymentRetry: {
@@ -24976,6 +25004,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'payments/retry',
+    base: 'EW_APERTURA_API_URL',
     contract: 'paymentCreate'
   },
   paymentStatus: {
@@ -24984,6 +25013,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'GET',
     route: 'payments/status',
+    base: 'EW_APERTURA_API_URL',
     contract: 'paymentStatus'
   },
   orderStatus: {
@@ -24992,6 +25022,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'GET',
     route: 'orders/status',
+    base: 'EW_APERTURA_API_URL',
     contract: 'orderStatus'
   },
   echoUploadInit: {
@@ -25000,6 +25031,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'echo/upload/init',
+    base: 'EW_APERTURA_API_URL',
     contract: 'echoUploadInit'
   },
   echoUploadCommit: {
@@ -25008,6 +25040,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'echo/upload/commit',
+    base: 'EW_APERTURA_API_URL',
     contract: 'echoUploadCommit'
   },
   echoUploadRetry: {
@@ -25016,6 +25049,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'echo/upload/retry',
+    base: 'EW_APERTURA_API_URL',
     contract: 'echoUploadInit'
   },
   echoCreate: {
@@ -25024,6 +25058,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'echo/create',
+    base: 'EW_APERTURA_API_URL',
     contract: 'echoCreate'
   },
   echoStatus: {
@@ -25032,6 +25067,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'GET',
     route: 'echo/status',
+    base: 'EW_APERTURA_API_URL',
     contract: 'echoStatus'
   },
   condensationCreate: {
@@ -25040,6 +25076,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'condensation/create',
+    base: 'EW_APERTURA_API_URL',
     contract: 'condensationCreate'
   },
   returnCreate: {
@@ -25048,6 +25085,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'return/create',
+    base: 'EW_APERTURA_API_URL',
     contract: 'returnCreate'
   },
   leadCreate: {
@@ -25056,6 +25094,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'catalog/subscribe',
+    base: 'EW_APERTURA_API_URL',
     contract: 'leadCreate'
   },
   supportEscalate: {
@@ -25064,6 +25103,7 @@ const APERTURA_ROUTE_REGISTRY = {
     status: 'planned',
     method: 'POST',
     route: 'support/escalate',
+    base: 'EW_APERTURA_API_URL',
     contract: 'supportEscalate'
   }
 };
@@ -28454,11 +28494,23 @@ async function submitPreorder(){
     keepBusyOnSuccess: true
   });
   if(!captchaOk) return;
-  try{
-    if(typeof stageAperturaBusinessSubmission === 'function'){
-      stageAperturaBusinessSubmission('condensation', buildCondensationPayload({source:'submitPreorder-preview'}), {source:'submitPreorder-preview'});
-    }
-  }catch(e){ console.warn('condensation bridge preview failed:', e); }
+  /* Раньше здесь стояла «сухая» отправка: заявка складывалась на полку, а
+     экран успеха показывался всегда. Человек видел «принято», хотя в базу
+     ничего не уходило. Теперь успех показывается ТОЛЬКО после того, как
+     сервер подтвердил запись. */
+  const отправка = await prepareAperturaBusinessSubmission(
+    'condensation',
+    buildCondensationPayload({source:'submitPreorder'}),
+    {commit:true, source:'submitPreorder'}
+  ).catch(function(e){ console.warn('condensation send failed:', e); return null; });
+
+  if(!отправка || отправка.status !== 'accepted'){
+    const кнопка = document.getElementById('preorderBtn');
+    if(кнопка){ кнопка.disabled = false; кнопка.textContent = 'Отправить запрос'; }
+    try{ showAperturaStatus('checkout-timeout'); }catch(e){}
+    return;
+  }
+
   startCondensateInterfaceGlitch(item, contact);
   /* Итоговая карточка диалога — та самая .dlg-final из эталона: код
      заявки, заголовок и адрес ответа. Вызов защищён проверкой типа: если
@@ -31938,11 +31990,22 @@ async function submitReturnForm(ev){
     _updateReturnSubmit();
     return false;
   }
-  try{
-    if(typeof stageAperturaBusinessSubmission === 'function'){
-      stageAperturaBusinessSubmission('return', buildReturnRequestPayload({source:'submitReturnForm-preview'}), {source:'submitReturnForm-preview'});
-    }
-  }catch(e){ console.warn('return bridge preview failed:', e); }
+  /* Тот же принцип, что и в заявке на конденсацию: экран «заявка ушла»
+     показывается только после подтверждения сервера. */
+  const отправкаВозврата = await prepareAperturaBusinessSubmission(
+    'return',
+    buildReturnRequestPayload({source:'submitReturnForm'}),
+    {commit:true, source:'submitReturnForm'}
+  ).catch(function(e){ console.warn('return send failed:', e); return null; });
+
+  if(!отправкаВозврата || отправкаВозврата.status !== 'accepted'){
+    btn.disabled = false;
+    btn.textContent = oldText;
+    if(typeof _updateReturnSubmit === 'function') _updateReturnSubmit();
+    try{ showAperturaStatus('checkout-timeout'); }catch(e){}
+    return false;
+  }
+
   btn.disabled = true;
   btn.textContent = 'Сигнал фиксируется...';
   // Закрываем модал сразу: на iOS задержка + открытая клавиатура могла
@@ -41061,6 +41124,43 @@ h1, h2, h3,
 .ap-status-text, .ap-status-note, .ap-status-info{
   font-size: 12px !important;
   line-height: 1.65 !important;
+}
+</style>
+<style id="ew-cart-css">
+/* ═══ КОРЗИНА · ПОДВАЛ И КНОПКИ ═════════════════════════════════════
+
+   Две вещи, которые видно на живом сайте:
+
+   1) Кнопка «Оформить заказ» стояла вплотную к строке про доставку —
+      замер показал, что низ примечания и верх кнопки совпадали до
+      пикселя. Виноват отрицательный margin-top у примечания: он съедал
+      зазор колонки подвала. Ставлю зазор явно и снизу, чтобы он не
+      зависел от того, как посчитается flex-gap.
+
+   2) Кнопка «К каталогу» в пустой корзине осталась от старого набора:
+      циановая кромка и радиус 10px. Циан в языке означает «выбрано и
+      подтверждено», а не действие; главному действию положена тёплая
+      капсула — та же, что у «Оформить заказ» и у кнопок на странице. */
+
+#cartPanel .cart-note-line{
+  margin-top: 2px !important;
+  margin-bottom: 10px !important;
+}
+
+#cartPanel .cart-empty-btn, .cart-empty-btn{
+  border-radius: 99px !important;
+  padding: 14px 22px !important;
+  background: rgba(209,160,74,.09) !important;
+  border: 1px solid rgba(209,160,74,.34) !important;
+  color: var(--warm-hi) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12),
+              inset 0 0 26px rgba(209,160,74,.08) !important;
+}
+.cart-empty-btn:hover{
+  background: rgba(209,160,74,.15) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14),
+              inset 0 0 30px rgba(209,160,74,.13),
+              0 0 30px rgba(209,160,74,.2) !important;
 }
 </style>
 <style id="ew-unify-css">
