@@ -41126,6 +41126,77 @@ h1, h2, h3,
   line-height: 1.65 !important;
 }
 </style>
+<style id="ew-press-css">
+/* ═══ НАЖАТИЕ КНОПОК ГЛАВНОЙ · ЕДИНАЯ МЕХАНИКА ══════════════════════
+
+   Что было. Базовые цвета кнопок давно переведены в язык «Линзы» —
+   тёплый для главного действия, тихий белый для второстепенного. А слой
+   :active остался от старого набора: при нажатии .cta-primary и .pbtn
+   заливались красным, а .cta-secondary, .cta-echo и .hbtn уходили в
+   циан. Кнопка прыгала в палитру, которой у неё уже нет, и каждая
+   прыгала по-своему — отсюда ощущение, что нажатия выглядят по-разному.
+
+   Что стало. Движение одно на всех и взято у кнопок HERO — они приняты
+   за эталон: смещение на пиксель вниз и сжатие до .992. Цвет же каждая
+   кнопка усиливает свой собственный: тёплая становится теплее, тихая —
+   светлее. Красный не появляется нигде, кроме кнопок, где он означает
+   опасное действие (.hbtn.danger) — там он и остаётся.
+
+   Область — только главная страница. Кнопки окон (.chk-, .cart-, .ap-,
+   .legal-, .echo-order-, .return-) сюда не входят: их логика прежняя.
+
+   Чипы каталога .cat-chip намеренно не трогаю: у них transform: none
+   выставлен осознанно, а цвет означает выбранное состояние, а не
+   нажатие.                                                            */
+
+/* ── движение: общее для всех ─────────────────────────────────────── */
+.cta-primary, .cta-secondary, .cta-echo, .pbtn, .hbtn,
+.g-btn, .g-tab, .vc-btn, .cnv-go, .faq-mini-cta,
+.hdr-cart, .hdr-burger, .g-help, .mic-btn, .cnv-send{
+  transition: background .2s var(--ease-out), border-color .2s var(--ease-out),
+              color .2s var(--ease-out), box-shadow .2s var(--ease-out),
+              transform .12s var(--ease-out);
+}
+.cta-primary:active, .cta-secondary:active, .cta-echo:active,
+.pbtn:active, .hbtn:active,
+.g-btn:active, .g-tab:active, .vc-btn:active, .cnv-go:active,
+.faq-mini-cta:active,
+.hdr-cart:active, .hdr-burger:active, .g-help:active,
+.mic-btn:active, .cnv-send:active{
+  transform: translate3d(0,1px,0) scale(.992) !important;
+}
+
+/* ── тёплые: главное действие ─────────────────────────────────────── */
+.cta-primary:active, .hero .cta-primary:active,
+.pbtn:not(.sbtn):active,
+.g-btn:active, .cnv-go:active, .faq-mini-cta:active, .cnv-send:active{
+  background: rgba(209,160,74,.18) !important;
+  border-color: rgba(209,160,74,.50) !important;
+  color: var(--warm-hi) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14),
+              inset 0 0 30px rgba(209,160,74,.16),
+              0 0 26px rgba(209,160,74,.22) !important;
+}
+
+/* ── тихие: второстепенное действие и органы шапки ────────────────── */
+.cta-secondary:active, .hero .cta-secondary:active,
+.cta-echo:active, .cta-secondary.cta-echo:active,
+.hbtn:not(.danger):active,
+.g-tab:active, .vc-btn:active,
+.hdr-cart:active, .hdr-burger:active, .g-help:active, .mic-btn:active{
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.24) !important;
+  color: var(--ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14),
+              0 0 22px rgba(255,255,255,.08) !important;
+}
+
+/* Опасное действие — единственное место, где красный при нажатии
+   уместен: он тут и означает опасность. */
+.hbtn.danger:active{
+  transform: translate3d(0,1px,0) scale(.992) !important;
+}
+</style>
 <style id="ew-cart-css">
 /* ═══ КОРЗИНА · ПОДВАЛ И КНОПКИ ═════════════════════════════════════
 
