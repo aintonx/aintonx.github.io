@@ -2733,10 +2733,10 @@ strong{ color: var(--white) !important; font-weight: 400 !important; }
   color: var(--white-mid);
   line-height: 1.75;
   letter-spacing: 0.03em;
-  /* Боковая полоса-акцент убрана: приём из старого набора, в языке
-     «Линзы» его нет вовсе. Отступ слева оставлен — строка по-прежнему
-     сдвинута относительно абзацев, и это отличает её без черты. */
+  /* Боковая полоса возвращена по решению владельца: здесь она работает
+     не украшением, а знаком сноски — строка отбивается от абзацев выше. */
   padding-left: 14px;
+  border-left: 2px solid var(--cyan);
 }
 .about-followup.followup-red{
   border-left-color: var(--red2);
@@ -15733,10 +15733,10 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
                (при записи громче), внутренний — ход; на одном узле два
                разных transform спорили бы. -->
           <div class="osc-glitch"><div class="osc-amp"><div class="osc-run">
-            <svg viewBox="0 0 4200 200" preserveAspectRatio="none">
-              <path class="osc-ghost osc-ghost-c" id="echoOscGhostC" d="M0,100 L4200,100"></path>
-              <path class="osc-ghost osc-ghost-r" id="echoOscGhostR" d="M0,100 L4200,100"></path>
-              <path class="osc-live" id="echoOscPath" d="M0,100 L4200,100"></path>
+            <svg viewBox="0 0 400 200" preserveAspectRatio="none">
+              <path class="osc-ghost osc-ghost-c" id="echoOscGhostC" d="M0,100 L400,100"></path>
+              <path class="osc-ghost osc-ghost-r" id="echoOscGhostR" d="M0,100 L400,100"></path>
+              <path class="osc-live" id="echoOscPath" d="M0,100 L400,100"></path>
             </svg>
           </div></div></div>
           <span class="fr" id="echoFreqDisplay">12.847 GHZ</span>
@@ -16772,7 +16772,6 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
    берётся из того, что периоды несоизмеримы: ход 36с, дыхание амплитуды
    11.3с — совпасть они могут раз в несколько минут, и рисунок в окне
    всё это время не повторяется. Ни одного пересчёта на кадр. */
-@keyframes ewOscRun{ from { transform: translateX(0); } to { transform: translateX(calc(-100% * 19 / 21)); } }
 /* Дыхание: сигнал то садится, то разгоняется — как живой канал, а не
    ровная синусоида, которую просто тянут вбок. */
 @keyframes ewOscBreath{
@@ -16814,17 +16813,16 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
 }
 .echo-right .beam .osc-run{
   position: absolute; top: 0; left: 0;
-  /* 1050% = лента 4200 единиц при окне 400. Скорость прежняя (≈67 единиц
-     в секунду), оборот вырос с 36 секунд до 57. */
-  width: 1050%; height: 100%;
-  animation: ewOscRun 57s linear infinite;
+  /* Ход больше не едет лентой: волна пересчитывается покадрово в
+     _echoStartOsc, как было в исходной версии сайта. Контейнер остаётся
+     ровно в окно и ничего не двигает. */
+  width: 100%; height: 100%;
 }
 /* Вне экрана ход стоит. Класс ставит наблюдатель; если тот не сработает,
    класса просто нет и луч продолжает идти — безопасный отказ. */
 .echo-right .beam.osc-asleep .osc-run,
 .echo-right .beam.osc-asleep .osc-amp{ animation-play-state: paused; }
 .echo-section.recording .echo-right .beam .osc-amp{ animation: ewOscBreathHot 3.4s ease-in-out infinite; }
-.echo-section.recording .echo-right .beam .osc-run{ animation-duration: 22s; }
 /* Сбой живёт на СВОЁМ узле: на .osc-amp он затирал бы дыхание, а два
    разных transform на одном узле не уживаются. */
 .echo-right .beam.echo-retune .osc-glitch{ animation: ewOscGlitch .48s steps(9) 1; }
@@ -16832,6 +16830,11 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
    расслаивается на каналы. Тень с них снимаем — три свечения разом дают
    мутное пятно вместо срыва. */
 .echo-right .beam.echo-retune .osc-ghost{ opacity: .55; filter: none; }
+/* Раздвоение при сбое: обе копии берут геометрию основной линии и
+   разъезжаются сдвигом. Считать для них отдельные пути каждый кадр
+   незачем — видны они меньше полусекунды. */
+.echo-right .beam.echo-retune .osc-ghost-c{ transform: translate(-3px, -2px); }
+.echo-right .beam.echo-retune .osc-ghost-r{ transform: translate(3px, 2px); }
 .echo-right .beam.echo-retune .osc-ghost-c{ stroke: var(--cyan); }
 .echo-right .beam.echo-retune .osc-ghost-r{ stroke: var(--red2); }
 @media (prefers-reduced-motion: reduce){
@@ -30198,95 +30201,88 @@ function _echoSetTyping(on){
    периодов, в конце приходит туда же, откуда вышел, — сумма таких
    синусов замкнута сама на себя при любых амплитудах и фазах. Так шва
    нет по построению, а не по подбору. */
-var _ewОсцНабор = null;
-function _ewОсцГармоники(){
-  if(_ewОсцНабор) return _ewОсцНабор;
-  var сл = Math.random, i;
+/* ── ХОД ЛУЧА ──────────────────────────────────────────────────────
+   Волна пересчитывается КАЖДЫЙ КАДР, как было в исходной версии сайта.
+   Это принципиально иная механика, чем лента, которая ехала мимо окна:
+   у ленты рисунок готов заранее и просто протягивается, поэтому он и
+   читался начерченным. Здесь каждая составляющая бежит со своей фазовой
+   скоростью, из-за чего форма непрерывно перестраивается — волна не
+   повторяется вовсе и повторяться не может, периода у неё нет.
 
-  /* ОСНОВА взята у прежней линии: её ход владельца устраивал, не устраивал
-     повтор. Номера пересчитаны с прежнего цикла 2400 на нынешний 3800
-     (×1.583), поэтому в окне виден ровно тот же по частоте ход: 22 единицы
-     на периоде ~130, 11 на ~50 и так далее. Амплитуды разыгрываются вокруг
-     прежних значений ±25%, фазы — произвольно. */
-  var осн = [ [29, 22], [43, 7], [76, 11], [113, 5], [181, 6] ];
-  /* ЗЕРНО — то, чего у прежней линии не было вовсе: пять гармоник с
-     периодом 5–14 единиц при шаге 2. Именно из-за их отсутствия сумма
-     чистых синусов читалась начерченной: у прибора линия такой гладкой
-     не бывает. */
-  var зерно = [271, 349, 457, 601, 797];
+   Набор разыгрывается один раз на загрузку: амплитуды ±20% и случайные
+   начальные фазы, поэтому у каждого посещения свой сигнал.
 
-  var Г = [];
-  for(i = 0; i < осн.length; i++) Г.push([ осн[i][0], осн[i][1] * (0.75 + сл() * 0.5), сл() * Math.PI * 2 ]);
-  for(i = 0; i < зерно.length; i++) Г.push([ зерно[i], 0.5 + сл() * 1.3, сл() * Math.PI * 2 ]);
-
-  /* ОГИБАЮЩАЯ — медленно гуляющая громкость зерна. Без неё шум идёт ровным
-     ковром по всей ленте и снова выглядит нарисованным: у живого прибора
-     он то поднимается, то садится. */
-  var ОГ = [], обN = [2, 3, 7];
-  for(i = 0; i < обN.length; i++) ОГ.push([ обN[i], 0.16 + сл() * 0.2, сл() * Math.PI * 2 ]);
-
-  _ewОсцНабор = { Г: Г, ОГ: ОГ };
-  return _ewОсцНабор;
-}
-function _ewОсцПуть(сдвиг){
-  /* Лента длиной 4200 единиц при окне в 400: уезжает она на 3800. Прежняя
-     была короче и возвращалась каждые 36 секунд — глаз успевал заучить
-     рисунок. Теперь оборот 57 секунд, и внутри него ничего не повторяется.
-     Длиннее делать не стал: лента растеризуется целиком и вместе с тенью,
-     а слой в восемь тысяч пикселей на слабой машине уже заметен.
-
-     сдвиг — фазовое смещение в единицах. Призрачные копии строятся с ним,
-     чтобы при сбое канала они вылезали из-под линии, а не прятались под
-     ней: с одинаковым путём раздвоения не видно вовсе. */
-  var ЛЕНТА = 4200, ЦИКЛ = 3800, MID = 100, ШАГ = 2;
-  var набор = _ewОсцГармоники(), Г = набор.Г, ОГ = набор.ОГ;
-  var d = '', x, k, y, u, огиб, ф;
-  for(x = 0; x <= ЛЕНТА; x += ШАГ){
-    u = x + (сдвиг || 0);
-    /* Огибающая гуляет около единицы; ниже нуля не уходит. */
-    огиб = 1;
-    for(k = 0; k < ОГ.length; k++) огиб += ОГ[k][1] * Math.sin(2 * Math.PI * ОГ[k][0] * u / ЦИКЛ + ОГ[k][2]);
-    if(огиб < 0.35) огиб = 0.35;
-    y = MID;
-    for(k = 0; k < Г.length; k++){
-      ф = 2 * Math.PI * Г[k][0] * u / ЦИКЛ + Г[k][2];
-      /* Крупные гармоники огибающей не подчиняются — иначе «дышала» бы
-         вся форма, а не зерно поверх неё. */
-      y += Г[k][1] * Math.sin(ф) * (Г[k][0] > 200 ? огиб : 1);
-    }
-    d += (x ? ' L' : 'M') + x + ',' + y.toFixed(2);
-  }
-  return d;
-}
+   Стоимость: один путь в 200 точек на кадр. Ровно столько же делала
+   исходная версия (100 точек), и вне экрана цикл засыпает на таймер. */
 function _echoStartOsc(){
   const path = document.getElementById('echoOscPath');
-  const ghostC = document.getElementById('echoOscGhostC');
-  const ghostR = document.getElementById('echoOscGhostR');
   if(!path || path._echoOscBound) return;
   path._echoOscBound = true;
 
-  path.setAttribute('d', _ewОсцПуть(0));
-  /* Призраки — та же лента, сдвинутая по фазе в разные стороны. Обычно они
-     полностью прозрачны и ничего не стоят; видимыми становятся только на
-     полсекунды сбоя при смене канала. */
-  if(ghostC) ghostC.setAttribute('d', _ewОсцПуть(9));
-  if(ghostR) ghostR.setAttribute('d', _ewОсцПуть(-9));
+  const сл = Math.random;
+  /* [пространственная частота, амплитуда, скорость фазы] — первые две
+     строки взяты у исходной версии как есть (28 на 0.04 и 11 на 0.13),
+     остальные добавляют зерно: без него сумма двух синусов слишком
+     гладкая и снова выглядит нарисованной. Скорости у всех разные —
+     именно их расхождение и перестраивает форму. */
+  const В = [
+    [0.040, 28,  1.00],
+    [0.075,  5,  1.35],
+    [0.130, 11,  1.70],
+    [0.210,  3,  2.30],
+    [0.480, 1.6, 3.10],
+    [0.770, 1.1, 4.05],
+    [1.150, 0.7, 5.20]
+  ].map(function(в){ return [ в[0], в[1] * (0.8 + сл() * 0.4), в[2], сл() * Math.PI * 2 ]; });
 
-  /* Экономия вне экрана сохраняется, но с обратным поведением при сбое:
-     по умолчанию ход ИДЁТ, наблюдатель только ставит на паузу, когда
-     секция заведомо ушла. Прежний флаг работал наоборот — стартовал с
-     «не видно» и, не дождавшись первого срабатывания, оставлял луч
-     стоять навсегда. Теперь худший исход — лишняя composited-анимация,
-     а не замерший осциллограф. */
-  const секция = document.getElementById('echo');
+  const W = 400, MID = 100, ШАГ = 2, N = W / ШАГ;
+  const секция = document.querySelector('.echo-section');
   const луч = document.getElementById('echoBeam');
-  if(секция && луч && 'IntersectionObserver' in window){
+  let t = 0, видна = true;
+
+  if(секция && 'IntersectionObserver' in window){
     new IntersectionObserver(function(записи){
-      записи.forEach(function(з){ луч.classList.toggle('osc-asleep', !з.isIntersecting); });
+      записи.forEach(function(з){
+        видна = з.isIntersecting;
+        /* Тот же наблюдатель гасит и дыхание амплитуды в CSS: вне экрана
+           не должно крутиться ни то, ни другое. */
+        if(луч) луч.classList.toggle('osc-asleep', !з.isIntersecting);
+      });
     }, { rootMargin: '160px' }).observe(секция);
   }
+
+  function кадр(){
+    /* Вне экрана и на скрытой вкладке считать нечего: цикл дремлет на
+       лёгком таймере и просыпается сам. */
+    if(document.hidden || !видна){ setTimeout(кадр, 320); return; }
+    t += 0.045;
+    const жар = (секция && секция.classList.contains('recording')) ? 1.6 : 1;
+    let d = 'M0,' + MID, i, k, x, y;
+    for(i = 1; i <= N; i++){
+      x = i * ШАГ;
+      y = 0;
+      for(k = 0; k < В.length; k++) y += В[k][1] * Math.sin(x * В[k][0] + t * В[k][2] + В[k][3]);
+      d += ' L' + x + ',' + (MID + y * жар).toFixed(2);
+    }
+    path.setAttribute('d', d);
+    requestAnimationFrame(кадр);
+  }
+  кадр();
+
+  /* Призраки при сбое канала берут ту же геометрию и разъезжаются
+     сдвигом в CSS — считать для них отдельные пути каждый кадр незачем. */
+  const ghostC = document.getElementById('echoOscGhostC');
+  const ghostR = document.getElementById('echoOscGhostR');
+  if(ghostC || ghostR){
+    const наблюдатель = new MutationObserver(function(){
+      if(!луч || !луч.classList.contains('echo-retune')) return;
+      const d = path.getAttribute('d');
+      if(ghostC) ghostC.setAttribute('d', d);
+      if(ghostR) ghostR.setAttribute('d', d);
+    });
+    if(луч) наблюдатель.observe(луч, { attributes: true, attributeFilter: ['class'] });
+  }
 }
-/* Частотный код «дышит» — небольшой рандом в дробной части (английский формат) */
 function _echoStartFreq(){
   const el = document.getElementById('echoFreqDisplay');
   if(!el || el._echoFreqBound) return;
