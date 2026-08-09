@@ -7022,11 +7022,22 @@ footer{
   z-index: 1500;
   display: none;
   box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(192,40,40,0.1);
-  animation: cookieBannerIn .42s cubic-bezier(.22,0,.48,1) both;
+  /* Приезжает и уезжает так же, как уведомления, только по вертикали:
+     исходное положение — целиком за нижним краем, вход той же кривой
+     cubic-bezier(.16,1,.3,1), что у .notif и .lore-notif. Прозрачность
+     не трогается вовсе — плашки на этом сайте не растворяются, они
+     уходят за край. */
+  transform: translate3d(0, calc(100% + 32px), 0);
+  animation: cookieBannerIn .42s cubic-bezier(.16,1,.3,1) both;
+  will-change: transform;
 }
 .cookie-banner.show{ display: block; }
+/* Уход — кривая и длительность взяты у уведомления (_fadeOutNotif,
+   340мс cubic-bezier(.32,.72,.2,1)), укорочены до 300мс, потому что
+   acceptCookies() снимает класс show через 320мс. Менять этот таймер
+   не потребовалось. */
 .cookie-banner.hiding{
-  animation: cookieBannerOut .3s cubic-bezier(.55,0,.78,1) forwards;
+  animation: cookieBannerOut .3s cubic-bezier(.32,.72,.2,1) forwards;
 }
 body.mob-nav-open .cookie-banner.show,
 body.modal-open .cookie-banner.show,
@@ -7042,11 +7053,11 @@ html.legal-modal-open .cookie-banner.show{
   transition: opacity .18s ease, transform .18s ease;
 }
 @keyframes cookieBannerIn{
-  0%   { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }}
+  from { transform: translate3d(0, calc(100% + 32px), 0); }
+  to   { transform: translate3d(0, 0, 0); }}
 @keyframes cookieBannerOut{
-  0%   { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(20px); }}
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(0, calc(100% + 32px), 0); }}
 .cookie-banner-strip{
   position: absolute;
   top: 0; left: 0; right: 0;
@@ -7491,12 +7502,14 @@ html.legal-modal-open .cookie-banner.show{
 .lore-notif{
   position: fixed;
   bottom: 20px; left: 20px;
-  max-width: 300px;
+  /* Плашка расширена с 300 до 340: текст сигнала длинный, а набран мелко —
+     на 300px строка выходила в 5-6 слов и читалась рвано. */
+  max-width: 340px;
   background: var(--surface);
   border: 1px solid var(--border2);
   border-left: 2px solid var(--cyan);
   border-radius: var(--radius);
-  padding: 14px 16px;
+  padding: 16px 18px;
   z-index: 800;
   display: none;
   transform: translate3d(calc(-100% - 32px), 0, 0);
@@ -7511,7 +7524,7 @@ html.legal-modal-open .cookie-banner.show{
 .lore-notif.show{ display: block; }
 .lore-label{
   font-family: var(--font-code);
-  font-size: 7px;
+  font-size: 8px;
   letter-spacing: 0.24em;
   color: var(--cyan);
   text-transform: uppercase;
@@ -7523,7 +7536,9 @@ html.legal-modal-open .cookie-banner.show{
 .lore-label::before{ content: '>>'; }
 .lore-text{
   font-family: var(--font-code);
-  font-size: 9px;
+  /* 9px было мелко для длинной фразы; наборный шрифт задаётся слоем
+     ew-font-roles-css, здесь только кегль. */
+  font-size: 11px;
   color: var(--white-mid);
   line-height: 1.65;
   letter-spacing: 0.03em;
@@ -13277,6 +13292,12 @@ button, a, [role="button"], label,
 /* Contextual copy/status notifications must appear above status overlays,
    otherwise they become visible only after the success page is closed. */
 .notif[data-notif-kind="contextual"]{
+  z-index: 2147482800;
+}
+/* То же для сигнала из MARKETSPACE: консоль архитектора умеет показывать
+   его для проверки внешнего вида, а без подъёма он оставался под её
+   оверлеем и был не виден. */
+.lore-notif[data-notif-kind="contextual"]{
   z-index: 2147482800;
 }
 @media(max-width:720px){
@@ -26004,6 +26025,7 @@ const APERTURA_CONSOLE_SECTIONS = [
     ['Светлая тема','проверяет новые состояния через существующие CSS-переменные.','theme-light'],
     ['Мобильная проверка','проверяет модалки, высоту, скролл и закрытие.','mobile-check'],
     ['Уведомления','проверяет обычные notif и lore-notif.','notifications'],
+    ['Сигнал из MARKETSPACE','показывает плашку сигнала поверх консоли — можно жать подряд и пройти всю очередь из 12 текстов.','lore-signal'],
     ['Blur / overlay','проверяет, что новые слои не ломают blur wrapper и закрытие модалок.','blur-overlay']
   ]},
   {title:'08 · МЕТРИКА И СОБЫТИЯ', items:[
@@ -27520,7 +27542,9 @@ function runArchitectConsoleAction(action){
     case 'mobile-check':
       apConsoleReport('Проверьте этот слой на ширине мобильного viewport: высота, скролл, закрытие и нижний sheet-вид.'); break;
     case 'notifications':
-      showNotif('// Проверочное уведомление активно.', {contextual:true}); setTimeout(()=>{ try{ showLore(); }catch(e){} }, 500); apConsoleReport('Показаны notif и lore-notif.'); break;
+      showNotif('// Проверочное уведомление активно.', {contextual:true}); setTimeout(()=>{ try{ showLore({force:true}); }catch(e){} }, 500); apConsoleReport('Показаны notif и lore-notif.'); break;
+    case 'lore-signal':
+      showLore({force:true}); apConsoleReport('Сигнал из MARKETSPACE показан поверх консоли. Каждое следующее нажатие даёт следующий текст из очереди.'); break;
     case 'blur-overlay':
       apConsoleReport('Blur wrapper активен: body.ap-console-open использует тот же #_blurW, что модалки сайта.'); break;
     case 'datalayer-test':
@@ -29452,13 +29476,19 @@ function _attachSwipeDismiss(el, onDismiss){
   });
 }
 
-function showLore(){
-  if(_anyWindowOpen()) return;
+/* opts.force — показ из консоли архитектора. Обычный сигнал не приходит,
+   пока открыто любое окно, а консоль как раз окно. Признак contextual
+   поднимает плашку над оверлеем консоли тем же механизмом, что уже
+   работает у обычных уведомлений. Поведение по умолчанию не меняется:
+   без opts всё как было. */
+function showLore(opts){
+  opts = opts || {};
+  if(!opts.force && _anyWindowOpen()) return;
   const el=document.getElementById('loreNotif');
   if(!el) return;
   _prepareNotifEl(el);
   document.getElementById('loreText').textContent=getNextLoreMessage();
-  el.dataset.notifKind = 'passive';
+  el.dataset.notifKind = opts.force ? 'contextual' : 'passive';
   el.classList.add('show'); loreShown++;
   el._autoHideTimer = setTimeout(()=>_fadeOutNotif(el), 7000);   // T1: сигнал плавно затухает по таймеру
   _attachSwipeDismiss(el, ()=>{
@@ -29489,11 +29519,12 @@ function showLore(){
     bind();
   }
 })();
-// Первый сигнал через 20 секунд, затем каждые 3 минуты
+/* Первый сигнал через 40 секунд, затем каждые 6 минут. Обе цифры
+   удвоены: сигналы приходили каждые 3 минуты и примелькались. */
 setTimeout(()=>{
   showLore();
-  setInterval(showLore, 180000);
-}, 20000);
+  setInterval(showLore, 360000);
+}, 40000);
 
 function toggleFaq(el){
   const item=el.closest?el.closest('.faq-item'):el;
