@@ -2320,13 +2320,20 @@ async function smartcaptchaVerify(event) {
 /* ═══════════════════════════════════════════════════════════════════
    ЗАЯВКИ БЕЗ ДЕНЕГ · конденсация и возврат
 
-   Обе формы не касаются платежей, поэтому работают без ключей ЮKassa.
-   Пишут в таблицы из schema/requests.yql.
+   Пишут в таблицы, которые уже существуют в базе: condensation_requests,
+   return_requests, customers и consent_logs. Схема этих таблиц заметно
+   шире того, что собирает сайт, — незаполненные колонки (бюджет, срок,
+   материал, референсы) остаются пустыми и заполняются вручную при
+   обработке заявки.
 
-   Идентификатор записи считается от черновика, присланного сайтом, —
-   поэтому повторная отправка той же заявки (человек нажал дважды, связь
-   моргнула) не плодит дубликаты: UPSERT перезапишет ту же строку.
+   Обе формы не касаются платежей и работают без ключей ЮKassa.
    ═══════════════════════════════════════════════════════════════════ */
+
+/* Редакции документов, с которыми человек соглашается. При обновлении
+   оферты или политики поменять здесь — иначе в consent_logs ляжет
+   неверная версия, и доказать, на что человек согласился, будет нечем. */
+const POLICY_VERSION = "2026-08-10";
+const OFFER_VERSION = "2026-08-10";
 
 function isValidEmail(value) {
   const text = String(value || "").trim();
@@ -2338,17 +2345,98 @@ function yqlBool(value) {
   return isTrueFlag(value) ? "true" : "false";
 }
 
+function headerOf(event, name) {
+  const h = (event && event.headers) || {};
+  return String(h[name] || h[name.toLowerCase()] || "");
+}
+
+/* Адрес хранится только в виде необратимого отпечатка: для доказательства
+   согласия этого достаточно, а сам адрес хранить незачем. */
+function hashedIp(event) {
+  const raw = headerOf(event, "X-Forwarded-For").split(",")[0].trim();
+  if (!raw) return "";
+  return crypto.createHash("sha256")
+    .update(raw + "|" + ORDER_STATUS_TOKEN_SECRET)
+    .digest("hex").slice(0, 32);
+}
+
+/* Сквозная нумерация заявок: COND-000002 следом за существующей
+   COND-000001. Гонки при одновременной подаче теоретически возможны,
+   но при нынешнем потоке заявок ими можно пренебречь: номер не является
+   первичным ключом, и совпадение двух номеров ничего не сломает. */
+async function nextNumber(table, column, prefix) {
+  try {
+    const resultSets = await ydbQuery("SELECT MAX(" + column + ") AS last FROM " + table + ";");
+    const rows = resultSetToObjects(resultSets[0]);
+    const last = rows && rows[0] ? String(rows[0].last || "") : "";
+    const digits = parseInt(last.replace(/\D+/g, ""), 10);
+    const next = Number.isFinite(digits) ? digits + 1 : 1;
+    return prefix + "-" + String(next).padStart(6, "0");
+  } catch (error) {
+    console.error("NEXT_NUMBER_FAILED", { table: table, message: error.message });
+    return prefix + "-" + Date.now().toString().slice(-6);
+  }
+}
+
+/* Покупатель заводится и для конденсации, и для возврата. Для возврата
+   это обязательно: в return_requests нет ни одного поля контакта, только
+   customer_id, и без записи в customers заявка придёт без обратного адреса. */
+async function upsertCustomer(customer) {
+  const id = makeCustomerId({
+    email: customer.email || "",
+    phone: customer.phone || "",
+    name: customer.name || ""
+  });
+  await ydbQuery(`
+    UPSERT INTO customers (
+      id, customer_name, customer_email, customer_phone, telegram, created_at, updated_at
+    ) VALUES (
+      ${yqlUtf8(id)},
+      ${yqlUtf8(customer.name || "")},
+      ${yqlUtf8(customer.email || "")},
+      ${yqlUtf8(customer.phone || "")},
+      ${yqlNullableUtf8(customer.telegram || "", 80)},
+      CurrentUtcTimestamp(),
+      CurrentUtcTimestamp()
+    );
+  `);
+  return id;
+}
+
+/* Согласие фиксируется отдельной строкой: закон требует, чтобы оператор
+   мог доказать не только сам факт, но и на какую редакцию документов
+   человек соглашался. */
+async function writeConsent(event, customerId, formType) {
+  const id = makeHashId("cons", [customerId, formType, String(Date.now())], 26);
+  await ydbQuery(`
+    UPSERT INTO consent_logs (
+      id, customer_id, form_type, consent_type, policy_version, offer_version,
+      accepted_at, page_url, user_agent, ip_hash, created_at
+    ) VALUES (
+      ${yqlUtf8(id)},
+      ${yqlUtf8(customerId)},
+      ${yqlUtf8(formType)},
+      "personal_data",
+      ${yqlUtf8(POLICY_VERSION)},
+      ${yqlUtf8(OFFER_VERSION)},
+      CurrentUtcTimestamp(),
+      ${yqlNullableUtf8(headerOf(event, "Referer"), 300)},
+      ${yqlNullableUtf8(headerOf(event, "User-Agent"), 300)},
+      ${yqlNullableUtf8(hashedIp(event), 64)},
+      CurrentUtcTimestamp()
+    );
+  `);
+  return id;
+}
+
 function condensationPayload(event) {
   const body = parseBody(event);
-
   return {
     draftId: cleanScalar(body.requestDraftId || body.request_draft_id || "", 80),
     clientSessionId: cleanScalar(body.clientSessionId || body.client_session_id || "", 160),
     item: cleanScalar(body.item, 160),
     email: cleanScalar(body.email, 160),
-    consent: isTrueFlag(body.consent),
-    source: cleanScalar(body.source || "site", 40),
-    createdAtClient: cleanScalar(body.createdAtClient || body.created_at_client || "", 40)
+    consent: isTrueFlag(body.consent)
   };
 }
 
@@ -2358,58 +2446,54 @@ async function condensationCreate(event) {
   if (!payload.item || !payload.email) {
     return json(400, { ok: false, error: "missing_fields", ts: nowIso() });
   }
-
   if (!isValidEmail(payload.email)) {
     return json(400, { ok: false, error: "invalid_email", ts: nowIso() });
   }
-
-  /* Согласие проверяем на сервере, а не только галочкой на странице:
+  /* Согласие проверяется на сервере, а не только галочкой на странице:
      запись персональных данных без него недопустима. */
   if (!payload.consent) {
     return json(400, { ok: false, error: "consent_required", ts: nowIso() });
   }
 
+  const customerId = await upsertCustomer({ email: payload.email });
   const id = makeHashId("cond", [
-    payload.draftId,
-    payload.clientSessionId,
-    payload.email.toLowerCase(),
-    payload.item.toLowerCase()
+    payload.draftId, payload.clientSessionId,
+    payload.email.toLowerCase(), payload.item.toLowerCase()
   ], 26);
+  const requestNumber = await nextNumber("condensation_requests", "request_number", "COND");
 
-  const query = `
+  /* Частота и уровень сигнала — художественные величины вселенной,
+     как в существующей тестовой строке. Считаются от идентификатора,
+     чтобы повторная отправка той же заявки не меняла их. */
+  const seed = parseInt(crypto.createHash("sha256").update(id).digest("hex").slice(0, 8), 16);
+  const frequency = 90 + (seed % 820);
+  const signal = 60 + (Math.floor(seed / 1000) % 40);
+
+  await ydbQuery(`
     UPSERT INTO condensation_requests (
-      id,
-      request_draft_id,
-      client_session_id,
-      item,
-      email,
-      consent,
-      source,
-      status,
-      created_at_client,
-      created_at,
-      updated_at
-    )
-    VALUES (
+      id, request_number, customer_id, status, requested_artifact, contact_raw,
+      generated_frequency_hz, signal_level_percent, marketspace_status,
+      created_at, updated_at
+    ) VALUES (
       ${yqlUtf8(id)},
-      ${yqlNullableUtf8(payload.draftId, 80)},
-      ${yqlNullableUtf8(payload.clientSessionId, 160)},
+      ${yqlUtf8(requestNumber)},
+      ${yqlUtf8(customerId)},
+      "new",
       ${yqlUtf8(payload.item)},
       ${yqlUtf8(payload.email)},
-      ${yqlBool(payload.consent)},
-      ${yqlUtf8(payload.source)},
-      "new",
-      ${yqlNullableUtf8(payload.createdAtClient, 40)},
+      ${yqlInt32(frequency)},
+      ${yqlInt32(signal)},
+      "signal_detected",
       CurrentUtcTimestamp(),
       CurrentUtcTimestamp()
     );
-  `;
+  `);
 
-  await ydbQuery(query);
+  await writeConsent(event, customerId, "condensation");
 
   return json(200, {
     ok: true,
-    request_id: id,
+    request_id: requestNumber,
     status: "new",
     ts: nowIso()
   });
@@ -2418,90 +2502,72 @@ async function condensationCreate(event) {
 function returnRequestPayload(event) {
   const body = parseBody(event);
   const contact = body.contact && typeof body.contact === "object" ? body.contact : {};
-
   return {
     draftId: cleanScalar(body.returnDraftId || body.return_draft_id || "", 80),
     clientSessionId: cleanScalar(body.clientSessionId || body.client_session_id || "", 160),
     name: cleanScalar(body.name, 120),
     email: cleanScalar(contact.email || body.email || "", 160),
     telegram: cleanScalar(contact.telegram || body.telegram || "", 80),
-    relicCode: cleanScalar(body.artifact_id || body.artifactId || body.relic_code || "", 40),
-    orderId: cleanScalar(body.order_id || body.orderId || "", 60),
+    relicCode: cleanScalar(body.artifact_id || body.artifactId || "", 40),
+    orderNumber: cleanScalar(body.order_id || body.orderId || "", 60),
     reason: cleanScalar(body.description || body.reason || "", 900),
-    consent: isTrueFlag(body.consent),
-    createdAtClient: cleanScalar(body.createdAtClient || body.created_at_client || "", 40)
+    consent: isTrueFlag(body.consent)
   };
 }
 
 async function returnCreate(event) {
   const payload = returnRequestPayload(event);
 
-  /* Форма требует имя, артикул и причину; хотя бы один канал связи —
-     почта или телеграм. Те же правила, что и на странице, повторены
-     здесь: страницу можно обойти, сервер обойти нельзя. */
+  /* Те же правила, что и на странице, повторены здесь: страницу можно
+     обойти, сервер обойти нельзя. */
   if (!payload.name || !payload.relicCode || !payload.reason) {
     return json(400, { ok: false, error: "missing_fields", ts: nowIso() });
   }
-
   if (!payload.email && !payload.telegram) {
     return json(400, { ok: false, error: "contact_required", ts: nowIso() });
   }
-
   if (payload.email && !isValidEmail(payload.email)) {
     return json(400, { ok: false, error: "invalid_email", ts: nowIso() });
   }
-
   if (!payload.consent) {
     return json(400, { ok: false, error: "consent_required", ts: nowIso() });
   }
 
+  const customerId = await upsertCustomer({
+    name: payload.name,
+    email: payload.email,
+    telegram: payload.telegram
+  });
   const id = makeHashId("ret", [
-    payload.draftId,
-    payload.clientSessionId,
+    payload.draftId, payload.clientSessionId,
     payload.relicCode.toLowerCase(),
-    payload.email.toLowerCase() || payload.telegram.toLowerCase()
+    (payload.email || payload.telegram).toLowerCase()
   ], 26);
+  const returnNumber = await nextNumber("return_requests", "return_number", "RET");
 
-  const query = `
+  await ydbQuery(`
     UPSERT INTO return_requests (
-      id,
-      return_draft_id,
-      client_session_id,
-      customer_name,
-      customer_email,
-      telegram,
-      relic_code,
-      order_id,
-      reason,
-      consent,
-      status,
-      created_at_client,
-      created_at,
-      updated_at
-    )
-    VALUES (
+      id, return_number, customer_id, status,
+      artifact_id_text, order_number_text, reason,
+      created_at, updated_at
+    ) VALUES (
       ${yqlUtf8(id)},
-      ${yqlNullableUtf8(payload.draftId, 80)},
-      ${yqlNullableUtf8(payload.clientSessionId, 160)},
-      ${yqlUtf8(payload.name)},
-      ${yqlNullableUtf8(payload.email, 160)},
-      ${yqlNullableUtf8(payload.telegram, 80)},
-      ${yqlUtf8(payload.relicCode)},
-      ${yqlNullableUtf8(payload.orderId, 60)},
-      ${yqlUtf8(payload.reason)},
-      ${yqlBool(payload.consent)},
+      ${yqlUtf8(returnNumber)},
+      ${yqlUtf8(customerId)},
       "new",
-      ${yqlNullableUtf8(payload.createdAtClient, 40)},
+      ${yqlUtf8(payload.relicCode)},
+      ${yqlNullableUtf8(payload.orderNumber, 60)},
+      ${yqlUtf8(payload.reason)},
       CurrentUtcTimestamp(),
       CurrentUtcTimestamp()
     );
-  `;
+  `);
 
-  await ydbQuery(query);
+  await writeConsent(event, customerId, "return");
 
   return json(200, {
     ok: true,
-    request_id: id,
+    request_id: returnNumber,
     status: "new",
     ts: nowIso()
   });
