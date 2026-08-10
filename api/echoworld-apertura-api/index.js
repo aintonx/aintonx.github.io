@@ -1457,6 +1457,52 @@ function normalizeYooKassaPayment(payment) {
   };
 }
 
+/* Реликвия единственна: после оплаты она должна уйти из каталога навсегда.
+   Одного замка резерва для этого мало — он живёт 15 минут, и по их истечении
+   проданная вещь снова показалась бы доступной. Поэтому при успешной оплате
+   По логике вселенной после оплаты Виш только рождается и находится ещё в
+   MARKETSPACE — Переход впереди. Поэтому статус становится first_form
+   («В MARKETSPACE»), а не transition_complete: последний означает, что
+   реликвия уже физически у владельца, и ставится он при отметке доставки.
+
+   Вызывается только из updateCheckoutOrderPayment при status = succeeded,
+   то есть заработает в тот же день, когда включат ЮKassa. */
+async function markRelicSold(orderId) {
+  const item = await readCheckoutOrderItem(orderId);
+  const productId = safeProductId(item && item.product_id || "");
+  if (!productId) return { changed: false, reason: "no_product" };
+
+  await ydbQuery(`
+    UPDATE products
+    SET
+      status = "first_form",
+      catalog_status_label = "В MARKETSPACE",
+      orderable = FALSE,
+      updated_at = CAST(CurrentUtcTimestamp() AS Utf8)
+    WHERE product_id = ${yqlUtf8(productId)};
+  `);
+
+  try {
+    await ydbQuery(`
+      UPSERT INTO product_status_history (
+        id, product_id, status, changed_at, created_at
+      ) VALUES (
+        ${yqlUtf8(makeHashId("psh", [productId, orderId, "first_form"], 26))},
+        ${yqlUtf8(productId)},
+        "first_form",
+        CurrentUtcTimestamp(),
+        CurrentUtcTimestamp()
+      );
+    `);
+  } catch (error) {
+    /* История — журнал, а не условие продажи: если её схема разойдётся,
+       статус реликвии всё равно должен остаться переведённым. */
+    console.warn("PRODUCT_STATUS_HISTORY_WRITE_FAILED", { product_id: productId, message: error.message });
+  }
+
+  return { changed: true, product_id: productId };
+}
+
 async function updateCheckoutOrderPayment(orderId, paymentStatus, paymentId) {
   const normalizedStatus = cleanScalar(paymentStatus || "pending", 40);
   const normalizedPaymentId = cleanScalar(paymentId || "", 180);
@@ -1472,6 +1518,14 @@ async function updateCheckoutOrderPayment(orderId, paymentStatus, paymentId) {
     WHERE id = ${yqlUtf8(orderId)};
   `;
   await ydbQuery(query);
+
+  if (normalizedStatus === "succeeded") {
+    try {
+      await markRelicSold(orderId);
+    } catch (error) {
+      console.error("RELIC_SOLD_MARK_FAILED", { order_id: orderId, message: error.message });
+    }
+  }
 }
 
 async function fetchYooKassaPayment(paymentId) {
