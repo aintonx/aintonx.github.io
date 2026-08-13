@@ -41864,5 +41864,20 @@ h1, h2, h3,
      скриптом) удалён: панель поддержки перенесена с эталона и несёт их
      разметкой. Скрипт всё равно выходил на первой строке — искал
      .donate-ant, которой больше нет. -->
+<script>
+/* Deep-link на юридические документы: #offerModal / #privacyModal / #reqModal
+   в адресе страницы открывают соответствующую модалку сразу при загрузке.
+   Нужно, чтобы можно было дать прямую ссылку на оферту/политику/реквизиты
+   (например, в анкете эквайринга), не выкладывая отдельный файл. Ничего не
+   меняет для обычных посетителей без хэша в адресе. */
+(function(){
+  try{
+    var h = (location.hash || '').replace('#', '');
+    if(h === 'offerModal' && typeof openOfferModal === 'function') openOfferModal();
+    else if(h === 'privacyModal' && typeof openPrivacyModal === 'function') openPrivacyModal();
+    else if(h === 'reqModal' && typeof openReqModal === 'function') openReqModal();
+  }catch(_){}
+})();
+</script>
 </body>
 </html>
