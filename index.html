@@ -2242,7 +2242,7 @@ header.scrolled{
    акцент снят (там не фокус). Повторные упоминания <strong> убираются в самом
    тексте — проход «первое упоминание». */
 strong{ color: var(--white) !important; font-weight: 400 !important; }
-.about-callout strong, .nft-footnote strong, .pfooter strong{ color: inherit !important; font-weight: inherit !important; }
+.about-callout strong, .pfooter strong{ color: inherit !important; font-weight: inherit !important; }
 
 /* Cyan-акцент на CTA Эхо — отличает от «О технологии» */
 .cta-secondary.cta-echo{
@@ -2802,7 +2802,7 @@ strong{ color: var(--white) !important; font-weight: 400 !important; }
 }
 .about-callout strong{ color: var(--white-mid); font-weight: 400; }
 
-/* Дополнения после callout — про фрагмент, NFT-подпись и Эхо */
+/* Дополнения после callout — про фрагмент и Эхо */
 .about-followups{ margin-top: 20px; display: flex; flex-direction: column; gap: 14px; }
 .about-followup{
   font-family: var(--font-code);
@@ -6370,40 +6370,6 @@ select:-webkit-autofill{
      центрируется по высоте пейна (justify-content выше), как левая
      колонка центрируется по панели на десктопе. */
   .arch-donate .pre-pane-cta { margin-top: 24px; top: 0; }}
-
-/* ─── NFT-СНОСКА ────────────────────────────────────────────────────
-   Звёздочка-якорь после слов NFT и единая сноска внизу секции.
-   Объясняет отложенную кристаллизацию NFT-реликвии до открытия ЛК. */
-.nft-mark{
-  color: var(--cyan);
-  font-size: 0.62em;
-  vertical-align: super;
-  margin-left: 1px;
-  font-weight: 400;
-  font-family: var(--font-code);
-  line-height: 0;
-}
-.nft-footnote{
-  /* Пунктир над сноской возвращён по решению владельца. */
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px dashed rgba(0,234,255,0.18);
-  font-family: var(--font-body);
-  font-size: 11px;
-  line-height: 1.7;
-  color: var(--ink-4);
-  letter-spacing: 0;
-  display: flex;
-  gap: 8px;
-  font-style: italic;
-}
-.nft-footnote-mark{
-  color: var(--cyan);
-  font-size: 11px;
-  line-height: 1;
-  font-style: normal;
-  flex-shrink: 0;
-}
 
 /* ── FOOTER ── */
 footer{
@@ -15801,10 +15767,9 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
       <p class="echo-lead-sub">
         Каждое Эхо получает уникальный <strong>частотный код</strong>,
         собственную <strong>Ауру</strong> — звуковую окраску, с которой
-        прозвучит, — и сохраняется как NFT<sup class="nft-mark">*</sup>-реликвия в разделе
+        прозвучит, — и сохраняется в разделе
         <strong>«Записи Эхо»</strong> личного кабинета после его открытия.
       </p>
-      <p class="nft-footnote"><span class="nft-footnote-mark">*</span><span>Формируется в момент действия и кристаллизуется в NFT-реликвию при открытии личного кабинета. До этого момента она хранится в Памяти Apertura.</span></p>
       <button type="button" class="echo-pane-cta" id="echoPaneCta" onclick="echoSwipeToForm()">
         <span class="echo-pane-cta-label">Открыть канал</span>
         <div class="echo-pane-cta-arrow"></div>
@@ -16140,13 +16105,12 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="mclarity-item" data-clarity-item>
           <button class="mclarity-head" type="button" data-clarity-toggle aria-expanded="false">
             <span class="mclarity-kicker">Что входит в реликвию</span>
-            <span class="mclarity-value">предмет · видео · NFT</span>
+            <span class="mclarity-value">предмет · видео</span>
             <span class="mclarity-plus" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span>
           </button>
           <div class="mclarity-panel" data-clarity-panel aria-hidden="true">
             <div class="mclarity-text">
               <p>Вы получаете физический предмет из MARKETSPACE, видео его истории, запись в Памяти Apertura и право первого владельца.</p>
-              <p>Когда Личный кабинет EchoWorld откроется, внутри него появится NFT-реликвия — цифровая форма этого предмета, связанная с его физическим воплощением и записью в Памяти Apertura.</p>
             </div>
           </div>
         </div>
@@ -17578,11 +17542,6 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Чем отличается Эхо с реликвией и без неё?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
         <div class="faq-a">Эхо в заказе привязано к конкретной реликвии. Виш произнесёт ваши слова внутри своей истории: количество Эхо зависит от Мощи Реликвии.<br><br>Эхо без реликвии не связано с конкретным Вишем из каталога. Это самостоятельный сигнал в Apertura: он получает частотный код, Ауру и позже появится в личном интерфейсе.</div>
-      </div>
-
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">Нужно ли мне разбираться в NFT?<span class="faq-q-toggle" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span></div>
-        <div class="faq-a">Нет. Чтобы заказать физическую реликвию или отправить Эхо, вам не нужно разбираться в технической стороне NFT.<br><br>NFT-реликвия — это будущая цифровая форма предмета. Она не заменяет физическую версию, а дополняет её: помогает подтвердить происхождение, связь с владельцем и место в коллекции EchoWorld.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
@@ -25209,7 +25168,7 @@ const APERTURA_RESPONSE_CONTRACTS = {
   reservationStatus: {required:['ok','reservation_id','status'], optional:['expires_at','product_id'], forbidden:['html'], note:'Used for expired/reserved UI states.'},
   paymentCreate: {required:['ok','payment_id','payment_url','amount','currency'], optional:['order_id','confirmation_type','request_id'], forbidden:['success:true_without_redirect'], note:'Patch 3 must validate payment_url allowlist before redirect.'},
   paymentStatus: {required:['ok','payment_id','status','amount','currency'], optional:['order_id','paid_at','provider_status','request_id'], forbidden:['success_html'], note:'Only payment.succeeded can unlock success states.'},
-  orderStatus: {required:['ok','order_id','status','product_id','relic_code'], optional:['echo','nft_status','request_id'], forbidden:['html'], note:'Purchase success uses confirmed order status.'},
+  orderStatus: {required:['ok','order_id','status','product_id','relic_code'], optional:['echo','request_id'], forbidden:['html'], note:'Purchase success uses confirmed order status.'},
   echoUploadInit: {required:['ok','upload_url','object_key','expires_at'], optional:['headers','request_id'], forbidden:['public_bucket_write'], note:'Patch 3 validates upload_url before use.'},
   echoUploadCommit: {required:['ok','object_key','stored'], optional:['duration_ms','checksum','request_id'], forbidden:['html'], note:'Upload is not treated as received until stored=true.'},
   echoCreate: {required:['ok','echo_id','frequency_code','aura','amount','currency'], optional:['payment_id','request_id'], forbidden:['aura_html'], note:'Aura is data; frontend renders it.'},
@@ -25871,7 +25830,7 @@ function _apWithConsolePreview(fn){
    MARKETSPACE — параллельный мир.
    Виш — существо / персонаж / источник реликвии из MARKETSPACE.
    Виши НЕ знают о существовании нашего мира, сайта, покупателей, заказов,
-   платежей, EchoWorld, Apertura, NFT и клиентов.
+   платежей, EchoWorld, Apertura и клиентов.
    Переход — церемония конвертации Виша в физическую реликвию. Переход
    проходит реликвия / Виш — не клиент. Не использовать "Переход" как
    синоним оплаты или оформления заказа.
@@ -27088,8 +27047,7 @@ function showRelicPurchaseSuccess(item, opts){
   }
   const html = `
     <div class="ap-status-fields">${fields.join('')}</div>
-    ${echo.hasEcho ? '<div class="ap-status-note">Эхо зафиксировано. Для Виша оно прозвучит как голос тех, кто ушёл в Исток. Чьи слова на самом деле — он не узнает.</div>' : ''}
-    <div class="ap-status-info">Когда личный кабинет EchoWorld откроется, NFT-реликвия появится в нём как подтверждение происхождения реликвии.</div>`;
+    ${echo.hasEcho ? '<div class="ap-status-note">Эхо зафиксировано. Для Виша оно прозвучит как голос тех, кто ушёл в Исток. Чьи слова на самом деле — он не узнает.</div>' : ''}`;
   _renderAperturaStatus({
     key: 'relic-success',
     source: opts.source || 'checkout',
@@ -27120,8 +27078,7 @@ function showEchoSuccess(opts){
       ${_apStatusRow('Статус сигнала', 'получен')}
       ${_apStatusRow('Аура', '', auraHtml)}
     </div>
-    <div class="ap-status-info">Ваш частотный код фиксирует сигнал. Аура — то, каким он прозвучит в фрагменте. Каждое Эхо звучит по-своему.</div>
-    <div class="ap-status-info">Записи Эхо зафиксируют сигнал как NFT-реликвию — неизменную запись в децентрализованной сети. Ни время, ни система не смогут её переписать.</div>`;
+    <div class="ap-status-info">Ваш частотный код фиксирует сигнал. Аура — то, каким он прозвучит в фрагменте. Каждое Эхо звучит по-своему.</div>`;
   _renderAperturaStatus({
     key: 'echo-success',
     source: opts.source || 'echo',
@@ -31386,7 +31343,7 @@ function _spinEchoAuraDrum(onDone){
     </div>
     <div class="legal-modal-body">
       <h2 class="offer-h1">ПУБЛИЧНАЯ ОФЕРТА</h2>
-      <p class="offer-meta">на оказание авторских услуг EchoWorld · редакция от 13.08.2026</p>
+      <p class="offer-meta">на оказание авторских услуг EchoWorld · редакция от 14.08.2026</p>
 
       <div class="offer-section">
         <div class="offer-h2">1. ОБЩИЕ ПОЛОЖЕНИЯ</div>
@@ -31401,7 +31358,7 @@ function _spinEchoAuraDrum(onDone){
         <p>2.1. Исполнитель оказывает Заказчику авторскую услугу по созданию индивидуального видеоматериала EchoWorld (далее — «Основная услуга»). Видеоматериал создаётся Исполнителем лично под конкретный заказ и является результатом творческого труда — объектом авторского права в значении статьи 1259 Гражданского кодекса Российской Федерации.</p>
         <p>2.1.1. Объём Основной услуги определяется рангом Мощи, указанным в карточке реликвии: рангом задаётся количество создаваемых видео-фрагментов и число слотов «Эхо». Заказы одного ранга имеют одинаковую стоимость независимо от того, какой материальный носитель им сопутствует.</p>
         <p>2.1.2. Результат Основной услуги передаётся Заказчику вместе с материальным носителем — предметом, который Исполнитель оформляет, маркирует артикулом и упаковывает в рамках оказания услуги. Материальный носитель является составной частью результата услуги и не реализуется Исполнителем как самостоятельный товар.</p>
-        <p>2.2. Реликвии EchoWorld не являются серийным товаром, инвестиционным инструментом, финансовым активом, ценной бумагой или обещанием будущего дохода. Упоминания NFT, цифровой подписи или личного кабинета описывают планируемые художественные/технические элементы проекта и не создают у Заказчика финансовых прав.</p>
+        <p>2.2. Реликвии EchoWorld не являются серийным товаром, инвестиционным инструментом, финансовым активом, ценной бумагой или обещанием будущего дохода. Упоминания цифровой подписи или личного кабинета описывают планируемые художественные/технические элементы проекта и не создают у Заказчика финансовых прав.</p>
         <p>2.3. Если карточка реликвии допускает слоты «Эхо», Заказчик может передать короткие сообщения в пределах ограничений интерфейса. Такое «Эхо» включается в художественный цикл реликвии без отдельной доплаты, если иное прямо не указано в карточке или форме.</p>
         <p>2.4. Отдельная микро-услуга «Эхо» может быть заказана без покупки реликвии и регулируется разделом 5 настоящей оферты.</p>
         <p>2.5. Основная услуга считается оказанной после создания Исполнителем видеоматериала в объёме, соответствующем рангу заказа, передачи его Заказчику и отправки либо передачи материального носителя выбранным способом доставки.</p>
@@ -33415,17 +33372,6 @@ svg.ew-mask-icon use,
     line-height: 1.6 !important;
     letter-spacing: 0 !important;
   }
-  .echo-left .nft-footnote {
-    margin-top: 0 !important;
-    padding-top: 10px !important;
-    font-size: 10px !important;
-    line-height: 1.55 !important;
-    letter-spacing: 0 !important;
-    gap: 7px !important;
-  }
-  .echo-left .nft-footnote-mark {
-    font-size: 10px !important;
-  }
   .echo-pane-cta {
     margin-top: auto !important;
     top: 0 !important;
@@ -33446,9 +33392,6 @@ svg.ew-mask-icon use,
   .echo-lead-sub{
     line-height: 1.7 !important;
   }
-  .echo-left .nft-footnote{
-    line-height: 1.58 !important;
-  }
 }
 @media (max-width: 400px){
   .echo-right{
@@ -33468,9 +33411,6 @@ svg.ew-mask-icon use,
   .echo-lead-sub{
     font-size: 10.2px !important;
     line-height: 1.58 !important;
-  }
-  .echo-left .nft-footnote{
-    line-height: 1.62 !important;
   }
   .echo-right{
     min-height: 518px !important;
