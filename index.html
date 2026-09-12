@@ -617,8 +617,8 @@ html.ew-first-boot-ready #ewFirstBoot{
 <title>EchoWorld — реликвии из MARKETSPACE</title>
 <meta name="title" content="EchoWorld — реликвии из MARKETSPACE">
 <meta itemprop="name" content="EchoWorld — реликвии из MARKETSPACE">
-<meta name="description" content="EchoWorld — каталог физических реликвий из MARKETSPACE, параллельного мира, рождённого из человеческих желаний. Каждая реликвия существует в единственном экземпляре и хранит происхождение, историю и след Перехода.">
-<meta itemprop="description" content="Физические реликвии из параллельного мира, рождённого из человеческих желаний. У каждой — происхождение, история и единственный экземпляр.">
+<meta name="description" content="EchoWorld — услуга по созданию авторского видео о происхождении реликвии из MARKETSPACE, параллельного мира, рождённого из человеческих желаний. Вместе с видео — физический предмет-артефакт: существует в единственном экземпляре, хранит происхождение, историю и след Перехода.">
+<meta itemprop="description" content="Авторское видео о происхождении реликвии из параллельного мира + физический предмет-артефакт. У каждой — происхождение, история и единственный экземпляр.">
 <meta name="keywords" content="EchoWorld, MARKETSPACE, реликвии MARKETSPACE, реликвии из MARKETSPACE, реликвии из параллельного мира, физические реликвии, уникальные реликвии, коллекционные реликвии, авторские артефакты, арт-маркетплейс, цифровая вселенная, narrative artifacts, fictional universe artifacts, physical relics, collectible relics, worldbuilding marketplace">
 <meta name="author" content="aintonx · Архитектор EchoWorld">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -632,7 +632,7 @@ html.ew-first-boot-ready #ewFirstBoot{
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="EchoWorld">
 <meta property="og:title" content="EchoWorld — реликвии из MARKETSPACE">
-<meta property="og:description" content="Физические реликвии из параллельного мира, рождённого из человеческих желаний. У каждой — происхождение, история и единственный экземпляр.">
+<meta property="og:description" content="Авторское видео о происхождении реликвии из параллельного мира + физический предмет-артефакт. У каждой — происхождение, история и единственный экземпляр.">
 <meta property="og:url" content="https://www.echoworld.space/">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:updated_time" content="2026-07-06T10:31:15Z">
@@ -648,7 +648,7 @@ html.ew-first-boot-ready #ewFirstBoot{
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="EchoWorld — реликвии из MARKETSPACE">
-<meta name="twitter:description" content="Физические реликвии из параллельного мира, рождённого из человеческих желаний. У каждой — происхождение, история и единственный экземпляр.">
+<meta name="twitter:description" content="Авторское видео о происхождении реликвии из параллельного мира + физический предмет-артефакт. У каждой — происхождение, история и единственный экземпляр.">
 <meta name="twitter:image" content="https://www.echoworld.space/logo/og-image-r20260703b.png">
 <meta name="twitter:image:alt" content="EchoWorld — реликвии из MARKETSPACE">
 <link rel="image_src" href="https://www.echoworld.space/logo/og-image-r20260703b.png">
@@ -664,7 +664,7 @@ html.ew-first-boot-ready #ewFirstBoot{
       "@id": "https://www.echoworld.space/#organization",
       "name": "EchoWorld",
       "url": "https://www.echoworld.space/",
-      "description": "EchoWorld — каталог физических реликвий из MARKETSPACE, параллельного мира, рождённого из человеческих желаний.",
+      "description": "EchoWorld — услуга по созданию авторского видео о происхождении реликвии из MARKETSPACE, параллельного мира, рождённого из человеческих желаний.",
       "logo": {
         "@type": "ImageObject",
         "@id": "https://www.echoworld.space/#logo",
@@ -691,7 +691,7 @@ html.ew-first-boot-ready #ewFirstBoot{
       "@type": "WebPage",
       "@id": "https://www.echoworld.space/#webpage",
       "name": "EchoWorld — реликвии из MARKETSPACE",
-      "description": "EchoWorld — каталог физических реликвий из MARKETSPACE, параллельного мира, рождённого из человеческих желаний. Каждая реликвия существует в единственном экземпляре и хранит происхождение, историю и след Перехода.",
+      "description": "EchoWorld — услуга по созданию авторского видео о происхождении реликвии из MARKETSPACE, параллельного мира, рождённого из человеческих желаний. Вместе с видео — физический предмет-артефакт: существует в единственном экземпляре, хранит происхождение, историю и след Перехода.",
       "url": "https://www.echoworld.space/",
       "inLanguage": "ru-RU",
       "isPartOf": {
@@ -8594,6 +8594,15 @@ html.theme-soft .mnav-theme-icons *{ transition: none !important; }
   max-width: 78ch;
 }
 .cat-expand-text em{ color: var(--ink-3); font-style: normal; }
+/* Информационный вариант ноты — что именно оплачивается (видео + предмет).
+   Тот же .cat-expand, только точка цианового цвета вместо тёплого:
+   разводит «факт» (циан, как статус-плашки на карточках) и «атмосферу»
+   (тёплый, оригинальная лорная нота ниже). Ставится ПЕРЕД лорной нотой. */
+.cat-expand-info{ margin-bottom: var(--sp-4); }
+.cat-expand-info .cat-expand-dot{
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(0,200,200,0.7);
+}
 .catalog-stage{
   max-width: 1360px;
   margin: var(--sp-6) auto 0;
@@ -8756,6 +8765,28 @@ html.theme-soft .mnav-theme-icons *{ transition: none !important; }
   letter-spacing: 0.14em;
   color: var(--ink-2);
   text-transform: uppercase;
+}
+/* Что оплачивается — видимая пилюля v2 .p-what (низ-право, свободный угол).
+   Тот же материал, что у .arttag/.p-pw/.pbeacon: стекло, блюр, радиус 99px,
+   моно-шрифт. Отвечает на «за что деньги», прямым текстом на превью
+   карточки, не только внутри модалки/оферты. */
+.p-what{
+  display: inline-flex;
+  position: absolute;
+  bottom: 12px; right: 12px;
+  z-index: 2;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  padding: 5px 11px;
+  border-radius: 99px;
+  background: rgba(5,5,6,0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--ink-2);
 }
 /* Тело карточки — v2 .pbody */
 .pbody{
@@ -15265,7 +15296,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
       <span class="accent">часть</span> вселенной
     </h1>
     <p class="hero-sub">
-      EchoWorld — каталог физических реликвий из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Это не копии и не тираж: у каждой реликвии есть происхождение и история. Каждая существует в единственном экземпляре — и может оказаться в нашем мире. В ваших руках.
+      EchoWorld — услуга по созданию авторского видео о происхождении вашей реликвии из <strong>MARKETSPACE</strong>, параллельного мира, рождённого из человеческих желаний. Вместе с видео вы получаете физический предмет — не копию и не тираж: он существует в единственном экземпляре. В ваших руках.
     </p>
     <div class="hero-cta">
       <a href="#catalog" class="cta-primary">Открыть каталог</a>
@@ -15404,6 +15435,10 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
       <button class="cat-chip" data-cat="K" data-pwr="K" onclick="setCatalogCategory('K',this)">K · Излом<span>4</span></button>
     </div>
   </div>
+  <div class="cat-expand cat-expand-info">
+    <div class="cat-expand-dot"></div>
+    <div class="cat-expand-text">Оплата — за услугу: индивидуальное видео о происхождении реликвии. Число видео-фрагментов и слотов «Эхо» растёт с рангом Мощи. Физический предмет передаётся вместе с видео, в рамках той же услуги.</div>
+  </div>
   <div class="cat-expand">
     <div class="cat-expand-dot"></div>
     <div class="cat-expand-text">Каталог формируется из самых плотных потоков желаний — тех, что звучат сейчас, и тех, что не стихают годами. Новые реликвии появятся по мере завершения текущих циклов конденсации.</div>
@@ -15425,6 +15460,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0001</div>
         <div class="p-pw S">S</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/ascotl.webp" alt="Бледный первенец" width="1013" height="944" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15451,6 +15487,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0002</div>
         <div class="p-pw S">S</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/capibara.webp" alt="Безмятежный сосед" width="1024" height="955" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15478,6 +15515,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0003</div>
         <div class="p-pw R">R</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/akula.webp" alt="Сухопутная акула" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15504,6 +15542,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0004</div>
         <div class="p-pw R">R</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/rubik.webp" alt="Шестигранный узел" width="1024" height="936" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15530,6 +15569,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0005</div>
         <div class="p-pw R">R</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/tamagochi.webp" alt="Карманное существо" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15557,6 +15597,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0006</div>
         <div class="p-pw C">C</div>
         <div class="pbeacon" data-status="first_form"><div class="pbeacon-dot"></div><span class="pbeacon-txt">В MARKETSPACE</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/ball.webp" alt="Тёмный оракул" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15583,6 +15624,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0007</div>
         <div class="p-pw C">C</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/spinner.webp" alt="Карманный вихрь" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15609,6 +15651,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0008</div>
         <div class="p-pw C">C</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/disco-ball.webp" alt="Зеркальный идол" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15636,6 +15679,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0009</div>
         <div class="p-pw K">K</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/utka.webp" alt="Жёлтая горлица" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15662,6 +15706,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0010</div>
         <div class="p-pw K">K</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/simple-dimple.webp" alt="Карманные соты" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15688,6 +15733,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0011</div>
         <div class="p-pw K">K</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/grib.webp" alt="Ночной мухомор" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -15715,6 +15761,7 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
         <div class="arttag">ART. 01-0012</div>
         <div class="p-pw K">K</div>
         <div class="pbeacon"><div class="pbeacon-dot"></div><span class="pbeacon-txt">Доступна</span></div>
+        <div class="p-what">Видео + предмет</div>
         <img src="img/rash.webp" alt="Колючий страж" width="900" height="900" loading="lazy" decoding="async">
       </div>
       <div class="pbody">
@@ -18338,7 +18385,7 @@ function getRelicShareMeta(product){
   const title = p ? ('EchoWorld · ' + (p.name || code)) : 'EchoWorld — реликвии из MARKETSPACE';
   const description = p
     ? _relicPreviewText((p.desc || '') + ' · Реликвия ' + code + ' в активном потоке EchoWorld.', 180)
-    : 'Физические реликвии из параллельного мира, рождённого из человеческих желаний. У каждой — происхождение, история и единственный экземпляр.';
+    : 'Авторское видео о происхождении реликвии из параллельного мира + физический предмет-артефакт. У каждой — происхождение, история и единственный экземпляр.';
   return {
     title,
     description,
@@ -18579,7 +18626,7 @@ function inspectPatch61TerminologyStates(){
     mainTitle: html.includes('EchoWorld — реликвии из MARKETSPACE'),
     catalogTitle: has('КАТАЛОГ РЕЛИКВИЙ · MARKETSPACE'),
     heroEyebrow: has('// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE'),
-    heroRelicLine: has('EchoWorld — каталог физических реликвий из MARKETSPACE'),
+    heroRelicLine: has('EchoWorld — услуга по созданию авторского видео о происхождении вашей реликвии из MARKETSPACE'),
     heroLoreCta: has('Что здесь происходит?'),
     heroEchoEntry: has('ЭХО — короткий сигнал в MARKETSPACE. 7 слов или 3 секунды.'),
     catalogNewRelics: has('Новые реликвии появятся по мере завершения текущих циклов конденсации.'),
@@ -18614,7 +18661,7 @@ function inspectHeroEntryPatch64(){
     heroEyebrow: has('// ECHOWORLD · РЕЛИКВИИ ИЗ MARKETSPACE'),
     titleFirstLineProtected: !!titleLine && getComputedStyle(titleLine).whiteSpace === 'nowrap',
     titleSmallDash: !!dash,
-    heroSub: has('EchoWorld — каталог физических реликвий из MARKETSPACE'),
+    heroSub: has('EchoWorld — услуга по созданию авторского видео о происхождении вашей реликвии из MARKETSPACE'),
     heroDesireLine: has('параллельного мира, рождённого из человеческих желаний'),
     catalogCta: !!document.querySelector('.hero-cta a[href="#catalog"]'),
     loreCta: !!Array.from(document.querySelectorAll('.hero-cta a[href="#about"]')).find(a => a.textContent.trim() === 'Что здесь происходит?'),
