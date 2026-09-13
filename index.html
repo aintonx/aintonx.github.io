@@ -8604,6 +8604,25 @@ html.theme-soft .mnav-theme-icons *{ transition: none !important; }
   box-shadow: 0 0 8px rgba(0,200,200,0.7);
 }
 .cat-expand-info .cat-expand-text{ max-width: none; }
+/* Тот же баннер, вставленный в секцию «Мощь Реликвии» (.relic-in) —
+   у .cat-expand уже есть 2 мобильных хака с !important, откалиброванные
+   под карточки каталога (13px/20px под конкретный .pcard). Здесь это
+   чужой контекст, поэтому сбрасываем ширину/отступы под .relic-in,
+   а не под каталог. */
+.relic-in .cat-expand{
+  width: 100%;
+  max-width: none;
+  margin: var(--sp-4) 0 0;
+  padding: 11px 16px;
+}
+@media(max-width:960px){
+  .relic-in .cat-expand{
+    width: 100% !important;
+    max-width: none !important;
+    margin: var(--sp-4) 0 0 !important;
+    padding: 11px 16px !important;
+  }
+}
 .catalog-stage{
   max-width: 1360px;
   margin: var(--sp-6) auto 0;
@@ -15432,12 +15451,12 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
       <button class="cat-chip" data-cat="K" data-pwr="K" onclick="setCatalogCategory('K',this)">K · Излом<span>4</span></button>
     </div>
   </div>
-  <div class="cat-expand cat-expand-info">
-    <div class="cat-expand-dot"></div>
-    <div class="cat-expand-text">Оплата — за услугу: индивидуальное видео о происхождении реликвии, с которым передаётся физический предмет — как часть той же услуги.</div>
-  </div>
 
   <div class="catalog-stage">
+    <div class="cat-expand cat-expand-info">
+      <div class="cat-expand-dot"></div>
+      <div class="cat-expand-text">Оплата — за услугу: индивидуальное видео о происхождении реликвии, с которым передаётся физический предмет — как часть той же услуги.</div>
+    </div>
     <button class="catalog-arrow catalog-prev" type="button" onclick="nudgeCatalog(-1)" aria-label="Предыдущая реликвия">‹</button>
     <div class="pgrid" id="pgrid">
 
