@@ -11763,15 +11763,8 @@ input, select, textarea{
   margin: 14px 0 0;
 }
 
-/* ── Финальная строка после сетки — v2 .power-lede ── */
-.relic-lede-after{
-  margin: 26px 0 0;
-  max-width: 72ch;
-  font-family: var(--font-body);
-  font-size: 13.5px;
-  color: var(--ink-4);
-}
-.relic-lede-after strong{ color: var(--ink-3); font-weight: 600; }
+/* ── Финальная строка после сетки — теперь использует .cat-expand
+   (см. правило ниже), собственные правила больше не нужны. ── */
 
 /* ── Моб-версия: горизонтальная snap-лента (машинерия сохранена) ── */
 @media (max-width: 860px){
@@ -15411,7 +15404,10 @@ body.menu-open .menu-side{ animation: ewMenuItemIn .45s var(--ease-out) both; an
     <div class="relic-mobile-nav" id="relicMobileNav">
       <div class="relic-mobile-dots" id="relicMobileDots"></div>
     </div>
-    <p class="relic-lede-after">Чем выше Мощь, тем больше видео-фрагментов из жизни Виша станет доступно в EchoWorld — и тем больше слотов <strong>Эхо</strong> откроется для ваших слов, которые однажды прозвучат его устами.</p>
+    <div class="cat-expand cat-expand-info">
+      <div class="cat-expand-dot"></div>
+      <div class="cat-expand-text">Чем выше Мощь, тем больше видео-фрагментов Виша станет доступно, и тем больше слотов <strong>Эхо</strong> — для ваших слов, которые однажды прозвучат его устами.</div>
+    </div>
   </div>
 </section>
 
